@@ -171,4 +171,54 @@ class MarkdownTextView: NSTextView {
     override func insertTab(_ sender: Any?) {
         insertText("    ", replacementRange: selectedRange())
     }
+
+    // Cmd+/ toggles HTML comment on selected lines
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        if flags == .command, event.charactersIgnoringModifiers == "/" {
+            toggleComment()
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
+    }
+
+    private func toggleComment() {
+        guard let text = string as NSString?, let storage = textStorage else { return }
+
+        let sel = selectedRange()
+        let lineRange = text.lineRange(for: sel)
+        let lines = text.substring(with: lineRange)
+
+        let lineArray = lines.components(separatedBy: "\n")
+        // Drop trailing empty element from trailing newline
+        let trimmed = lineArray.last?.isEmpty == true ? Array(lineArray.dropLast()) : lineArray
+
+        let allCommented = trimmed.allSatisfy {
+            let s = $0.trimmingCharacters(in: .whitespaces)
+            return s.hasPrefix("<!-- ") && s.hasSuffix(" -->")
+        }
+
+        var result: [String]
+        if allCommented {
+            // Uncomment
+            result = trimmed.map { line in
+                var s = line
+                if let r = s.range(of: "<!-- ") { s.removeSubrange(r) }
+                if let r = s.range(of: " -->", options: .backwards) { s.removeSubrange(r) }
+                return s
+            }
+        } else {
+            // Comment
+            result = trimmed.map { "<!-- \($0) -->" }
+        }
+
+        if lineArray.last?.isEmpty == true { result.append("") }
+        let replacement = result.joined(separator: "\n")
+
+        if shouldChangeText(in: lineRange, replacementString: replacement) {
+            storage.replaceCharacters(in: lineRange, with: replacement)
+            didChangeText()
+            setSelectedRange(NSRange(location: lineRange.location, length: replacement.count))
+        }
+    }
 }

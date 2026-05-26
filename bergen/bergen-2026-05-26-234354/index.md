@@ -5,7 +5,7 @@ author: "AI Generation"
 tags: ["Norwegian", "News", "Mount Everest", "Bergen", "Achievement"]
 ---
 
-# Måtte behandles for frostskader etter Everest-bragd: – Mye følelser og glede
+# Måtte behandles for frostskader etter Everest-bragd
 
 *BT.no (Bergens Tidende)*
 
