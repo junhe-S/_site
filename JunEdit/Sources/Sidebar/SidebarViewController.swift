@@ -157,13 +157,13 @@ class SidebarViewController: NSViewController {
         // Confirm deletion
         let alert = NSAlert()
         alert.messageText = "Delete Post"
-        alert.informativeText = "Delete \"\(post.title)\"? This will remove the post folder and deploy the change."
+        alert.informativeText = "Delete \"\(post.title)\"? This will remove the post folder locally."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "Delete")
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
-        // Delete the post directory
+        // Delete the post directory locally only
         let postDir = post.path.deletingLastPathComponent()
         do {
             try FileManager.default.removeItem(at: postDir)

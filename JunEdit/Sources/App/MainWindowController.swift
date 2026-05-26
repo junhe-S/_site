@@ -3,6 +3,24 @@ import Cocoa
 class MainWindowController: NSWindowController {
     private let splitView = NSSplitViewController()
     private var previewItem: NSSplitViewItem?
+    private var chatItem: NSSplitViewItem?
+    private var activePopover: AIPromptPopover?
+
+    // Shared background — matches editor Mdmdt theme
+    private var contentBgColor: NSColor {
+        NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            ? NSColor(hex: "#1b1b1f") : NSColor(hex: "#fafafc")
+    }
+
+    // Title bar
+    private let titleBar = NSView()
+    private let titleLabel = NSTextField(labelWithString: "JunEdit")
+
+    // Status bar
+    private let statusBar = NSView()
+    private let wordCountLabel = NSTextField(labelWithString: "")
+    private let lineCountLabel = NSTextField(labelWithString: "")
+    private let statusLabel = NSTextField(labelWithString: "Ready")
 
     convenience init() {
         let window = NSWindow(
@@ -17,10 +35,12 @@ class MainWindowController: NSWindowController {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = true
+        window.backgroundColor = .clear
 
         self.init(window: window)
         setupSplitView()
-        setupToolbar()
+        setupTitleBar()
+        setupStatusBar()
         setupMenu()
     }
 
@@ -29,17 +49,23 @@ class MainWindowController: NSWindowController {
         let sidebar = SidebarViewController()
         let editor = EditorViewController()
 
-        sidebar.onPostSelected = { [weak editor] (post: BlogPost) in
+        sidebar.onPostSelected = { [weak editor, weak self] (post: BlogPost) in
             editor?.loadPost(post)
+            self?.updateTitleBar(post.slug)
         }
 
         sidebar.onPostDeleted = { [weak editor] (post: BlogPost) in
-            // Clear editor if deleted post was open
             if editor?.currentPost?.slug == post.slug {
                 editor?.clearPost()
             }
-            // Deploy deletion to website
-            BuildRunner.shared.deploy()
+        }
+
+        // Update status bar on edits (no live build)
+        let previewVC = PreviewViewController()
+        editor.onContentChanged = { [weak self] (content: String) in
+            let words = content.split(whereSeparator: { $0.isWhitespace || $0.isNewline }).count
+            let lines = content.components(separatedBy: "\n").count
+            self?.updateStatusBar(words: words, lines: lines)
         }
 
         // Sidebar with native vibrancy
@@ -53,29 +79,167 @@ class MainWindowController: NSWindowController {
         editorItem.minimumThickness = 400
 
         // Preview (third column, starts collapsed)
-        let previewVC = PreviewViewController()
         let pItem = NSSplitViewItem(viewController: previewVC)
         pItem.minimumThickness = 300
         pItem.canCollapse = true
         pItem.isCollapsed = true
         previewItem = pItem
 
+        // AI Chat panel (fourth column, starts collapsed)
+        let chatVC = AIChatViewController()
+        chatVC.documentContext = { [weak editor] in editor?.documentText() ?? "" }
+        chatVC.setInsertHandler { [weak editor] text in
+            editor?.insertAtCursor(text)
+        }
+        let cItem = NSSplitViewItem(viewController: chatVC)
+        cItem.minimumThickness = 280
+        cItem.canCollapse = true
+        cItem.isCollapsed = true
+        chatItem = cItem
+
         splitView.addSplitViewItem(sidebarItem)
         splitView.addSplitViewItem(editorItem)
         splitView.addSplitViewItem(pItem)
+        splitView.addSplitViewItem(cItem)
         splitView.splitView.dividerStyle = .thin
 
-        window?.contentViewController = splitView
+        // Wrap titleBar + splitView + statusBar in a container
+        let container = NSView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        splitView.view.translatesAutoresizingMaskIntoConstraints = false
+
+        let containerVC = NSViewController()
+        containerVC.view = container
+        container.addSubview(titleBar)
+        container.addSubview(splitView.view)
+        container.addSubview(statusBar)
+
+        NSLayoutConstraint.activate([
+            titleBar.topAnchor.constraint(equalTo: container.topAnchor),
+            titleBar.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            titleBar.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            titleBar.heightAnchor.constraint(equalToConstant: 38),
+
+            splitView.view.topAnchor.constraint(equalTo: titleBar.bottomAnchor),
+            splitView.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            splitView.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            splitView.view.bottomAnchor.constraint(equalTo: statusBar.topAnchor),
+
+            statusBar.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            statusBar.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            statusBar.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            statusBar.heightAnchor.constraint(equalToConstant: 28),
+        ])
+
+        window?.contentViewController = containerVC
+        containerVC.addChild(splitView)
     }
 
-    // MARK: - Toolbar (top-right buttons)
+    // MARK: - Title Bar
 
-    private func setupToolbar() {
-        let toolbar = NSToolbar(identifier: "MainToolbar")
-        toolbar.delegate = self
-        toolbar.displayMode = .iconOnly
-        toolbar.showsBaselineSeparator = false
-        window?.toolbar = toolbar
+    private func setupTitleBar() {
+        titleBar.translatesAutoresizingMaskIntoConstraints = false
+        titleBar.wantsLayer = true
+        titleBar.layer?.backgroundColor = contentBgColor.cgColor
+
+        // Title label centered
+        titleLabel.font = NSFont.systemFont(ofSize: 13, weight: .medium)
+        titleLabel.textColor = .secondaryLabelColor
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleBar.addSubview(titleLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.centerXAnchor.constraint(equalTo: titleBar.centerXAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: titleBar.centerYAnchor),
+        ])
+    }
+
+    /// Update the title bar text (e.g. show current post name)
+    func updateTitleBar(_ text: String) {
+        titleLabel.stringValue = text
+    }
+
+    // MARK: - Status Bar
+
+    private func setupStatusBar() {
+        statusBar.translatesAutoresizingMaskIntoConstraints = false
+        statusBar.wantsLayer = true
+        statusBar.layer?.backgroundColor = contentBgColor.cgColor
+
+        // Left side: icon buttons
+        let sidebarBtn = makeStatusButton(imageName: "icon_sidebar_left", tip: "Toggle Sidebar (⌘1)", action: #selector(toggleSidebar))
+        let buildBtn = makeStatusButton(imageName: "icon_format", tip: "Build Current Post (⌘B)", action: #selector(buildCurrentPost))
+        let splitBtn = makeStatusButton(imageName: "icon_editor_split", tip: "Toggle Preview (⌘\\)", action: #selector(togglePreview))
+        let previewBtn = makeStatusButton(imageName: "icon_preview", tip: "Preview Only (⌘D)", action: #selector(togglePreviewOnly))
+
+        let aiChatBtn = makeStatusButton(imageName: NSImage.touchBarComposeTemplateName, tip: "Toggle AI Chat (⇧⌘L)", action: #selector(toggleAIChat))
+
+        let buttonStack = NSStackView(views: [sidebarBtn, buildBtn, splitBtn, previewBtn, aiChatBtn])
+        buttonStack.orientation = .horizontal
+        buttonStack.spacing = 2
+        buttonStack.translatesAutoresizingMaskIntoConstraints = false
+
+        // Right side: status labels
+        styleStatusLabel(wordCountLabel)
+        styleStatusLabel(lineCountLabel)
+        styleStatusLabel(statusLabel)
+
+        let labelStack = NSStackView(views: [statusLabel, makeSeparatorDot(), wordCountLabel, makeSeparatorDot(), lineCountLabel])
+        labelStack.orientation = .horizontal
+        labelStack.spacing = 6
+        labelStack.translatesAutoresizingMaskIntoConstraints = false
+
+        statusBar.addSubview(buttonStack)
+        statusBar.addSubview(labelStack)
+
+        NSLayoutConstraint.activate([
+            buttonStack.leadingAnchor.constraint(equalTo: statusBar.leadingAnchor, constant: 8),
+            buttonStack.centerYAnchor.constraint(equalTo: statusBar.centerYAnchor),
+
+            labelStack.trailingAnchor.constraint(equalTo: statusBar.trailingAnchor, constant: -12),
+            labelStack.centerYAnchor.constraint(equalTo: statusBar.centerYAnchor),
+        ])
+    }
+
+    private func makeStatusButton(imageName: String, tip: String, action: Selector) -> NSButton {
+        let btn = NSButton()
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.bezelStyle = .accessoryBarAction
+        btn.isBordered = false
+        btn.toolTip = tip
+        btn.target = self
+        btn.action = action
+
+        let img = NSImage(named: imageName)
+        img?.isTemplate = true
+        btn.image = img
+        btn.imageScaling = .scaleProportionallyDown
+
+        NSLayoutConstraint.activate([
+            btn.widthAnchor.constraint(equalToConstant: 28),
+            btn.heightAnchor.constraint(equalToConstant: 24),
+        ])
+        return btn
+    }
+
+    private func styleStatusLabel(_ label: NSTextField) {
+        label.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+        label.textColor = .secondaryLabelColor
+        label.translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    private func makeSeparatorDot() -> NSTextField {
+        let dot = NSTextField(labelWithString: "·")
+        dot.font = NSFont.systemFont(ofSize: 11)
+        dot.textColor = .tertiaryLabelColor
+        dot.translatesAutoresizingMaskIntoConstraints = false
+        return dot
+    }
+
+    /// Call this to update status bar info
+    func updateStatusBar(words: Int? = nil, lines: Int? = nil, status: String? = nil) {
+        if let w = words { wordCountLabel.stringValue = "\(w) words" }
+        if let l = lines { lineCountLabel.stringValue = "Ln \(l)" }
+        if let s = status { statusLabel.stringValue = s }
     }
 
     // MARK: - Menu
@@ -133,6 +297,24 @@ class MainWindowController: NSWindowController {
         buildMenuItem.submenu = buildMenu
         mainMenu.addItem(buildMenuItem)
 
+        // AI menu
+        let aiMenu = NSMenu(title: "AI")
+        let inlineItem = NSMenuItem(title: "AI Rewrite Selection", action: #selector(aiInlineReplace), keyEquivalent: "r")
+        inlineItem.keyEquivalentModifierMask = [.command, .shift]
+        aiMenu.addItem(inlineItem)
+        let appendItem = NSMenuItem(title: "AI Append Below", action: #selector(aiAppendBelow), keyEquivalent: "a")
+        appendItem.keyEquivalentModifierMask = [.command, .shift]
+        aiMenu.addItem(appendItem)
+        aiMenu.addItem(.separator())
+        let chatToggleItem = NSMenuItem(title: "Toggle AI Chat", action: #selector(toggleAIChat), keyEquivalent: "l")
+        chatToggleItem.keyEquivalentModifierMask = [.command, .shift]
+        aiMenu.addItem(chatToggleItem)
+        aiMenu.addItem(.separator())
+        aiMenu.addItem(NSMenuItem(title: "Cancel AI", action: #selector(cancelAI), keyEquivalent: "."))
+        let aiMenuItem = NSMenuItem()
+        aiMenuItem.submenu = aiMenu
+        mainMenu.addItem(aiMenuItem)
+
         NSApp.mainMenu = mainMenu
     }
 
@@ -146,6 +328,10 @@ class MainWindowController: NSWindowController {
 
     private var sidebarVC: SidebarViewController? {
         splitView.splitViewItems.first?.viewController as? SidebarViewController
+    }
+
+    private var chatVC: AIChatViewController? {
+        chatItem?.viewController as? AIChatViewController
     }
 
     // MARK: - Actions
@@ -235,11 +421,9 @@ class MainWindowController: NSWindowController {
         let previewItemLocal = splitView.splitViewItems[2]
 
         if editorItem.isCollapsed {
-            // Already in preview-only mode — restore editor, hide preview
             editorItem.animator().isCollapsed = false
             previewItemLocal.animator().isCollapsed = true
         } else {
-            // Enter preview-only mode: hide editor, show preview
             editorItem.animator().isCollapsed = true
             previewItemLocal.animator().isCollapsed = false
         }
@@ -248,9 +432,14 @@ class MainWindowController: NSWindowController {
     @objc private func buildCurrentPost() {
         guard let slug = editorVC?.currentPost?.slug else { return }
         editorVC?.save()
+        updateStatusBar(status: "Building...")
+
         BuildRunner.shared.buildPost(slug: slug) { [weak self] success in
             if success {
+                self?.updateStatusBar(status: "Built")
                 self?.showBuildPreview()
+            } else {
+                self?.updateStatusBar(status: "Build failed")
             }
         }
     }
@@ -280,60 +469,77 @@ class MainWindowController: NSWindowController {
         editorVC?.save()
         BuildRunner.shared.deploy()
     }
-}
 
-// MARK: - NSToolbarDelegate
+    // MARK: - AI Actions
 
-private extension NSToolbarItem.Identifier {
-    static let sidebarToggle = NSToolbarItem.Identifier("sidebarToggle")
-    static let formatToggle = NSToolbarItem.Identifier("formatToggle")
-    static let splitToggle = NSToolbarItem.Identifier("splitToggle")
-    static let previewToggle = NSToolbarItem.Identifier("previewToggle")
-    static let presentationToggle = NSToolbarItem.Identifier("presentationToggle")
-
-}
-
-extension MainWindowController: NSToolbarDelegate {
-
-    private func makeItem(_ id: NSToolbarItem.Identifier, imageName: String, label: String, tip: String, action: Selector) -> NSToolbarItem {
-        let item = NSToolbarItem(itemIdentifier: id)
-        item.label = label
-        item.toolTip = tip
-        let img = NSImage(named: imageName)
-        img?.isTemplate = true
-        item.image = img
-        item.action = action
-        item.target = self
-        return item
-    }
-
-    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
-
-        switch itemIdentifier {
-        case .sidebarToggle:
-            return makeItem(itemIdentifier, imageName: "icon_sidebar_left", label: "Sidebar", tip: "Toggle Sidebar (⌘1)", action: #selector(toggleSidebar))
-        case .formatToggle:
-            return makeItem(itemIdentifier, imageName: "icon_format", label: "Build", tip: "Build Current Post (⌘B)", action: #selector(buildCurrentPost))
-        case .splitToggle:
-            return makeItem(itemIdentifier, imageName: "icon_editor_split", label: "Split", tip: "Toggle Preview (⌘\\)", action: #selector(togglePreview))
-        case .previewToggle:
-            return makeItem(itemIdentifier, imageName: "icon_preview", label: "Preview", tip: "Preview Only (⌘D)", action: #selector(togglePreviewOnly))
-        default:
-            return nil
+    @objc private func aiInlineReplace() {
+        guard let editor = editorVC else { return }
+        let selected = editor.selectedText()
+        guard let selected = selected, !selected.isEmpty else {
+            updateStatusBar(status: "Select text first")
+            return
         }
+
+        let popover = AIPromptPopover(placeholder: "How should AI rewrite this?") { [weak self, weak editor] prompt in
+            guard let self = self, let editor = editor else { return }
+            self.updateStatusBar(status: "AI thinking...")
+
+            var result = ""
+            AIRunner.shared.run(prompt: prompt, context: selected, onOutput: { chunk in
+                result += chunk
+            }, onComplete: { [weak self] error in
+                self?.activePopover?.close()
+                self?.activePopover = nil
+                if error == nil {
+                    editor.replaceSelection(with: result)
+                    self?.updateStatusBar(status: "AI done")
+                } else {
+                    self?.updateStatusBar(status: "AI error")
+                }
+            })
+        }
+        activePopover = popover
+        let rect = editor.cursorRect()
+        popover.show(relativeTo: rect, of: editor.editorView, preferredEdge: .maxY)
     }
 
-    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [
-            .flexibleSpace,
-            .sidebarToggle,
-            .formatToggle,
-            .splitToggle,
-            .previewToggle,
-        ]
+    @objc private func aiAppendBelow() {
+        guard let editor = editorVC else { return }
+
+        let popover = AIPromptPopover(placeholder: "What should AI write?") { [weak self, weak editor] prompt in
+            guard let self = self, let editor = editor else { return }
+            self.updateStatusBar(status: "AI thinking...")
+
+            let context = editor.documentText()
+            var result = ""
+            AIRunner.shared.run(prompt: prompt, context: context, onOutput: { chunk in
+                result += chunk
+            }, onComplete: { [weak self] error in
+                self?.activePopover?.close()
+                self?.activePopover = nil
+                if error == nil {
+                    editor.appendBelowCursor(result)
+                    self?.updateStatusBar(status: "AI done")
+                } else {
+                    self?.updateStatusBar(status: "AI error")
+                }
+            })
+        }
+        activePopover = popover
+        let rect = editor.cursorRect()
+        popover.show(relativeTo: rect, of: editor.editorView, preferredEdge: .maxY)
     }
 
-    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.sidebarToggle, .formatToggle, .splitToggle, .previewToggle, .flexibleSpace]
+    @objc private func toggleAIChat() {
+        guard let item = chatItem else { return }
+        item.animator().isCollapsed.toggle()
+    }
+
+    @objc private func cancelAI() {
+        AIRunner.shared.cancel()
+        activePopover?.close()
+        activePopover = nil
+        updateStatusBar(status: "AI cancelled")
     }
 }
+

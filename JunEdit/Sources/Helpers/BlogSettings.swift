@@ -6,6 +6,7 @@ class BlogSettings {
 
     private let blogDirKey = "blogDirectory"
     private let pythonPathKey = "pythonPath"
+    private let claudePathKey = "claudePath"
 
     var blogDirectory: URL? {
         get {
@@ -20,6 +21,11 @@ class BlogSettings {
     var pythonPath: String {
         get { defaults.string(forKey: pythonPathKey) ?? "/opt/homebrew/anaconda3/envs/ban438/bin/python3" }
         set { defaults.set(newValue, forKey: pythonPathKey) }
+    }
+
+    var claudePath: String {
+        get { defaults.string(forKey: claudePathKey) ?? "/opt/homebrew/bin/claude" }
+        set { defaults.set(newValue, forKey: claudePathKey) }
     }
 
     var postsDirectory: URL? {

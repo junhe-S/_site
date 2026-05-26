@@ -149,6 +149,9 @@ def execute_code_blocks(body, post_dir, no_exec=False):
                         return tag[:-1] + f' id="{tid}">'
                     return tag
                 stdout = re.sub(r'<table[^>]*>', add_table_id, stdout, flags=re.IGNORECASE)
+                # Strip pandas border="1" and inline style for clean CSS styling
+                stdout = re.sub(r'\s*border="[^"]*"', '', stdout)
+                stdout = re.sub(r'\s*style="text-align:\s*\w+;?"', '', stdout)
                 parts.append(f'<div class="table-container">{stdout}</div>')
             else:
                 parts.append(f"<pre><code>{escape_html(stdout)}</code></pre>")
