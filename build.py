@@ -30,6 +30,9 @@ ROOT = Path(__file__).parent
 POSTS_DIR = ROOT / "posts"
 TEMPLATES_DIR = ROOT / "templates"
 
+# All content sections that contain buildable markdown pages
+SECTIONS = ["posts", "research", "data", "bergen"]
+
 env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
 
 
@@ -37,11 +40,15 @@ env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
 # Discovery & Frontmatter
 # ---------------------------------------------------------------------------
 
-def discover_posts():
-    """Find all posts/*/index.md files."""
+def discover_posts(section=None):
+    """Find all */index.md files across all sections (or a specific section)."""
+    dirs = [section] if section else SECTIONS
     posts = []
-    for md_file in sorted(POSTS_DIR.glob("*/index.md")):
-        posts.append(md_file)
+    for sec in dirs:
+        sec_dir = ROOT / sec
+        if sec_dir.is_dir():
+            for md_file in sorted(sec_dir.glob("*/index.md")):
+                posts.append(md_file)
     return posts
 
 
@@ -54,6 +61,164 @@ def parse_frontmatter(text):
             body = parts[2].strip()
             return meta, body
     return {}, text
+
+
+# ---------------------------------------------------------------------------
+# Annotated Text → SVG  (```text {annotate} blocks)
+# ---------------------------------------------------------------------------
+
+def process_annotate_blocks(body):
+    """
+    Convert annotate blocks into inline SVG diagrams.
+
+    Syntax:
+        ```text {annotate}
+        Jeg har alltid likt å gå tur i fjellet om sommeren.
+        ---
+        fjellet | fjall (Old Norse) | the mountain
+        sommeren | sumar (Old Norse) | the summer
+        ```
+
+    Each annotation line: word | etymology | translation
+    Generates SVG with the sentence, highlighted words, connector lines,
+    and annotation boxes below.
+    """
+    pattern = r"```(?:text|norwegian)?\s*\{annotate\}\n(.*?)```"
+
+    def render_annotate(match):
+        content = match.group(1).strip()
+        if "---" in content:
+            text_part, annot_part = content.split("---", 1)
+        else:
+            return f"<pre><code>{escape_html(content)}</code></pre>"
+
+        sentence = text_part.strip()
+        annotations = []
+        for line in annot_part.strip().splitlines():
+            line = line.strip()
+            if not line or "|" not in line:
+                continue
+            parts = [p.strip() for p in line.split("|")]
+            if len(parts) >= 3:
+                annotations.append({
+                    "word": parts[0],
+                    "etymology": parts[1],
+                    "translation": parts[2],
+                })
+            elif len(parts) == 2:
+                annotations.append({
+                    "word": parts[0],
+                    "etymology": "",
+                    "translation": parts[1],
+                })
+
+        if not annotations:
+            return f"<p>{escape_html(sentence)}</p>"
+
+        return generate_annotate_html(sentence, annotations)
+
+    return re.sub(pattern, render_annotate, body, flags=re.DOTALL)
+
+
+def generate_annotate_html(sentence, annotations):
+    """Generate HTML with text + right-margin annotation cards + connector lines."""
+    import random
+    # Rotating card colors (background, border-left accent)
+    card_colors = [
+        ("#1e3a5f", "#3b82f6"),   # blue
+        ("#14412a", "#22c55e"),   # green
+        ("#4a1420", "#e11d48"),   # red/rose
+        ("#3b1249", "#a855f7"),   # purple
+        ("#422006", "#f59e0b"),   # amber
+        ("#134e4a", "#14b8a6"),   # teal
+        ("#4a2512", "#ea580c"),   # orange
+        ("#1e1b4b", "#6366f1"),   # indigo
+        ("#3f1a0a", "#dc2626"),   # deep red
+        ("#1a2e05", "#84cc16"),   # lime
+    ]
+    # Light mode card colors
+    card_colors_light = [
+        ("#dbeafe", "#2563eb"),
+        ("#dcfce7", "#16a34a"),
+        ("#ffe4e6", "#e11d48"),
+        ("#f3e8ff", "#9333ea"),
+        ("#fef3c7", "#d97706"),
+        ("#ccfbf1", "#0d9488"),
+        ("#ffedd5", "#ea580c"),
+        ("#e0e7ff", "#4f46e5"),
+        ("#fee2e2", "#dc2626"),
+        ("#ecfccb", "#65a30d"),
+    ]
+
+    # Generate unique block ID
+    block_id = f"anno-{random.randint(1000,9999)}"
+
+    # Build highlighted text
+    sentence_lower = sentence.lower()
+    segments = []
+    pos = 0
+    sorted_anns = sorted(enumerate(annotations),
+                         key=lambda x: sentence_lower.find(x[1]["word"].lower()))
+
+    for orig_idx, ann in sorted_anns:
+        word = ann["word"]
+        idx = sentence_lower.find(word.lower(), pos)
+        if idx == -1:
+            continue
+        if idx > pos:
+            segments.append(escape_html(sentence[pos:idx]))
+        color_idx = orig_idx % len(card_colors)
+        _, accent = card_colors[color_idx]
+        segments.append(
+            f'<mark class="anno-hl" data-card="{block_id}-{orig_idx}" '
+            f'style="--hl-color:{accent}">{escape_html(sentence[idx:idx+len(word)])}</mark>'
+        )
+        pos = idx + len(word)
+    if pos < len(sentence):
+        segments.append(escape_html(sentence[pos:]))
+
+    text_html = "".join(segments)
+
+    # Build annotation cards — alternate left and right
+    left_cards = []
+    right_cards = []
+    for i, ann in enumerate(annotations):
+        color_idx = i % len(card_colors)
+        bg, accent = card_colors[color_idx]
+        bg_light, _ = card_colors_light[color_idx]
+        word = escape_html(ann["word"])
+        trans = escape_html(ann.get("translation", ""))
+        etym_raw = escape_html(ann.get("etymology", ""))
+        side = "left" if i % 2 == 0 else "right"
+
+        # Bold root words before quoted meanings: word "meaning" → <b>word</b> "meaning"
+        etym = re.sub(
+            r'([\w\-]+)(\s+&quot;)',
+            r'<b>\1</b>\2',
+            etym_raw
+        ) if etym_raw else ""
+
+        card = (
+            f'<div class="anno-card" id="{block_id}-{i}" data-side="{side}" '
+            f'style="--card-bg:{bg};--card-accent:{accent};--card-bg-light:{bg_light}">'
+            f'<strong>{word}</strong>'
+            f'<span class="anno-card-trans">&ldquo;{trans}&rdquo;</span>'
+            + (f'<span class="anno-card-etym">{etym}</span>' if etym else '')
+            + '</div>'
+        )
+        if side == "left":
+            left_cards.append(card)
+        else:
+            right_cards.append(card)
+
+    return (
+        f'<div class="annotate-block" id="{block_id}">'
+        f'<aside class="annotate-cards annotate-left">{"".join(left_cards)}</aside>'
+        f'<div class="annotate-text"><p>{text_html}</p></div>'
+        f'<aside class="annotate-cards annotate-right">{"".join(right_cards)}</aside>'
+        f'<svg class="anno-lines"></svg>'
+        f'</div>'
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -164,6 +329,9 @@ def execute_code_blocks(body, post_dir, no_exec=False):
 
     pattern = r"```(python|r)\s*\{(show|hide)\}\n(.*?)```"
     body = re.sub(pattern, run_block, body, flags=re.DOTALL | re.IGNORECASE)
+
+    # Process {annotate} blocks: Norwegian text with word annotations → inline SVG
+    body = process_annotate_blocks(body)
     return body, table_counter[0]
 
 
@@ -175,6 +343,69 @@ def escape_html(text):
         .replace(">", "&gt;")
         .replace('"', "&quot;")
     )
+
+
+# ---------------------------------------------------------------------------
+# Inline Word Annotations  (**word**`form` · *translation* · etymology)
+# ---------------------------------------------------------------------------
+
+def process_word_annotations(html):
+    """
+    Convert inline word annotations into styled tooltip spans.
+
+    Input pattern in HTML (after markdown conversion):
+        <strong>word</strong><code>form</code> · <em>translation</em> · etymology
+
+    Output:
+        <span class="anno-word" data-tip="form — translation (etymology)">word</span>
+    """
+    # After markdown→HTML, the pattern becomes:
+    # <strong>word</strong><code>dict_form</code> · <em>translation</em> · etymology
+    # Etymology contains <em> tags for italic foreign words, plus language
+    # abbreviations, parentheticals, and connectors (+, /, ,, ;).
+    # Strategy: match etymology as a sequence of segments, each ending with
+    # <em>word</em> and optional (parenthetical), joined by connectors.
+
+    pattern = (
+        r'<strong>([^<]+)</strong>'           # group 1: displayed word
+        r'<code>([^<]+)</code>'               # group 2: dictionary form
+        r'\s*·\s*'                            # separator
+        r'<em>([^<]+)</em>'                   # group 3: translation
+        r'\s*·\s*'                            # separator
+        r'('                                  # group 4: etymology
+          r'(?:(?!<strong>|</p>).)*?'         #   prefix text (lang abbrev etc.)
+          r'<em>[^<]+</em>'                   #   italic foreign word
+          r'(?:\s*\([^)]*\))?'               #   optional parenthetical
+          r'(?:'                              #   additional segments:
+            r'\s*[+/,;·]\s*'                  #     connector
+            r'(?:(?!<strong>|</p>).)*?'       #     prefix text
+            r'<em>[^<]+</em>'                 #     italic foreign word
+            r'(?:\s*\([^)]*\))?'             #     optional parenthetical
+          r')*'                               #   zero or more
+        r')'                                  # end group 4
+    )
+
+    def replace_anno(m):
+        word = m.group(1)
+        form = m.group(2).strip()
+        trans = m.group(3).strip()
+        etym_raw = (m.group(4) or "").strip().rstrip(",.")
+
+        # Strip HTML tags from etymology for tooltip
+        etym = re.sub(r'<[^>]+>', '', etym_raw).strip()
+
+        # Build tooltip text — wraps naturally in CSS
+        tip_parts = [form]
+        if trans:
+            tip_parts.append(f"— {trans}")
+        if etym:
+            tip_parts.append(f"({etym})")
+        tip = " ".join(tip_parts)
+        tip_escaped = tip.replace('"', '&quot;').replace("'", '&#39;')
+
+        return f'<span class="anno-word" data-tip="{tip_escaped}">{word}</span>'
+
+    return re.sub(pattern, replace_anno, html)
 
 
 # ---------------------------------------------------------------------------
@@ -277,6 +508,9 @@ def render_post(md_path, no_exec=False):
     md = markdown.Markdown(extensions=["fenced_code", "tables", "attr_list"])
     content_html = md.convert(body)
 
+    # Process inline word annotations: **word**`form` · *translation* · etymology
+    content_html = process_word_annotations(content_html)
+
     # Process callouts
     content_html = process_callouts(content_html)
 
@@ -294,6 +528,9 @@ def render_post(md_path, no_exec=False):
     has_tables = "<table" in content_html.lower()
     table_ids = [f"table{i}" for i in range(1, table_count + 1)]
 
+    # Detect annotate blocks
+    has_annotate = "annotate-block" in content_html
+
     # Render template
     template = env.get_template("post.html")
     html = template.render(
@@ -305,6 +542,7 @@ def render_post(md_path, no_exec=False):
         toc=toc_html,
         has_tables=has_tables,
         table_ids=table_ids,
+        has_annotate=has_annotate,
     )
 
     # Write output
@@ -324,14 +562,29 @@ def render_post(md_path, no_exec=False):
 # Build Listing
 # ---------------------------------------------------------------------------
 
-def build_listing(posts_meta):
-    """Generate posts/index.html from collected metadata."""
+def build_listing(posts_meta, section="posts"):
+    """Generate listing index.html for a section."""
     posts_meta.sort(key=lambda p: p["date"], reverse=True)
 
-    template = env.get_template("post_listing.html")
-    html = template.render(posts=posts_meta)
+    # Use section-specific template if it exists, else fall back to post_listing
+    template_name = f"{section}_listing.html"
+    try:
+        template = env.get_template(template_name)
+    except Exception:
+        template = env.get_template("post_listing.html")
 
-    out_path = POSTS_DIR / "index.html"
+    section_title = {
+        "posts": "Posts",
+        "research": "Research",
+        "data": "Data",
+        "bergen": "Bergen",
+    }.get(section, section.capitalize())
+
+    html = template.render(posts=posts_meta, section_title=section_title)
+
+    out_dir = ROOT / section
+    out_dir.mkdir(exist_ok=True)
+    out_path = out_dir / "index.html"
     out_path.write_text(html, encoding="utf-8")
 
 
@@ -340,37 +593,36 @@ def build_listing(posts_meta):
 # ---------------------------------------------------------------------------
 
 def build_all(no_exec=False, single_post=None):
-    """Build all posts or a single post."""
+    """Build all pages across all sections, or a single page."""
     start = time.time()
 
     md_files = discover_posts()
     if not md_files:
-        print("No posts found (looking for posts/*/index.md)")
+        print("No pages found")
         return
 
     if single_post:
         md_files = [f for f in md_files if f.parent.name == single_post]
         if not md_files:
-            print(f"Post '{single_post}' not found")
+            print(f"Page '{single_post}' not found")
             return
 
-    posts_meta = []
     for md_path in md_files:
-        print(f"  Building: {md_path.parent.name}")
+        section = md_path.parent.parent.name  # e.g. "posts", "bergen"
+        print(f"  Building: {section}/{md_path.parent.name}")
         try:
             meta = render_post(md_path, no_exec=no_exec)
-            posts_meta.append(meta)
+            meta["section"] = section
         except Exception as e:
             print(f"  ERROR: {e}")
 
-    # If building all posts, regenerate listing
-    if not single_post:
-        build_listing(posts_meta)
-        print(f"  Built posts listing ({len(posts_meta)} posts)")
-    else:
-        # Rebuild listing with all posts (not just the single one)
+    # Rebuild listings for each section
+    for section in SECTIONS:
+        sec_dir = ROOT / section
+        if not sec_dir.is_dir():
+            continue
         all_meta = []
-        for md_path in discover_posts():
+        for md_path in discover_posts(section=section):
             text = md_path.read_text(encoding="utf-8")
             meta, _ = parse_frontmatter(text)
             date = meta.get("date", datetime.now())
@@ -381,8 +633,11 @@ def build_all(no_exec=False, single_post=None):
                 "title": meta.get("title", md_path.parent.name),
                 "date": date,
                 "date_short": date.strftime("%b %Y"),
+                "section": section,
             })
-        build_listing(all_meta)
+        build_listing(all_meta, section=section)
+        if all_meta:
+            print(f"  Built {section} listing ({len(all_meta)} pages)")
 
     elapsed = time.time() - start
     print(f"\nDone in {elapsed:.1f}s")
@@ -422,7 +677,10 @@ def watch_mode(no_exec=False):
     build_all(no_exec=no_exec)
 
     observer = Observer()
-    observer.schedule(RebuildHandler(), str(POSTS_DIR), recursive=True)
+    for sec in SECTIONS:
+        sec_dir = ROOT / sec
+        if sec_dir.is_dir():
+            observer.schedule(RebuildHandler(), str(sec_dir), recursive=True)
     observer.start()
     print("\nWatching for changes... (Ctrl+C to stop)")
 

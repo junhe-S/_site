@@ -308,6 +308,10 @@ class MainWindowController: NSWindowController {
         chatToggleItem.keyEquivalentModifierMask = [.command, .shift]
         aiMenu.addItem(chatToggleItem)
         aiMenu.addItem(.separator())
+        let bergenItem = NSMenuItem(title: "Bergen Annotate URL", action: #selector(aiBergenAnnotate), keyEquivalent: "g")
+        bergenItem.keyEquivalentModifierMask = [.command, .shift]
+        aiMenu.addItem(bergenItem)
+        aiMenu.addItem(.separator())
         let cancelItem = NSMenuItem(title: "Cancel AI", action: #selector(cancelAI), keyEquivalent: ".")
         cancelItem.keyEquivalentModifierMask = [.command, .shift]
         aiMenu.addItem(cancelItem)
@@ -344,6 +348,10 @@ class MainWindowController: NSWindowController {
                 return nil
             case "l":
                 self.toggleAIChat()
+                return nil
+            case "g":
+                NSLog("JunEdit: Cmd+Shift+G → aiBergenAnnotate")
+                self.aiBergenAnnotate()
                 return nil
             case ".":
                 self.cancelAI()
@@ -382,12 +390,14 @@ class MainWindowController: NSWindowController {
             return
         }
 
-        // Generate slug from current date/time
+        // Use whichever section is selected in sidebar (defaults to "posts")
+        let section = sidebarVC?.selectedSection ?? "posts"
+
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd-HHmmss"
-        let slug = "new-post-\(df.string(from: Date()))"
+        let slug = "new-\(section)-\(df.string(from: Date()))"
 
-        let postDir = blogDir.appendingPathComponent("posts/\(slug)")
+        let postDir = blogDir.appendingPathComponent("\(section)/\(slug)")
         let assetsDir = postDir.appendingPathComponent("assets")
         let mdFile = postDir.appendingPathComponent("index.md")
 
@@ -396,13 +406,13 @@ class MainWindowController: NSWindowController {
             let today = ISO8601DateFormatter.string(from: Date(), timeZone: .current, formatOptions: [.withFullDate, .withDashSeparatorInDate])
             let template = """
             ---
-            title: "New Post"
+            title: "New \(section.capitalized)"
             date: \(today)
             author: "Jun He"
             tags: []
             ---
 
-            Write your post here.
+            Write here.
             """
             try template.write(to: mdFile, atomically: true, encoding: .utf8)
             sidebarVC?.refreshPosts()
@@ -580,6 +590,194 @@ class MainWindowController: NSWindowController {
         }
 
         bar.showBelow(screenPoint: editor.selectionScreenPoint(), parentWindow: window)
+    }
+
+    // MARK: - Bergen Annotate
+
+    private static let bergenAnnotatePrompt = """
+    You are a Norwegian language learning assistant. Given a Norwegian article, produce a Markdown file for a Bergen blog post with vocabulary annotations at two levels.
+
+    OUTPUT FORMAT (output ONLY the markdown, no explanations):
+
+    ---
+    title: "[Article headline]"
+    date: [YYYY-MM-DD]
+    author: "Jun He"
+    tags: ["Norwegian", ...]
+    ---
+
+    # [Headline]
+
+    *[Author, Source]*
+
+    ---
+
+    ![Caption](fig_01.jpg)
+
+    [Article body with annotations]
+
+    <div style="height: 12rem"></div>
+
+    ANNOTATION RULES:
+
+    1. ADVANCED words (5-8 per article section): Use annotate blocks.
+
+    ```text {annotate}
+    [Original Norwegian sentence exactly as written.]
+    ---
+    word | root "meaning" + root "meaning" (Language) | English translation
+    ```
+
+    - Pick 3-5 words per block. Alternate blocks every 2-3 paragraphs.
+    - Etymology: bold roots with meanings, e.g. gegn "against" + síða "side" (Old Norse)
+
+    2. MEDIUM words (scattered in regular paragraphs): Use inline hover tooltips.
+
+    **displayed_word**`dictionary_form` · *English translation* · etymology with *italic_foreign_terms*
+
+    - Use each word only ONCE in the whole article.
+    - Keep the original sentence intact.
+
+    GUIDELINES:
+    - Keep ALL original Norwegian text — do not summarize or skip paragraphs.
+    - Annotate blocks should contain complete sentences copied verbatim.
+    - Advanced: compound words, archaic forms, idioms, formal/literary vocabulary.
+    - Medium: common but non-obvious words a B1-B2 learner would benefit from.
+    - Etymology abbreviations: ON (Old Norse), MLG (Middle Low German), Latin, Greek, French, German.
+    - Do NOT add a legend section at the end.
+    - One hero image reference at the top only (fig_01.jpg with the caption provided).
+    """
+
+    @objc func aiBergenAnnotate() {
+        // Show URL input dialog
+        let alert = NSAlert()
+        alert.messageText = "Bergen Annotate"
+        alert.informativeText = "Enter a Bergens Tidende URL, or leave empty to pick from latest articles."
+        alert.addButton(withTitle: "Annotate")
+        alert.addButton(withTitle: "Cancel")
+
+        let input = NSTextField(frame: NSRect(x: 0, y: 0, width: 400, height: 24))
+        input.placeholderString = "https://www.bt.no/..."
+        alert.accessoryView = input
+        alert.window.initialFirstResponder = input
+
+        let response = alert.runModal()
+        guard response == .alertFirstButtonReturn else { return }
+
+        let url = input.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if url.isEmpty {
+            // Fetch latest articles and let user pick
+            updateStatusBar(status: "Fetching BT articles...")
+            BTScraper.fetchLatestURLs { [weak self] urls in
+                guard !urls.isEmpty else {
+                    self?.updateStatusBar(status: "No articles found")
+                    return
+                }
+                self?.showArticlePicker(urls: urls)
+            }
+        } else {
+            processArticleURL(url)
+        }
+    }
+
+    private func showArticlePicker(urls: [String]) {
+        let alert = NSAlert()
+        alert.messageText = "Pick an article"
+        alert.informativeText = "Select from latest BT articles:"
+        alert.addButton(withTitle: "Annotate")
+        alert.addButton(withTitle: "Cancel")
+
+        let popup = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 500, height: 28), pullsDown: false)
+        for url in urls {
+            // Show slug part of URL for readability
+            let slug = url.components(separatedBy: "/").last ?? url
+            popup.addItem(withTitle: slug.replacingOccurrences(of: "-", with: " "))
+            popup.lastItem?.representedObject = url
+        }
+        alert.accessoryView = popup
+
+        let response = alert.runModal()
+        guard response == .alertFirstButtonReturn,
+              let selectedURL = popup.selectedItem?.representedObject as? String else { return }
+        processArticleURL(selectedURL)
+    }
+
+    private func processArticleURL(_ url: String) {
+        updateStatusBar(status: "Scraping article...")
+
+        BTScraper.fetch(url: url) { [weak self] article in
+            guard let self = self, let article = article else {
+                self?.updateStatusBar(status: "Scrape failed")
+                return
+            }
+
+            // Create a new Bergen post directory
+            guard let blogDir = BlogSettings.shared.blogDirectory else { return }
+
+            let df = DateFormatter()
+            df.dateFormat = "yyyy-MM-dd-HHmmss"
+            let slug = "bergen-\(df.string(from: Date()))"
+            let postDir = blogDir.appendingPathComponent("bergen/\(slug)")
+            let mdFile = postDir.appendingPathComponent("index.md")
+
+            do {
+                try FileManager.default.createDirectory(at: postDir, withIntermediateDirectories: true)
+            } catch {
+                self.updateStatusBar(status: "Failed to create directory")
+                return
+            }
+
+            // Download hero image if available
+            let imageCaption = article.imageCaption ?? "Foto: Bergens Tidende"
+            if let imgURL = article.imageURL {
+                let imgDest = postDir.appendingPathComponent("fig_01.jpg")
+                BTScraper.downloadImage(url: imgURL, to: imgDest) { _ in }
+            }
+
+            // Build article text for AI context
+            let articleText = article.paragraphs.joined(separator: "\n\n")
+            let context = """
+            Source: \(article.sourceURL)
+            Headline: \(article.headline)
+            Image caption: \(imageCaption)
+
+            \(articleText)
+            """
+
+            self.updateStatusBar(status: "AI annotating...")
+
+            // Run AI to generate annotated markdown
+            var result = ""
+            AIRunner.shared.run(
+                prompt: Self.bergenAnnotatePrompt,
+                context: context,
+                onOutput: { chunk in
+                    result += chunk
+                    self.updateStatusBar(status: "AI annotating... \(result.count) chars")
+                },
+                onComplete: { error in
+                    if let error = error {
+                        NSLog("JunEdit Bergen: AI error: %@", error.localizedDescription)
+                        self.updateStatusBar(status: "AI error")
+                        return
+                    }
+
+                    // Write the generated markdown
+                    let markdown = result.trimmingCharacters(in: .whitespacesAndNewlines)
+                    do {
+                        try markdown.write(to: mdFile, atomically: true, encoding: .utf8)
+                        self.sidebarVC?.refreshPosts()
+                        let post = BlogPost(slug: slug, path: mdFile)
+                        self.editorVC?.loadPost(post)
+                        self.updateStatusBar(status: "Bergen article created")
+                        self.updateTitleBar(slug)
+                    } catch {
+                        self.updateStatusBar(status: "Write failed")
+                    }
+                }
+            )
+        }
     }
 
     @objc func toggleAIChat() {

@@ -35,4 +35,11 @@ class BlogSettings {
     var buildScriptPath: URL? {
         blogDirectory?.appendingPathComponent("build.py")
     }
+
+    /// All content sections matching site navigation
+    static let sections = ["posts", "research", "data", "bergen"]
+
+    func directoryFor(section: String) -> URL? {
+        blogDirectory?.appendingPathComponent(section)
+    }
 }
