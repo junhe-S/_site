@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import datetime as _dt
 from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
@@ -495,7 +496,9 @@ def render_post(md_path, no_exec=False):
     date = meta.get("date", datetime.now())
     tags = meta.get("tags", [])
 
-    if isinstance(date, str):
+    if isinstance(date, _dt.date) and not isinstance(date, datetime):
+        date = datetime.combine(date, datetime.min.time())
+    elif isinstance(date, str):
         date = datetime.strptime(date, "%Y-%m-%d")
 
     date_display = date.strftime("%B %d, %Y")
@@ -626,7 +629,9 @@ def build_all(no_exec=False, single_post=None):
             text = md_path.read_text(encoding="utf-8")
             meta, _ = parse_frontmatter(text)
             date = meta.get("date", datetime.now())
-            if isinstance(date, str):
+            if isinstance(date, _dt.date) and not isinstance(date, datetime):
+                date = datetime.combine(date, datetime.min.time())
+            elif isinstance(date, str):
                 date = datetime.strptime(date, "%Y-%m-%d")
             all_meta.append({
                 "slug": md_path.parent.name,

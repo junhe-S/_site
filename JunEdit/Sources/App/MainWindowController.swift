@@ -499,9 +499,17 @@ class MainWindowController: NSWindowController {
         let htmlFile = post.path.deletingLastPathComponent().appendingPathComponent("index.html")
         guard FileManager.default.fileExists(atPath: htmlFile.path) else { return }
 
-        // Show the preview column
+        // Show the preview column and split editor/preview equally
         if let item = previewItem {
             item.animator().isCollapsed = false
+
+            // Give editor and preview equal width
+            let editorItem = splitView.splitViewItems[1]
+            let available = editorItem.viewController.view.frame.width + item.viewController.view.frame.width
+            let half = available / 2
+            editorItem.viewController.view.setFrameSize(NSSize(width: half, height: editorItem.viewController.view.frame.height))
+            item.viewController.view.setFrameSize(NSSize(width: half, height: item.viewController.view.frame.height))
+            splitView.splitView.adjustSubviews()
         }
 
         // Load the built HTML
