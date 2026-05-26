@@ -602,7 +602,7 @@ class MainWindowController: NSWindowController {
     ---
     title: "[Article headline]"
     date: [YYYY-MM-DD]
-    author: "Jun He"
+    author: "AI Generation"
     tags: ["Norwegian", ...]
     ---
 
