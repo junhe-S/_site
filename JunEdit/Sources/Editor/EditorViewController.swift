@@ -133,6 +133,12 @@ class EditorViewController: NSViewController, NSTextViewDelegate {
         textView.isEditable = false
     }
 
+    func clearPost() {
+        currentPost = nil
+        isDirty = false
+        showPlaceholder()
+    }
+
     func loadPost(_ post: BlogPost) {
         if isDirty { save() }
         currentPost = post

@@ -60,6 +60,10 @@ class SidebarViewController: NSViewController {
         tableView.intercellSpacing = NSSize(width: 0, height: 0)
         tableView.backgroundColor = .clear
 
+        let rightClick = NSClickGestureRecognizer(target: self, action: #selector(handleRightClick(_:)))
+        rightClick.buttonMask = 0x2 // right click
+        tableView.addGestureRecognizer(rightClick)
+
         scrollView.documentView = tableView
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
@@ -127,6 +131,48 @@ class SidebarViewController: NSViewController {
         let row = tableView.selectedRow
         guard row >= 0, row < filteredPosts.count else { return }
         onPostSelected?(filteredPosts[row])
+    }
+
+    var onPostDeleted: ((BlogPost) -> Void)?
+
+    @objc private func handleRightClick(_ sender: NSClickGestureRecognizer) {
+        let point = sender.location(in: tableView)
+        let row = tableView.row(at: point)
+        guard row >= 0, row < filteredPosts.count else { return }
+
+        tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
+
+        let menu = NSMenu()
+        let deleteItem = NSMenuItem(title: "Delete", action: #selector(deleteSelectedPost), keyEquivalent: "")
+        deleteItem.target = self
+        menu.addItem(deleteItem)
+        menu.popUp(positioning: nil, at: point, in: tableView)
+    }
+
+    @objc private func deleteSelectedPost() {
+        let row = tableView.selectedRow
+        guard row >= 0, row < filteredPosts.count else { return }
+        let post = filteredPosts[row]
+
+        // Confirm deletion
+        let alert = NSAlert()
+        alert.messageText = "Delete Post"
+        alert.informativeText = "Delete \"\(post.title)\"? This will remove the post folder and deploy the change."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Delete")
+        alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+
+        // Delete the post directory
+        let postDir = post.path.deletingLastPathComponent()
+        do {
+            try FileManager.default.removeItem(at: postDir)
+            refreshPosts()
+            onPostDeleted?(post)
+        } catch {
+            let a = NSAlert(error: error)
+            a.runModal()
+        }
     }
 }
 

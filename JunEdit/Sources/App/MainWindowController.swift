@@ -33,6 +33,15 @@ class MainWindowController: NSWindowController {
             editor?.loadPost(post)
         }
 
+        sidebar.onPostDeleted = { [weak editor] (post: BlogPost) in
+            // Clear editor if deleted post was open
+            if editor?.currentPost?.slug == post.slug {
+                editor?.clearPost()
+            }
+            // Deploy deletion to website
+            BuildRunner.shared.deploy()
+        }
+
         // Sidebar with native vibrancy
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebar)
         sidebarItem.minimumThickness = 200
@@ -142,24 +151,15 @@ class MainWindowController: NSWindowController {
     // MARK: - Actions
 
     @objc private func newPost() {
-        let alert = NSAlert()
-        alert.messageText = "New Post"
-        alert.informativeText = "Enter a slug for the new post:"
-        alert.addButton(withTitle: "Create")
-        alert.addButton(withTitle: "Cancel")
-
-        let input = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
-        input.placeholderString = "my-new-post"
-        alert.accessoryView = input
-
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        let slug = input.stringValue.trimmingCharacters(in: .whitespaces)
-        guard !slug.isEmpty else { return }
-
         guard let blogDir = BlogSettings.shared.blogDirectory else {
             setBlogDirectory()
             return
         }
+
+        // Generate slug from current date/time
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd-HHmmss"
+        let slug = "new-post-\(df.string(from: Date()))"
 
         let postDir = blogDir.appendingPathComponent("posts/\(slug)")
         let assetsDir = postDir.appendingPathComponent("assets")
@@ -170,7 +170,7 @@ class MainWindowController: NSWindowController {
             let today = ISO8601DateFormatter.string(from: Date(), timeZone: .current, formatOptions: [.withFullDate, .withDashSeparatorInDate])
             let template = """
             ---
-            title: "\(slug.replacingOccurrences(of: "-", with: " ").capitalized)"
+            title: "New Post"
             date: \(today)
             author: "Jun He"
             tags: []
@@ -214,8 +214,35 @@ class MainWindowController: NSWindowController {
     }
 
     @objc private func togglePreview() {
-        guard let item = previewItem else { return }
-        item.animator().isCollapsed.toggle()
+        guard splitView.splitViewItems.count > 2 else { return }
+        let editorItem = splitView.splitViewItems[1]
+        let previewItemLocal = splitView.splitViewItems[2]
+
+        if previewItemLocal.isCollapsed {
+            // Show preview alongside editor
+            editorItem.animator().isCollapsed = false
+            previewItemLocal.animator().isCollapsed = false
+        } else {
+            // Hide preview, ensure editor is visible
+            previewItemLocal.animator().isCollapsed = true
+            editorItem.animator().isCollapsed = false
+        }
+    }
+
+    @objc private func togglePreviewOnly() {
+        guard splitView.splitViewItems.count > 2 else { return }
+        let editorItem = splitView.splitViewItems[1]
+        let previewItemLocal = splitView.splitViewItems[2]
+
+        if editorItem.isCollapsed {
+            // Already in preview-only mode — restore editor, hide preview
+            editorItem.animator().isCollapsed = false
+            previewItemLocal.animator().isCollapsed = true
+        } else {
+            // Enter preview-only mode: hide editor, show preview
+            editorItem.animator().isCollapsed = true
+            previewItemLocal.animator().isCollapsed = false
+        }
     }
 
     @objc private func buildCurrentPost() {
@@ -290,9 +317,7 @@ extension MainWindowController: NSToolbarDelegate {
         case .splitToggle:
             return makeItem(itemIdentifier, imageName: "icon_editor_split", label: "Split", tip: "Toggle Preview (⌘\\)", action: #selector(togglePreview))
         case .previewToggle:
-            return makeItem(itemIdentifier, imageName: "icon_preview", label: "Preview", tip: "Deploy Site (⌘D)", action: #selector(deploySite))
-        case .presentationToggle:
-            return makeItem(itemIdentifier, imageName: "icon_presentation", label: "New", tip: "New Post (⌘N)", action: #selector(newPost))
+            return makeItem(itemIdentifier, imageName: "icon_preview", label: "Preview", tip: "Preview Only (⌘D)", action: #selector(togglePreviewOnly))
         default:
             return nil
         }
@@ -305,11 +330,10 @@ extension MainWindowController: NSToolbarDelegate {
             .formatToggle,
             .splitToggle,
             .previewToggle,
-            .presentationToggle,
         ]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.sidebarToggle, .formatToggle, .splitToggle, .previewToggle, .presentationToggle, .flexibleSpace]
+        [.sidebarToggle, .formatToggle, .splitToggle, .previewToggle, .flexibleSpace]
     }
 }
