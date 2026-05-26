@@ -50,6 +50,8 @@ data = [
 
 columns = ["Area", "Total Funds", "Allocation", "Alternative", "Commodities", "Convertibles", "Equity", "Fixed Income", "Miscellaneous", "Money Market", "Property"]
 df = pd.DataFrame(data, columns=columns)
+for col in df.select_dtypes(include='number').columns:
+    df[col] = df[col].apply(lambda x: f'{x:,}')
 print(df.to_html(index=False))
 ```
 

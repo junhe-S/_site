@@ -1,0 +1,175 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root { color-scheme: light dark; }
+/* Mdmdt Dark (default) */
+body {
+    font-family: "PingFang SC", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    max-width: 720px; margin: 0 auto; padding: 24px 28px;
+    line-height: 1.6; font-size: 16px;
+    color: #d0d0d0; background: #1b1b1f;
+}
+/* Mdmdt Light */
+@media (prefers-color-scheme: light) {
+    body { color: #000; background: #fafafc; }
+    code { background: rgba(62,105,215,0.15); color: #2f479f; }
+    pre { background: #ececee; border-color: #d2d2d2; }
+    pre code { color: #2f479f; }
+    blockquote { background: rgba(62,105,215,0.06); border-color: #3e69d7; color: #666; }
+    .callout { background: rgba(62,105,215,0.06); border-color: #3e69d7; }
+    .callout-warning { background: rgba(245,145,2,0.06); border-color: #f59102; }
+    .callout-tip { background: rgba(3,183,54,0.06); border-color: #03b736; }
+    .callout-important { background: rgba(130,80,223,0.06); border-color: #8250df; }
+    .tag { background: rgba(62,105,215,0.15); color: #3e69d7; }
+    hr { border-color: #d2d2d2; }
+    table th { background: #ececee; }
+    table td, table th { border-color: #d2d2d2; }
+}
+h1 { font-size: 32px; margin-top: 0; margin-bottom: 8px; letter-spacing: 2px; line-height: 1.5; }
+h2 { font-size: 28px; margin-top: 28px; letter-spacing: 2px; line-height: 1.5; }
+h3 { font-size: 24px; margin-top: 20px; letter-spacing: 2px; line-height: 1.5; }
+h4 { font-size: 20px; margin-top: 16px; }
+p { margin: 0.8em 0; }
+.meta { color: #666; font-size: 14px; margin-bottom: 0.5rem; }
+.tags { margin-bottom: 1.5rem; }
+.tag {
+    display: inline-block; font-size: 12px; padding: 2px 10px;
+    border-radius: 4px; background: rgba(62,105,215,0.15); color: #bbc7fd;
+    margin-right: 6px;
+}
+code {
+    font-family: "JetBrains Mono", "Source Code Pro", "Fira Code", Consolas, monospace;
+    font-size: 0.85em; background: rgba(62,105,215,0.15); color: #bbc7fd;
+    padding: 3px 5px; border-radius: 4px;
+}
+pre {
+    background: rgb(40,42,50); padding: 16px; border-radius: 8px;
+    overflow-x: auto; border: 1px solid #3a3a3e;
+}
+pre code { background: none; padding: 0; font-size: 14px; line-height: 1.6; color: #bbc7fd; }
+a { color: #3e69d7; text-decoration: none; font-weight: 500; }
+a:hover { color: #f59102; text-decoration: underline; }
+blockquote {
+    border-left: 4px solid #3e69d7; margin-left: 0; padding: 12px 16px;
+    background: rgba(62,105,215,0.06); border-radius: 8px;
+    color: #999; font-style: italic;
+}
+.img { margin: 1.5rem 0; }
+.img img { max-width: 100%; border-radius: 8px; }
+hr { border: none; border-top: 1px solid #3a3a3e; margin: 2rem 0; }
+ul { padding-left: 1.5em; }
+li { margin: 0.4em 0; }
+.callout {
+    border-left: 4px solid #3e69d7; background: rgba(62,105,215,0.06);
+    padding: 12px 16px; border-radius: 8px; margin: 1rem 0;
+}
+.callout-warning { border-color: #f59102; background: rgba(245,145,2,0.06); }
+.callout-tip { border-color: #03b736; background: rgba(3,183,54,0.06); }
+.callout-important { border-color: #8250df; background: rgba(130,80,223,0.06); }
+.callout-caution { border-color: #e30f2e; background: rgba(227,15,46,0.06); }
+.callout strong { display: block; margin-bottom: 4px; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 14px; }
+th, td { border: 1px solid #3a3a3e; padding: 8px 12px; text-align: left; }
+th { font-weight: 600; background: rgb(40,42,50); }
+del { color: #666; }</style>
+<script>(function() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+    }
+})();</script>
+</head><body><article id="article">
+<h1>Mutual Fund</h1>
+<div class="meta">2025-08-10</div>
+<div class="tags"><span class="tag">Mutual Fund</span> <span class="tag">Morningstar</span></div>
+<div class="callout"><strong>Note</strong>In this post, I explore the distribution of mutual funds and their holdings based on Morningstar's datasets.</div>
+
+<p>The analysis of mutual funds helps understand the behavior of active investors in capital markets, which is playing a key role in market efficiency and asset pricing. Before digging into model analysis, it is important to first have a big picture of their data distribution.</p>
+
+<h2>I. MorningStar1</h2>
+
+<p>Morningstar has comprehensive and granular mutual funds holding information, including stocks, bonds, loans, derivatives, cash and other funds. This database can be accessed via Morningstar Direct using <a href="https://www.cbs.dk/files/cbs.dk/morningstar_direct_quick_start_guide.pdf">Excel</a> or <a href="https://pypi.org/project/morningstar-data/">Python</a>. However, it has daily download limits, which requires users to subscribe extra service. It is possible to download the whole databases within 20 years without extra subscription :)</p>
+
+<p>Also, it is worth noticing that some open source tools, like <a href="https://github.com/Mael-J/mstarpy">mstarpy</a>, can help fetch data from Morningstar website for free, which includes stocks' price, funds' performance and so on.</p>
+
+<h2>II. Preview</h2>
+
+<p>According to information provided by Morningstar Direct, there have been historically <code>331,112</code> mutual funds (after dropping observations with duplicated securityID) from global <code>78</code> areas so far, and they are managed by around <code>26,086</code> teams of managers.</p>
+
+<p>The table below shows the distribution of funds by area. It can be observed that <code>(LUX)</code>(Luxembourg) is the area with the highest number of registered open-funds.</p>
+
+<pre><code class="language-python">import pandas as pd
+
+data = [
+    ["LUX", 82008, 9077, 2524, 352, 553, 28341, 19774, 471, 840, 276],
+    ["KOR", 29764, 6782, 178, 121, 49, 12067, 3183, 6946, 410, 0],
+    ["IRL", 27465, 1869, 1111, 64, 64, 9889, 6314, 145, 926, 9],
+    ["USA", 23055, 4847, 370, 94, 74, 11253, 6183, 209, 1, 0],
+    ["BRA", 21037, 2075, 4114, 0, 0, 3512, 4431, 5011, 406, 0],
+    ["CHN", 20884, 9466, 23, 67, 90, 4366, 5908, 0, 944, 0],
+    ["CAN", 18728, 5989, 691, 48, 0, 8793, 2714, 162, 303, 0],
+    ["GBR", 13339, 4423, 123, 0, 8, 6136, 1846, 39, 101, 254],
+    ["IND", 11986, 1627, 293, 143, 0, 4570, 4014, 0, 1336, 0],
+    ["FRA", 10978, 3005, 195, 19, 159, 3989, 2452, 363, 429, 95],
+    ["JPN", 5687, 1148, 86, 40, 38, 2826, 1411, 65, 38, 0],
+    ["ZAF", 5361, 2555, 1, 1, 0, 1637, 894, 18, 235, 0],
+    ["MEX", 4827, 873, 0, 0, 0, 1065, 2169, 468, 228, 0],
+    ["CHE", 4453, 893, 61, 161, 21, 1916, 1001, 10, 139, 7],
+    ["TWN", 4128, 1248, 0, 1, 0, 1045, 1421, 4, 49, 0],
+    ["AUS", 4045, 635, 142, 5, 0, 2100, 746, 186, 73, 155],
+    ["THA", 3850, 430, 0, 63, 0, 1997, 1047, 219, 89, 0],
+    ["ESP", 3713, 1560, 90, 0, 2, 904, 914, 185, 46, 6],
+    ["DEU", 3332, 1324, 166, 25, 29, 1134, 488, 65, 15, 65],
+    ["CHL", 3129, 549, 21, 0, 0, 869, 948, 465, 277, 0],
+]
+
+columns = ["Area", "Total Funds", "Allocation", "Alternative", "Commodities", "Convertibles", "Equity", "Fixed Income", "Miscellaneous", "Money Market", "Property"]
+df = pd.DataFrame(data, columns=columns)
+print(df.to_html(index=False))
+</code></pre>
+
+<p>Also, I find that the number of new funds has been steadily increasing from 1980 to 2024, which means that investor interest and market participation have been expanding over this period.</p>
+
+<div class="img"><img src="assets/chart.png" alt="Historical trends in new fund creation (1980-2024)"></div>
+
+<p>Next, I am also interested in <code>CurrenyHolding</code> (fund currency holdings) and distribution of funds in different capital markets (e.g. <code>FundFromArea</code> and <code>FundNumber</code>). The <code>FundSize</code> field in the database is reported in its original currency and I have converted them to USD for comparison purpose.</p>
+
+<pre><code class="language-python">import pandas as pd
+
+data = [
+    ["US Dollar", 52, "65,941", "192,716,721,513,643"],
+    ["Euro", 46, "74,081", "67,259,384,772,869"],
+    ["British Pound", 24, "26,048", "31,801,104,595,294"],
+    ["Canadian Dollar", 12, "18,149", "14,767,637,062,704"],
+    ["Swiss Franc", 19, "10,751", "11,654,570,492,995"],
+    ["Chinese Yuan Renminbi", 9, "20,807", "8,409,569,779,617"],
+    ["Indian Rupee", 1, "11,924", "6,630,231,484,599"],
+    ["Singapore Dollar", 16, "3,209", "5,873,308,297,368"],
+    ["Australian Dollar", 16, "5,820", "4,699,116,009,029"],
+    ["Japanese Yen", 20, "7,417", "4,355,501,278,286"],
+    ["Swedish Krona", 12, "3,252", "3,634,777,043,566"],
+    ["Mexican Peso", 3, "4,761", "3,002,022,920,598"],
+    ["Hong Kong Dollar", 9, "1,957", "2,860,164,917,677"],
+    ["Norwegian Krone", 11, "2,549", "2,747,351,479,069"],
+    ["Brazilian Real", 3, "20,440", "2,076,605,805,563"],
+    ["South Korean Won", 1, "29,007", "1,888,774,538,513"],
+    ["South African Rand", 6, "5,774", "1,785,702,981,489"],
+    ["Offshore Chinese Yuan", 11, "1,560", "1,502,943,656,961"],
+    ["Danish Krone", 6, "1,285", "693,252,513,697"],
+    ["Polish Zloty", 5, "443", "617,500,875,444"],
+]
+
+columns = ["CurrencyHolding", "FundFromArea", "FundNumber", "FundSize"]
+df = pd.DataFrame(data, columns=columns)
+print(df.to_html(index=False))
+</code></pre>
+
+<p>The <code>United States</code>, <code>European Union</code>, and <code>Britain</code> are the leading global capital markets, dominating in both mutual fund number and magnitude of assets under management due to their mature financial systems and investor bases. In contrast, <code>South Korea</code> attracts no foreign mutual funds, likely due to regulatory or market barriers, while <code>Japan</code> remains more open. Among developing markets, <code>China</code> draws the most foreign investment, whereas <code>India</code>, despite its market size, sees no foreign mutual fund participation.</p>
+
+<div class="callout"><strong>Note</strong>To clarify, Table I indicates that there are <code>29,764</code> funds registered in <code>South Korea</code>. Table II further reveals that <code>29,007</code> of these funds primarily hold assets in <code>Korean Won</code>, while the rest are denominated in other currencies.</div>
+
+<h2>III. Analysis</h2>
+
+<p>Morningstar provides granular holdings data for <code>300,170</code> mutual funds, covering <code>164</code> asset types such as equities, bonds, loans, derivatives, property, and crypto. However, some funds lack holdings data, and the dataset suffers from missing values and inconsistent naming. Linking assets to issuers is challenging due to <code>limited mapping tables</code> and <code>unreliable name matching</code>. In other words, It is time-consuming to clean the data and match them with Crsp and Compustat. (I will elaborate process of cleaning data in the future.)</p>
+
+</article></body></html>

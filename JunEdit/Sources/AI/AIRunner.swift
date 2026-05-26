@@ -20,8 +20,8 @@ class AIRunner {
         let claudePath = BlogSettings.shared.claudePath
 
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: claudePath)
-        process.arguments = ["--print", "--output-format", "text"]
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.arguments = [claudePath, "--print", "--output-format", "text"]
 
         // Build the full prompt with context
         var fullPrompt = ""
@@ -36,7 +36,15 @@ class AIRunner {
 
         let outputPipe = Pipe()
         process.standardOutput = outputPipe
-        process.standardError = Pipe()
+
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
+
+        // Inherit proper environment so claude can find its config/auth
+        let claudeBinDir = (claudePath as NSString).deletingLastPathComponent
+        var env = ProcessInfo.processInfo.environment
+        env["PATH"] = claudeBinDir + ":/opt/homebrew/bin:/usr/local/bin:" + (env["PATH"] ?? "/usr/bin:/bin")
+        process.environment = env
 
         // Stream stdout
         outputPipe.fileHandleForReading.readabilityHandler = { handle in
@@ -47,6 +55,9 @@ class AIRunner {
 
         process.terminationHandler = { proc in
             outputPipe.fileHandleForReading.readabilityHandler = nil
+            let errData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+            let errStr = String(data: errData, encoding: .utf8) ?? ""
+            NSLog("JunEdit AI: exit=%d stderr=%@", proc.terminationStatus, String(errStr.prefix(500)) as NSString)
             DispatchQueue.main.async {
                 if proc.terminationStatus == 0 {
                     onComplete(nil)
@@ -57,6 +68,7 @@ class AIRunner {
         }
 
         do {
+            NSLog("JunEdit AI: launching %@ with args %@", claudePath, process.arguments?.joined(separator: " ") ?? "")
             try process.run()
             currentProcess = process
 
@@ -65,6 +77,7 @@ class AIRunner {
             inputPipe.fileHandleForWriting.write(promptData)
             inputPipe.fileHandleForWriting.closeFile()
         } catch {
+            NSLog("JunEdit AI: launch error: %@", error.localizedDescription)
             onComplete(error)
         }
     }

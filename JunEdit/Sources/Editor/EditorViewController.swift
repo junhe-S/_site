@@ -216,6 +216,26 @@ class EditorViewController: NSViewController, NSTextViewDelegate {
         return textView.convert(rect, to: view)
     }
 
+    /// Returns the screen point just below the current selection (for positioning floating panels)
+    func selectionScreenPoint() -> NSPoint {
+        let range = textView.selectedRange()
+        guard let layoutManager = textView.layoutManager,
+              let textContainer = textView.textContainer else {
+            return view.window?.frame.origin ?? .zero
+        }
+
+        let glyphRange = layoutManager.glyphRange(forCharacterRange: range, actualCharacterRange: nil)
+        var selRect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
+        let inset = textView.textContainerInset
+        selRect.origin.x += inset.width
+        selRect.origin.y += inset.height
+
+        // Convert bottom-left of selection to screen coordinates
+        let pointInView = NSPoint(x: selRect.minX, y: selRect.maxY + 4)
+        let pointInWindow = textView.convert(pointInView, to: nil)
+        return textView.window?.convertPoint(toScreen: pointInWindow) ?? pointInWindow
+    }
+
     func clearPost() {
         currentPost = nil
         isDirty = false

@@ -4,8 +4,6 @@ class MainWindowController: NSWindowController {
     private let splitView = NSSplitViewController()
     private var previewItem: NSSplitViewItem?
     private var chatItem: NSSplitViewItem?
-    private var activePopover: AIPromptPopover?
-
     // Shared background — matches editor Mdmdt theme
     private var contentBgColor: NSColor {
         NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
@@ -297,7 +295,7 @@ class MainWindowController: NSWindowController {
         buildMenuItem.submenu = buildMenu
         mainMenu.addItem(buildMenuItem)
 
-        // AI menu
+        // AI menu (shortcuts shown in menu, actual handling via local event monitor)
         let aiMenu = NSMenu(title: "AI")
         let inlineItem = NSMenuItem(title: "AI Rewrite Selection", action: #selector(aiInlineReplace), keyEquivalent: "r")
         inlineItem.keyEquivalentModifierMask = [.command, .shift]
@@ -310,12 +308,50 @@ class MainWindowController: NSWindowController {
         chatToggleItem.keyEquivalentModifierMask = [.command, .shift]
         aiMenu.addItem(chatToggleItem)
         aiMenu.addItem(.separator())
-        aiMenu.addItem(NSMenuItem(title: "Cancel AI", action: #selector(cancelAI), keyEquivalent: "."))
+        let cancelItem = NSMenuItem(title: "Cancel AI", action: #selector(cancelAI), keyEquivalent: ".")
+        cancelItem.keyEquivalentModifierMask = [.command, .shift]
+        aiMenu.addItem(cancelItem)
         let aiMenuItem = NSMenuItem()
         aiMenuItem.submenu = aiMenu
         mainMenu.addItem(aiMenuItem)
 
         NSApp.mainMenu = mainMenu
+
+        // Local event monitor — catches shortcuts regardless of responder chain
+        installAIShortcutMonitor()
+    }
+
+    private var shortcutMonitor: Any?
+
+    private func installAIShortcutMonitor() {
+        shortcutMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self = self else { return event }
+            let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            // Must have Cmd+Shift, and only Cmd+Shift (ignore if other modifiers present)
+            guard flags.contains(.command), flags.contains(.shift) else { return event }
+
+            let key = event.charactersIgnoringModifiers?.lowercased() ?? ""
+            NSLog("JunEdit: shortcut monitor key=%@ flags=%lu", key, flags.rawValue)
+
+            switch key {
+            case "r":
+                NSLog("JunEdit: Cmd+Shift+R → aiInlineReplace")
+                self.aiInlineReplace()
+                return nil  // consumed
+            case "a":
+                NSLog("JunEdit: Cmd+Shift+A → aiAppendBelow")
+                self.aiAppendBelow()
+                return nil
+            case "l":
+                self.toggleAIChat()
+                return nil
+            case ".":
+                self.cancelAI()
+                return nil
+            default:
+                return event
+            }
+        }
     }
 
     // MARK: - Accessors
@@ -324,6 +360,10 @@ class MainWindowController: NSWindowController {
         splitView.splitViewItems.count > 1
             ? splitView.splitViewItems[1].viewController as? EditorViewController
             : nil
+    }
+
+    @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        return true
     }
 
     private var sidebarVC: SidebarViewController? {
@@ -472,7 +512,9 @@ class MainWindowController: NSWindowController {
 
     // MARK: - AI Actions
 
-    @objc private func aiInlineReplace() {
+    private var currentInlineBar: AIInlineBar?
+
+    @objc func aiInlineReplace() {
         guard let editor = editorVC else { return }
         let selected = editor.selectedText()
         guard let selected = selected, !selected.isEmpty else {
@@ -480,66 +522,92 @@ class MainWindowController: NSWindowController {
             return
         }
 
-        let popover = AIPromptPopover(placeholder: "How should AI rewrite this?") { [weak self, weak editor] prompt in
-            guard let self = self, let editor = editor else { return }
-            self.updateStatusBar(status: "AI thinking...")
-
-            var result = ""
-            AIRunner.shared.run(prompt: prompt, context: selected, onOutput: { chunk in
-                result += chunk
-            }, onComplete: { [weak self] error in
-                self?.activePopover?.close()
-                self?.activePopover = nil
-                if error == nil {
-                    editor.replaceSelection(with: result)
-                    self?.updateStatusBar(status: "AI done")
-                } else {
-                    self?.updateStatusBar(status: "AI error")
-                }
-            })
-        }
-        activePopover = popover
-        let rect = editor.cursorRect()
-        popover.show(relativeTo: rect, of: editor.editorView, preferredEdge: .maxY)
+        NSLog("JunEdit AI: aiInlineReplace triggered, selected=%d chars", selected.count)
+        showInlineBar(mode: .rewrite, editor: editor, context: selected)
     }
 
-    @objc private func aiAppendBelow() {
+    @objc func aiAppendBelow() {
         guard let editor = editorVC else { return }
+        NSLog("JunEdit AI: aiAppendBelow triggered")
+        showInlineBar(mode: .append, editor: editor, context: editor.documentText())
+    }
 
-        let popover = AIPromptPopover(placeholder: "What should AI write?") { [weak self, weak editor] prompt in
-            guard let self = self, let editor = editor else { return }
+    private enum AIMode { case rewrite, append }
+
+    private func showInlineBar(mode: AIMode, editor: EditorViewController, context: String) {
+        dismissInlineBar()
+        let bar = AIInlineBar()
+        currentInlineBar = bar
+
+        bar.onSubmit = { [weak self, weak editor, weak bar] prompt in
+            guard let self = self, let editor = editor, let bar = bar else { return }
             self.updateStatusBar(status: "AI thinking...")
 
-            let context = editor.documentText()
+            let systemPrefix: String
+            switch mode {
+            case .rewrite:
+                systemPrefix = "Rewrite the following text according to the user's instruction. Output ONLY the rewritten text, no explanations, no commentary, no preamble."
+            case .append:
+                systemPrefix = "Write content to append below the cursor based on the user's instruction. Output ONLY the content to insert, no explanations, no commentary, no preamble."
+            }
+            let fullPrompt = "\(systemPrefix)\n\nInstruction: \(prompt)"
             var result = ""
-            AIRunner.shared.run(prompt: prompt, context: context, onOutput: { chunk in
+            AIRunner.shared.run(prompt: fullPrompt, context: context, onOutput: { chunk in
                 result += chunk
-            }, onComplete: { [weak self] error in
-                self?.activePopover?.close()
-                self?.activePopover = nil
+            }, onComplete: { [weak self, weak bar] error in
                 if error == nil {
-                    editor.appendBelowCursor(result)
-                    self?.updateStatusBar(status: "AI done")
+                    bar?.showResult(result.trimmingCharacters(in: .whitespacesAndNewlines))
+                    self?.updateStatusBar(status: "Accept or Reject")
                 } else {
+                    self?.dismissInlineBar()
                     self?.updateStatusBar(status: "AI error")
                 }
             })
         }
-        activePopover = popover
-        let rect = editor.cursorRect()
-        popover.show(relativeTo: rect, of: editor.editorView, preferredEdge: .maxY)
+
+        bar.onAccept = { [weak self, weak editor] text in
+            switch mode {
+            case .rewrite: editor?.replaceSelection(with: text)
+            case .append:  editor?.appendBelowCursor(text)
+            }
+            self?.dismissInlineBar()
+            self?.updateStatusBar(status: "AI accepted")
+        }
+
+        bar.onReject = { [weak self] in
+            self?.dismissInlineBar()
+            self?.updateStatusBar(status: "AI rejected")
+        }
+
+        bar.showBelow(screenPoint: editor.selectionScreenPoint(), parentWindow: window)
     }
 
-    @objc private func toggleAIChat() {
+    @objc func toggleAIChat() {
         guard let item = chatItem else { return }
         item.animator().isCollapsed.toggle()
     }
 
-    @objc private func cancelAI() {
+    @objc func cancelAI() {
         AIRunner.shared.cancel()
-        activePopover?.close()
-        activePopover = nil
+        dismissInlineBar()
         updateStatusBar(status: "AI cancelled")
+    }
+
+    private func dismissInlineBar() {
+        if let bar = currentInlineBar {
+            bar.dismiss()
+            currentInlineBar = nil
+        }
+        // Restore focus to main window so editor keeps working
+        DispatchQueue.main.async { [weak self] in
+            self?.window?.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    deinit {
+        if let monitor = shortcutMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
     }
 }
 
