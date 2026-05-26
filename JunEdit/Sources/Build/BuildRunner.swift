@@ -5,8 +5,8 @@ class BuildRunner {
 
     private var buildProcess: Process?
 
-    func buildPost(slug: String) {
-        runBuildCommand(["--post", slug], successMessage: "Built '\(slug)' successfully.")
+    func buildPost(slug: String, completion: ((Bool) -> Void)? = nil) {
+        runBuildCommand(["--post", slug], successMessage: "Built '\(slug)' successfully.", completion: completion)
     }
 
     func buildAll() {

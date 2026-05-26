@@ -2,6 +2,7 @@ import Cocoa
 
 class MainWindowController: NSWindowController {
     private let splitView = NSSplitViewController()
+    private var previewItem: NSSplitViewItem?
 
     convenience init() {
         let window = NSWindow(
@@ -24,7 +25,7 @@ class MainWindowController: NSWindowController {
     }
 
     private func setupSplitView() {
-        // Two columns: sidebar | editor
+        // Three columns: sidebar | editor | preview (preview hidden by default)
         let sidebar = SidebarViewController()
         let editor = EditorViewController()
 
@@ -42,8 +43,17 @@ class MainWindowController: NSWindowController {
         let editorItem = NSSplitViewItem(viewController: editor)
         editorItem.minimumThickness = 400
 
+        // Preview (third column, starts collapsed)
+        let previewVC = PreviewViewController()
+        let pItem = NSSplitViewItem(viewController: previewVC)
+        pItem.minimumThickness = 300
+        pItem.canCollapse = true
+        pItem.isCollapsed = true
+        previewItem = pItem
+
         splitView.addSplitViewItem(sidebarItem)
         splitView.addSplitViewItem(editorItem)
+        splitView.addSplitViewItem(pItem)
         splitView.splitView.dividerStyle = .thin
 
         window?.contentViewController = splitView
@@ -204,13 +214,34 @@ class MainWindowController: NSWindowController {
     }
 
     @objc private func togglePreview() {
-        editorVC?.togglePreview()
+        guard let item = previewItem else { return }
+        item.animator().isCollapsed.toggle()
     }
 
     @objc private func buildCurrentPost() {
         guard let slug = editorVC?.currentPost?.slug else { return }
         editorVC?.save()
-        BuildRunner.shared.buildPost(slug: slug)
+        BuildRunner.shared.buildPost(slug: slug) { [weak self] success in
+            if success {
+                self?.showBuildPreview()
+            }
+        }
+    }
+
+    private func showBuildPreview() {
+        guard let post = editorVC?.currentPost else { return }
+        let htmlFile = post.path.deletingLastPathComponent().appendingPathComponent("index.html")
+        guard FileManager.default.fileExists(atPath: htmlFile.path) else { return }
+
+        // Show the preview column
+        if let item = previewItem {
+            item.animator().isCollapsed = false
+        }
+
+        // Load the built HTML
+        if let previewVC = previewItem?.viewController as? PreviewViewController {
+            previewVC.loadHTMLFile(htmlFile)
+        }
     }
 
     @objc private func buildAllPosts() {

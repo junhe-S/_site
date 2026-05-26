@@ -236,6 +236,7 @@ class EditorViewController: NSViewController, NSTextViewDelegate {
         previewView.loadHTMLString(html, baseURL: baseURL)
     }
 
+
     private func buildPreviewHTML(_ raw: String) -> String {
         var body = raw
         var title = ""
