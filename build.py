@@ -374,14 +374,14 @@ def process_word_annotations(html):
         r'<em>([^<]+)</em>'                   # group 3: translation
         r'\s*·\s*'                            # separator
         r'('                                  # group 4: etymology
-          r'(?:(?!<strong>|</p>).)*?'         #   prefix text (lang abbrev etc.)
-          r'<em>[^<]+</em>'                   #   italic foreign word
-          r'(?:\s*\([^)]*\))?'               #   optional parenthetical
+          r'(?:(?!<span|</p>).)*?'           #   prefix text (lang abbrev etc.)
+          r'(?:<em>[^<]+</em>|<strong>[^<]+</strong>)' #   italic/bold foreign word
+          r'(?:\s*(?:\([^)]*\)|"[^"]*"|&#822[01];[^&#]*&#822[01];))?' # optional (paren) or "quoted"
           r'(?:'                              #   additional segments:
             r'\s*[+/,;·]\s*'                  #     connector
-            r'(?:(?!<strong>|</p>).)*?'       #     prefix text
-            r'<em>[^<]+</em>'                 #     italic foreign word
-            r'(?:\s*\([^)]*\))?'             #     optional parenthetical
+            r'(?:(?!<span|</p>).)*?'         #     prefix text
+            r'(?:<em>[^<]+</em>|<strong>[^<]+</strong>)' #   italic/bold foreign word
+            r'(?:\s*(?:\([^)]*\)|"[^"]*"|&#822[01];[^&#]*&#822[01];))?' # optional (paren) or "quoted"
           r')*'                               #   zero or more
         r')'                                  # end group 4
     )
