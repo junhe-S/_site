@@ -322,8 +322,241 @@ table.dataTable thead td {
   background-color: transparent;
 }
 
+/* ── Word annotations (Norwegian vocabulary tooltips) ── */
+
+.anno-word {
+  color: #a78bfa;
+  font-weight: 600;
+  cursor: help;
+  border-bottom: 1.5px dotted rgba(167, 139, 250, 0.4);
+  position: relative;
+  transition: color 0.15s ease;
+}
+
+.anno-word:hover {
+  color: #c4b5fd;
+}
+
+.anno-word::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  background: #1e1b2e;
+  color: #e2e0ea;
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  white-space: normal;
+  width: max-content;
+  max-width: 380px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 100;
+}
+
+.anno-word:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* Arrow */
+.anno-word::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1e1b2e;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 101;
+}
+
+.anno-word:hover::before {
+  opacity: 1;
+}
+
+/* Light mode */
+[data-theme="light"] .anno-word {
+  color: #7c3aed;
+  border-bottom-color: rgba(124, 58, 237, 0.3);
+}
+
+[data-theme="light"] .anno-word:hover {
+  color: #6d28d9;
+}
+
+[data-theme="light"] .anno-word::after {
+  background: #faf8ff;
+  color: #1e1b2e;
+  border-color: rgba(124, 58, 237, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .anno-word::before {
+  border-top-color: #faf8ff;
+}
+
 @media (max-width: 1300px) {
   .article-toc {
+    display: none;
+  }
+}
+
+/* ── Annotate blocks: text + left/right margin cards with connector lines ── */
+
+.annotate-block {
+  position: relative;
+  margin: 2.5rem 0;
+}
+
+.annotate-text {
+  max-width: 100%;
+}
+
+.annotate-text p {
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+/* Highlighted word in text */
+.anno-hl {
+  background: transparent;
+  color: inherit;
+  border: 1.5px solid var(--hl-color, #7C6AEF);
+  border-radius: 3px;
+  padding: 1px 3px;
+  cursor: default;
+}
+
+/* Cards columns — positioned in left and right margins */
+.annotate-cards {
+  position: absolute;
+  top: 0;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.annotate-left {
+  right: calc(100% + 2.5rem);
+}
+
+.annotate-right {
+  left: calc(100% + 2.5rem);
+}
+
+.anno-card {
+  background: var(--card-bg);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* Left cards: accent border on right side; right cards: on left side */
+.annotate-left .anno-card {
+  border-right: 3px solid var(--card-accent);
+  border-left: none;
+}
+
+.annotate-right .anno-card {
+  border-left: 3px solid var(--card-accent);
+  border-right: none;
+}
+
+.anno-card strong {
+  display: block;
+  color: var(--card-accent);
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.anno-card-trans {
+  display: block;
+  color: var(--text-copy, #d0d0d0);
+  font-size: 13px;
+}
+
+.anno-card-etym {
+  display: block;
+  color: var(--text-nav, #888);
+  font-size: 11.5px;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* Hover interaction: highlight paired word/card */
+.anno-hl.anno-active {
+  background: var(--hl-color, #7C6AEF);
+  color: #fff;
+  border-color: transparent;
+}
+
+.anno-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.anno-card.anno-active {
+  transform: scale(1.03);
+  box-shadow: 0 0 12px rgba(124, 106, 239, 0.35);
+  outline: 1.5px solid var(--card-accent);
+}
+
+/* SVG connector lines overlay */
+.anno-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Light mode */
+[data-theme="light"] .anno-card {
+  background: var(--card-bg-light);
+}
+
+[data-theme="light"] .anno-hl {
+  background: transparent;
+}
+
+/* On narrow screens, stack cards below text */
+@media (max-width: 1300px) {
+  .annotate-cards {
+    position: static;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+  .annotate-left {
+    margin-bottom: 0.8rem;
+  }
+  .annotate-left .anno-card {
+    border-right: none;
+    border-left: 3px solid var(--card-accent);
+    text-align: left;
+  }
+  .anno-card {
+    flex: 1 1 200px;
+    max-width: 280px;
+  }
+  .anno-lines {
     display: none;
   }
 }
