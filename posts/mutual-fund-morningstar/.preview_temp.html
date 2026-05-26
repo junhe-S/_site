@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script>
+(function() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+    }
+})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mutual Fund – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../../article.css">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="../../" class="nav-name">Jun He</a>
+    <a href="../../posts">Post</a>
+    <a href="../../research">Research</a>
+    <a href="../../data">Data</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout">
+  <div class="article-main">
+    <div class="article-header">
+      <h1>Mutual Fund</h1>
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>August 10, 2025</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        <span class="tag">Mutual Fund</span>
+        
+        <span class="tag">Morningstar</span>
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>In this post, I explore the distribution of mutual funds and their holdings based on Morningstar's datasets.</p></div>
+<p>The analysis of mutual funds helps understand the behavior of active investors in capital markets, which is playing a key role in market efficiency and asset pricing. Before digging into model analysis, it is important to first have a big picture of their data distribution.</p>
+<h2 id="i-morningstar">I. MorningStar</h2>
+<p>Morningstar has comprehensive and granular mutual funds holding information, including stocks, bonds, loans, derivatives, cash and other funds. This database can be accessed via Morningstar Direct using <a href="https://www.cbs.dk/files/cbs.dk/morningstar_direct_quick_start_guide.pdf">Excel</a> or <a href="https://pypi.org/project/morningstar-data/">Python</a>. However, it has daily download limits, which requires users to subscribe extra service. It is possible to download the whole databases within 20 years without extra subscription :)</p>
+<p>Also, it is worth noticing that some open source tools, like <a href="https://github.com/Mael-J/mstarpy">mstarpy</a>, can help fetch data from Morningstar website for free, which includes stocks' price, funds' performance and so on.</p>
+<h2 id="ii-preview">II. Preview</h2>
+<p>According to information provided by Morningstar Direct, there have been historically <code>331,112</code> mutual funds (after dropping observations with duplicated securityID) from global <code>78</code> areas so far, and they are managed by around <code>26,086</code> teams of managers.</p>
+<p>The table below shows the distribution of funds by area. It can be observed that <code>(LUX)</code>(Luxembourg) is the area with the highest number of registered open-funds.</p>
+<div class="table-container"><table border="1" class="dataframe" id="table1">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Area</th>
+      <th>Total Funds</th>
+      <th>Allocation</th>
+      <th>Alternative</th>
+      <th>Commodities</th>
+      <th>Convertibles</th>
+      <th>Equity</th>
+      <th>Fixed Income</th>
+      <th>Miscellaneous</th>
+      <th>Money Market</th>
+      <th>Property</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>LUX</td>
+      <td>82008</td>
+      <td>9077</td>
+      <td>2524</td>
+      <td>352</td>
+      <td>553</td>
+      <td>28341</td>
+      <td>19774</td>
+      <td>471</td>
+      <td>840</td>
+      <td>276</td>
+    </tr>
+    <tr>
+      <td>KOR</td>
+      <td>29764</td>
+      <td>6782</td>
+      <td>178</td>
+      <td>121</td>
+      <td>49</td>
+      <td>12067</td>
+      <td>3183</td>
+      <td>6946</td>
+      <td>410</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>IRL</td>
+      <td>27465</td>
+      <td>1869</td>
+      <td>1111</td>
+      <td>64</td>
+      <td>64</td>
+      <td>9889</td>
+      <td>6314</td>
+      <td>145</td>
+      <td>926</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <td>USA</td>
+      <td>23055</td>
+      <td>4847</td>
+      <td>370</td>
+      <td>94</td>
+      <td>74</td>
+      <td>11253</td>
+      <td>6183</td>
+      <td>209</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>BRA</td>
+      <td>21037</td>
+      <td>2075</td>
+      <td>4114</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3512</td>
+      <td>4431</td>
+      <td>5011</td>
+      <td>406</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>CHN</td>
+      <td>20884</td>
+      <td>9466</td>
+      <td>23</td>
+      <td>67</td>
+      <td>90</td>
+      <td>4366</td>
+      <td>5908</td>
+      <td>0</td>
+      <td>944</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>CAN</td>
+      <td>18728</td>
+      <td>5989</td>
+      <td>691</td>
+      <td>48</td>
+      <td>0</td>
+      <td>8793</td>
+      <td>2714</td>
+      <td>162</td>
+      <td>303</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>GBR</td>
+      <td>13339</td>
+      <td>4423</td>
+      <td>123</td>
+      <td>0</td>
+      <td>8</td>
+      <td>6136</td>
+      <td>1846</td>
+      <td>39</td>
+      <td>101</td>
+      <td>254</td>
+    </tr>
+    <tr>
+      <td>IND</td>
+      <td>11986</td>
+      <td>1627</td>
+      <td>293</td>
+      <td>143</td>
+      <td>0</td>
+      <td>4570</td>
+      <td>4014</td>
+      <td>0</td>
+      <td>1336</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>FRA</td>
+      <td>10978</td>
+      <td>3005</td>
+      <td>195</td>
+      <td>19</td>
+      <td>159</td>
+      <td>3989</td>
+      <td>2452</td>
+      <td>363</td>
+      <td>429</td>
+      <td>95</td>
+    </tr>
+    <tr>
+      <td>JPN</td>
+      <td>5687</td>
+      <td>1148</td>
+      <td>86</td>
+      <td>40</td>
+      <td>38</td>
+      <td>2826</td>
+      <td>1411</td>
+      <td>65</td>
+      <td>38</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ZAF</td>
+      <td>5361</td>
+      <td>2555</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1637</td>
+      <td>894</td>
+      <td>18</td>
+      <td>235</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>MEX</td>
+      <td>4827</td>
+      <td>873</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1065</td>
+      <td>2169</td>
+      <td>468</td>
+      <td>228</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>CHE</td>
+      <td>4453</td>
+      <td>893</td>
+      <td>61</td>
+      <td>161</td>
+      <td>21</td>
+      <td>1916</td>
+      <td>1001</td>
+      <td>10</td>
+      <td>139</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td>TWN</td>
+      <td>4128</td>
+      <td>1248</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1045</td>
+      <td>1421</td>
+      <td>4</td>
+      <td>49</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>AUS</td>
+      <td>4045</td>
+      <td>635</td>
+      <td>142</td>
+      <td>5</td>
+      <td>0</td>
+      <td>2100</td>
+      <td>746</td>
+      <td>186</td>
+      <td>73</td>
+      <td>155</td>
+    </tr>
+    <tr>
+      <td>THA</td>
+      <td>3850</td>
+      <td>430</td>
+      <td>0</td>
+      <td>63</td>
+      <td>0</td>
+      <td>1997</td>
+      <td>1047</td>
+      <td>219</td>
+      <td>89</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ESP</td>
+      <td>3713</td>
+      <td>1560</td>
+      <td>90</td>
+      <td>0</td>
+      <td>2</td>
+      <td>904</td>
+      <td>914</td>
+      <td>185</td>
+      <td>46</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>DEU</td>
+      <td>3332</td>
+      <td>1324</td>
+      <td>166</td>
+      <td>25</td>
+      <td>29</td>
+      <td>1134</td>
+      <td>488</td>
+      <td>65</td>
+      <td>15</td>
+      <td>65</td>
+    </tr>
+    <tr>
+      <td>CHL</td>
+      <td>3129</td>
+      <td>549</td>
+      <td>21</td>
+      <td>0</td>
+      <td>0</td>
+      <td>869</td>
+      <td>948</td>
+      <td>465</td>
+      <td>277</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>Also, I find that the number of new funds has been steadily increasing from 1980 to 2024, which means that investor interest and market participation have been expanding over this period.</p>
+<div class="article-image"><img alt="Historical trends in new fund creation (1980-2024)" src="assets/chart.png" /></div>
+<p>Next, I am also interested in <code>CurrenyHolding</code> (fund currency holdings) and distribution of funds in different capital markets (e.g. <code>FundFromArea</code> and <code>FundNumber</code>). The <code>FundSize</code> field in the database is reported in its original currency and I have converted them to USD for comparison purpose.</p>
+<div class="table-container"><table border="1" class="dataframe" id="table2">
+  <thead>
+    <tr style="text-align: right;">
+      <th>CurrencyHolding</th>
+      <th>FundFromArea</th>
+      <th>FundNumber</th>
+      <th>FundSize</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>US Dollar</td>
+      <td>52</td>
+      <td>65,941</td>
+      <td>192,716,721,513,643</td>
+    </tr>
+    <tr>
+      <td>Euro</td>
+      <td>46</td>
+      <td>74,081</td>
+      <td>67,259,384,772,869</td>
+    </tr>
+    <tr>
+      <td>British Pound</td>
+      <td>24</td>
+      <td>26,048</td>
+      <td>31,801,104,595,294</td>
+    </tr>
+    <tr>
+      <td>Canadian Dollar</td>
+      <td>12</td>
+      <td>18,149</td>
+      <td>14,767,637,062,704</td>
+    </tr>
+    <tr>
+      <td>Swiss Franc</td>
+      <td>19</td>
+      <td>10,751</td>
+      <td>11,654,570,492,995</td>
+    </tr>
+    <tr>
+      <td>Chinese Yuan Renminbi</td>
+      <td>9</td>
+      <td>20,807</td>
+      <td>8,409,569,779,617</td>
+    </tr>
+    <tr>
+      <td>Indian Rupee</td>
+      <td>1</td>
+      <td>11,924</td>
+      <td>6,630,231,484,599</td>
+    </tr>
+    <tr>
+      <td>Singapore Dollar</td>
+      <td>16</td>
+      <td>3,209</td>
+      <td>5,873,308,297,368</td>
+    </tr>
+    <tr>
+      <td>Australian Dollar</td>
+      <td>16</td>
+      <td>5,820</td>
+      <td>4,699,116,009,029</td>
+    </tr>
+    <tr>
+      <td>Japanese Yen</td>
+      <td>20</td>
+      <td>7,417</td>
+      <td>4,355,501,278,286</td>
+    </tr>
+    <tr>
+      <td>Swedish Krona</td>
+      <td>12</td>
+      <td>3,252</td>
+      <td>3,634,777,043,566</td>
+    </tr>
+    <tr>
+      <td>Mexican Peso</td>
+      <td>3</td>
+      <td>4,761</td>
+      <td>3,002,022,920,598</td>
+    </tr>
+    <tr>
+      <td>Hong Kong Dollar</td>
+      <td>9</td>
+      <td>1,957</td>
+      <td>2,860,164,917,677</td>
+    </tr>
+    <tr>
+      <td>Norwegian Krone</td>
+      <td>11</td>
+      <td>2,549</td>
+      <td>2,747,351,479,069</td>
+    </tr>
+    <tr>
+      <td>Brazilian Real</td>
+      <td>3</td>
+      <td>20,440</td>
+      <td>2,076,605,805,563</td>
+    </tr>
+    <tr>
+      <td>South Korean Won</td>
+      <td>1</td>
+      <td>29,007</td>
+      <td>1,888,774,538,513</td>
+    </tr>
+    <tr>
+      <td>South African Rand</td>
+      <td>6</td>
+      <td>5,774</td>
+      <td>1,785,702,981,489</td>
+    </tr>
+    <tr>
+      <td>Offshore Chinese Yuan</td>
+      <td>11</td>
+      <td>1,560</td>
+      <td>1,502,943,656,961</td>
+    </tr>
+    <tr>
+      <td>Danish Krone</td>
+      <td>6</td>
+      <td>1,285</td>
+      <td>693,252,513,697</td>
+    </tr>
+    <tr>
+      <td>Polish Zloty</td>
+      <td>5</td>
+      <td>443</td>
+      <td>617,500,875,444</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>The <code>United States</code>, <code>European Union</code>, and <code>Britain</code> are the leading global capital markets, dominating in both mutual fund number and magnitude of assets under management due to their mature financial systems and investor bases. In contrast, <code>South Korea</code> attracts no foreign mutual funds, likely due to regulatory or market barriers, while <code>Japan</code> remains more open. Among developing markets, <code>China</code> draws the most foreign investment, whereas <code>India</code>, despite its market size, sees no foreign mutual fund participation.</p>
+<div class="callout"><div class="callout-title">Note</div><p>To clarify, Table I indicates that there are <code>29,764</code> funds registered in <code>South Korea</code>. Table II further reveals that <code>29,007</code> of these funds primarily hold assets in <code>Korean Won</code>, while the rest are denominated in other currencies.</p></div>
+<h2 id="iii-analysis">III. Analysis</h2>
+<p>Morningstar provides granular holdings data for <code>300,170</code> mutual funds, covering <code>164</code> asset types such as equities, bonds, loans, derivatives, property, and crypto. However, some funds lack holdings data, and the dataset suffers from missing values and inconsistent naming. Linking assets to issuers is challenging due to <code>limited mapping tables</code> and <code>unreliable name matching</code>. In other words, It is time-consuming to clean the data and match them with Crsp and Compustat. (I will elaborate process of cleaning data in the future.)</p>
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#i-morningstar">I. MorningStar</a></li>
+        <li><a href="#ii-preview">II. Preview</a></li>
+        <li><a href="#iii-analysis">III. Analysis</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+<script>
+$(document).ready(function() {
+  
+  $('#table1').DataTable({ pageLength: 10, scrollX: true, order: [] });
+  
+  $('#table2').DataTable({ pageLength: 10, scrollX: true, order: [] });
+  
+});
+</script>
+
+
+<script src="../../theme.js"></script>
+</body>
+</html>
