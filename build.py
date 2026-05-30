@@ -507,9 +507,32 @@ def render_post(md_path, no_exec=False):
     # Execute code blocks
     body, table_count = execute_code_blocks(body, post_dir, no_exec=no_exec)
 
+    # Protect LaTeX math from Markdown (so _, *, \ inside formulas survive). We
+    # detect $$…$$, \[…\], \(…\), and math-looking $…$ (must contain \ ^ _ { },
+    # and not be a $-amount), then restore after conversion. Inline $…$ is rewritten
+    # to \(…\) so MathJax never treats a price like "$100" as math.
+    _math = []
+
+    def _stash(m):
+        _math.append(m.group(0))
+        return f"\x01MATH{len(_math) - 1}\x01"
+
+    body = re.sub(r"\$\$.+?\$\$", _stash, body, flags=re.DOTALL)
+    body = re.sub(r"\\\[.+?\\\]", _stash, body, flags=re.DOTALL)
+    body = re.sub(r"\\\(.+?\\\)", _stash, body, flags=re.DOTALL)
+    body = re.sub(r"(?<![\\$\d])\$(?!\s)([^$\n]*?[\\^_{}][^$\n]*?)\$(?!\d)", _stash, body)
+
     # Convert markdown to HTML
     md = markdown.Markdown(extensions=["fenced_code", "tables", "attr_list"])
     content_html = md.convert(body)
+
+    # Restore math (inline single-$ → \(…\); display/other delimiters unchanged).
+    for _i, _m in enumerate(_math):
+        if _m.startswith("$$") or _m.startswith("\\[") or _m.startswith("\\("):
+            _restored = _m
+        else:  # inline $…$
+            _restored = "\\(" + _m[1:-1] + "\\)"
+        content_html = content_html.replace(f"\x01MATH{_i}\x01", _restored)
 
     # Process inline word annotations: **word**`form` · *translation* · etymology
     content_html = process_word_annotations(content_html)
@@ -546,6 +569,7 @@ def render_post(md_path, no_exec=False):
         has_tables=has_tables,
         table_ids=table_ids,
         has_annotate=has_annotate,
+        section=md_path.parent.parent.name,
     )
 
     # Write output
@@ -636,6 +660,7 @@ def build_all(no_exec=False, single_post=None):
             all_meta.append({
                 "slug": md_path.parent.name,
                 "title": meta.get("title", md_path.parent.name),
+                "venue": meta.get("venue", ""),
                 "date": date,
                 "date_short": date.strftime("%b %Y"),
                 "section": section,
@@ -698,19 +723,58 @@ def watch_mode(no_exec=False):
 
 
 # ---------------------------------------------------------------------------
+# Serve Mode
+# ---------------------------------------------------------------------------
+
+def serve_mode(port=8080, no_exec=False, watch=False):
+    """Build the site, then serve it over HTTP for browser preview.
+
+    With --watch, also rebuilds on Markdown changes while serving.
+    """
+    import functools
+    import threading
+    from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+
+    print("Building site...")
+    build_all(no_exec=no_exec)
+
+    handler = functools.partial(SimpleHTTPRequestHandler, directory=str(ROOT))
+    httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
+
+    if watch:
+        # Run the file watcher in a background thread so serving stays responsive.
+        threading.Thread(target=watch_mode, kwargs={"no_exec": no_exec}, daemon=True).start()
+
+    print(f"\nServing blog at http://localhost:{port}/")
+    print(f"  Home:     http://localhost:{port}/")
+    print(f"  Posts:    http://localhost:{port}/posts/")
+    print(f"  Research: http://localhost:{port}/research/")
+    print("Press Ctrl+C to stop.\n")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nStopped.")
+        httpd.shutdown()
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description="Build blog posts from Markdown")
     parser.add_argument("--watch", action="store_true", help="Watch for changes")
+    parser.add_argument("--serve", action="store_true", help="Build then serve over HTTP")
+    parser.add_argument("--port", type=int, default=8080, help="Port for --serve (default 8080)")
     parser.add_argument("--post", type=str, help="Build a single post by slug")
     parser.add_argument(
         "--no-exec", action="store_true", help="Skip code block execution"
     )
     args = parser.parse_args()
 
-    if args.watch:
+    if args.serve:
+        serve_mode(port=args.port, no_exec=args.no_exec, watch=args.watch)
+    elif args.watch:
         watch_mode(no_exec=args.no_exec)
     else:
         print("Building posts...")
