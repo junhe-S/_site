@@ -614,8 +614,12 @@ def generate_toc(html):
 # Render Post
 # ---------------------------------------------------------------------------
 
-def render_post(md_path, no_exec=False):
-    """Convert a markdown post to HTML."""
+def render_post(md_path, no_exec=False, data_chapters=None):
+    """Convert a markdown post to HTML.
+
+    data_chapters: ordered list of {slug, title, url} for the Data section, used
+    to render the left chapter sidebar and prev/next links on data pages only.
+    """
     post_dir = str(md_path.parent)
     slug = md_path.parent.name
 
@@ -713,6 +717,23 @@ def render_post(md_path, no_exec=False):
     # Detect annotate blocks
     has_annotate = "annotate-block" in content_html
 
+    # Data pages get a left chapter sidebar + prev/next links; other sections
+    # pass None so the guarded template blocks stay hidden.
+    data_nav = None
+    prev_chapter = None
+    next_chapter = None
+    if md_path.parent.parent.name == "data" and data_chapters:
+        data_nav = [
+            {"title": c["title"], "url": c["url"], "current": c["slug"] == slug}
+            for c in data_chapters
+        ]
+        idx = next((i for i, c in enumerate(data_chapters) if c["slug"] == slug), None)
+        if idx is not None:
+            if idx > 0:
+                prev_chapter = data_chapters[idx - 1]
+            if idx < len(data_chapters) - 1:
+                next_chapter = data_chapters[idx + 1]
+
     # Render template
     template = env.get_template("post.html")
     html = template.render(
@@ -731,6 +752,9 @@ def render_post(md_path, no_exec=False):
         paper_authors_list=author_links(meta.get("paper_authors", "")),
         paper_journal=vinfo["journal"] if vinfo["journal"] != "Other" else "",
         paper_year=vinfo["art_year"],
+        data_nav=data_nav,
+        prev=prev_chapter,
+        next=next_chapter,
     )
 
     # Write output
@@ -883,11 +907,23 @@ def build_all(no_exec=False, single_post=None):
             print(f"Page '{single_post}' not found")
             return
 
+    # Ordered Data chapters drive the left sidebar + prev/next on data pages.
+    data_chapters = []
+    for dpath in discover_posts(section="data"):
+        dmeta, _ = parse_frontmatter(dpath.read_text(encoding="utf-8"))
+        data_chapters.append({
+            "slug": dpath.parent.name,
+            "title": dmeta.get("title", dpath.parent.name),
+            "order": dmeta.get("order", 0),
+            "url": f"/data/{dpath.parent.name}/",
+        })
+    data_chapters.sort(key=lambda c: c["order"])
+
     for md_path in md_files:
         section = md_path.parent.parent.name  # e.g. "posts", "bergen"
         print(f"  Building: {section}/{md_path.parent.name}")
         try:
-            meta = render_post(md_path, no_exec=no_exec)
+            meta = render_post(md_path, no_exec=no_exec, data_chapters=data_chapters)
             meta["section"] = section
         except Exception as e:
             print(f"  ERROR: {e}")
