@@ -28,8 +28,8 @@
     size-adjust: 104.86%;
   }
 </style>
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/article.css">
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=10">
 {% if has_tables %}
 <link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -43,6 +43,7 @@
     <a href="/" class="nav-name">Jun He</a>
     <a href="/posts">Post</a>
     <a href="/research">Research</a>
+    <a href="/note">Note</a>
     <a href="/data">Data</a>
     <a href="/bergen">Bergen</a>
   </nav>
@@ -50,9 +51,30 @@
 </header>
 
 <article class="article-layout" data-section="{{ section }}">
+  {% if data_nav %}
+  <aside class="data-sidebar">
+    <nav>
+      <h4>WRDS Pseudo Data</h4>
+      <ul>
+        {% for item in data_nav %}
+        <li{% if item.current %} class="current"{% endif %}><a href="{{ item.url }}">{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </aside>
+  {% endif %}
   <div class="article-main">
     <div class="article-header">
       <h1>{{ title }}</h1>
+      {% if data_nav %}
+      <div class="code-toggle-wrap"><button class="code-toggle" onclick="toggleCodeLang()">R | Python</button></div>
+      {% endif %}
+      {% if paper_authors or title_en %}
+      <div class="paper-source">
+        <div class="paper-source-title">{% if paper_year and paper_journal %}<span class="paper-source-tag">[{{ paper_year }} {{ paper_journal }}]</span> {% endif %}{{ title_en or title }}</div>
+        {% if paper_authors_list %}<div class="paper-source-authors">{% for a in paper_authors_list %}<a href="{{ a.url }}">{{ a.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</div>{% elif paper_authors %}<div class="paper-source-authors">{{ paper_authors }}</div>{% endif %}
+      </div>
+      {% endif %}
       <div class="article-meta">
         <span>{{ author }}</span>
         <span>{{ date_display }}</span>
@@ -60,13 +82,25 @@
       {% if tags %}
       <div class="article-tags">
         {% for tag in tags %}
+        {% set parts = tag.split('|') %}
+        {% if parts|length == 2 %}
+        <span class="tag"><span class="lang zh">{{ parts[0] }}</span><span class="lang en">{{ parts[1] }}</span></span>
+        {% else %}
         <span class="tag">{{ tag }}</span>
+        {% endif %}
         {% endfor %}
       </div>
       {% endif %}
     </div>
 
     {{ content }}
+
+    {% if prev or next %}
+    <nav class="chapter-nav">
+      <span class="chapter-prev">{% if prev %}<a href="{{ prev.url }}">← {{ prev.title }}</a>{% endif %}</span>
+      <span class="chapter-next">{% if next %}<a href="{{ next.url }}">{{ next.title }} →</a>{% endif %}</span>
+    </nav>
+    {% endif %}
   </div>
 
   {% if toc %}
@@ -92,15 +126,23 @@ $(document).ready(function() {
 {% endif %}
 
 <script src="/theme.js"></script>
+{% if data_nav %}<script src="/code-toggle.js"></script>{% endif %}
 {% if has_annotate %}
 <script src="/annotate.js"></script>
 {% endif %}
 <script>
   window.MathJax = {
-    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
     options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
   };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
 </body>
 </html>
