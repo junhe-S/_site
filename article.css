@@ -26,6 +26,43 @@
   margin-bottom: 2rem;
 }
 
+/* Source-paper card (research posts): the reviewed paper's title / authors / venue.
+   Distinct from the .article-meta byline, which credits Jun He as the reviewer. */
+.paper-source {
+  border: 1px solid var(--border, #333);
+  border-left: 3px solid var(--text-nav, #888);
+  border-radius: 6px;
+  padding: 0.7rem 0.9rem;
+  margin: 0.9rem 0 0.4rem;
+  background: rgba(127, 127, 127, 0.06);
+}
+.paper-source-title {
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--text-copy, #ddd);
+}
+.paper-source-tag {
+  font-style: normal;
+  color: var(--text-nav, #9ca3af);
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.15rem;
+}
+.paper-source-authors {
+  margin-top: 0.3rem;
+  color: var(--text-heading, #fff);
+  font-size: 0.95rem;
+}
+.paper-source-venue {
+  margin-top: 0.15rem;
+  color: var(--text-nav, #888);
+  font-size: 13px;
+}
+[data-theme="light"] .paper-source {
+  border-color: #e5e5e5;
+  border-left-color: #999;
+  background: #fafafa;
+}
+
 .article-main {
   min-width: 0;
 }
@@ -149,11 +186,239 @@
 /* Research posts embed white-background PDF crops (tables/figures). In dark mode
    (default) invert them so they sit on the dark page; hue-rotate keeps colored
    chart lines roughly true. Scoped to research so photos (e.g. Bergen) are safe. */
-[data-section="research"] .article-image img {
+[data-section="research"] .article-image img,
+[data-section="note"] .article-image img {
   filter: invert(0.9) hue-rotate(180deg);
 }
-[data-theme="light"] [data-section="research"] .article-image img {
+[data-theme="light"] [data-section="research"] .article-image img,
+[data-theme="light"] [data-section="note"] .article-image img {
   filter: none;
+}
+
+/* Table crops are small; don't stretch them to full column width. Show them
+   compact (~70%) and centered. Scoped to tables via alt text so charts/figures
+   and the timeline keep their full size. */
+.article-image img[alt^="Table"],
+.article-image img[alt^="表"] {
+  width: 95%;
+  max-width: 95%;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Figure/table caption — the italic line right after an embedded image — centered. */
+.article-main .article-image + p {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-nav);
+  margin-top: 0.45rem;
+}
+
+/* Q&A answers: a separate, indented paragraph under each bold question.
+   (Note callouts render as .callout, not <blockquote>, so they're unaffected.) */
+.article-main blockquote {
+  margin: 0.35rem 0 1rem 1.7rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--text-nav);
+}
+/* Nested list items (research 经济故事 / 可行性) sit deeper AND use a distinct
+   dash marker, so they read differently from the disc-bulleted research questions. */
+.article-main li > ul {
+  list-style: none;
+  padding-left: 1.3rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+.article-main li > ul > li {
+  position: relative;
+  padding-left: 1.1rem;
+}
+.article-main li > ul > li::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  color: var(--text-nav);
+}
+.article-main li > ol {
+  padding-left: 2rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+/* Literature-timeline figure: full-bleed and CENTERED on the viewport, so it
+   renders large and symmetric (both sides). Centering trick works regardless of
+   the column width. The right TOC is hidden on research posts (below) so nothing
+   overlaps the rightmost ("this paper") node. */
+.article-main figure.timeline-figure {
+  width: 100vw;
+  max-width: 1500px;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+.article-main figure.timeline-figure img {
+  width: 100%;
+  height: auto;
+}
+/* A full-width timeline needs the whole row; drop the fixed TOC on research posts
+   so the timeline's right edge (the focal paper) is never hidden behind it. */
+[data-section="research"] .article-toc {
+  display: none;
+}
+.article-main figure.timeline-figure figcaption {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-nav);
+}
+
+/* ── Bilingual prose toggle (EN / 中文). Headings & formulas stay shared. ── */
+/* Default: show Chinese, hide English. Toggling sets data-lang="en" on <html>.
+   Use `revert` (not `block`) so inline spans (tags, card labels) stay inline and
+   block divs (prose) stay block in both languages. */
+.lang.en { display: none; }
+[data-lang="en"] .lang.zh { display: none; }
+[data-lang="en"] .lang.en { display: revert; }
+
+/* Title with the toggle parked at its right end (with a gap). */
+h1.has-lang-toggle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.lang-toggle {
+  background: none;
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  color: var(--text-nav, #888);
+  font-size: 12px;
+  font-weight: 400;
+  padding: 2px 9px;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  white-space: nowrap;
+  align-self: baseline;
+}
+.lang-toggle:hover { color: var(--text-copy, #ddd); }
+
+/* ── References: let long citations extend past the right margin (left aligned). ── */
+.refs-wide {
+  overflow-x: auto;
+}
+.refs-wide li {
+  white-space: nowrap;
+}
+@media (min-width: 940px) {
+  .refs-wide {
+    margin-right: calc(2rem - (100vw - 900px) / 2);
+  }
+}
+
+/* ── Collapsible proof block (hide / unhide) ── */
+details.proof {
+  margin: 1rem 0 1.5rem;
+  border-left: 3px solid #b3392f;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 6px 6px 0;
+  padding: 0.1rem 1rem;
+}
+details.proof > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-nav, #999);
+  padding: 0.55rem 0;
+  list-style: none;
+  user-select: none;
+}
+details.proof > summary::-webkit-details-marker { display: none; }
+details.proof > summary::before { content: "▸  "; font-style: normal; }
+details.proof[open] > summary::before { content: "▾  "; }
+details.proof[open] > summary { color: var(--text-copy, #ccc); }
+[data-theme="light"] details.proof { background: #f6f6f6; }
+
+/* ── Disclaimer footer ── */
+.post-disclaimer-rule {
+  margin-top: 2.5rem;
+  border: none;
+  border-top: 1px solid var(--border, #2a2a2a);
+}
+.post-disclaimer {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-nav, #888);
+  margin-top: 1rem;
+}
+
+/* ── Annotated model equation: cards in the right margin, arrows to formula parts ── */
+.mathanno-block {
+  position: relative;
+  margin: 2rem 0;
+}
+.mathanno-eq {
+  overflow-x: auto;
+}
+.mathanno-cards {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 2.5rem);
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.mathanno-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid #b3392f;
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  font-size: 11.5px;        /* a bit small, as requested */
+  line-height: 1.45;
+  color: var(--text-copy, #cfcfcf);
+}
+.mathanno-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: #b3392f;
+  color: #fff;
+  font-size: 10px;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+.mathanno-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+[data-theme="light"] .mathanno-card {
+  background: #f3f4f6;
+  color: #333;
+}
+/* Narrow screens: stack the cards below the equation, hide the arrows. */
+@media (max-width: 1300px) {
+  .mathanno-cards {
+    position: static;
+    left: auto;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+  .mathanno-card { flex: 1 1 200px; max-width: 280px; }
+  .mathanno-lines { display: none; }
 }
 
 /* Research crops are dense scans — show them smaller and centered, not full-bleed. */
@@ -580,6 +845,104 @@ table.dataTable thead td {
     max-width: 280px;
   }
   .anno-lines {
+    display: none;
+  }
+}
+
+
+/* ── Data section: tidy-finance-style three-column reading layout ───────────
+   Left chapter sidebar (fixed, mirrors .article-toc on the right), centered
+   content, existing right "On this page" TOC. Scoped to [data-section="data"]
+   so Notes/Research/Posts are untouched. */
+[data-section="data"] .data-sidebar {
+  position: fixed;
+  top: 8rem;
+  left: calc(50% - (900px / 2) - 4rem - 200px);
+  width: 200px;
+}
+[data-section="data"] .data-sidebar h4 {
+  color: var(--text-heading);
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+[data-section="data"] .data-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+[data-section="data"] .data-sidebar li {
+  padding-left: 0;
+  margin-bottom: 0.5rem;
+}
+[data-section="data"] .data-sidebar li::before {
+  display: none;
+}
+[data-section="data"] .data-sidebar a {
+  color: var(--text-nav);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.15s ease;
+}
+[data-section="data"] .data-sidebar a:hover {
+  color: var(--text-nav-hover);
+}
+[data-section="data"] .data-sidebar li.current a {
+  color: var(--text-heading);
+  font-weight: 500;
+}
+
+/* R / Python toggle button (parked under the title). */
+.code-toggle-wrap {
+  margin: 0.25rem 0 1rem;
+}
+.code-toggle {
+  background: none;
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  color: var(--text-nav, #888);
+  font-size: 12px;
+  padding: 2px 9px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.code-toggle:hover {
+  color: var(--text-copy, #ddd);
+}
+
+/* Show R by default; the toggle flips to Python. */
+.code-py { display: none; }
+[data-codelang="py"] .code-r { display: none; }
+[data-codelang="py"] .code-py { display: block; }
+
+/* Prev/next chapter navigation. */
+.chapter-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border, #2a2a2a);
+  font-size: 14px;
+}
+.chapter-nav a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+.chapter-nav a:hover {
+  color: #60a5fa;
+}
+.chapter-next {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* Collapse the left sidebar on narrow screens (the right TOC already hides
+   at 1300px via the existing media query). */
+@media (max-width: 1300px) {
+  [data-section="data"] .data-sidebar {
     display: none;
   }
 }

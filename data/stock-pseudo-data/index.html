@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stock Pseudo Data – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=10">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="data">
+  
+  <aside class="data-sidebar">
+    <nav>
+      <h4>WRDS Pseudo Data</h4>
+      <ul>
+        
+        <li><a href="/data/wrds-pseudo-data-overview/">WRDS Pseudo Data — Overview & Setup</a></li>
+        
+        <li class="current"><a href="/data/stock-pseudo-data/">Stock Pseudo Data</a></li>
+        
+        <li><a href="/data/bond-pseudo-data/">Bond Pseudo Data</a></li>
+        
+      </ul>
+    </nav>
+  </aside>
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>Stock Pseudo Data</h1>
+      
+      <div class="code-toggle-wrap"><button class="code-toggle" onclick="toggleCodeLang()">R | Python</button></div>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+    </div>
+
+    <p>The core of the data is the cross-section of stocks. We generate 100 fictional stocks with unique <code>permno</code> and <code>gvkey</code> identifiers and associated <code>exchcd</code>, <code>exchange</code>, <code>industry</code>, and <code>siccd</code> values. The industry and exchange shares roughly match the real <code>crsp_monthly</code> distribution, but the identifiers are made up.</p>
+<h2 id="stock-identifiers">Stock identifiers</h2>
+<div class="code-r">
+<pre><code class="language-r">number_of_stocks &lt;- 100
+
+industries &lt;- tibble(
+  industry = c(
+    &quot;Agriculture&quot;, &quot;Construction&quot;, &quot;Finance&quot;, &quot;Manufacturing&quot;, &quot;Mining&quot;,
+    &quot;Public&quot;, &quot;Retail&quot;, &quot;Services&quot;, &quot;Transportation&quot;, &quot;Utilities&quot;, &quot;Wholesale&quot;
+  ),
+  prob = c(
+    0.00319, 0.0113, 0.185, 0.339, 0.0508,
+    0.0779, 0.0620, 0.169, 0.0493, 0.0180, 0.0357
+  )
+)
+
+exchanges &lt;- tibble(
+  exchange = c(&quot;AMEX&quot;, &quot;NASDAQ&quot;, &quot;NYSE&quot;),
+  prob = c(0.113, 0.671, 0.216)
+)
+
+stock_identifiers &lt;- 1:number_of_stocks |&gt;
+  map_df(function(x) {
+    tibble(
+      permno = x,
+      gvkey = as.character(x + 10000),
+      exchange = sample(exchanges$exchange, 1, prob = exchanges$prob),
+      industry = sample(industries$industry, 1, prob = industries$prob)
+    ) |&gt;
+      mutate(
+        exchcd = case_when(
+          exchange == &quot;NYSE&quot; ~ sample(c(1, 31), n()),
+          exchange == &quot;AMEX&quot; ~ sample(c(2, 32), n()),
+          exchange == &quot;NASDAQ&quot; ~ sample(c(3, 33), n())
+        ),
+        siccd = case_when(
+          industry == &quot;Agriculture&quot; ~ sample(1:999, n()),
+          industry == &quot;Mining&quot; ~ sample(1000:1499, n()),
+          industry == &quot;Construction&quot; ~ sample(1500:1799, n()),
+          industry == &quot;Manufacturing&quot; ~ sample(1800:3999, n()),
+          industry == &quot;Transportation&quot; ~ sample(4000:4899, n()),
+          industry == &quot;Utilities&quot; ~ sample(4900:4999, n()),
+          industry == &quot;Wholesale&quot; ~ sample(5000:5199, n()),
+          industry == &quot;Retail&quot; ~ sample(5200:5999, n()),
+          industry == &quot;Finance&quot; ~ sample(6000:6799, n()),
+          industry == &quot;Services&quot; ~ sample(7000:8999, n()),
+          industry == &quot;Public&quot; ~ sample(9000:9999, n())
+        )
+      )
+  })
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">number_of_stocks = 100
+
+industries = pd.DataFrame({
+    &quot;industry&quot;: [
+        &quot;Agriculture&quot;, &quot;Construction&quot;, &quot;Finance&quot;, &quot;Manufacturing&quot;, &quot;Mining&quot;,
+        &quot;Public&quot;, &quot;Retail&quot;, &quot;Services&quot;, &quot;Transportation&quot;, &quot;Utilities&quot;, &quot;Wholesale&quot;,
+    ],
+    &quot;prob&quot;: [
+        0.00319, 0.0113, 0.185, 0.339, 0.0508,
+        0.0779, 0.0620, 0.169, 0.0493, 0.0180, 0.0357,
+    ],
+})
+
+exchanges = pd.DataFrame({
+    &quot;exchange&quot;: [&quot;AMEX&quot;, &quot;NASDAQ&quot;, &quot;NYSE&quot;],
+    &quot;prob&quot;: [0.113, 0.671, 0.216],
+})
+
+exchcd_map = {&quot;NYSE&quot;: [1, 31], &quot;AMEX&quot;: [2, 32], &quot;NASDAQ&quot;: [3, 33]}
+sic_ranges = {
+    &quot;Agriculture&quot;: (1, 999), &quot;Mining&quot;: (1000, 1499), &quot;Construction&quot;: (1500, 1799),
+    &quot;Manufacturing&quot;: (1800, 3999), &quot;Transportation&quot;: (4000, 4899),
+    &quot;Utilities&quot;: (4900, 4999), &quot;Wholesale&quot;: (5000, 5199), &quot;Retail&quot;: (5200, 5999),
+    &quot;Finance&quot;: (6000, 6799), &quot;Services&quot;: (7000, 8999), &quot;Public&quot;: (9000, 9999),
+}
+
+rows = []
+for x in range(1, number_of_stocks + 1):
+    exchange = rng.choice(exchanges[&quot;exchange&quot;],
+                          p=exchanges[&quot;prob&quot;] / exchanges[&quot;prob&quot;].sum())
+    industry = rng.choice(industries[&quot;industry&quot;],
+                          p=industries[&quot;prob&quot;] / industries[&quot;prob&quot;].sum())
+    lo, hi = sic_ranges[industry]
+    rows.append({
+        &quot;permno&quot;: x,
+        &quot;gvkey&quot;: str(x + 10000),
+        &quot;exchange&quot;: exchange,
+        &quot;industry&quot;: industry,
+        &quot;exchcd&quot;: rng.choice(exchcd_map[exchange]),
+        &quot;siccd&quot;: rng.integers(lo, hi + 1),
+    })
+
+stock_identifiers = pd.DataFrame(rows)
+</code></pre>
+</div>
+<h2 id="the-three-panels">The three panels</h2>
+<p>We expand the cross-section into yearly, monthly, and daily panels.</p>
+<div class="code-r">
+<pre><code class="language-r">stock_panel_yearly &lt;- expand_grid(
+  stock_identifiers,
+  tibble(year = time_series_years)
+) |&gt;
+  select(gvkey, year)
+
+stock_panel_monthly &lt;- expand_grid(
+  stock_identifiers,
+  tibble(date = time_series_months)
+) |&gt;
+  select(permno, gvkey, date, siccd, industry, exchcd, exchange)
+
+stock_panel_daily &lt;- expand_grid(
+  stock_identifiers,
+  tibble(date = time_series_days)
+) |&gt;
+  select(permno, date)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">stock_panel_yearly = (
+    stock_identifiers.merge(pd.DataFrame({&quot;year&quot;: time_series_years}), how=&quot;cross&quot;)
+    [[&quot;gvkey&quot;, &quot;year&quot;]]
+)
+
+stock_panel_monthly = (
+    stock_identifiers.merge(pd.DataFrame({&quot;date&quot;: time_series_months}), how=&quot;cross&quot;)
+    [[&quot;permno&quot;, &quot;gvkey&quot;, &quot;date&quot;, &quot;siccd&quot;, &quot;industry&quot;, &quot;exchcd&quot;, &quot;exchange&quot;]]
+)
+
+stock_panel_daily = (
+    stock_identifiers.merge(pd.DataFrame({&quot;date&quot;: time_series_days}), how=&quot;cross&quot;)
+    [[&quot;permno&quot;, &quot;date&quot;]]
+)
+</code></pre>
+</div>
+<h2><code>beta</code> table</h2>
+<p>Monthly betas are drawn from a normal with mean and standard deviation 1; daily betas add a small noise term.</p>
+<div class="code-r">
+<pre><code class="language-r">beta_pseudo &lt;- stock_panel_monthly |&gt;
+  mutate(
+    beta_monthly = rnorm(n(), mean = 1, sd = 1),
+    beta_daily = beta_monthly + rnorm(n()) / 100
+  )
+
+write_parquet(beta_pseudo, &quot;data-r/beta.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">n = len(stock_panel_monthly)
+beta_pseudo = stock_panel_monthly.copy()
+beta_pseudo[&quot;beta_monthly&quot;] = rng.normal(1, 1, n)
+beta_pseudo[&quot;beta_daily&quot;] = beta_pseudo[&quot;beta_monthly&quot;] + rng.normal(0, 1, n) / 100
+
+beta_pseudo.to_parquet(&quot;data-python/beta.parquet&quot;)
+</code></pre>
+</div>
+<h2><code>compustat_annual</code> table</h2>
+<p>Every Compustat column is filled with uniform random numbers in [0, 1]. For simplicity, <code>datadate</code> is set to the last day of each year.</p>
+<div class="code-r">
+<pre><code class="language-r">relevant_columns &lt;- c(
+  &quot;seq&quot;, &quot;ceq&quot;, &quot;at&quot;, &quot;lt&quot;, &quot;txditc&quot;, &quot;txdb&quot;, &quot;itcb&quot;, &quot;pstkrv&quot;, &quot;pstkl&quot;,
+  &quot;pstk&quot;, &quot;capx&quot;, &quot;oancf&quot;, &quot;sale&quot;, &quot;cogs&quot;, &quot;xint&quot;, &quot;xsga&quot;, &quot;be&quot;, &quot;op&quot;,
+  &quot;at_lag&quot;, &quot;inv&quot;
+)
+
+commands &lt;- unlist(
+  map(relevant_columns, ~ rlang::exprs(!!..1 := runif(n())))
+)
+
+compustat_pseudo &lt;- stock_panel_yearly |&gt;
+  mutate(
+    datadate = ymd(str_c(year, &quot;12&quot;, &quot;31&quot;)),
+    !!!commands
+  )
+
+write_parquet(compustat_pseudo, &quot;data-r/compustat_annual.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">relevant_columns = [
+    &quot;seq&quot;, &quot;ceq&quot;, &quot;at&quot;, &quot;lt&quot;, &quot;txditc&quot;, &quot;txdb&quot;, &quot;itcb&quot;, &quot;pstkrv&quot;, &quot;pstkl&quot;,
+    &quot;pstk&quot;, &quot;capx&quot;, &quot;oancf&quot;, &quot;sale&quot;, &quot;cogs&quot;, &quot;xint&quot;, &quot;xsga&quot;, &quot;be&quot;, &quot;op&quot;,
+    &quot;at_lag&quot;, &quot;inv&quot;,
+]
+
+compustat_pseudo = stock_panel_yearly.copy()
+compustat_pseudo[&quot;datadate&quot;] = pd.to_datetime(
+    compustat_pseudo[&quot;year&quot;].astype(str) + &quot;-12-31&quot;
+)
+n = len(compustat_pseudo)
+for col in relevant_columns:
+    compustat_pseudo[col] = rng.uniform(0, 1, n)
+
+compustat_pseudo.to_parquet(&quot;data-python/compustat_annual.parquet&quot;)
+</code></pre>
+</div>
+<h2><code>crsp_monthly</code> table</h2>
+<p>Beyond the monthly panel, CRSP adds returns, excess returns, shares outstanding, the last price, and market cap (with a lagged copy).</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly_pseudo &lt;- stock_panel_monthly |&gt;
+  mutate(
+    ret = pmax(rnorm(n()), -1),
+    ret_excess = ret - runif(n(), 0, 0.0025),
+    shrout = runif(n(), 1, 50) * 1000,
+    altprc = runif(n(), 0, 1000),
+    mktcap = shrout * altprc
+  ) |&gt;
+  group_by(permno) |&gt;
+  arrange(date) |&gt;
+  mutate(mktcap_lag = lag(mktcap)) |&gt;
+  ungroup()
+
+write_parquet(crsp_monthly_pseudo, &quot;data-r/crsp_monthly.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">n = len(stock_panel_monthly)
+crsp_monthly_pseudo = stock_panel_monthly.copy()
+crsp_monthly_pseudo[&quot;ret&quot;] = np.maximum(rng.normal(0, 1, n), -1)
+crsp_monthly_pseudo[&quot;ret_excess&quot;] = (
+    crsp_monthly_pseudo[&quot;ret&quot;] - rng.uniform(0, 0.0025, n)
+)
+crsp_monthly_pseudo[&quot;shrout&quot;] = rng.uniform(1, 50, n) * 1000
+crsp_monthly_pseudo[&quot;altprc&quot;] = rng.uniform(0, 1000, n)
+crsp_monthly_pseudo[&quot;mktcap&quot;] = (
+    crsp_monthly_pseudo[&quot;shrout&quot;] * crsp_monthly_pseudo[&quot;altprc&quot;]
+)
+crsp_monthly_pseudo = crsp_monthly_pseudo.sort_values([&quot;permno&quot;, &quot;date&quot;])
+crsp_monthly_pseudo[&quot;mktcap_lag&quot;] = (
+    crsp_monthly_pseudo.groupby(&quot;permno&quot;)[&quot;mktcap&quot;].shift(1)
+)
+
+crsp_monthly_pseudo.to_parquet(&quot;data-python/crsp_monthly.parquet&quot;)
+</code></pre>
+</div>
+<h2><code>crsp_daily</code> table</h2>
+<p>The daily table just adds daily excess returns to the daily panel.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_daily_pseudo &lt;- stock_panel_daily |&gt;
+  mutate(
+    ret_excess = pmax(rnorm(n()), -1)
+  )
+
+write_parquet(crsp_daily_pseudo, &quot;data-r/crsp_daily.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">n = len(stock_panel_daily)
+crsp_daily_pseudo = stock_panel_daily.copy()
+crsp_daily_pseudo[&quot;ret_excess&quot;] = np.maximum(rng.normal(0, 1, n), -1)
+
+crsp_daily_pseudo.to_parquet(&quot;data-python/crsp_daily.parquet&quot;)
+</code></pre>
+</div>
+
+    
+    <nav class="chapter-nav">
+      <span class="chapter-prev"><a href="/data/wrds-pseudo-data-overview/">← WRDS Pseudo Data — Overview & Setup</a></span>
+      <span class="chapter-next"><a href="/data/bond-pseudo-data/">Bond Pseudo Data →</a></span>
+    </nav>
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#stock-identifiers">Stock identifiers</a></li>
+        <li><a href="#the-three-panels">The three panels</a></li>
+        <li><a href="#beta-table">beta table</a></li>
+        <li><a href="#compustat-annual-table">compustat_annual table</a></li>
+        <li><a href="#crsp-monthly-table">crsp_monthly table</a></li>
+        <li><a href="#crsp-daily-table">crsp_daily table</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+<script src="/code-toggle.js"></script>
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

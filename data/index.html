@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data - Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=11">
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<h1>Data</h1>
+<a href="/" class="byline">By Jun He</a>
+
+<div class="post-sort">
+  <label class="post-sort-label" for="sort-select">Sort by article year:</label>
+  <select id="sort-select" class="sort-select">
+    <option value="year-desc">Latest → Old</option>
+    <option value="year-asc">Old → Latest</option>
+  </select>
+</div>
+
+<ul class="post-list">
+  
+  <li><a href="/data/bond-pseudo-data/">Bond Pseudo Data</a><span class="post-list-date">May 2026</span></li>
+  
+  <li><a href="/data/stock-pseudo-data/">Stock Pseudo Data</a><span class="post-list-date">May 2026</span></li>
+  
+  <li><a href="/data/wrds-pseudo-data-overview/">WRDS Pseudo Data — Overview & Setup</a><span class="post-list-date">May 2026</span></li>
+  
+</ul>
+
+<script src="/theme.js"></script>
+<script>
+(function () {
+  const list = document.querySelector('.post-list');
+  if (!list) return;
+  // Article (journal) release year: first 4-digit number in the [venue] tag,
+  // falling back to the post date.
+  function yearOf(li) {
+    const v = li.querySelector('.post-list-venue');
+    let m = v && v.textContent.match(/\d{4}/);
+    if (m) return parseInt(m[0], 10);
+    const d = li.querySelector('.post-list-date');
+    m = d && d.textContent.match(/\d{4}/);
+    return m ? parseInt(m[0], 10) : 0;
+  }
+  function apply(mode) {
+    const arr = Array.from(list.children);
+    arr.sort((a, b) => mode === 'year-asc' ? yearOf(a) - yearOf(b) : yearOf(b) - yearOf(a));
+    arr.forEach(li => list.appendChild(li));
+  }
+  const sel = document.getElementById('sort-select');
+  apply(sel ? sel.value : 'year-desc');  // default: sort latest → old on load
+  if (sel) sel.addEventListener('change', () => apply(sel.value));
+})();
+</script>
+</body>
+</html>

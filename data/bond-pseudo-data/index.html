@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bond Pseudo Data – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=10">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="data">
+  
+  <aside class="data-sidebar">
+    <nav>
+      <h4>WRDS Pseudo Data</h4>
+      <ul>
+        
+        <li><a href="/data/wrds-pseudo-data-overview/">WRDS Pseudo Data — Overview & Setup</a></li>
+        
+        <li><a href="/data/stock-pseudo-data/">Stock Pseudo Data</a></li>
+        
+        <li class="current"><a href="/data/bond-pseudo-data/">Bond Pseudo Data</a></li>
+        
+      </ul>
+    </nav>
+  </aside>
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>Bond Pseudo Data</h1>
+      
+      <div class="code-toggle-wrap"><button class="code-toggle" onclick="toggleCodeLang()">R | Python</button></div>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+    </div>
+
+    <p>Finally, the bond data: a Mergent FISD-style cross-section and a TRACE-style transaction table built on top of it.</p>
+<h2><code>fisd</code> table</h2>
+<p>We sample 100 bonds with made-up CUSIPs and issue/issuer IDs, drawing the remaining fields from plausible ranges.</p>
+<div class="code-r">
+<pre><code class="language-r">number_of_bonds &lt;- 100
+
+fisd_pseudo &lt;- 1:number_of_bonds |&gt;
+  map_df(function(x) {
+    tibble(complete_cusip = str_to_upper(
+      str_c(sample(c(letters, 0:9), 12, replace = TRUE), collapse = &quot;&quot;)
+    ))
+  }) |&gt;
+  mutate(
+    maturity = sample(time_series_days, n(), replace = TRUE),
+    offering_amt = sample(seq(1:100) * 100000, n(), replace = TRUE),
+    offering_date = maturity - sample(seq(1:25) * 365, n(), replace = TRUE),
+    dated_date = offering_date - sample(-10:10, n(), replace = TRUE),
+    interest_frequency = sample(c(0, 1, 2, 4, 12), n(), replace = TRUE),
+    coupon = sample(seq(0, 2, by = 0.1), n(), replace = TRUE),
+    last_interest_date = pmax(maturity, offering_date, dated_date),
+    issue_id = row_number(),
+    issuer_id = sample(1:250, n(), replace = TRUE),
+    sic_code = as.character(sample(seq(1:9) * 1000, n(), replace = TRUE))
+  )
+
+write_parquet(fisd_pseudo, &quot;data-r/fisd.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">number_of_bonds = 100
+cusip_chars = list(string.ascii_lowercase) + [str(d) for d in range(10)]
+
+fisd_pseudo = pd.DataFrame({
+    &quot;complete_cusip&quot;: [
+        &quot;&quot;.join(rng.choice(cusip_chars, 12)).upper()
+        for _ in range(number_of_bonds)
+    ]
+})
+n = number_of_bonds
+fisd_pseudo[&quot;maturity&quot;] = rng.choice(time_series_days, n)
+fisd_pseudo[&quot;offering_amt&quot;] = rng.choice(np.arange(1, 101) * 100000, n)
+fisd_pseudo[&quot;offering_date&quot;] = (
+    fisd_pseudo[&quot;maturity&quot;]
+    - pd.to_timedelta(rng.choice(np.arange(1, 26) * 365, n), unit=&quot;D&quot;)
+)
+fisd_pseudo[&quot;dated_date&quot;] = (
+    fisd_pseudo[&quot;offering_date&quot;]
+    - pd.to_timedelta(rng.integers(-10, 11, n), unit=&quot;D&quot;)
+)
+fisd_pseudo[&quot;interest_frequency&quot;] = rng.choice([0, 1, 2, 4, 12], n)
+fisd_pseudo[&quot;coupon&quot;] = rng.choice(np.round(np.arange(0, 2.01, 0.1), 1), n)
+fisd_pseudo[&quot;last_interest_date&quot;] = fisd_pseudo[
+    [&quot;maturity&quot;, &quot;offering_date&quot;, &quot;dated_date&quot;]
+].max(axis=1)
+fisd_pseudo[&quot;issue_id&quot;] = np.arange(1, n + 1)
+fisd_pseudo[&quot;issuer_id&quot;] = rng.integers(1, 251, n)
+fisd_pseudo[&quot;sic_code&quot;] = (rng.choice(np.arange(1, 10) * 1000, n)).astype(str)
+
+fisd_pseudo.to_parquet(&quot;data-python/fisd.parquet&quot;)
+</code></pre>
+</div>
+<h2><code>trace_enhanced</code> table</h2>
+<p>For each fictional CUSIP we build a daily panel over the analysis window and stack it five times, so there are at least five transactions per day. We then add transaction time, price, volume, yield, and side/counterparty codes.</p>
+<div class="code-r">
+<pre><code class="language-r">start_date &lt;- as.Date(&quot;2014-01-01&quot;)
+end_date &lt;- as.Date(&quot;2016-11-30&quot;)
+
+bonds_panel &lt;- expand_grid(
+  fisd_pseudo |&gt; select(cusip_id = complete_cusip),
+  tibble(trd_exctn_dt = seq(start_date, end_date, &quot;1 day&quot;))
+)
+
+trace_enhanced_pseudo &lt;- bind_rows(
+  bonds_panel, bonds_panel, bonds_panel, bonds_panel, bonds_panel
+) |&gt;
+  mutate(
+    trd_exctn_tm = str_c(
+      sample(0:24, n(), replace = TRUE), &quot;:&quot;,
+      sample(0:60, n(), replace = TRUE), &quot;:&quot;,
+      sample(0:60, n(), replace = TRUE)
+    ),
+    rptd_pr = runif(n(), 10, 200),
+    entrd_vol_qt = sample(1:20, n(), replace = TRUE) * 1000,
+    yld_pt = runif(n(), -10, 10),
+    rpt_side_cd = sample(c(&quot;B&quot;, &quot;S&quot;), n(), replace = TRUE),
+    cntra_mp_id = sample(c(&quot;C&quot;, &quot;D&quot;), n(), replace = TRUE)
+  )
+
+write_parquet(trace_enhanced_pseudo, &quot;data-r/trace_enhanced.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">start_date = pd.Timestamp(&quot;2014-01-01&quot;)
+end_date = pd.Timestamp(&quot;2016-11-30&quot;)
+trace_dates = pd.date_range(start_date, end_date, freq=&quot;D&quot;)
+
+bonds_panel = (
+    fisd_pseudo[[&quot;complete_cusip&quot;]]
+    .rename(columns={&quot;complete_cusip&quot;: &quot;cusip_id&quot;})
+    .merge(pd.DataFrame({&quot;trd_exctn_dt&quot;: trace_dates}), how=&quot;cross&quot;)
+)
+
+trace_enhanced_pseudo = pd.concat([bonds_panel] * 5, ignore_index=True)
+n = len(trace_enhanced_pseudo)
+trace_enhanced_pseudo[&quot;trd_exctn_tm&quot;] = [
+    f&quot;{h}:{m}:{s}&quot;
+    for h, m, s in zip(
+        rng.integers(0, 25, n), rng.integers(0, 61, n), rng.integers(0, 61, n)
+    )
+]
+trace_enhanced_pseudo[&quot;rptd_pr&quot;] = rng.uniform(10, 200, n)
+trace_enhanced_pseudo[&quot;entrd_vol_qt&quot;] = rng.integers(1, 21, n) * 1000
+trace_enhanced_pseudo[&quot;yld_pt&quot;] = rng.uniform(-10, 10, n)
+trace_enhanced_pseudo[&quot;rpt_side_cd&quot;] = rng.choice([&quot;B&quot;, &quot;S&quot;], n)
+trace_enhanced_pseudo[&quot;cntra_mp_id&quot;] = rng.choice([&quot;C&quot;, &quot;D&quot;], n)
+
+trace_enhanced_pseudo.to_parquet(&quot;data-python/trace_enhanced.parquet&quot;)
+</code></pre>
+</div>
+<p>As stated in the overview, this data contains <strong>no</strong> samples of the original WRDS data — every column is filled with random numbers.</p>
+
+    
+    <nav class="chapter-nav">
+      <span class="chapter-prev"><a href="/data/stock-pseudo-data/">← Stock Pseudo Data</a></span>
+      <span class="chapter-next"></span>
+    </nav>
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#fisd-table">fisd table</a></li>
+        <li><a href="#trace-enhanced-table">trace_enhanced table</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+<script src="/code-toggle.js"></script>
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>
