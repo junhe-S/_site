@@ -118,7 +118,10 @@ def discover_posts(section=None):
     for sec in dirs:
         sec_dir = ROOT / sec
         if sec_dir.is_dir():
-            for md_file in sorted(sec_dir.glob("*/index.md")):
+            # Data is a two-level shelf: data/<instruction>/<chapter>/index.md.
+            # Every other section is flat: <section>/<slug>/index.md.
+            pattern = "*/*/index.md" if sec == "data" else "*/index.md"
+            for md_file in sorted(sec_dir.glob(pattern)):
                 posts.append(md_file)
     return posts
 
@@ -622,6 +625,9 @@ def render_post(md_path, no_exec=False, data_chapters=None):
     """
     post_dir = str(md_path.parent)
     slug = md_path.parent.name
+    # Top-level section, robust to nesting depth (data chapters live two levels
+    # deep: data/<instruction>/<chapter>/index.md).
+    section_name = md_path.relative_to(ROOT).parts[0]
 
     text = md_path.read_text(encoding="utf-8")
     meta, body = parse_frontmatter(text)
@@ -723,17 +729,18 @@ def render_post(md_path, no_exec=False, data_chapters=None):
     data_book = ""
     prev_chapter = None
     next_chapter = None
-    if md_path.parent.parent.name == "data" and data_chapters:
-        current = next((c for c in data_chapters if c["slug"] == slug), None)
+    if section_name == "data" and data_chapters:
+        cur_url = f"/data/{md_path.parent.parent.name}/{md_path.parent.name}/"
+        current = next((c for c in data_chapters if c["url"] == cur_url), None)
         data_book = current["category"] if current else ""
         # The sidebar and prev/next are scoped to the current instruction (book),
         # so each data instruction navigates independently.
         siblings = [c for c in data_chapters if c["category"] == data_book]
         data_nav = [
-            {"title": c["title"], "url": c["url"], "current": c["slug"] == slug}
+            {"title": c["title"], "url": c["url"], "current": c["url"] == cur_url}
             for c in siblings
         ]
-        idx = next((i for i, c in enumerate(siblings) if c["slug"] == slug), None)
+        idx = next((i for i, c in enumerate(siblings) if c["url"] == cur_url), None)
         if idx is not None:
             if idx > 0:
                 prev_chapter = siblings[idx - 1]
@@ -752,7 +759,7 @@ def render_post(md_path, no_exec=False, data_chapters=None):
         has_tables=has_tables,
         table_ids=table_ids,
         has_annotate=has_annotate,
-        section=md_path.parent.parent.name,
+        section=section_name,
         title_en=meta.get("title_en", ""),
         paper_authors=meta.get("paper_authors", ""),
         paper_authors_list=author_links(meta.get("paper_authors", "")),
@@ -918,19 +925,21 @@ def build_all(no_exec=False, single_post=None):
     data_chapters = []
     for dpath in discover_posts(section="data"):
         dmeta, _ = parse_frontmatter(dpath.read_text(encoding="utf-8"))
+        instruction = dpath.parent.parent.name  # e.g. "tidy-finance"
+        chapter = dpath.parent.name
         data_chapters.append({
-            "slug": dpath.parent.name,
-            "title": dmeta.get("title", dpath.parent.name),
+            "slug": chapter,
+            "title": dmeta.get("title", chapter),
             "category": dmeta.get("category", ""),
             "order": dmeta.get("order", 0),
-            "url": f"/data/{dpath.parent.name}/",
+            "url": f"/data/{instruction}/{chapter}/",
         })
     # Sort by instruction (category) then chapter order, so each book's chapters
     # stay grouped and in sequence.
     data_chapters.sort(key=lambda c: (c["category"], c["order"]))
 
     for md_path in md_files:
-        section = md_path.parent.parent.name  # e.g. "posts", "bergen"
+        section = md_path.relative_to(ROOT).parts[0]  # e.g. "posts", "data"
         print(f"  Building: {section}/{md_path.parent.name}")
         try:
             meta = render_post(md_path, no_exec=no_exec, data_chapters=data_chapters)
@@ -952,8 +961,13 @@ def build_all(no_exec=False, single_post=None):
                 date = datetime.combine(date, datetime.min.time())
             elif isinstance(date, str):
                 date = datetime.strptime(date, "%Y-%m-%d")
+            if section == "data":
+                url = f"/data/{md_path.parent.parent.name}/{md_path.parent.name}/"
+            else:
+                url = f"/{section}/{md_path.parent.name}/"
             all_meta.append({
                 "slug": md_path.parent.name,
+                "url": url,
                 "title": meta.get("title", md_path.parent.name),
                 "title_en": meta.get("title_en", ""),
                 "paper_authors": meta.get("paper_authors", ""),
