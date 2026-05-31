@@ -720,19 +720,25 @@ def render_post(md_path, no_exec=False, data_chapters=None):
     # Data pages get a left chapter sidebar + prev/next links; other sections
     # pass None so the guarded template blocks stay hidden.
     data_nav = None
+    data_book = ""
     prev_chapter = None
     next_chapter = None
     if md_path.parent.parent.name == "data" and data_chapters:
+        current = next((c for c in data_chapters if c["slug"] == slug), None)
+        data_book = current["category"] if current else ""
+        # The sidebar and prev/next are scoped to the current instruction (book),
+        # so each data instruction navigates independently.
+        siblings = [c for c in data_chapters if c["category"] == data_book]
         data_nav = [
             {"title": c["title"], "url": c["url"], "current": c["slug"] == slug}
-            for c in data_chapters
+            for c in siblings
         ]
-        idx = next((i for i, c in enumerate(data_chapters) if c["slug"] == slug), None)
+        idx = next((i for i, c in enumerate(siblings) if c["slug"] == slug), None)
         if idx is not None:
             if idx > 0:
-                prev_chapter = data_chapters[idx - 1]
-            if idx < len(data_chapters) - 1:
-                next_chapter = data_chapters[idx + 1]
+                prev_chapter = siblings[idx - 1]
+            if idx < len(siblings) - 1:
+                next_chapter = siblings[idx + 1]
 
     # Render template
     template = env.get_template("post.html")
@@ -753,6 +759,7 @@ def render_post(md_path, no_exec=False, data_chapters=None):
         paper_journal=vinfo["journal"] if vinfo["journal"] != "Other" else "",
         paper_year=vinfo["art_year"],
         data_nav=data_nav,
+        data_book=data_book,
         prev=prev_chapter,
         next=next_chapter,
     )
@@ -914,10 +921,13 @@ def build_all(no_exec=False, single_post=None):
         data_chapters.append({
             "slug": dpath.parent.name,
             "title": dmeta.get("title", dpath.parent.name),
+            "category": dmeta.get("category", ""),
             "order": dmeta.get("order", 0),
             "url": f"/data/{dpath.parent.name}/",
         })
-    data_chapters.sort(key=lambda c: c["order"])
+    # Sort by instruction (category) then chapter order, so each book's chapters
+    # stay grouped and in sequence.
+    data_chapters.sort(key=lambda c: (c["category"], c["order"]))
 
     for md_path in md_files:
         section = md_path.parent.parent.name  # e.g. "posts", "bergen"
