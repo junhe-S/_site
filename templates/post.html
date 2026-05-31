@@ -29,7 +29,7 @@
   }
 </style>
 <link rel="stylesheet" href="/styles.css?v=10">
-<link rel="stylesheet" href="/article.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
 {% if has_tables %}
 <link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -55,19 +55,22 @@
   <aside class="data-sidebar">
     <nav>
       <h4>{{ data_book }}</h4>
+      {% for group in data_nav %}
+      {% if group.part %}<p class="data-part">{{ group.part }}</p>{% endif %}
       <ul>
-        {% for item in data_nav %}
+        {% for item in group.items %}
         <li{% if item.current %} class="current"{% endif %}><a href="{{ item.url }}">{{ item.title }}</a></li>
         {% endfor %}
       </ul>
+      {% endfor %}
     </nav>
   </aside>
   {% endif %}
   <div class="article-main">
     <div class="article-header">
       <h1>{{ title }}</h1>
-      {% if data_nav %}
-      <div class="code-toggle-wrap"><button class="code-toggle" onclick="toggleCodeLang()">R | Python</button></div>
+      {% if data_nav and has_code %}
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
       {% endif %}
       {% if paper_authors or title_en %}
       <div class="paper-source">
@@ -126,7 +129,7 @@ $(document).ready(function() {
 {% endif %}
 
 <script src="/theme.js"></script>
-{% if data_nav %}<script src="/code-toggle.js"></script>{% endif %}
+{% if data_nav and has_code %}<script src="/code-toggle.js"></script>{% endif %}
 {% if has_annotate %}
 <script src="/annotate.js"></script>
 {% endif %}

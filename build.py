@@ -723,6 +723,9 @@ def render_post(md_path, no_exec=False, data_chapters=None):
     # Detect annotate blocks
     has_annotate = "annotate-block" in content_html
 
+    # Data pages only need the R/Python toggle when they actually contain code.
+    has_code = 'class="code-r"' in content_html or 'class="code-py"' in content_html
+
     # Data pages get a left chapter sidebar + prev/next links; other sections
     # pass None so the guarded template blocks stay hidden.
     data_nav = None
@@ -736,10 +739,15 @@ def render_post(md_path, no_exec=False, data_chapters=None):
         # The sidebar and prev/next are scoped to the current instruction (book),
         # so each data instruction navigates independently.
         siblings = [c for c in data_chapters if c["category"] == data_book]
-        data_nav = [
-            {"title": c["title"], "url": c["url"], "current": c["url"] == cur_url}
-            for c in siblings
-        ]
+        # Group chapters into the book's parts, preserving order, for the sidebar.
+        data_nav = []
+        for c in siblings:
+            p = c.get("part", "")
+            if not data_nav or data_nav[-1]["part"] != p:
+                data_nav.append({"part": p, "items": []})
+            data_nav[-1]["items"].append(
+                {"title": c["title"], "url": c["url"], "current": c["url"] == cur_url}
+            )
         idx = next((i for i, c in enumerate(siblings) if c["url"] == cur_url), None)
         if idx is not None:
             if idx > 0:
@@ -767,6 +775,7 @@ def render_post(md_path, no_exec=False, data_chapters=None):
         paper_year=vinfo["art_year"],
         data_nav=data_nav,
         data_book=data_book,
+        has_code=has_code,
         prev=prev_chapter,
         next=next_chapter,
     )
@@ -931,6 +940,7 @@ def build_all(no_exec=False, single_post=None):
             "slug": chapter,
             "title": dmeta.get("title", chapter),
             "category": dmeta.get("category", ""),
+            "part": dmeta.get("part", ""),
             "order": dmeta.get("order", 0),
             "url": f"/data/{instruction}/{chapter}/",
         })
