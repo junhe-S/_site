@@ -14,6 +14,7 @@ import argparse
 import glob
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -32,9 +33,78 @@ POSTS_DIR = ROOT / "posts"
 TEMPLATES_DIR = ROOT / "templates"
 
 # All content sections that contain buildable markdown pages
-SECTIONS = ["posts", "research", "data", "bergen"]
+SECTIONS = ["posts", "research", "note", "data", "bergen"]
 
 env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
+
+
+# ---------------------------------------------------------------------------
+# Journals (for grouping the Research listing by venue)
+# ---------------------------------------------------------------------------
+
+# abbreviation -> (full name, sort rank). Lower rank sorts first; working papers
+# (SSRN) sort last. Unknown journals fall between known journals and SSRN.
+JOURNAL_INFO = {
+    "JF":   ("Journal of Finance", 1),
+    "JFE":  ("Journal of Financial Economics", 2),
+    "RFS":  ("Review of Financial Studies", 3),
+    "JFQA": ("Journal of Financial and Quantitative Analysis", 4),
+    "RFin": ("Review of Finance", 5),
+    "JFI":  ("Journal of Financial Intermediation", 6),
+    "MS":   ("Management Science", 7),
+    "JPE":  ("Journal of Political Economy", 8),
+    "QJE":  ("Quarterly Journal of Economics", 9),
+    "AER":  ("American Economic Review", 10),
+    "RES":  ("Review of Economic Studies", 11),
+    "NBER": ("NBER Working Paper", 998),
+    "SSRN": ("Working Papers", 999),
+}
+
+
+def _author_slug(name):
+    """URL slug for an author page, e.g. "John H. Cochrane" -> "john-h-cochrane"."""
+    s = (name or "").strip().lower().replace(".", "")
+    return re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+
+
+def author_links(paper_authors):
+    """Split a "First Last, First Last" string into [{name, url}] for templates."""
+    out = []
+    for n in [a.strip() for a in (paper_authors or "").split(",") if a.strip()]:
+        out.append({"name": n, "url": f"/research/author/{_author_slug(n)}/"})
+    return out
+
+
+def parse_venue(venue):
+    """Split a `venue` string like "2026 JFE" into (article_year, journal info).
+
+    Returns a dict with: art_year (int), journal (abbr), journal_full,
+    journal_label ("Full Name (ABBR)"), journal_rank.
+    """
+    venue = (venue or "").strip()
+    m = re.search(r"\b(\d{4})\b", venue)
+    art_year = int(m.group(1)) if m else 0
+    # capture the month if the date token is "YYYY/MM"
+    mm = re.search(r"\b\d{4}/(\d{1,2})\b", venue)
+    art_month = int(mm.group(1)) if mm else 0
+    # journal = everything that isn't the date token (YYYY or YYYY/MM)
+    abbr = re.sub(r"\b\d{4}(?:/\d{1,2})?\b", "", venue).strip() or "Other"
+    full, rank = JOURNAL_INFO.get(abbr, (abbr, 500))
+    label = f"{full} ({abbr})" if full != abbr else abbr
+    # display tag for the listing: date only (the journal is the group header).
+    date_tag = ""
+    if art_year:
+        date_tag = f"{art_year}/{art_month:02d}" if art_month else f"{art_year}"
+    return {
+        "art_year": art_year,
+        "art_month": art_month,
+        "date_tag": date_tag,
+        "journal": abbr,
+        "journal_full": full,
+        "journal_label": label,
+        "journal_rank": rank,
+        "journal_slug": re.sub(r"[^a-z0-9]+", "-", abbr.lower()).strip("-") or "other",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -333,7 +403,68 @@ def execute_code_blocks(body, post_dir, no_exec=False):
 
     # Process {annotate} blocks: Norwegian text with word annotations → inline SVG
     body = process_annotate_blocks(body)
+    # Process ```math {annotate}``` blocks: an equation with \cssId anchors + margin
+    # cards whose arrows point to parts of the formula (drawn by mathanno.js).
+    body = process_math_annotate_blocks(body)
     return body, table_counter[0]
+
+
+def process_math_annotate_blocks(body):
+    r"""Render ```math {annotate}``` blocks: a display equation (whose parts are
+    tagged with \cssId{id}{...}) plus annotation cards in the right margin.
+
+    Syntax:
+        ```math {annotate}
+        V = \cssId{a1}{\pi(k,s)} - \cssId{a2}{\xi e} + \beta \cssId{a3}{E[V']}
+        ---
+        a1 | 当期经营利润
+        a2 | 外部融资成本（ξ 为线性成本）
+        a3 | 贴现的延续价值
+        ```
+    """
+    pattern = r"```math\s*\{annotate\}\n(.*?)```"
+
+    def render(match):
+        content = match.group(1).strip()
+        if "---" not in content:
+            return f'\n<div class="mathanno-eq">$$\n{content}\n$$</div>\n'
+        latex_part, annot_part = content.split("---", 1)
+        latex = latex_part.strip()
+        cards = []
+        for line in annot_part.strip().splitlines():
+            line = line.strip()
+            if not line or "|" not in line:
+                continue
+            parts = [p.strip() for p in line.split("|")]
+            tid = parts[0]
+            zh = parts[1] if len(parts) > 1 else ""
+            en = parts[2] if len(parts) > 2 else ""
+            if tid:
+                cards.append((tid, zh, en))
+        if not cards:
+            return f'\n<div class="mathanno-eq">$$\n{latex}\n$$</div>\n'
+
+        def _expl(zh, en):
+            # Bilingual card text (toggles with EN/中文) when an English part is given.
+            if en:
+                return (f'<span class="lang zh">{escape_html(zh)}</span>'
+                        f'<span class="lang en">{escape_html(en)}</span>')
+            return escape_html(zh)
+
+        card_html = "".join(
+            f'<div class="mathanno-card" data-target="{escape_html(tid)}">'
+            f'<span class="mathanno-num">{i + 1}</span>{_expl(zh, en)}</div>'
+            for i, (tid, zh, en) in enumerate(cards)
+        )
+        return (
+            '\n<div class="mathanno-block">'
+            f'<div class="mathanno-eq">$$\n{latex}\n$$</div>'
+            f'<aside class="mathanno-cards">{card_html}</aside>'
+            '<svg class="mathanno-lines"></svg>'
+            '</div>\n'
+        )
+
+    return re.sub(pattern, render, body, flags=re.DOTALL)
 
 
 def escape_html(text):
@@ -504,13 +635,31 @@ def render_post(md_path, no_exec=False):
     date_display = date.strftime("%B %d, %Y")
     date_short = date.strftime("%b %Y")
 
+    # Source-paper card data (research posts): original title, authors, journal/year.
+    vinfo = parse_venue(meta.get("venue", ""))
+
     # Execute code blocks
     body, table_count = execute_code_blocks(body, post_dir, no_exec=no_exec)
 
     # Protect LaTeX math from Markdown (so _, *, \ inside formulas survive). We
-    # detect $$…$$, \[…\], \(…\), and math-looking $…$ (must contain \ ^ _ { },
-    # and not be a $-amount), then restore after conversion. Inline $…$ is rewritten
-    # to \(…\) so MathJax never treats a price like "$100" as math.
+    # detect $$…$$, \[…\], \(…\), and inline $…$, then restore after conversion.
+    # Inline $…$ is rewritten to \(…\) so MathJax never treats a price like "$100"
+    # as math. To tell math from a $-amount, an inline span must (a) not open right
+    # before a space or digit, (b) not close right before a digit, and (c) contain
+    # a letter or backslash — so "$x$", "$\beta$", "$k_{jt}$" match but "$100" doesn't.
+    # Protect fenced code blocks from the inline-math `$` detection below: R code
+    # uses `$` for column access (e.g. `exchanges$exchange`), which the math regex
+    # would otherwise mangle. Stash whole ``` fences now, run the math pass on the
+    # remaining prose, then restore them before Markdown converts them normally.
+    # MathJax skips <pre>/<code>, so restored `$` in code stays literal.
+    _code = []
+
+    def _stash_code(m):
+        _code.append(m.group(0))
+        return f"\x02CODE{len(_code) - 1}\x02"
+
+    body = re.sub(r"```.*?```", _stash_code, body, flags=re.DOTALL)
+
     _math = []
 
     def _stash(m):
@@ -520,10 +669,17 @@ def render_post(md_path, no_exec=False):
     body = re.sub(r"\$\$.+?\$\$", _stash, body, flags=re.DOTALL)
     body = re.sub(r"\\\[.+?\\\]", _stash, body, flags=re.DOTALL)
     body = re.sub(r"\\\(.+?\\\)", _stash, body, flags=re.DOTALL)
-    body = re.sub(r"(?<![\\$\d])\$(?!\s)([^$\n]*?[\\^_{}][^$\n]*?)\$(?!\d)", _stash, body)
+    body = re.sub(r"(?<![\\$\d])\$(?!\s)([^$\n]*?[A-Za-z\\][^$\n]*?)\$(?!\d)", _stash, body)
+    # Also a tightly-delimited number, e.g. $0$, $0.4$, $50$ (math, not a $-amount):
+    # both delimiters present, short numeric content, not adjacent to other digits.
+    body = re.sub(r"(?<![\\$\d.])\$([0-9][0-9.,]{0,7})\$(?!\d)", _stash, body)
+
+    # Restore fenced code (stashed before the math pass) so Markdown converts it.
+    for _i, _c in enumerate(_code):
+        body = body.replace(f"\x02CODE{_i}\x02", _c)
 
     # Convert markdown to HTML
-    md = markdown.Markdown(extensions=["fenced_code", "tables", "attr_list"])
+    md = markdown.Markdown(extensions=["fenced_code", "tables", "attr_list", "md_in_html"])
     content_html = md.convert(body)
 
     # Restore math (inline single-$ → \(…\); display/other delimiters unchanged).
@@ -570,6 +726,11 @@ def render_post(md_path, no_exec=False):
         table_ids=table_ids,
         has_annotate=has_annotate,
         section=md_path.parent.parent.name,
+        title_en=meta.get("title_en", ""),
+        paper_authors=meta.get("paper_authors", ""),
+        paper_authors_list=author_links(meta.get("paper_authors", "")),
+        paper_journal=vinfo["journal"] if vinfo["journal"] != "Other" else "",
+        paper_year=vinfo["art_year"],
     )
 
     # Write output
@@ -591,7 +752,21 @@ def render_post(md_path, no_exec=False):
 
 def build_listing(posts_meta, section="posts"):
     """Generate listing index.html for a section."""
-    posts_meta.sort(key=lambda p: p["date"], reverse=True)
+    if section == "research":
+        # Group by journal: by journal rank, then newest article first within each.
+        posts_meta.sort(key=lambda p: (p.get("journal_rank", 500),
+                                       -p.get("art_year", 0),
+                                       -p.get("art_month", 0),
+                                       p["date"].timestamp() * -1))
+        # Per-journal totals, so the listing can cap at 3 and only show "more"
+        # when a journal actually has extra posts.
+        totals = {}
+        for p in posts_meta:
+            totals[p.get("journal_label", "")] = totals.get(p.get("journal_label", ""), 0) + 1
+        for p in posts_meta:
+            p["journal_total"] = totals.get(p.get("journal_label", ""), 0)
+    else:
+        posts_meta.sort(key=lambda p: p["date"], reverse=True)
 
     # Use section-specific template if it exists, else fall back to post_listing
     template_name = f"{section}_listing.html"
@@ -613,6 +788,80 @@ def build_listing(posts_meta, section="posts"):
     out_dir.mkdir(exist_ok=True)
     out_path = out_dir / "index.html"
     out_path.write_text(html, encoding="utf-8")
+
+
+def build_author_pages(posts_meta):
+    """Generate one static page per paper author, listing the papers of theirs
+    reviewed on the blog. The source-paper card links author names here.
+
+    Stale author dirs (authors no longer referenced) are pruned so renamed/removed
+    authors don't leave dangling pages.
+    """
+    authors = {}  # slug -> {"name": str, "posts": [meta, ...]}
+    for p in posts_meta:
+        for a in author_links(p.get("paper_authors", "")):
+            slug = a["url"].rstrip("/").rsplit("/", 1)[-1]
+            if not slug:
+                continue
+            authors.setdefault(slug, {"name": a["name"], "posts": []})
+            authors[slug]["posts"].append(p)
+
+    base = ROOT / "research" / "author"
+    base.mkdir(parents=True, exist_ok=True)
+
+    # Prune author dirs that are no longer referenced.
+    for d in base.iterdir():
+        if d.is_dir() and d.name not in authors:
+            shutil.rmtree(d, ignore_errors=True)
+
+    if not authors:
+        return
+    template = env.get_template("author_listing.html")
+    for slug, info in authors.items():
+        posts = sorted(info["posts"],
+                       key=lambda p: (-p.get("art_year", 0), -p.get("art_month", 0),
+                                      p["date"].timestamp() * -1))
+        html = template.render(author=info["name"], posts=posts,
+                               section_title=info["name"])
+        out_dir = base / slug
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "index.html").write_text(html, encoding="utf-8")
+    print(f"  Built {len(authors)} author page(s)")
+
+
+def build_journal_pages(posts_meta):
+    """Generate one static page per journal, listing all blog posts in that
+    journal. The "more →" link beside each journal header on the listing
+    points here. Stale journal dirs are pruned.
+    """
+    journals = {}  # slug -> {label, rank, posts}
+    for p in posts_meta:
+        slug = p.get("journal_slug")
+        if not slug or slug == "other":
+            continue
+        journals.setdefault(slug, {"label": p.get("journal_label", ""),
+                                   "rank": p.get("journal_rank", 500), "posts": []})
+        journals[slug]["posts"].append(p)
+
+    base = ROOT / "research" / "journal"
+    base.mkdir(parents=True, exist_ok=True)
+    for d in base.iterdir():
+        if d.is_dir() and d.name not in journals:
+            shutil.rmtree(d, ignore_errors=True)
+
+    if not journals:
+        return
+    template = env.get_template("journal_listing.html")
+    for slug, info in journals.items():
+        posts = sorted(info["posts"],
+                       key=lambda p: (-p.get("art_year", 0), -p.get("art_month", 0),
+                                      p["date"].timestamp() * -1))
+        html = template.render(journal=info["label"], posts=posts,
+                               section_title=info["label"])
+        out_dir = base / slug
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "index.html").write_text(html, encoding="utf-8")
+    print(f"  Built {len(journals)} journal page(s)")
 
 
 # ---------------------------------------------------------------------------
@@ -660,14 +909,23 @@ def build_all(no_exec=False, single_post=None):
             all_meta.append({
                 "slug": md_path.parent.name,
                 "title": meta.get("title", md_path.parent.name),
+                "title_en": meta.get("title_en", ""),
+                "paper_authors": meta.get("paper_authors", ""),
                 "venue": meta.get("venue", ""),
+                "category": meta.get("category", ""),
+                "part": meta.get("part", ""),
+                "order": meta.get("order", 0),
                 "date": date,
                 "date_short": date.strftime("%b %Y"),
                 "section": section,
+                **parse_venue(meta.get("venue", "")),
             })
         build_listing(all_meta, section=section)
         if all_meta:
             print(f"  Built {section} listing ({len(all_meta)} pages)")
+        if section == "research":
+            build_author_pages(all_meta)
+            build_journal_pages(all_meta)
 
     elapsed = time.time() - start
     print(f"\nDone in {elapsed:.1f}s")
