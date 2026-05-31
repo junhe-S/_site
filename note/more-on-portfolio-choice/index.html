@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>15. More on Portfolio Choice Problem – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>15. More on Portfolio Choice Problem</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 30, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">组合选择</span><span class="lang en">Portfolio Choice</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">鞅方法</span><span class="lang en">Martingale Methodology</span></span>
+        
+        
+        
+        
+        <span class="tag">Merton</span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">异质性</span><span class="lang en">Heterogeneity</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章用<strong>鞅方法 (martingale methodology)</strong> 处理连续时间组合选择。核心思路：把"动态预算约束"（每期再平衡股票/债券）等价转化为"静态预算约束"（用风险中性测度 \(\mathbf Q\) 或状态价格密度 \(\pi_t\) 贴现终端财富），从而把动态最优化变成对终端财富 \(W_T\) 的逐状态最优化。应用一：<strong>Merton (1969)</strong> 组合问题，得到投资于风险资产的<strong>Merton 比例</strong> \(\frac{\mu-r}{\gamma\sigma^2}\)；带股息与状态变量的推广。应用二：完全市场下的<strong>异质性代理人</strong>一般均衡——<strong>Veronesi (2019)</strong>（异质风险厌恶）与<strong>"赶超琼斯" (Beating the Joneses)</strong> 偏好（攀比消费）。后两者用泛函不动点刻画总量 SDF、利率与价格-红利比，并比较不同类型代理人的消费与财富动态。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter uses <strong>martingale methodology</strong> for continuous-time portfolio choice. Core idea: turn the "dynamic budget constraint" (period-by-period rebalancing of stock/bond) into an equivalent "static budget constraint" (discount terminal wealth with the risk-neutral measure \(\mathbf Q\) or the state-price density \(\pi_t\)), reducing dynamic optimization to a state-by-state optimization over terminal wealth \(W_T\). Application 1: the <strong>Merton (1969)</strong> portfolio problem, yielding the <strong>Merton fraction</strong> \(\frac{\mu-r}{\gamma\sigma^2}\) in the risky asset; plus a generalization with dividends and a state variable. Application 2: heterogeneous-agent general equilibrium in complete markets — <strong>Veronesi (2019)</strong> (heterogeneous risk aversion) and <strong>Beating-the-Joneses</strong> preferences (catching-up consumption). The latter two characterize the aggregate SDF, interest rate, and price-dividend ratio via a functional fixed point, and compare consumption and wealth dynamics across agent types.</p></div>
+</div>
+<h2 id="15-1-martingale-methodology">15.1 Martingale Methodology</h2>
+<h3 id="15-1-1-setup">15.1.1 Setup</h3>
+<div class="lang zh">
+<p>第 14 章期权定价隐含使用了鞅方法。本节给出更一般的处理。设股票价 \(S_t\)、债券价 \(B_t\) (15.1)：</p>
+</div>
+<div class="lang en">
+<p>Option pricing in Chapter 14 implicitly used martingale methodology. This section gives a more general treatment. Let stock \(S_t\) and bond \(B_t\) follow (15.1):</p>
+</div>
+<p>$$\frac{dS_t}{S_t}=\mu(S_t)\,dt+\sigma(S_t)\,dZ_t,\qquad\frac{dB_t}{B_t}=r\,dt,\tag{15.1}$$</p>
+<div class="lang zh">
+<p>\(r\) 为无风险利率，\(\{Z_t\}\) 为标准布朗运动。另有一只到期 \(T\)、支付 \(g(S_T)\)（\(g\) 二阶可微）的证券，其 \(t\) 时价值记为 \(V(S_t,t)\)。</p>
+<h3 id="15-1-2-dynamic-replication">15.1.2 Dynamic Replication</h3>
+<p>构造组合 \(\Pi_t\)：多 1 份证券、空 \(\theta_t\) 股股票 (15.2)：</p>
+</div>
+<div class="lang en">
+<p>with \(r\) the risk-free rate and \(\{Z_t\}\) standard BM. A security maturing at \(T\) pays \(g(S_T)\) (\(g\) twice differentiable), with time-\(t\) value \(V(S_t,t)\).</p>
+<h3 id="15-1-2-dynamic-replication">15.1.2 Dynamic Replication</h3>
+<p>Form a portfolio \(\Pi_t\): long 1 security, short \(\theta_t\) shares (15.2):</p>
+</div>
+<p>$$\Pi_t=V(S_t,t)-\theta_t S_t.\tag{15.2}$$</p>
+<div class="lang zh">
+<p>做 Delta 中性对冲 \(\frac{\partial\Pi_t}{\partial S_t}=0\)，得 (15.3)：</p>
+</div>
+<div class="lang en">
+<p>Delta-neutral hedging \(\frac{\partial\Pi_t}{\partial S_t}=0\) gives (15.3):</p>
+</div>
+<p>$$\theta_t=\frac{\partial V(S_t,t)}{\partial S_t}.\tag{15.3}$$</p>
+<div class="lang zh">
+<p>由 Itô 引理，\(\Pi_t\) 的随机项消失，无套利要求 \(d\Pi_t=\Pi_t r\,dt\) (15.4)：</p>
+</div>
+<div class="lang en">
+<p>By Itô, the random term of \(\Pi_t\) vanishes; no-arbitrage forces \(d\Pi_t=\Pi_t r\,dt\) (15.4):</p>
+</div>
+<p>$$\Pi_t r=\frac{\partial\Pi_t}{\partial t}+\frac12\frac{\partial^2\Pi_t}{(\partial S_t)^2}\sigma^2(S_t)S_t^2.\tag{15.4}$$</p>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 15.1.</strong> \(\frac{\partial\theta_t}{\partial t}=0\)（\(\theta_t\) 在 \(t\) 已定，\([t,t+dt]\) 内不变）；又 \(\frac{\partial\Pi_t}{\partial t}=\frac{\partial V(S_t,t)}{\partial t}\)（因 \(\frac{\partial\Pi_t}{\partial S_t}=0\)，虽然 \(\frac{\partial S_t}{\partial t}\neq0\)），且 \(\frac{\partial^2\Pi_t}{(\partial S_t)^2}=\frac{\partial^2 V}{(\partial S_t)^2}\)。</p></div>
+<p>代入 (15.2)、(15.3) 入 (15.4) 得证券满足的 PDE (15.5)：</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 15.1.</strong> \(\frac{\partial\theta_t}{\partial t}=0\) (\(\theta_t\) is fixed at \(t\), unchanged over \([t,t+dt]\)); also \(\frac{\partial\Pi_t}{\partial t}=\frac{\partial V(S_t,t)}{\partial t}\) (since \(\frac{\partial\Pi_t}{\partial S_t}=0\), even though \(\frac{\partial S_t}{\partial t}\neq0\)), and \(\frac{\partial^2\Pi_t}{(\partial S_t)^2}=\frac{\partial^2 V}{(\partial S_t)^2}\).</p></div>
+<p>Substituting (15.2), (15.3) into (15.4) gives the PDE the security satisfies (15.5):</p>
+</div>
+<p>$$r\left(V(S_t,t)-\frac{\partial V(S_t,t)}{\partial S_t}S_t\right)=\frac{\partial V(S_t,t)}{\partial t}+\frac12\frac{\partial^2 V(S_t,t)}{(\partial S_t)^2}\sigma^2(S_t)S_t^2.\tag{15.5}$$</p>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 15.2.</strong> 任何支付 \(g(S_T)\) 的证券都满足 (15.5)，外加边界条件 \(V(S_T,T)=g(S_T)\)。</p></div>
+<p>设组合 \(W_t=\theta_t S_t+B_t\) (15.6)，其中 \(\theta_t\) 由 (15.2) 给出、\(B_0=\Pi_0=V(S_0,0)-\theta_0 S_0\)。由于 \(B_t\) 与 \(\Pi_t\) 同为无风险债券且同初值，无套利得 \(B_t=\Pi_t\)，进而 \(W_t=V(S_t,t)\) 对所有 \(t\) 成立。即 <strong>\(W_t\) 是复制证券支付 \(g(S_T)\) 所需的财富</strong>。</p>
+<h3 id="15-1-3-feynman-kac-theorem">15.1.3 Feynman-Kac Theorem</h3>
+<p>§14.1.3 的讨论对一般支付 \(F(S_T)\)（不限于看涨）都成立。记 \(F(S_T)=g(S_T)\)、\(C_t(S_t)=V(S_t,t)\)，由 Feynman-Kac (15.7)：</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 15.2.</strong> Any security paying \(g(S_T)\) satisfies (15.5), plus the boundary condition \(V(S_T,T)=g(S_T)\).</p></div>
+<p>Let the portfolio \(W_t=\theta_t S_t+B_t\) (15.6), with \(\theta_t\) from (15.2) and \(B_0=\Pi_0=V(S_0,0)-\theta_0 S_0\). Since \(B_t\) and \(\Pi_t\) are both risk-free bonds with the same initial value, no-arbitrage gives \(B_t=\Pi_t\), hence \(W_t=V(S_t,t)\) for all \(t\). So <strong>\(W_t\) is the wealth needed to replicate the security payoff \(g(S_T)\)</strong>.</p>
+<h3 id="15-1-3-feynman-kac-theorem">15.1.3 Feynman-Kac Theorem</h3>
+<p>The §14.1.3 discussion holds for a general payoff \(F(S_T)\) (not just a call). Writing \(F(S_T)=g(S_T)\), \(C_t(S_t)=V(S_t,t)\), Feynman-Kac gives (15.7):</p>
+</div>
+<p>$$V(S_t,t)=\mathbb E_t^{\mathbf Q}\!\left[e^{-r(T-t)}g(S_T)\right].\tag{15.7}$$</p>
+<div class="lang zh">
+<p>由 (14.12)、(14.14)（零股息 \(\delta=0\)），\(dZ_t^\star=dZ_t-\frac{r-\mu}{\sigma}dt\)，\(\{Z_t^\star\}\) 为 \(\mathbf Q\) 下标准布朗运动。</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 15.3.</strong> Feynman-Kac 证明中用 \(M(S_t,t)\equiv\frac{1}{B_t}g(S_T)\)（\(\mathbf Q\) 下贴现支付）是鞅，因为 \(\tau>t\) 时 \(\mathbb E_t^{\mathbf Q}[M(S_\tau,\tau)]=M(S_t,t)\)（迭代期望律）。</p></div>
+<h3 id="15-1-4-combine-the-results">15.1.4 Combine the Results</h3>
+<p>设投资者初始财富 \(w_0\)，可在任意时刻投资股票 \(S_t\) 与债券 \(B_t\)，CRRA 偏好，只在 \(T\) 关心消费 (15.8)：</p>
+</div>
+<div class="lang en">
+<p>By (14.12), (14.14) (zero dividend \(\delta=0\)), \(dZ_t^\star=dZ_t-\frac{r-\mu}{\sigma}dt\), with \(\{Z_t^\star\}\) standard BM under \(\mathbf Q\).</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 15.3.</strong> The Feynman-Kac proof uses that \(M(S_t,t)\equiv\frac{1}{B_t}g(S_T)\) (the \(\mathbf Q\)-discounted payoff) is a martingale, since for \(\tau>t\), \(\mathbb E_t^{\mathbf Q}[M(S_\tau,\tau)]=M(S_t,t)\) (law of iterated expectations).</p></div>
+<h3 id="15-1-4-combine-the-results">15.1.4 Combine the Results</h3>
+<p>An investor with initial wealth \(w_0\) can invest in stock \(S_t\) and bond \(B_t\) at any time, has CRRA utility and cares only about consumption at \(T\) (15.8):</p>
+</div>
+<p>$$\max_{\{\theta_t,B_t\}_{t=0}^T}\ \mathbb E_0\!\left[e^{-\rho T}\frac{W_T^{1-\gamma}}{1-\gamma}\right]\tag{15.8}$$</p>
+<div class="lang zh">
+<p>约束为<strong>动态预算约束</strong> (15.9) 与初值 (15.10)：</p>
+</div>
+<div class="lang en">
+<p>subject to the <strong>dynamic budget constraint</strong> (15.9) and initial value (15.10):</p>
+</div>
+<p>$$dW_t=\theta_t\,dS_t+rB_t\,dt\tag{15.9}$$</p>
+<p>$$W_0=w_0\tag{15.10}$$</p>
+<div class="lang zh">
+<p>由 §15.1.2，\(W_t=V(S_t,t)\) 且 \(g(S_T)=V(S_T,T)\)，故 \(W_T=g(S_T)\) (15.11)。代入 (15.7) 于 \(t=0\) 得<strong>静态预算约束</strong> (15.12)：</p>
+</div>
+<div class="lang en">
+<p>By §15.1.2, \(W_t=V(S_t,t)\) and \(g(S_T)=V(S_T,T)\), so \(W_T=g(S_T)\) (15.11). Plugging into (15.7) at \(t=0\) gives the <strong>static budget constraint</strong> (15.12):</p>
+</div>
+<p>$$w_0=W_0=\mathbb E_0^{\mathbf Q}\!\left[e^{-rT}W_T\right].\tag{15.12}$$</p>
+<div class="lang zh">
+<p>于是原问题 (15.8)–(15.10) 重写为对终端财富 \(W_T\) 的静态优化 \(\max_{W_T}\mathbb E_0[e^{-\rho T}\frac{W_T^{1-\gamma}}{1-\gamma}]\) s.t. \(w_0=\mathbb E_0^{\mathbf Q}[e^{-rT}W_T]\)。(15.9) 称动态预算约束，(15.12) 称静态预算约束。这一转化即<strong>鞅方法</strong>。</p>
+<div class="callout"><div class="callout-title">Tip</div><p><strong>Remark 15.4.</strong> 直觉：价值过程 \(V(S_t,t)\) 可看作"以初值 \(w_0\)、动态交易股债，在 \(T\) 生成最高 \(V(S_T,T)=g(S_T)\)"的最优组合。这正是投资者想持有的证券；既然任何证券都满足 (15.7)，该最优证券亦然，故 (15.7) 退化为静态预算约束 (15.12)。</p></div>
+</div>
+<div class="lang en">
+<p>So the original problem (15.8)–(15.10) is rewritten as a static optimization over \(W_T\): \(\max_{W_T}\mathbb E_0[e^{-\rho T}\frac{W_T^{1-\gamma}}{1-\gamma}]\) s.t. \(w_0=\mathbb E_0^{\mathbf Q}[e^{-rT}W_T]\). (15.9) is the dynamic budget constraint, (15.12) the static one. This transformation is <strong>martingale methodology</strong>.</p>
+<div class="callout"><div class="callout-title">Tip</div><p><strong>Remark 15.4.</strong> Intuition: the value process \(V(S_t,t)\) is the optimal portfolio of stock and bond that, with initial value \(w_0\), generates the highest \(V(S_T,T)=g(S_T)\) at \(T\). This is exactly the security the investor wants to hold; since every security satisfies (15.7), so does this optimal one, so (15.7) collapses to the static budget constraint (15.12).</p></div>
+</div>
+<h2 id="15-2-portfolio-choice-via-martingale-methodology">15.2 Portfolio Choice via Martingale Methodology</h2>
+<h3 id="15-2-1-simplified-model-of-merton-1969">15.2.1 Simplified Model of Merton (1969)</h3>
+<div class="lang zh">
+<p>去掉中间期消费与股息（与 §6.3 同一问题，结果一致）。股债动态 (15.13)：\(\frac{dS_t}{S_t}=\mu(S_t)\,dt+\sigma(S_t)\,dZ_t\)，\(\frac{dB_t}{B_t}=r\,dt\)。投资者 CRRA、只消费终端 \(V(S_T,T)=g(S_T)\)。求解 (15.14)–(15.16)：</p>
+</div>
+<div class="lang en">
+<p>Drop intermediate consumption and dividends (the same problem as §6.3, with identical result). Stock/bond dynamics (15.13): \(\frac{dS_t}{S_t}=\mu(S_t)\,dt+\sigma(S_t)\,dZ_t\), \(\frac{dB_t}{B_t}=r\,dt\). The CRRA investor consumes only the terminal \(V(S_T,T)=g(S_T)\). Solve (15.14)–(15.16):</p>
+</div>
+<p>$$\max_{\{\theta_t,B_t:\,0\leq t\leq T\}}\mathbb E_0\!\left[e^{-\rho T}\frac{W_T^{1-\gamma}}{1-\gamma}\right]\quad\text{s.t.}\quad dW_t=\theta_t\,dS_t+(W_t-\theta_t S_t)r\,dt,\quad W_0=w_0.\tag{15.14}$$</p>
+<div class="lang zh">
+<p><strong>Step 1.</strong> 用鞅方法把动态约束 (15.15) 化为静态约束 \(w_0=\mathbb E_0^{\mathbf Q}[e^{-rT}W_T]\)，问题重写为 (15.17)–(15.18)：\(\max_{W_T}\mathbb E_0[e^{-\rho T}\frac{W_T^{1-\gamma}}{1-\gamma}]\) s.t. \(w_0=\mathbb E_0^{\mathbf Q}[e^{-rT}W_T]\)。</p>
+<p><strong>Step 2.</strong> 拉格朗日 (15.19)：</p>
+</div>
+<div class="lang en">
+<p><strong>Step 1.</strong> Martingale methodology turns the dynamic constraint (15.15) into the static \(w_0=\mathbb E_0^{\mathbf Q}[e^{-rT}W_T]\), rewriting the problem as (15.17)–(15.18): \(\max_{W_T}\mathbb E_0[e^{-\rho T}\frac{W_T^{1-\gamma}}{1-\gamma}]\) s.t. \(w_0=\mathbb E_0^{\mathbf Q}[e^{-rT}W_T]\).</p>
+<p><strong>Step 2.</strong> Lagrangian (15.19):</p>
+</div>
+<p>$$\mathcal L=\mathbb E_0\!\left[e^{-\rho T}\frac{W_T^{1-\gamma}}{1-\gamma}\right]+\lambda\left(w_0-\mathbb E_0^{\mathbf Q}\!\left[e^{-rT}W_T\right]\right).\tag{15.19}$$</p>
+<div class="lang zh">
+<p><strong>Step 3.</strong> 把 \(\mathbb E_0^{\mathbf Q}\) 由风险中性测度转回物理测度。定义状态价格密度 \(\pi_t\)（即 SDF，见 §3.2.1）(15.20)：\(\frac{d\pi_t}{\pi_t}=\mu_\pi(S_t)\,dt-\sigma_\pi(S_t)\,dZ_t\)，使 \(V(S_t,t)=\mathbb E_t[\frac{\pi_T}{\pi_t}g(S_T)]\) (15.21)。由 \(M_t\equiv\mathbb E_t[\pi_T g(S_T)]=V(S_t,t)\pi_t\) 是鞅，\(\mathbb E_t[dM_t]=0\) (15.22)，结合 Itô 与 (15.5) 比较系数，得 (15.28)：</p>
+</div>
+<div class="lang en">
+<p><strong>Step 3.</strong> Convert \(\mathbb E_0^{\mathbf Q}\) from risk-neutral back to the physical measure. Define the state-price density \(\pi_t\) (the SDF, §3.2.1) (15.20): \(\frac{d\pi_t}{\pi_t}=\mu_\pi(S_t)\,dt-\sigma_\pi(S_t)\,dZ_t\), such that \(V(S_t,t)=\mathbb E_t[\frac{\pi_T}{\pi_t}g(S_T)]\) (15.21). Since \(M_t\equiv\mathbb E_t[\pi_T g(S_T)]=V(S_t,t)\pi_t\) is a martingale, \(\mathbb E_t[dM_t]=0\) (15.22); combining Itô with (15.5) and matching coefficients gives (15.28):</p>
+</div>
+<p>$$\begin{cases}\mu_\pi(S_t)=-r\\[4pt]\sigma_\pi(S_t)=\dfrac{\mu(S_t)-r}{\sigma(S_t)}\end{cases}\tag{15.28}$$</p>
+<p>$$\frac{d\pi_t}{\pi_t}=-r\,dt-\frac{\mu(S_t)-r}{\sigma(S_t)}\,dZ_t.\tag{15.29}$$</p>
+<div class="lang zh">
+<p>其中 \(\frac{\mu(S_t)-r}{\sigma(S_t)}\) 称<strong>风险的市场价格 (market price of risk)</strong>，即夏普比率（单位标准差的风险溢价补偿）。重写 (15.21) 并用 \(W_T=g(S_T)\) 得静态约束的物理测度形式 (15.30)：\(w_0=\mathbb E_0[\pi_T W_T]\)。</p>
+<p><strong>Step 4.</strong> 重写拉格朗日并逐状态取 f.o.c. w.r.t. \(W_T\) (15.31)：</p>
+</div>
+<div class="lang en">
+<p>where \(\frac{\mu(S_t)-r}{\sigma(S_t)}\) is the <strong>market price of risk</strong> — the Sharpe ratio (risk premium per unit of standard deviation). Rewriting (15.21) with \(W_T=g(S_T)\) gives the physical-measure static constraint (15.30): \(w_0=\mathbb E_0[\pi_T W_T]\).</p>
+<p><strong>Step 4.</strong> Rewrite the Lagrangian and take the state-by-state f.o.c. w.r.t. \(W_T\) (15.31):</p>
+</div>
+<p>$$e^{-\rho T}W_T^{-\gamma}=\lambda\pi_T\quad\Rightarrow\quad W_T=e^{\frac{\rho T}{-\gamma}}\lambda^{-\frac1\gamma}\pi_T^{-\frac1\gamma}.\tag{15.31}$$</p>
+<div class="lang zh">
+<p>\(\lambda\) 由 (15.30) 钉住（不重要）。</p>
+<p><strong>Step 5.</strong> 刻画 \(t\) 时财富 \(W_t\)。设 \(r\)、\(\sigma_\pi(S_t)=\sigma_\pi\) 为常数。由 He (2019d) 命题 15.1（\(dX_t=X_t(m\,dt+\sigma\,dB_t)\Rightarrow X_t=X_0 e^{[(m-\frac12\sigma^2)t+\sigma B_t]}\)）与 (15.29)，得 \(\pi_T\) (15.32)、(15.33)：\(\pi_T=\pi_t\exp\{[-r-\frac12\sigma_\pi^2](T-t)-\sigma_\pi(Z_T-Z_t)\}\)。代入 (15.21)、(15.31) 得 (15.34)：\(W_t=\pi_t^{-\frac1\gamma}e^{\frac{\rho T}{-\gamma}}\lambda^{\frac{1}{1-\gamma}\cdots}F(T-t)\)，其中 \(F(T-t)\) 仅依赖 \(T-t\)。</p>
+<p><strong>Step 6.</strong> 求 <strong>Merton 比例</strong> \(\frac{\theta_t S_t}{W_t}\)。对 (15.34) 用 Itô 得 (15.35)：\(\frac{dW_t}{W_t}=\frac1\gamma\sigma_\pi\,dZ_t+R\,dt\)（\(R\) 为漂移）。又由动态预算约束 (15.36)：\(dW_t=\theta_t\sigma(S_t)S_t\,dZ_t+[\theta_t\mu(S_t)S_t+(W_t-\theta_t S_t)r]\,dt\)。比较 \(dZ_t\) 系数 (15.37)：</p>
+</div>
+<div class="lang en">
+<p>\(\lambda\) is pinned by (15.30) (immaterial).</p>
+<p><strong>Step 5.</strong> Characterize wealth \(W_t\). Assume \(r\) and \(\sigma_\pi(S_t)=\sigma_\pi\) constant. By He (2019d) Prop 15.1 (\(dX_t=X_t(m\,dt+\sigma\,dB_t)\Rightarrow X_t=X_0 e^{[(m-\frac12\sigma^2)t+\sigma B_t]}\)) and (15.29), \(\pi_T\) (15.32), (15.33): \(\pi_T=\pi_t\exp\{[-r-\frac12\sigma_\pi^2](T-t)-\sigma_\pi(Z_T-Z_t)\}\). Substituting into (15.21), (15.31) gives (15.34): \(W_t=\pi_t^{-\frac1\gamma}e^{\frac{\rho T}{-\gamma}}\lambda^{\cdots}F(T-t)\), with \(F(T-t)\) depending only on \(T-t\).</p>
+<p><strong>Step 6.</strong> Find the <strong>Merton fraction</strong> \(\frac{\theta_t S_t}{W_t}\). Itô on (15.34) gives (15.35): \(\frac{dW_t}{W_t}=\frac1\gamma\sigma_\pi\,dZ_t+R\,dt\) (\(R\) the drift). The dynamic budget constraint (15.36): \(dW_t=\theta_t\sigma(S_t)S_t\,dZ_t+[\theta_t\mu(S_t)S_t+(W_t-\theta_t S_t)r]\,dt\). Matching \(dZ_t\) coefficients (15.37):</p>
+</div>
+<p>$$\frac{\theta_t S_t}{W_t}=\frac{\sigma_\pi}{\gamma\sigma(S_t)}=\frac{\mu(S_t)-r}{\gamma\sigma^2(S_t)}.\tag{15.37}$$</p>
+<div class="lang zh">
+<p>(15.37) 即投资于风险资产的财富比例，称 <strong>Merton 比例</strong>，与 §6.3 动态规划方法在简化情形下的 (6.36) 一致——证实鞅方法与动态规划方法的等价。</p>
+<h3 id="15-2-2-generalization-model-with-dividends-and-underlying-state">15.2.2 Generalization: Model with Dividends and Underlying State</h3>
+<p>引入不可交易的状态变量 \(\delta\) (15.38)：\(d\delta_t=\mu_\delta(\delta_t)\,dt+\sigma_\delta(\delta_t)\,dZ_t\)。一只股票价 \(S(\delta_t,t)\) 派息 \(D_t\,dt\)；一只证券价 \(V(\delta_t,t)\) 派息 \(h(\delta_t)\,dt\)，终端 \(V(\delta_T,T)=0\)；无风险利率 \(r(\delta_t)\)。</p>
+<p>同样空 \(\theta_t\) 股股票、多 1 份证券，Delta 中性 \(\theta_t=\frac{\partial V/\partial\delta_t}{\partial S/\partial\delta_t}\)。无套利 \(\Pi_t r(\delta_t)\,dt=d\Pi_t+h(\delta_t)\,dt-\frac{\partial V/\partial\delta_t}{\partial S/\partial\delta_t}D_t\,dt\) (15.40)，由 Itô (15.39) 代入并比较，定义 \(-\mu_\delta^\star(\delta_t)\) 得证券满足的 PDE (15.41)：</p>
+</div>
+<div class="lang en">
+<p>(15.37) is the wealth fraction in the risky asset, the <strong>Merton fraction</strong>, matching (6.36) from the §6.3 dynamic-programming approach in the simplified case — confirming the equivalence of martingale and dynamic-programming methods.</p>
+<h3 id="15-2-2-generalization-model-with-dividends-and-underlying-state">15.2.2 Generalization: Model with Dividends and Underlying State</h3>
+<p>Introduce a non-tradable state variable \(\delta\) (15.38): \(d\delta_t=\mu_\delta(\delta_t)\,dt+\sigma_\delta(\delta_t)\,dZ_t\). A stock \(S(\delta_t,t)\) pays dividend \(D_t\,dt\); a security \(V(\delta_t,t)\) pays \(h(\delta_t)\,dt\) with terminal \(V(\delta_T,T)=0\); risk-free rate \(r(\delta_t)\).</p>
+<p>Short \(\theta_t\) shares, long 1 security, Delta-neutral \(\theta_t=\frac{\partial V/\partial\delta_t}{\partial S/\partial\delta_t}\). No-arbitrage \(\Pi_t r(\delta_t)\,dt=d\Pi_t+h(\delta_t)\,dt-\frac{\partial V/\partial\delta_t}{\partial S/\partial\delta_t}D_t\,dt\) (15.40); substituting Itô (15.39) and matching, defining \(-\mu_\delta^\star(\delta_t)\), gives the security PDE (15.41):</p>
+</div>
+<p>$$r(\delta_t)V(\delta_t,t)=\frac{\partial V(\delta_t,t)}{\partial t}+\frac12\frac{\partial^2 V(\delta_t,t)}{(\partial\delta_t)^2}(\sigma_\delta(\delta_t))^2+h(\delta_t)+\mu_\delta^\star(\delta_t)\frac{\partial V(\delta_t,t)}{\partial\delta_t}.\tag{15.41}$$</p>
+<div class="lang zh">
+<p>由 Feynman-Kac，(15.41) 的解 (15.42)：</p>
+</div>
+<div class="lang en">
+<p>By Feynman-Kac, the solution to (15.41) is (15.42):</p>
+</div>
+<p>$$V(\delta_t,t)=\mathbb E_t^{\mathbf Q}\!\left[\int_t^T e^{-\int_t^\tau r(\delta_u)\,du}h(\delta_\tau)\,d\tau\right],\tag{15.42}$$</p>
+<div class="lang zh">
+<p>其中 \(dZ_t^{\mathbf Q}=dZ_t+v(\delta_t)\,dt\)、\(d\delta_t=\mu_\delta^\star(\delta_t)\,dt+\sigma_\delta(\delta_t)\,dZ_t^{\mathbf Q}\)。投资者的组合选择问题（含中间消费）(15.45)：\(\max_{\{\theta_t\}}\mathbb E_0[\int_0^T e^{-\rho t}u(C_t)\,dt]\) s.t. \(dW_t=\theta_t\,dS_t+(W_t-\theta_t S_t)r\,dt+h(\delta_t)\,dt-C_t\,dt\)；静态形式 (15.46)：s.t. \(w_0=\mathbb E_0[\int_0^T\pi_t C_t\,dt]\)。同理定义 SDF \(\pi_t\) (15.48) 并比较，得 (15.56)、(15.57)：</p>
+</div>
+<div class="lang en">
+<p>with \(dZ_t^{\mathbf Q}=dZ_t+v(\delta_t)\,dt\), \(d\delta_t=\mu_\delta^\star(\delta_t)\,dt+\sigma_\delta(\delta_t)\,dZ_t^{\mathbf Q}\). The investor's portfolio problem (with intermediate consumption) (15.45): \(\max_{\{\theta_t\}}\mathbb E_0[\int_0^T e^{-\rho t}u(C_t)\,dt]\) s.t. \(dW_t=\theta_t\,dS_t+(W_t-\theta_t S_t)r\,dt+h(\delta_t)\,dt-C_t\,dt\); static form (15.46): s.t. \(w_0=\mathbb E_0[\int_0^T\pi_t C_t\,dt]\). Defining the SDF \(\pi_t\) (15.48) and matching gives (15.56), (15.57):</p>
+</div>
+<p>$$\begin{cases}\mu_\pi(S_t)=-r(\delta_t)\\[4pt]\sigma_\pi(S_t)=\dfrac{\mu_\delta(\delta_t)-\mu_\delta^\star(\delta_t)}{\sigma_\delta(\delta_t)}\end{cases}\tag{15.56}$$</p>
+<div class="lang zh">
+<p>最终（CRRA、常系数）得到广义 Merton 比例：风险资产财富占比 \(=\frac{\mu_S(\delta_t)-r(\delta_t)}{\gamma\sigma_S(\delta_t)\sigma_\delta(\delta_t)}\)。</p>
+<h3 id="15-2-3-discussion-on-market-completeness">15.2.3 Discussion on Market Completeness</h3>
+<ul>
+<li>以上始终假设<strong>市场完全</strong>。这里"完全"仅指<strong>可交易工具数不少于风险源数</strong>，从而无风险复制组合能用每个工具对冲每个风险源。</li>
+<li>若风险源多于可交易工具，动态复制步骤崩溃，整套推导失效。</li>
+</ul>
+</div>
+<div class="lang en">
+<p>Finally (CRRA, constant coefficients) the generalized Merton fraction: risky-asset wealth share \(=\frac{\mu_S(\delta_t)-r(\delta_t)}{\gamma\sigma_S(\delta_t)\sigma_\delta(\delta_t)}\).</p>
+<h3 id="15-2-3-discussion-on-market-completeness">15.2.3 Discussion on Market Completeness</h3>
+<ul>
+<li>The above always assumed a <strong>complete market</strong>. Here "complete" just means <strong>no fewer tradable instruments than sources of risk</strong>, so the riskless replicating portfolio can hedge each risk source with each instrument.</li>
+<li>If risks outnumber tradable instruments, the dynamic-replication step breaks down and the whole derivation fails.</li>
+</ul>
+</div>
+<h2 id="15-3-heterogeneity-veronesi-2019">15.3 Heterogeneity: Veronesi (2019)</h2>
+<h3 id="15-3-1-setup">15.3.1 Setup</h3>
+<div class="lang zh">
+<p>完全市场一般均衡，外生总红利过程 \(D_t=e^{\delta_t}\) (15.66)：\(d\delta_t=\mu_\delta\,dt+\sigma_\delta\,dZ_t\)。股票价 \(P_t\) 是所有未来总红利之索取权；内生利率 \(r_t\)；SDF \(\pi_t\) (15.67)：\(P_0=\mathbb E_0[\int_0^T\pi_t D_t\,dt]\)。连续统代理人 \(i\in[0,1]\)，CRRA \(\frac{C_{i,t}^{1-\gamma_i}}{1-\gamma_i}\)，风险容忍度 \(\rho_i=\frac1{\gamma_i}\in[\underline\rho,\bar\rho]\)。代理人 \(i\) 持初始财富份额 \(\omega_i\)：\(W_{i,0}=\omega_i P_0\)，\(\int_0^1\omega_i\,di=1\)、\(\omega_i\geq0\)。</p>
+<h3 id="15-3-2-the-decentralized-problem">15.3.2 The Decentralized Problem</h3>
+<p>代理人 \(i\) 求解 (15.68)：\(\max_{\{C_{i,t}\}}\mathbb E_0[\int_0^T e^{-\phi t}\frac{C_{i,t}^{1-\gamma_i}}{1-\gamma_i}\,dt]\) s.t. \(W_{i,0}=\mathbb E_0[\int_0^T\pi_t C_{i,t}\,dt]\)（贴现率 \(\phi\) 对所有 \(i\) 相同），等价写为 \(\omega_i P_0=\mathbb E_0[\int_0^T\pi_t C_{i,t}\,dt]\) (15.69)。拉格朗日 f.o.c. 得 (15.70)：</p>
+</div>
+<div class="lang en">
+<p>Complete-market general equilibrium, exogenous aggregate dividend \(D_t=e^{\delta_t}\) (15.66): \(d\delta_t=\mu_\delta\,dt+\sigma_\delta\,dZ_t\). Stock price \(P_t\) is the claim to all future aggregate dividends; endogenous rate \(r_t\); SDF \(\pi_t\) (15.67): \(P_0=\mathbb E_0[\int_0^T\pi_t D_t\,dt]\). A continuum of agents \(i\in[0,1]\), CRRA \(\frac{C_{i,t}^{1-\gamma_i}}{1-\gamma_i}\), risk tolerance \(\rho_i=\frac1{\gamma_i}\in[\underline\rho,\bar\rho]\). Agent \(i\) holds initial wealth share \(\omega_i\): \(W_{i,0}=\omega_i P_0\), \(\int_0^1\omega_i\,di=1\), \(\omega_i\geq0\).</p>
+<h3 id="15-3-2-the-decentralized-problem">15.3.2 The Decentralized Problem</h3>
+<p>Agent \(i\) solves (15.68): \(\max_{\{C_{i,t}\}}\mathbb E_0[\int_0^T e^{-\phi t}\frac{C_{i,t}^{1-\gamma_i}}{1-\gamma_i}\,dt]\) s.t. \(W_{i,0}=\mathbb E_0[\int_0^T\pi_t C_{i,t}\,dt]\) (discount rate \(\phi\) common to all \(i\)), equivalently \(\omega_i P_0=\mathbb E_0[\int_0^T\pi_t C_{i,t}\,dt]\) (15.69). The Lagrangian f.o.c. gives (15.70):</p>
+</div>
+<p>$$e^{-\phi t}C_{i,t}^{-\gamma_i}=\xi_i\pi_t\quad\Rightarrow\quad C_{i,t}=e^{\rho_i g_t-\rho_i\ln\xi_i},\qquad g_t\equiv-\phi t-\ln\pi_t.\tag{15.70}$$</p>
+<div class="lang zh">
+<p>\(g_t\) 只依赖 \(t\)、与 \(i\) 无关。由 \(\pi_t\equiv e^{-\phi t-g_t}\) (15.71)、\(\delta_t=\ln D_t\) 重写 (15.67) 于 \(t=0\) 得 (15.72)。代入 (15.69) 得 <strong>Equation 1</strong> (15.73)：</p>
+</div>
+<div class="lang en">
+<p>\(g_t\) depends only on \(t\), not \(i\). From \(\pi_t\equiv e^{-\phi t-g_t}\) (15.71), \(\delta_t=\ln D_t\), rewrite (15.67) at \(t=0\) as (15.72). Substituting into (15.69) yields <strong>Equation 1</strong> (15.73):</p>
+</div>
+<p>$$\omega_i\lambda_i=e^{-\rho_i\ln\xi_i},\qquad\lambda_i\equiv\frac{P_0}{\mathbb E_0[\int_0^T e^{-\phi t-(1-\rho_i)g_t}\,dt]}>0.\tag{15.73}$$</p>
+<div class="lang zh">
+<p><strong>Equation 2.</strong> 定义横截面密度 \(f_{\mathrm{CS}}(\omega_i,\rho_i\mid\delta_t)\) 与横截面期望消费 \(\mathbb E_{\mathrm{CS}}[C_{i,t}\mid\delta_t]=\int_i C_{i,t}f_{\mathrm{CS}}\,d\omega_i d\rho_i\)。市场出清（单位质量）\(\mathbb E_{\mathrm{CS}}[C_{i,t}\mid\delta_t]=D_t\) 得 (15.74)：\(\delta_t=\ln(\mathbb E_{\mathrm{CS}}[e^{\rho_i g_t}\omega_i\lambda_i\mid\delta_t])\)。</p>
+<p><strong>泛函不动点。</strong> 由 (15.74)（Equation 2），隐函数定理表明 \(g_t\) 是 \(\delta_t\) 的函数 \(g(\delta_t)\)；但由 (15.73)（Equation 1），\(\lambda_i\) 又依赖整条函数 \(g(\delta_t)\)，故 (15.76)：\(\delta_t=\ln(\mathbb E_{\mathrm{CS}}[\underbrace{e^{\rho_i g(\delta_t)}\omega_i}_{\text{Part A}}\underbrace{\lambda_i(g(\delta_t))}_{\text{Part B}}\mid\delta_t])\) 是泛函不动点，一般极难解，但可迭代数值求解。</p>
+<h3 id="15-3-3-characterization-of-the-solution">15.3.3 Characterization of the Solution</h3>
+<p>虽难求闭式，可刻画 \(g(\delta_t)\) 的导数。对 (15.74) 隐函数 \(g_t(\delta_t)\) 两边求导，定义新概率测度 \(\star\)（密度 \(f_{\mathrm{CS}}^\star(\omega_i,\rho_i\mid\delta_t)=\frac{f_{\mathrm{CS}}e^{\rho_i g(\delta_t)}\omega_i\lambda_i}{\int f_{\mathrm{CS}}e^{\rho_i g(\delta_t)}\omega_i\lambda_i\,d\omega d\rho}\)），整理得<strong>一阶导</strong> (15.80)：</p>
+</div>
+<div class="lang en">
+<p><strong>Equation 2.</strong> Define the cross-sectional density \(f_{\mathrm{CS}}(\omega_i,\rho_i\mid\delta_t)\) and cross-sectional expected consumption \(\mathbb E_{\mathrm{CS}}[C_{i,t}\mid\delta_t]=\int_i C_{i,t}f_{\mathrm{CS}}\,d\omega_i d\rho_i\). Market clearing (unit mass) \(\mathbb E_{\mathrm{CS}}[C_{i,t}\mid\delta_t]=D_t\) gives (15.74): \(\delta_t=\ln(\mathbb E_{\mathrm{CS}}[e^{\rho_i g_t}\omega_i\lambda_i\mid\delta_t])\).</p>
+<p><strong>Functional fixed point.</strong> By (15.74) (Equation 2), the implicit function theorem makes \(g_t\) a function \(g(\delta_t)\); but by (15.73) (Equation 1), \(\lambda_i\) depends on the whole function \(g(\delta_t)\), so (15.76): \(\delta_t=\ln(\mathbb E_{\mathrm{CS}}[\underbrace{e^{\rho_i g(\delta_t)}\omega_i}_{\text{Part A}}\underbrace{\lambda_i(g(\delta_t))}_{\text{Part B}}\mid\delta_t])\) is a functional fixed point, generally very hard to solve, but solvable by iteration.</p>
+<h3 id="15-3-3-characterization-of-the-solution">15.3.3 Characterization of the Solution</h3>
+<p>Though no closed form, we can characterize derivatives of \(g(\delta_t)\). Differentiating the implicit \(g_t(\delta_t)\) in (15.74), and defining a new probability measure \(\star\) (density \(f_{\mathrm{CS}}^\star(\omega_i,\rho_i\mid\delta_t)=\frac{f_{\mathrm{CS}}e^{\rho_i g(\delta_t)}\omega_i\lambda_i}{\int f_{\mathrm{CS}}e^{\rho_i g(\delta_t)}\omega_i\lambda_i\,d\omega d\rho}\)), the <strong>first derivative</strong> (15.80):</p>
+</div>
+<p>$$g'(\delta_t)=\frac{1}{\mathbb E_{\mathrm{CS}}^\star[\rho_i\mid\delta_t]}.\tag{15.80}$$</p>
+<div class="lang zh">
+<p>由 \(\rho_i\in[\underline\rho,\bar\rho]\)，得 \(g'(\delta_t)>0\) 且 \(g'(\delta_t)\in[\frac1{\bar\rho},\frac1{\underline\rho}]\)。再求<strong>二阶导</strong>得 (15.81)：\(g''(\delta_t)=g'(\delta_t)\left(1-\frac{\mathbb E_{\mathrm{CS}}^{\star\star}[\rho_i\mid\delta_t]}{\mathbb E_{\mathrm{CS}}^\star[\rho_i\mid\delta_t]}\right)\)，其中 \(\star\star\) 是给高 \(\rho_i\) 更高权重的测度，故 \(\mathbb E_{\mathrm{CS}}^{\star\star}[\rho_i]>\mathbb E_{\mathrm{CS}}^\star[\rho_i]\)，于是 \(g''(\delta_t)<0\)。</p>
+<p><strong>SDF.</strong> 由 \(g(\delta_t)=-\phi t-\ln\pi_t\) 得 \(\pi_t=e^{-\phi t}e^{-g(\delta_t)}\) (15.85)，对其用 Itô 得 (15.86)：</p>
+</div>
+<div class="lang en">
+<p>Since \(\rho_i\in[\underline\rho,\bar\rho]\), \(g'(\delta_t)>0\) and \(g'(\delta_t)\in[\frac1{\bar\rho},\frac1{\underline\rho}]\). The <strong>second derivative</strong> (15.81): \(g''(\delta_t)=g'(\delta_t)\left(1-\frac{\mathbb E_{\mathrm{CS}}^{\star\star}[\rho_i\mid\delta_t]}{\mathbb E_{\mathrm{CS}}^\star[\rho_i\mid\delta_t]}\right)\), where \(\star\star\) weights higher \(\rho_i\) more, so \(\mathbb E_{\mathrm{CS}}^{\star\star}[\rho_i]>\mathbb E_{\mathrm{CS}}^\star[\rho_i]\), giving \(g''(\delta_t)<0\).</p>
+<p><strong>SDF.</strong> From \(g(\delta_t)=-\phi t-\ln\pi_t\), \(\pi_t=e^{-\phi t}e^{-g(\delta_t)}\) (15.85); Itô gives (15.86):</p>
+</div>
+<p>$$\frac{d\pi_t}{\pi_t}=\left(-\phi+\frac12(g'(\delta_t))^2\sigma_\delta^2-\frac12 g''(\delta_t)\sigma_\delta^2-g'(\delta_t)\mu_\delta\right)dt-g'(\delta_t)\sigma_\delta\,dZ_t.\tag{15.86}$$</p>
+<div class="lang zh">
+<p>故 SDF 在随机项 \(dZ_t\) 上的载荷（绝对值 \(g'(\delta_t)\sigma_\delta\)，即市场夏普比率）随 \(\delta_t\) 增大而减小（因 \(g'\) 减）。<strong>利率</strong>：由 SDF 漂移恒为 \(-r_t\,dt\) (15.87)，匹配系数 \(r_t=\phi+g'(\delta_t)\mu_\delta+\frac12 g''(\delta_t)\sigma_\delta^2-\frac12(g'(\delta_t))^2\sigma_\delta^2\)。</p>
+<p><strong>比较代理人 \(i,j\)。</strong> 由 (15.73)、(15.70)，\(\frac{C_{i,t}}{C_{j,t}}=e^{(\rho_i-\rho_j)g(\delta_t)}\frac{\omega_i\lambda_i}{\omega_j\lambda_j}\)，故 (15.88)：\(\frac{\partial}{\partial\delta_t}\frac{C_{i,t}}{C_{j,t}}=(\rho_i-\rho_j)g'(\delta_t)e^{(\rho_i-\rho_j)g(\delta_t)}\frac{\omega_i\lambda_i}{\omega_j\lambda_j}\)。若 \(\rho_i>\rho_j\)（\(i\) 更风险容忍），则总消费上升时 \(i\) 消费占比增大——风险容忍者在总消费低时承担风险（低消费）、在总消费高时享受上行，符合直觉。</p>
+<p><strong>价格 \(P_t\)。</strong> 由 (15.66)，\(\delta_{t+\tau}=\delta_t+\mu_\delta\tau+\sigma_\delta\sqrt\tau x_t\) (15.89)，\(x_t\sim\mathcal N(0,1)\)。由 (15.67)、(15.85)，\(P_t=e^{g(\delta_t)}\frac1\phi\mathbb E_t^{x_t}[\int_0^{T-t}\phi e^{-\phi\tau}e^{\delta_{t+\tau}-g(\delta_{t+\tau})}\,d\tau]\) (15.90)，其中 \(f^\star(\tau)=\phi e^{-\phi\tau}\) 是截断于 \(T-t\) 的指数分布密度，归一化为 (15.91)，代入得 (15.92) 的可数值模拟形式。</p>
+</div>
+<div class="lang en">
+<p>So the SDF's loading on \(dZ_t\) (absolute value \(g'(\delta_t)\sigma_\delta\), the market Sharpe ratio) decreases as \(\delta_t\) rises (since \(g'\) falls). <strong>Interest rate</strong>: as the SDF drift is always \(-r_t\,dt\) (15.87), matching gives \(r_t=\phi+g'(\delta_t)\mu_\delta+\frac12 g''(\delta_t)\sigma_\delta^2-\frac12(g'(\delta_t))^2\sigma_\delta^2\).</p>
+<p><strong>Comparing agents \(i,j\).</strong> From (15.73), (15.70), \(\frac{C_{i,t}}{C_{j,t}}=e^{(\rho_i-\rho_j)g(\delta_t)}\frac{\omega_i\lambda_i}{\omega_j\lambda_j}\), so (15.88): \(\frac{\partial}{\partial\delta_t}\frac{C_{i,t}}{C_{j,t}}=(\rho_i-\rho_j)g'(\delta_t)e^{(\rho_i-\rho_j)g(\delta_t)}\frac{\omega_i\lambda_i}{\omega_j\lambda_j}\). If \(\rho_i>\rho_j\) (\(i\) more risk-tolerant), \(i\)'s consumption share rises as aggregate consumption rises — the risk-tolerant bear risk when aggregate consumption is low (low consumption) and enjoy the upside when high, as intuition suggests.</p>
+<p><strong>Price \(P_t\).</strong> By (15.66), \(\delta_{t+\tau}=\delta_t+\mu_\delta\tau+\sigma_\delta\sqrt\tau x_t\) (15.89), \(x_t\sim\mathcal N(0,1)\). By (15.67), (15.85), \(P_t=e^{g(\delta_t)}\frac1\phi\mathbb E_t^{x_t}[\int_0^{T-t}\phi e^{-\phi\tau}e^{\delta_{t+\tau}-g(\delta_{t+\tau})}\,d\tau]\) (15.90), where \(f^\star(\tau)=\phi e^{-\phi\tau}\) is an exponential density truncated at \(T-t\), renormalized as (15.91), giving the numerically simulable form (15.92).</p>
+</div>
+<div class="lang zh">
+<p><strong>同质特例。</strong> 若所有代理人同质 \(\rho_i=\rho=\frac1\gamma\)，则 (15.70) 化为 \(e^{-\phi t}D_t^{-\gamma}=\xi\pi_t\)，\(\pi_t=\frac1\xi e^{-\phi t-\gamma\delta_t}\) (15.93)。代入 (15.67) 算出价格-红利比 (15.95)：</p>
+</div>
+<div class="lang en">
+<p><strong>Homogeneous special case.</strong> If all agents are homogeneous \(\rho_i=\rho=\frac1\gamma\), (15.70) becomes \(e^{-\phi t}D_t^{-\gamma}=\xi\pi_t\), \(\pi_t=\frac1\xi e^{-\phi t-\gamma\delta_t}\) (15.93). Substituting into (15.67) gives the price-dividend ratio (15.95):</p>
+</div>
+<p>$$\frac{P_t}{D_t}=\frac{1}{\phi+(\gamma-1)\mu_\delta-\frac12(\gamma-1)^2\sigma_\delta^2}\quad(T\to\infty).\tag{15.95}$$</p>
+<div class="lang zh">
+<p>当 \(\gamma>1\) 时，\(\frac{P_t}{D_t}\) 随 \(\mu_\delta\) 减小：跨期替代弹性 $&lt;1$，代理人更看重当下，故未来前景变好（\(\mu_\delta\) 升）时反而卖出资产以当下消费，压低当前价格。</p>
+</div>
+<div class="lang en">
+<p>When \(\gamma>1\), \(\frac{P_t}{D_t}\) decreases in \(\mu_\delta\): the intertemporal elasticity of substitution is $&lt;1$, so the agent cares more about the present; as prospects improve (\(\mu_\delta\) rises) they sell to consume now, depressing today's price.</p>
+</div>
+<h2 id="15-4-beating-the-joneses-preferences">15.4 Beating the Joneses Preferences</h2>
+<h3 id="15-4-1-setup">15.4.1 Setup</h3>
+<div class="lang zh">
+<p>外生总红利 \(D_t=e^{\delta_t}\) (15.96)：\(d\delta_t=\mu_\delta\,dt+\sigma_\delta\,dZ_t\)，总消费 \(C_t=D_t\)。唯一风险资产为股票 \(P_t\)（所有未来红利之索取权）；内生利率 \(r_t\)；SDF \(\pi_t\) (15.97)：\(P_t=\mathbb E_t[\int_t^T\frac{\pi_\tau}{\pi_t}D_\tau\,d\tau]\)。连续统永生代理人 \(i\in[0,1]\)，效用既依赖自身消费 \(C_{i,t}\) 又依赖他人消费 \(C_{j,t}\)（\(j\neq i\)）：</p>
+</div>
+<div class="lang en">
+<h3 id="15-4-1-setup">15.4.1 Setup</h3>
+<p>Exogenous aggregate dividend \(D_t=e^{\delta_t}\) (15.96): \(d\delta_t=\mu_\delta\,dt+\sigma_\delta\,dZ_t\), aggregate consumption \(C_t=D_t\). The single risky asset is the stock \(P_t\) (claim to all future dividends); endogenous rate \(r_t\); SDF \(\pi_t\) (15.97): \(P_t=\mathbb E_t[\int_t^T\frac{\pi_\tau}{\pi_t}D_\tau\,d\tau]\). A continuum of infinitely-lived agents \(i\in[0,1]\) whose utility depends on both own consumption \(C_{i,t}\) and others' \(C_{j,t}\) (\(j\neq i\)):</p>
+</div>
+<p>$$u(C_{i,t},C_t,t)=\frac{e^{-\phi t}}{1-\gamma}\left(\frac{C_{i,t}}{C_t^{\eta_i}}\right)^{1-\gamma},\qquad C_t=\int_0^1 C_{i,t}\,di,$$</p>
+<div class="lang zh">
+<p>异质系数 \(\eta_i\) 取两值：<strong>普通琼斯 (Regular Jones)</strong> \(\eta_i=\eta_J<1\)，质量 \(1-\lambda\)；<strong>赶超琼斯 (Beating the Jones)</strong> \(\eta_i=\eta_B>1\)，质量 \(\lambda\)。初始财富份额 \(\omega_{i,0}\)：\(W_{i,0}=\omega_{i,0}P_0\)，\(\int_0^1\omega_{i,0}\,di=1\)。</p>
+<h3 id="15-4-2-the-decentralized-problem">15.4.2 The Decentralized Problem</h3>
+<p>代理人 \(i\) 解 (15.98)：\(\max_{\{C_{i,t}\}}\mathbb E_0[\int_0^T\frac{e^{-\phi t}}{1-\gamma}(\frac{C_{i,t}}{C_t^{\eta_i}})^{1-\gamma}\,dt]\) s.t. \(\omega_{i,0}P_0=\mathbb E_0[\int_0^T\pi_t C_{i,t}\,dt]\) (15.99)（每个 \(i\) 是无穷小，无法影响 \(C_t\)）。f.o.c. 得 (15.100)：</p>
+</div>
+<div class="lang en">
+<p>The heterogeneous coefficient \(\eta_i\) takes two values: <strong>Regular Jones</strong> \(\eta_i=\eta_J<1\), mass \(1-\lambda\); <strong>Beating the Jones</strong> \(\eta_i=\eta_B>1\), mass \(\lambda\). Initial wealth share \(\omega_{i,0}\): \(W_{i,0}=\omega_{i,0}P_0\), \(\int_0^1\omega_{i,0}\,di=1\).</p>
+<h3 id="15-4-2-the-decentralized-problem">15.4.2 The Decentralized Problem</h3>
+<p>Agent \(i\) solves (15.98): \(\max_{\{C_{i,t}\}}\mathbb E_0[\int_0^T\frac{e^{-\phi t}}{1-\gamma}(\frac{C_{i,t}}{C_t^{\eta_i}})^{1-\gamma}\,dt]\) s.t. \(\omega_{i,0}P_0=\mathbb E_0[\int_0^T\pi_t C_{i,t}\,dt]\) (15.99) (each \(i\) is infinitesimal and cannot affect \(C_t\)). The f.o.c. gives (15.100):</p>
+</div>
+<p>$$C_{i,t}=e^{\frac1\gamma g_t-\frac1\gamma\ln\xi_i-\eta_i\frac{1-\gamma}{\gamma}\ln(\int_0^1 C_{i,t}\,di)},\qquad g_t\equiv-\phi t-\ln\pi_t.\tag{15.100}$$</p>
+<div class="lang zh">
+<p>\(g_t\) 只依赖 \(t\)。由 \(\pi_t=e^{-\phi t-g_t}\) (15.101)、(15.102) 与市场出清 \(\mathbb E_{\mathrm{CS}}[C_{i,t}\mid\delta_t]=D_t=e^{\delta_t}\)，得两条不动点方程：<strong>Equation 1</strong>（由出清，钉住 \(g_t\)）与 <strong>Equation 2</strong> (15.103)：\(\omega_{i,0}\psi_i=e^{-\frac1\gamma\ln\xi_i}\)，\(\psi_i\equiv\frac{P_0}{\mathbb E_0[\int_0^T e^{-\phi t-(1-\frac1\gamma)g_t-\eta_i\frac{1-\gamma}\gamma\delta_t}\,dt]}\)。同 Veronesi，\(g(\delta_t)\) 是泛函不动点 (15.104)，迭代数值求解。</p>
+<h3 id="15-4-3-characterization-of-the-solution">15.4.3 Characterization of the Solution</h3>
+<p>同样刻画导数：<strong>一阶导</strong> \(g'(\delta_t)>0\) (15.105)（因 \(\omega_{i,0}\psi_i=e^{-\frac1\gamma\ln\xi_i}>0\) 且指数项均正）；<strong>二阶导</strong> \(g''(\delta_t)\) (15.81 同型，含 \(\eta_i\))。<strong>SDF</strong> (15.106)–(15.107)：</p>
+</div>
+<div class="lang en">
+<p>\(g_t\) depends only on \(t\). From \(\pi_t=e^{-\phi t-g_t}\) (15.101), (15.102) and market clearing \(\mathbb E_{\mathrm{CS}}[C_{i,t}\mid\delta_t]=D_t=e^{\delta_t}\), two fixed-point equations arise: <strong>Equation 1</strong> (from clearing, pins \(g_t\)) and <strong>Equation 2</strong> (15.103): \(\omega_{i,0}\psi_i=e^{-\frac1\gamma\ln\xi_i}\), \(\psi_i\equiv\frac{P_0}{\mathbb E_0[\int_0^T e^{-\phi t-(1-\frac1\gamma)g_t-\eta_i\frac{1-\gamma}\gamma\delta_t}\,dt]}\). As in Veronesi, \(g(\delta_t)\) is a functional fixed point (15.104), solved by iteration.</p>
+<h3 id="15-4-3-characterization-of-the-solution">15.4.3 Characterization of the Solution</h3>
+<p>Again characterize derivatives: <strong>first derivative</strong> \(g'(\delta_t)>0\) (15.105) (since \(\omega_{i,0}\psi_i=e^{-\frac1\gamma\ln\xi_i}>0\) and the exponentials are positive); <strong>second derivative</strong> \(g''(\delta_t)\) (same form as 15.81, involving \(\eta_i\)). <strong>SDF</strong> (15.106)–(15.107):</p>
+</div>
+<p>$$\frac{d\pi_t}{\pi_t}=\left(-\phi+\frac12(g'(\delta_t))^2\sigma_\delta^2-\frac12 g''(\delta_t)\sigma_\delta^2-g'(\delta_t)\mu_\delta\right)dt-g'(\delta_t)\sigma_\delta\,dZ_t.\tag{15.107}$$</p>
+<div class="lang zh">
+<p>匹配漂移得<strong>利率</strong> \(r_t=\phi+g'(\delta_t)\mu_\delta+\frac12 g''(\delta_t)\sigma_\delta^2-\frac12(g'(\delta_t))^2\sigma_\delta^2\)，及 \(\sigma_\pi=g'(\delta_t)\sigma_\delta\) (15.108)。</p>
+<p><strong>比较两类代理人 \(J\)（普通）与 \(B\)（赶超）。</strong> 由 (15.103)、(15.100)，\(\frac{C_{B,t}}{C_{J,t}}=\frac{\omega_{B,0}\psi_B}{\omega_{J,0}\psi_J}e^{(\eta_J-\eta_B)\frac{1-\gamma}\gamma\delta_t}\)，故 (15.110)：\(\frac{\partial}{\partial\delta_t}\frac{C_{B,t}}{C_{J,t}}=(\eta_J-\eta_B)\frac{1-\gamma}\gamma\frac{\omega_{B,0}\psi_B}{\omega_{J,0}\psi_J}e^{(\eta_J-\eta_B)\frac{1-\gamma}\gamma\delta_t}>0\)（当 \(\gamma>1\)，因 \(\eta_J-\eta_B<0\)）。即 \(\gamma>1\) 时，总消费上升时赶超琼斯者消费相对增多：他们更急于"超过平均"，故好时大量消费；总红利变低时二者差异缩小。</p>
+<p><strong>财富。</strong> 由 (15.111)–(15.114)，\(\frac{dW_{i,t}}{W_{i,t}}=(\frac1\gamma g'(\delta_t)-\eta_i\frac{1-\gamma}\gamma)\sigma_\delta\,dZ_t+\frac{R_i}{W_{i,t}}dt\) (15.114)；\(\gamma>1\) 时赶超琼斯者财富对风险的载荷更高。</p>
+<p><strong>组合配置。</strong> 设股价 \(dP_t=P_t\mu_P\,dt+P_t\sigma_P\,dZ_t\) (15.116)，由动态预算约束匹配 \(dZ_t\) 系数得风险资产财富占比 (15.118)：\(\frac{\theta_{i,t}P_t}{W_{i,t}}=(\frac1\gamma g'(\delta_t)-\eta_i\frac{1-\gamma}\gamma)\frac{\sigma_\delta}{\sigma_P}\)。\(\gamma>1\) 时赶超琼斯者风险敞口占比更高、无风险储蓄占比更低——他们急于超越他人，故多投风险资产、少存无风险。</p>
+<p><strong>消费过程。</strong> 对 (15.100) 用 Itô (15.114')：\(\frac{dC_{i,t}}{C_{i,t}}=\sigma_{C,i}\,dZ_t+(\cdots)dt\)，\(\sigma_{C,i}\equiv(\frac1\gamma g'(\delta_t)-\eta_i\frac{1-\gamma}\gamma)\sigma_\delta\)。\(\gamma>1\) 且 \(\eta_B>\eta_J\) 时 \(\sigma_{C,B}>\sigma_{C,J}\)（\(\gamma<1\) 时相反），即高风险厌恶下赶超琼斯者消费承担更多风险。</p>
+<p><strong>价格 \(P_t\).</strong> 同 Veronesi（截断指数分布 \(\tau\) + 正态 \(\delta_{t+\tau}\)）得可数值模拟的 (15.122) 及价格-红利比。</p>
+</div>
+<div class="lang en">
+<p>Matching the drift gives the <strong>interest rate</strong> \(r_t=\phi+g'(\delta_t)\mu_\delta+\frac12 g''(\delta_t)\sigma_\delta^2-\frac12(g'(\delta_t))^2\sigma_\delta^2\) and \(\sigma_\pi=g'(\delta_t)\sigma_\delta\) (15.108).</p>
+<p><strong>Comparing \(J\) (Regular) and \(B\) (Beating).</strong> From (15.103), (15.100), \(\frac{C_{B,t}}{C_{J,t}}=\frac{\omega_{B,0}\psi_B}{\omega_{J,0}\psi_J}e^{(\eta_J-\eta_B)\frac{1-\gamma}\gamma\delta_t}\), so (15.110): \(\frac{\partial}{\partial\delta_t}\frac{C_{B,t}}{C_{J,t}}=(\eta_J-\eta_B)\frac{1-\gamma}\gamma\frac{\omega_{B,0}\psi_B}{\omega_{J,0}\psi_J}e^{(\eta_J-\eta_B)\frac{1-\gamma}\gamma\delta_t}>0\) (when \(\gamma>1\), since \(\eta_J-\eta_B<0\)). So for \(\gamma>1\), Beating-the-Joneses agents consume relatively more as aggregate consumption rises: more eager to "beat the average," they consume heavily in good times; the gap shrinks as the aggregate dividend falls.</p>
+<p><strong>Wealth.</strong> By (15.111)–(15.114), \(\frac{dW_{i,t}}{W_{i,t}}=(\frac1\gamma g'(\delta_t)-\eta_i\frac{1-\gamma}\gamma)\sigma_\delta\,dZ_t+\frac{R_i}{W_{i,t}}dt\) (15.114); for \(\gamma>1\) Beating-the-Joneses agents load more on risk.</p>
+<p><strong>Portfolio allocation.</strong> Let \(dP_t=P_t\mu_P\,dt+P_t\sigma_P\,dZ_t\) (15.116); matching \(dZ_t\) in the dynamic budget constraint gives the risky-asset wealth share (15.118): \(\frac{\theta_{i,t}P_t}{W_{i,t}}=(\frac1\gamma g'(\delta_t)-\eta_i\frac{1-\gamma}\gamma)\frac{\sigma_\delta}{\sigma_P}\). For \(\gamma>1\), Beating-the-Joneses agents hold a larger risky exposure and less risk-free saving — eager to outdo others, they invest more in the risky asset and save less risk-free.</p>
+<p><strong>Consumption process.</strong> Itô on (15.100): \(\frac{dC_{i,t}}{C_{i,t}}=\sigma_{C,i}\,dZ_t+(\cdots)dt\), \(\sigma_{C,i}\equiv(\frac1\gamma g'(\delta_t)-\eta_i\frac{1-\gamma}\gamma)\sigma_\delta\). For \(\gamma>1\) and \(\eta_B>\eta_J\), \(\sigma_{C,B}>\sigma_{C,J}\) (reversed for \(\gamma<1\)): under high risk aversion the Beating-the-Joneses consumption bears more risk.</p>
+<p><strong>Price \(P_t\).</strong> As in Veronesi (truncated exponential \(\tau\) + normal \(\delta_{t+\tau}\)), the numerically simulable (15.122) and price-dividend ratio follow.</p>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Merton, R. C. (1969). Lifetime Portfolio Selection under Uncertainty: The Continuous-Time Case. <em>The Review of Economics and Statistics</em> 51(3), 247–257.</li>
+<li>Veronesi, P. (2019). <em>Heterogeneous Agents and Asset Pricing</em> (lecture/working material).</li>
+<li>He, X. (2019d). <em>Stochastic Calculus Notes by Xindi He.</em></li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#15-1-martingale-methodology">15.1 Martingale Methodology</a></li>
+          <li><a href="#15-1-1-setup">15.1.1 Setup</a></li>
+          <li><a href="#15-1-2-dynamic-replication">15.1.2 Dynamic Replication</a></li>
+          <li><a href="#15-1-2-dynamic-replication">15.1.2 Dynamic Replication</a></li>
+          <li><a href="#15-1-3-feynman-kac-theorem">15.1.3 Feynman-Kac Theorem</a></li>
+          <li><a href="#15-1-3-feynman-kac-theorem">15.1.3 Feynman-Kac Theorem</a></li>
+          <li><a href="#15-1-4-combine-the-results">15.1.4 Combine the Results</a></li>
+          <li><a href="#15-1-4-combine-the-results">15.1.4 Combine the Results</a></li>
+        <li><a href="#15-2-portfolio-choice-via-martingale-methodology">15.2 Portfolio Choice via Martingale Methodology</a></li>
+          <li><a href="#15-2-1-simplified-model-of-merton-1969">15.2.1 Simplified Model of Merton (1969)</a></li>
+          <li><a href="#15-2-2-generalization-model-with-dividends-and-underlying-state">15.2.2 Generalization: Model with Dividends and Underlying State</a></li>
+          <li><a href="#15-2-2-generalization-model-with-dividends-and-underlying-state">15.2.2 Generalization: Model with Dividends and Underlying State</a></li>
+          <li><a href="#15-2-3-discussion-on-market-completeness">15.2.3 Discussion on Market Completeness</a></li>
+          <li><a href="#15-2-3-discussion-on-market-completeness">15.2.3 Discussion on Market Completeness</a></li>
+        <li><a href="#15-3-heterogeneity-veronesi-2019">15.3 Heterogeneity: Veronesi (2019)</a></li>
+          <li><a href="#15-3-1-setup">15.3.1 Setup</a></li>
+          <li><a href="#15-3-2-the-decentralized-problem">15.3.2 The Decentralized Problem</a></li>
+          <li><a href="#15-3-2-the-decentralized-problem">15.3.2 The Decentralized Problem</a></li>
+          <li><a href="#15-3-3-characterization-of-the-solution">15.3.3 Characterization of the Solution</a></li>
+          <li><a href="#15-3-3-characterization-of-the-solution">15.3.3 Characterization of the Solution</a></li>
+        <li><a href="#15-4-beating-the-joneses-preferences">15.4 Beating the Joneses Preferences</a></li>
+          <li><a href="#15-4-1-setup">15.4.1 Setup</a></li>
+          <li><a href="#15-4-1-setup">15.4.1 Setup</a></li>
+          <li><a href="#15-4-2-the-decentralized-problem">15.4.2 The Decentralized Problem</a></li>
+          <li><a href="#15-4-2-the-decentralized-problem">15.4.2 The Decentralized Problem</a></li>
+          <li><a href="#15-4-3-characterization-of-the-solution">15.4.3 Characterization of the Solution</a></li>
+          <li><a href="#15-4-3-characterization-of-the-solution">15.4.3 Characterization of the Solution</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

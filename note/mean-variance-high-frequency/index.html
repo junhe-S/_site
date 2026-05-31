@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>39. Mean and Variance Estimation with High Frequency Data – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>39. Mean and Variance Estimation with High Frequency Data</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">高频数据</span><span class="lang en">High Frequency Data</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">已实现方差</span><span class="lang en">Realized Variance</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">漂移估计</span><span class="lang en">Drift Estimation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">布朗运动</span><span class="lang en">Brownian Motion</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">附录</span><span class="lang en">Appendix</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章（全书最后一章）用一个 \(dX_t=\mu\,dt+\sigma\,dZ_t\) 的简单模型说明高频数据的一条核心结论：<strong>高频数据能精确估计方差 \(\sigma^2\)，却无助于估计漂移 \(\mu\)</strong>。<strong>漂移</strong>：经典估计量 (39.1) \(\tilde\mu=(X_T-X_0)/T\) 只用首尾两点，方差 \(\operatorname{Var}(\tilde\mu)=\sigma^2/T\) (39.2) 与观测频率 \(N\) 无关；即便构造用上中间所有点的替代估计量 (39.3)，其方差 \(\frac{N+2}{NT}\sigma^2\to\sigma^2/T\) 仍不随 \(N\) 趋零——因为这些估计只消除了与 \(dZ_t\) 正交的观测误差，无法消除 \(dZ_t\) 本身的随机性。<strong>方差</strong>：由 \(\big(\frac{X_j-X_{j-1}-\mu T/N}{\sigma\sqrt{T/N}}\big)^2\sim\chi_1^2\) (39.4)（均值 1、方差 2），已实现方差估计量 (39.5) \(\hat\sigma^2=\frac1T\sum(X_j-X_{j-1}-\hat\mu T/N)^2\) 无偏，且 \(\operatorname{Var}(\hat\sigma^2)=2\sigma^4/N\to0\)——<strong>\(N\) 越大方差估计越精确</strong>。直觉：漂移信息只藏在端点（低频），方差信息藏在每一步的二次变差（高频）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter (the last of the book) uses a simple model \(dX_t=\mu\,dt+\sigma\,dZ_t\) to illustrate a core result about high-frequency data: <strong>high-frequency data can precisely estimate the variance \(\sigma^2\), but is of no help for estimating the drift \(\mu\)</strong>. <strong>Drift</strong>: the classical estimator (39.1) \(\tilde\mu=(X_T-X_0)/T\) uses only the two endpoints, with variance \(\operatorname{Var}(\tilde\mu)=\sigma^2/T\) (39.2) independent of the observation frequency \(N\); even an alternative estimator (39.3) that uses all the middle points has variance \(\frac{N+2}{NT}\sigma^2\to\sigma^2/T\) that does not go to zero with \(N\) — because these estimators only cancel observational error orthogonal to \(dZ_t\), not the randomness of \(dZ_t\) itself. <strong>Variance</strong>: from \(\big(\frac{X_j-X_{j-1}-\mu T/N}{\sigma\sqrt{T/N}}\big)^2\sim\chi_1^2\) (39.4) (mean 1, variance 2), the realized-variance estimator (39.5) \(\hat\sigma^2=\frac1T\sum(X_j-X_{j-1}-\hat\mu T/N)^2\) is unbiased and \(\operatorname{Var}(\hat\sigma^2)=2\sigma^4/N\to0\) — <strong>the larger \(N\), the more precise the variance estimate</strong>. Intuition: drift information sits only in the endpoints (low frequency), while variance information sits in the quadratic variation of every step (high frequency).</p></div>
+</div>
+<h2 id="39-1-setup">39.1 Setup</h2>
+<div class="lang zh">
+<p>设 \(X_t\) 满足 \(dX_t=\mu\,dt+\sigma\,dZ_t\)，\(\{Z_t\}\) 为标准布朗运动。我们关心计算均值（漂移）\(\mu\) 与方差 \(\sigma^2\)。设可在 \(t\in[0,T]\) 上等间隔观测 \(N\) 次 \(dX_t\)，相邻两次观测的时间间隔为 \(T/N\)，记 \(0=t_0<t_1<\dots<t_N=T\)。</p>
+<h2 id="39-2-mean-estimation">39.2 Mean Estimation</h2>
+<h3 id="39-2-1-classical-estimator">39.2.1 Classical Estimator</h3>
+<p>估计 \(\mu\) 的一种经典方式 (39.1)：</p>
+</div>
+<div class="lang en">
+<p>Suppose \(X_t\) satisfies \(dX_t=\mu\,dt+\sigma\,dZ_t\), with \(\{Z_t\}\) a standard Brownian motion. We are interested in computing the mean (drift) \(\mu\) and the variance \(\sigma^2\). Suppose we can observe \(dX_t\) during \(t\in[0,T]\) at \(N\) evenly spaced points, so the time interval between any two adjacent observations is \(T/N\); denote \(0=t_0<t_1<\dots<t_N=T\).</p>
+<h2 id="39-2-mean-estimation">39.2 Mean Estimation</h2>
+<h3 id="39-2-1-classical-estimator">39.2.1 Classical Estimator</h3>
+<p>One classical way of estimating \(\mu\) (39.1):</p>
+</div>
+<p>$$\tilde\mu\,\frac TN=\frac1N\sum_{j=1}^N(X_j-X_{j-1})\ \Rightarrow\ \tilde\mu=\frac1T\sum_{j=1}^N(X_j-X_{j-1})=\frac{X_T-X_0}{T}\tag{39.1}$$</p>
+<div class="lang zh">
+<p>其中 \(X_j\) 为 \(t=t_j\) 处观测到的 \(X_t\)。注意 \(X_j-X_{j-1}\sim\mathcal N\big(\mu\frac TN,\sigma^2\frac TN\big)\)。该估计量的方差 (39.2)：</p>
+</div>
+<div class="lang en">
+<p>where \(X_j\) is the observed \(X_t\) at \(t=t_j\). Note that \(X_j-X_{j-1}\sim\mathcal N\big(\mu\frac TN,\sigma^2\frac TN\big)\). The variance of this estimator (39.2):</p>
+</div>
+<p>$$\operatorname{Var}(\tilde\mu)=\operatorname{Var}\Big(\frac{X_T-X_0}{T}\Big)=\frac1{T^2}\operatorname{Var}(\sigma Z_T)=\frac1{T^2}\sigma^2 T=\frac{\sigma^2}{T}\tag{39.2}$$</p>
+<div class="lang zh">
+<p>由 (39.1) 可见，<strong>更高的观测频率（更大的 \(N\)）对估计 \(\mu\) 毫无帮助</strong>——因为 \(N\) 根本不出现在 (39.1) 中。它<strong>丢弃（浪费）</strong>了中间收集的信息，只盯住 \(t=0\) 与 \(t=T\) 两端：更多的中间观测既不起作用，也无法消除 \(dZ_t\) 带来的随机性。</p>
+<h3 id="39-2-2-an-alternative-estimator">39.2.2 An Alternative Estimator</h3>
+<p>考虑如下替代估计量（不失一般性设 \(N\) 为偶数）(39.3)：</p>
+</div>
+<div class="lang en">
+<p>From (39.1) we can see that <strong>higher observation frequency (larger \(N\)) doesn't help estimate \(\mu\) at all</strong> — because \(N\) does not appear in (39.1) at all. It <strong>drops (wastes)</strong> the information collected in the middle, focusing only on the two ends \(t=0\) and \(t=T\): more middle observations play no role and cannot remove the randomness induced by \(dZ_t\).</p>
+<h3 id="39-2-2-an-alternative-estimator">39.2.2 An Alternative Estimator</h3>
+<p>Consider the following alternative estimator (without loss of generality let \(N\) be even) (39.3):</p>
+</div>
+<p>$$\hat\mu\Big(\frac12T\Big)=\frac1{N/2}\sum_{j=1}^{N/2}\big(X_{N/2+j}-X_j\big)\ \Rightarrow\ \hat\mu=\frac4{NT}\sum_{j=1}^{N/2}\big(X_{N/2+j}-X_j\big)\tag{39.3}$$</p>
+<div class="lang zh">
+<p>(39.3) 用上了中间所有观测点，但它只消除了<strong>观测误差</strong>（若有，即数据读错），那是与 \(dZ_t\) 正交的另一维随机性。虽然 \(N\) 出现在 (39.3) 中，却不消除 \(dZ_t\) 本身的随机性。其无偏：\(\mathbb E[\hat\mu]=\frac4{NT}\cdot\frac N2\cdot\frac T2\mu=\mu\)；方差为</p>
+<p>$$\operatorname{Var}(\hat\mu)=\frac{16}{N^2T^2}\cdot\frac N2\Big(1+2+\dots+\frac N2\Big)\sigma^2\frac TN=\frac{N+2}{NT}\sigma^2,$$</p>
+<p>当 \(N\to\infty\) 渐近趋于 \(\sigma^2/T\)，与 (39.2) <strong>完全相同</strong>。故两个 \(\mu\) 的估计量方差都不能被高频数据驱至零。</p>
+<h2 id="39-3-variance-estimation">39.3 Variance Estimation</h2>
+<p>由 \(X_j-X_{j-1}\sim\mathcal N\big(\mu\frac TN,\sigma^2\frac TN\big)\) 得 (39.4)：</p>
+</div>
+<div class="lang en">
+<p>(39.3) fully uses all the middle observation points, but it only cancels the <strong>observational error</strong> (if any, i.e. misreading the data), which is another dimension of randomness orthogonal to \(dZ_t\). Although \(N\) appears in (39.3), it doesn't cancel the randomness introduced by \(dZ_t\) itself. Unbiased: \(\mathbb E[\hat\mu]=\frac4{NT}\cdot\frac N2\cdot\frac T2\mu=\mu\); the variance is</p>
+<p>$$\operatorname{Var}(\hat\mu)=\frac{16}{N^2T^2}\cdot\frac N2\Big(1+2+\dots+\frac N2\Big)\sigma^2\frac TN=\frac{N+2}{NT}\sigma^2,$$</p>
+<p>which asymptotically goes to \(\sigma^2/T\) as \(N\to\infty\), <strong>exactly the same as</strong> (39.2). So both estimators of \(\mu\) have a variance that cannot be driven to zero by high frequency of data.</p>
+<h2 id="39-3-variance-estimation">39.3 Variance Estimation</h2>
+<p>From \(X_j-X_{j-1}\sim\mathcal N\big(\mu\frac TN,\sigma^2\frac TN\big)\) we get (39.4):</p>
+</div>
+<p>$$\left(\frac{X_j-X_{j-1}-\mu\frac TN}{\sigma\sqrt{\frac TN}}\right)^2\sim\chi_1^2\tag{39.4}$$</p>
+<div class="lang zh">
+<p>\(\chi_1^2\) 的均值为 1、方差为 2。构造 \(\sigma^2\) 的估计量 (39.5)：</p>
+</div>
+<div class="lang en">
+<p>The \(\chi_1^2\) has mean 1 and variance 2. Construct the estimator of \(\sigma^2\) (39.5):</p>
+</div>
+<p>$$\hat\sigma^2\frac TN=\frac1N\sum_{j=1}^N\Big(X_j-X_{j-1}-\hat\mu\frac TN\Big)^2\ \Rightarrow\ \hat\sigma^2=\frac1T\sum_{j=1}^N\Big(X_j-X_{j-1}-\hat\mu\frac TN\Big)^2\tag{39.5}$$</p>
+<div class="lang zh">
+<p>其中 \(\hat\mu\) 由 (39.3) 得到。为说明基本思想，先设已知 \(\mu\)。由布朗运动的<strong>增量独立性</strong>，(39.5) 中的 \(\sum_{j=1}^N(X_j-X_{j-1})^2\) 是一列相互独立 i.i.d. 项之和。于是由 (39.4)，</p>
+<p>$$\mathbb E[\hat\sigma^2]=\frac1T\sigma^2\frac TN\sum_{j=1}^N\mathbb E\!\left[\left(\frac{X_j-X_{j-1}-\mu\frac TN}{\sigma\sqrt{\frac TN}}\right)^2\right]=\frac1T\sigma^2\frac TN\cdot N=\sigma^2,$$</p>
+<p>即估计量无偏；其方差</p>
+<p>$$\operatorname{Var}(\hat\sigma^2)=\frac1{T^2}\sum_{j=1}^N\sigma^4\frac{T^2}{N^2}\underbrace{\operatorname{Var}\!\left[\left(\frac{X_j-X_{j-1}-\mu\frac TN}{\sigma\sqrt{\frac TN}}\right)^2\right]}_{=2}=\frac{\sigma^4}{N^2}\cdot2N=\frac{2\sigma^4}{N},$$</p>
+<p>当 \(N\) 足够大时趋于零。（虽然 \(\mu\) 仍需估计，但只要用无偏的 \(\hat\mu\)，基本思想与结论不变。）</p>
+<p><strong>结论</strong>：即便用最自然的方式估计 \(\sigma^2\)，<strong>高频数据也能帮助我们更精确地估计方差</strong>——这与漂移 \(\mu\) 的情形形成鲜明对比。</p>
+</div>
+<div class="lang en">
+<p>where \(\hat\mu\) is obtained from (39.3). To illustrate the basic idea, first suppose we know \(\mu\). By the <strong>increment independence</strong> of Brownian motion, \(\sum_{j=1}^N(X_j-X_{j-1})^2\) in (39.5) is a sum of mutually independent i.i.d. objects. So by (39.4),</p>
+<p>$$\mathbb E[\hat\sigma^2]=\frac1T\sigma^2\frac TN\sum_{j=1}^N\mathbb E\!\left[\left(\frac{X_j-X_{j-1}-\mu\frac TN}{\sigma\sqrt{\frac TN}}\right)^2\right]=\frac1T\sigma^2\frac TN\cdot N=\sigma^2,$$</p>
+<p>i.e. the estimator is unbiased; and its variance</p>
+<p>$$\operatorname{Var}(\hat\sigma^2)=\frac1{T^2}\sum_{j=1}^N\sigma^4\frac{T^2}{N^2}\underbrace{\operatorname{Var}\!\left[\left(\frac{X_j-X_{j-1}-\mu\frac TN}{\sigma\sqrt{\frac TN}}\right)^2\right]}_{=2}=\frac{\sigma^4}{N^2}\cdot2N=\frac{2\sigma^4}{N},$$</p>
+<p>which goes to zero when \(N\) is large enough. (Although \(\mu\) still needs to be estimated, the basic idea and conclusion don't change as long as we use the unbiased \(\hat\mu\).)</p>
+<p><strong>Conclusion</strong>: even using the most natural way of estimating \(\sigma^2\), <strong>higher-frequency data can help us estimate the variance more precisely</strong> — in sharp contrast to the case of the drift \(\mu\).</p>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>He, X. (2019b). <em>Macroeconomics Notes by Xindi He</em>.</li>
+<li>He, X. (2019c). <em>Microeconomics Notes by Xindi He</em>.</li>
+<li>He, X. (2019d). <em>Stochastic Calculus Notes by Xindi He</em>.</li>
+<li>He, X. (2020–2024). <em>Asset Pricing</em> (lecture notes), Ch. 39.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#39-1-setup">39.1 Setup</a></li>
+        <li><a href="#39-2-mean-estimation">39.2 Mean Estimation</a></li>
+          <li><a href="#39-2-1-classical-estimator">39.2.1 Classical Estimator</a></li>
+        <li><a href="#39-2-mean-estimation">39.2 Mean Estimation</a></li>
+          <li><a href="#39-2-1-classical-estimator">39.2.1 Classical Estimator</a></li>
+          <li><a href="#39-2-2-an-alternative-estimator">39.2.2 An Alternative Estimator</a></li>
+          <li><a href="#39-2-2-an-alternative-estimator">39.2.2 An Alternative Estimator</a></li>
+        <li><a href="#39-3-variance-estimation">39.3 Variance Estimation</a></li>
+        <li><a href="#39-3-variance-estimation">39.3 Variance Estimation</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

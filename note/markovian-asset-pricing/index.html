@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>17. Markovian Asset Pricing – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>17. Markovian Asset Pricing</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 30, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">马尔可夫</span><span class="lang en">Markov</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">长期估值</span><span class="lang en">Long-Horizon Valuation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">冲击弹性</span><span class="lang en">Shock Elasticities</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">递归效用</span><span class="lang en">Recursive Utility</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章为长期资产价格与风险补偿施加<strong>马尔可夫结构</strong>：状态向量 \(\mathbf X_t\) 是马尔可夫过程，SDF、现金流等都写成<strong>乘性泛函 (multiplicative functional)</strong> \(\exp(A_t)\)，其对数增量 \(\kappa(\mathbf X_t,\mathbf W_{t+1})=\beta(\mathbf X_t)+\boldsymbol\alpha(\mathbf X_t)\cdot\mathbf W_{t+1}\)。§17.1 定义<strong>比例风险补偿</strong>（≈净资产收益 − 净无风险利率）。§17.2 给出刻画状态向量的两种办法（稳态附近小噪声近似、离散态马尔可夫链）。§17.3 是核心：用 <strong>Perron-Frobenius 特征值/特征函数</strong> 把乘性泛函分解为 <strong>永久部分 (permanent) × 暂时部分 (transient) × 常数</strong>，证明长期风险补偿为零当且仅当 SDF 无永久部分，并把 SDF 写成"鞅 × 长期债券持有期收益的倒数"。§17.4 综述文献：Kazemi (1992)、Alvarez-Jermann (2005) 的熵界、Ross (2015) 复原定理（及其在 SDF 有永久部分时失效）。§17.5 定义<strong>冲击弹性 (shock elasticities)</strong>（冲击价格/暴露/成本弹性），并与脉冲响应函数比较。§17.6 在递归（Epstein-Zin）效用下用小噪声 \(h\) 展开近似价值函数与 SDF。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter imposes <strong>Markov structure</strong> on long-run asset prices and risk compensation: the state vector \(\mathbf X_t\) is Markov, and the SDF, cash flows, etc. are written as <strong>multiplicative functionals</strong> \(\exp(A_t)\) whose log increment is \(\kappa(\mathbf X_t,\mathbf W_{t+1})=\beta(\mathbf X_t)+\boldsymbol\alpha(\mathbf X_t)\cdot\mathbf W_{t+1}\). §17.1 defines <strong>proportional risk compensation</strong> (≈ net asset return − net risk-free rate). §17.2 gives two ways to characterize the state vector (small-noise approximation around steady state; discrete-state Markov chain). §17.3 is the core: using the <strong>Perron-Frobenius eigenvalue/eigenfunction</strong> it decomposes a multiplicative functional into <strong>permanent × transient × constant</strong>, shows the long-run risk compensation is zero iff the SDF has no permanent part, and writes the SDF as "a martingale × the inverse of the long-bond holding-period return." §17.4 surveys the literature: Kazemi (1992), the Alvarez-Jermann (2005) entropy bound, and the Ross (2015) recovery theorem (and its failure when the SDF has a permanent part). §17.5 defines <strong>shock elasticities</strong> (shock price/exposure/cost elasticities) and compares them to the impulse response function. §17.6 approximates the value function and SDF under recursive (Epstein-Zin) utility via a small-noise \(h\)-expansion.</p></div>
+</div>
+<h2 id="17-1-foundation">17.1 Foundation</h2>
+<h3 id="17-1-1-setup">17.1.1 Setup</h3>
+<div class="lang zh">
+<ul>
+<li><strong>状态向量</strong> \(\mathbf X_t\)（\(n\) 维），\(\mathcal X=\{\mathbf X_t\}\) 服从 \(n\) 维马尔可夫过程（通常但不必假设平稳遍历）。</li>
+<li><strong>冲击向量</strong> \(\mathbf W_t\)（\(k\) 维），\(\mathcal W=\{\mathbf W_t\}\) 为冲击过程（通常但不必假设多元高斯、i.i.d.）。</li>
+<li><strong>递归演化</strong>：\(\mathbf X_{t+1}=\boldsymbol\psi(\mathbf X_t,\mathbf W_{t+1})\)，\(\boldsymbol\psi\) 为某向量函数。</li>
+<li><strong>信息流</strong> \(\mathcal F_t\) 由 \(\{\mathbf W_1,\dots,\mathbf W_t\}\) 与 \(\mathbf X_0\) 生成。</li>
+</ul>
+<h3 id="17-1-2-multiplicative-functional">17.1.2 Multiplicative Functional</h3>
+<p>设标量过程 \(\{\exp(A_t)\}\) (17.1)，其对数增量 (17.2)：\(A_{t+1}-A_t=\kappa(\mathbf X_t,\mathbf W_{t+1})\)。一般地 (17.3)：</p>
+</div>
+<div class="lang en">
+<ul>
+<li><strong>State vector</strong> \(\mathbf X_t\) (\(n\)-dim), \(\mathcal X=\{\mathbf X_t\}\) an \(n\)-dim Markov process (usually but not necessarily stationary and ergodic).</li>
+<li><strong>Shock vector</strong> \(\mathbf W_t\) (\(k\)-dim), \(\mathcal W=\{\mathbf W_t\}\) the shock process (usually but not necessarily multi-Gaussian, i.i.d.).</li>
+<li><strong>Recursive evolution</strong>: \(\mathbf X_{t+1}=\boldsymbol\psi(\mathbf X_t,\mathbf W_{t+1})\) for some vector function \(\boldsymbol\psi\).</li>
+<li><strong>Filtration</strong> \(\mathcal F_t\) generated by \(\{\mathbf W_1,\dots,\mathbf W_t\}\) and \(\mathbf X_0\).</li>
+</ul>
+<h3 id="17-1-2-multiplicative-functional">17.1.2 Multiplicative Functional</h3>
+<p>Let the scalar process \(\{\exp(A_t)\}\) (17.1) have log increment (17.2): \(A_{t+1}-A_t=\kappa(\mathbf X_t,\mathbf W_{t+1})\). In general (17.3):</p>
+</div>
+<p>$$\kappa(\mathbf X_t,\mathbf W_{t+1})=\beta(\mathbf X_t)+\boldsymbol\alpha(\mathbf X_t)\cdot\mathbf W_{t+1},\quad\forall t,\tag{17.3}$$</p>
+<div class="lang zh">
+<p>\(\beta\) 是状态的标量函数，\(\boldsymbol\alpha\) 是 \(k\) 维向量函数。系数 \(\boldsymbol\alpha(\mathbf X_t)\) 随机，故 (17.3) 是<strong>随机波动率</strong>、无条件非高斯；若 \(\boldsymbol\psi\)、\(\beta\) 线性、\(\boldsymbol\alpha\) 常数，则 \(\exp(A_t)\) 无条件对数正态。\(A_t\) 标量，可建模为消费、现金流等的对数。称 \(\exp(A_t)\) <strong>乘性泛函</strong>，因为两个此类过程相乘仍满足同一性质（对数增量相加 \(\kappa_m=\kappa_1+\kappa_2\)）。</p>
+<p><strong>两个应用：</strong> SDF 过程 \(\{S_t\}\) (17.4)：\(\ln S_{t+1}-\ln S_t=\kappa_S(\mathbf X_t,\mathbf W_{t+1})\)（增量通常为负）；现金流 (CF) 过程 \(\{G_t\}\) (17.6)：\(\ln G_{t+1}-\ln G_t=\kappa_G(\mathbf X_t,\mathbf W_{t+1})\)（通常为正，现金流增长）。</p>
+<h3 id="17-1-3-proportional-risk-compensation">17.1.3 Proportional Risk Compensation</h3>
+<p>设某证券仅在 \(t+\tau\) 支付 \(G_{t+\tau}\)，\(t\) 时价格 \(Q_t(G_{t+\tau})\) 由 SDF 定义 (17.5)、(17.7)：\(Q_t(G_{t+\tau})=G_t\,\mathbb E[\frac{S_{t+\tau}}{S_t}\frac{G_{t+\tau}}{G_t}\mid\mathcal F_t]\)（其中 \(\frac{S_{t+\tau}}{S_t}\frac{G_{t+\tau}}{G_t}\) 仍是乘性泛函）。定义<strong>比例风险补偿</strong> (17.8)：</p>
+</div>
+<div class="lang en">
+<p>\(\beta\) is a scalar function of the state, \(\boldsymbol\alpha\) a \(k\)-dim vector function. The coefficient \(\boldsymbol\alpha(\mathbf X_t)\) is stochastic, so (17.3) has <strong>stochastic volatility</strong> and is unconditionally non-Gaussian; if \(\boldsymbol\psi\), \(\beta\) are linear and \(\boldsymbol\alpha\) constant, \(\exp(A_t)\) is unconditionally log-normal. \(A_t\) is a scalar, modellable as log consumption, cash flow, etc. \(\exp(A_t)\) is a <strong>multiplicative functional</strong> because the product of two such processes satisfies the same property (log increments add, \(\kappa_m=\kappa_1+\kappa_2\)).</p>
+<p><strong>Two applications:</strong> the SDF process \(\{S_t\}\) (17.4): \(\ln S_{t+1}-\ln S_t=\kappa_S(\mathbf X_t,\mathbf W_{t+1})\) (increments usually negative); the cash-flow (CF) process \(\{G_t\}\) (17.6): \(\ln G_{t+1}-\ln G_t=\kappa_G(\mathbf X_t,\mathbf W_{t+1})\) (usually positive, growing cash flows).</p>
+<h3 id="17-1-3-proportional-risk-compensation">17.1.3 Proportional Risk Compensation</h3>
+<p>A security pays \(G_{t+\tau}\) only at \(t+\tau\), with time-\(t\) price \(Q_t(G_{t+\tau})\) defined by the SDF (17.5), (17.7): \(Q_t(G_{t+\tau})=G_t\,\mathbb E[\frac{S_{t+\tau}}{S_t}\frac{G_{t+\tau}}{G_t}\mid\mathcal F_t]\) (where \(\frac{S_{t+\tau}}{S_t}\frac{G_{t+\tau}}{G_t}\) is still a multiplicative functional). Define the <strong>proportional risk compensation</strong> (17.8):</p>
+</div>
+<p>$$\underbrace{\frac1\tau\ln\!\left(\mathbb E\!\left[\frac{G_{t+\tau}}{G_t}\mid\mathcal F_t\right]\right)-\frac1\tau\ln\!\left(\mathbb E\!\left[\frac{S_{t+\tau}}{S_t}\frac{G_{t+\tau}}{G_t}\mid\mathcal F_t\right]\right)}_{\text{Part A}}+\underbrace{\frac1\tau\ln\!\left(\mathbb E\!\left[\frac{S_{t+\tau}}{S_t}\mid\mathcal F_t\right]\right)}_{\text{Part B}}.\tag{17.8}$$</p>
+<div class="lang zh">
+<p><strong>解读。</strong> Part A ≈ 净平均资产收益：可重写为 \(\ln((\frac{\mathbb E[G_{t+\tau}\mid\mathcal F_t]}{Q_t(G_{t+\tau})})^{1/\tau})\)，即一期毛资产收益的对数（≈一期净资产收益）。Part B ≈（负的）净平均无风险利率：可重写为 \(-\ln((\frac{1}{\mathbb E[S_{t+\tau}/S_t\mid\mathcal F_t]})^{1/\tau})\)。称"比例"是因为 Part A 减负 Part B 等于"资产毛收益/无风险债券毛收益"之比的对数——取比值消去了水平、聚焦于倍数。故 (17.8) ≈ 风险溢价。</p>
+<h2 id="17-2-two-ways-to-characterize-state-vector">17.2 Two Ways to Characterize State Vector</h2>
+<p>一般 \(\boldsymbol\psi(\cdot,\cdot)\) 可非线性、难建模，可施加结构简化。</p>
+<h3 id="17-2-1-small-noise-approximation-around-steady-state">17.2.1 Small Noise Approximation around Steady State</h3>
+<p>把状态向量重定义为按冲击幅度 \(h\) 标度的过程族 (17.9)：\(\mathbf X_{t+1}(h)=\boldsymbol\psi(\mathbf X_t(h),h\mathbf W_{t+1},h)\)。\(h\to0\) 时 \(\mathbf X_{t+1}(0)=\boldsymbol\psi(\mathbf X_t(0),0,0)=\mathbf X_t(0)\)（稳态，\(\mathbf X_t(0)\) 为常数）。设 \(\mathbf W_{t+1}\sim\mathcal N(\mathbf 0,\mathbf I)\) i.i.d.。在 \(h=0\) 处对 \(h\) 做二阶泰勒展开 (17.10)：\(\mathbf X_t(h)\approx\mathbf X_t(0)+h\mathbf X_t'(0)+\frac{h^2}2\mathbf X_t''(0)\)。</p>
+<p><strong>一阶导动态</strong> (17.11)（链式法则）：</p>
+</div>
+<div class="lang en">
+<p><strong>Interpretation.</strong> Part A ≈ the net average asset return: it can be rewritten as \(\ln((\frac{\mathbb E[G_{t+\tau}\mid\mathcal F_t]}{Q_t(G_{t+\tau})})^{1/\tau})\), the log of the one-period gross asset return (≈ net one-period return). Part B ≈ the (negative) net average risk-free rate: rewritten as \(-\ln((\frac{1}{\mathbb E[S_{t+\tau}/S_t\mid\mathcal F_t]})^{1/\tau})\). It is "proportional" because Part A minus negative Part B is the log of the ratio "asset gross return / risk-free gross return" — taking the ratio cancels levels and focuses on multiples. So (17.8) ≈ the risk premium.</p>
+<h2 id="17-2-two-ways-to-characterize-state-vector">17.2 Two Ways to Characterize State Vector</h2>
+<p>A general \(\boldsymbol\psi(\cdot,\cdot)\) may be nonlinear and hard to model; structure helps.</p>
+<h3 id="17-2-1-small-noise-approximation-around-steady-state">17.2.1 Small Noise Approximation around Steady State</h3>
+<p>Redefine the state vector as a family of processes scaled by the shock magnitude \(h\) (17.9): \(\mathbf X_{t+1}(h)=\boldsymbol\psi(\mathbf X_t(h),h\mathbf W_{t+1},h)\). As \(h\to0\), \(\mathbf X_{t+1}(0)=\boldsymbol\psi(\mathbf X_t(0),0,0)=\mathbf X_t(0)\) (steady state, \(\mathbf X_t(0)\) constant). Assume \(\mathbf W_{t+1}\sim\mathcal N(\mathbf 0,\mathbf I)\) i.i.d. A second-order Taylor expansion in \(h\) at \(h=0\) (17.10): \(\mathbf X_t(h)\approx\mathbf X_t(0)+h\mathbf X_t'(0)+\frac{h^2}2\mathbf X_t''(0)\).</p>
+<p><strong>First-derivative dynamics</strong> (17.11) (chain rule):</p>
+</div>
+<p>$$\mathbf X_{t+1}'(0)=\boldsymbol\psi_{\mathbf X^T}\mathbf X_t'(0)+\boldsymbol\psi_{\mathbf W^T}\mathbf W_{t+1}+\boldsymbol\psi_h,\tag{17.11}$$</p>
+<div class="lang zh">
+<p>其中 \(\boldsymbol\psi_{\mathbf X^T}\) 是 \(\boldsymbol\psi\) 对 \(\mathbf X\) 的雅可比（\(n\times n\)）、\(\boldsymbol\psi_{\mathbf W^T}\) 对 \(\mathbf W\)（\(n\times k\)）、\(\boldsymbol\psi_h\) 对 \(h\)（\(n\times1\)），均在 \(0\) 处取值。稳态下 \(\mathbf X_{t+1}'(0)=\mathbf X_t'(0)\)，其均值 \(\boldsymbol\mu_1=(\mathbf I-\boldsymbol\psi_{\mathbf X^T})^{-1}\boldsymbol\psi_h\)、方差 \(\boldsymbol\Sigma_1=\boldsymbol\psi_{\mathbf X^T}\boldsymbol\Sigma_1\boldsymbol\psi_{\mathbf X^T}'+\boldsymbol\psi_{\mathbf W^T}\boldsymbol\psi_{\mathbf W^T}'\)。一阶导正态分布。</p>
+<p><strong>二阶导动态</strong> (17.12)、(17.13)：\(\mathbf X_{t+1}''(0)\) 由 \(\boldsymbol\psi\) 的各二阶偏导（\(\boldsymbol\psi_{\mathbf X\mathbf X^T}\)、\(\boldsymbol\psi_{\mathbf X\mathbf W^T}\)、\(\boldsymbol\psi_{\mathbf W\mathbf W^T}\)、\(\boldsymbol\psi_{h\mathbf X^T}\)、\(\boldsymbol\psi_{h\mathbf W^T}\)、\(\boldsymbol\psi_{hh}\)）与一阶项 \(\mathbf X_t'(0),\mathbf W_{t+1}\) 的二次型组成；其均值与方差可由 (17.13) 刻画（仅含已在一阶层刻画的 \(\mathbf X_t'(0)\) 的二次项）。把 (17.11)、(17.13) 代回 (17.10) 即得 \(\mathbf X_t(h)\) 的动态：在该近似下对 \(\mathbf X_t'(0)\)、\(\mathbf W_{t+1}\) 递归线性，但对其非线性。</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 17.1.</strong> 同理 \(\kappa(\cdot,\cdot)\) 也可如此线性近似；但 \(\kappa\) 是标量，故矩阵退化为向量。</p></div>
+<h3 id="17-2-2-discrete-state-markov-chain">17.2.2 Discrete State Markov Chain</h3>
+<p>第二种办法：设 \(\mathcal X=\{\mathbf X_t\}\) 是 \(n\) 状态马尔可夫链，\(\mathbf X_t\) 的实现是状态坐标向量（状态 \(j\) 实现时第 \(j\) 分量为 1、其余为 0）。\(n\times n\) 转移概率矩阵 \(\mathbf P=[p_{ij}]\)，\(p_{ij}\) 为由状态 \(i\) 转到 \(j\) 的概率。状态向量 (17.3 型)：\(\mathbf X_{t+1}=\mathbb E[\mathbf X_{t+1}\mid\mathbf X_t]+\underbrace{\mathbf X_{t+1}-\mathbb E[\mathbf X_{t+1}\mid\mathbf X_t]}_{\text{unexpected shock}}\)。此时 \(A_{t+1}-A_t=\kappa(\mathbf X_t,\mathbf W_{t+1})\) 在已知 \(\mathbf X_t\) 下条件正态，但无条件不一定正态。</p>
+<h2 id="17-3-long-horizon-valuation">17.3 Long Horizon Valuation</h2>
+<h3 id="17-3-1-motivating-example-eigenvalue-and-eigenvector">17.3.1 Motivating Example: Eigenvalue and Eigenvector</h3>
+<p>设 \(n\times n\) 矩阵 \(\mathbf F\) 全部元素非负。若 \(\mathbf e\) 为特征向量、\(\varepsilon\) 为对应特征值 (17.14)：\(\mathbf F\mathbf e=\varepsilon\mathbf e\)，则 \(\mathbf F^j\mathbf e=\varepsilon^j\mathbf e\)。</p>
+</div>
+<div class="lang en">
+<p>where \(\boldsymbol\psi_{\mathbf X^T}\) is the Jacobian of \(\boldsymbol\psi\) w.r.t. \(\mathbf X\) (\(n\times n\)), \(\boldsymbol\psi_{\mathbf W^T}\) w.r.t. \(\mathbf W\) (\(n\times k\)), \(\boldsymbol\psi_h\) w.r.t. \(h\) (\(n\times1\)), all at \(0\). In steady state \(\mathbf X_{t+1}'(0)=\mathbf X_t'(0)\), with mean \(\boldsymbol\mu_1=(\mathbf I-\boldsymbol\psi_{\mathbf X^T})^{-1}\boldsymbol\psi_h\) and variance \(\boldsymbol\Sigma_1=\boldsymbol\psi_{\mathbf X^T}\boldsymbol\Sigma_1\boldsymbol\psi_{\mathbf X^T}'+\boldsymbol\psi_{\mathbf W^T}\boldsymbol\psi_{\mathbf W^T}'\). The first derivative is normally distributed.</p>
+<p><strong>Second-derivative dynamics</strong> (17.12), (17.13): \(\mathbf X_{t+1}''(0)\) is built from the second partials of \(\boldsymbol\psi\) (\(\boldsymbol\psi_{\mathbf X\mathbf X^T}\), \(\boldsymbol\psi_{\mathbf X\mathbf W^T}\), \(\boldsymbol\psi_{\mathbf W\mathbf W^T}\), \(\boldsymbol\psi_{h\mathbf X^T}\), \(\boldsymbol\psi_{h\mathbf W^T}\), \(\boldsymbol\psi_{hh}\)) and quadratic forms in the first-order terms \(\mathbf X_t'(0),\mathbf W_{t+1}\); its mean and variance follow from (17.13) (which contains only quadratic terms in the already-characterized \(\mathbf X_t'(0)\)). Substituting (17.11), (17.13) back into (17.10) gives the dynamics of \(\mathbf X_t(h)\): recursively linear in \(\mathbf X_t'(0)\), \(\mathbf W_{t+1}\) under this approximation, but nonlinear in them.</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 17.1.</strong> Similarly \(\kappa(\cdot,\cdot)\) can be linearly approximated this way; but \(\kappa\) is scalar, so the matrices degenerate to vectors.</p></div>
+<h3 id="17-2-2-discrete-state-markov-chain">17.2.2 Discrete State Markov Chain</h3>
+<p>Second way: let \(\mathcal X=\{\mathbf X_t\}\) be an \(n\)-state Markov chain, with \(\mathbf X_t\) a state-coordinate vector (entry \(j\) is 1 when state \(j\) realizes, others 0). The \(n\times n\) transition matrix \(\mathbf P=[p_{ij}]\), \(p_{ij}\) the probability of going from state \(i\) to \(j\). State vector (form 17.3): \(\mathbf X_{t+1}=\mathbb E[\mathbf X_{t+1}\mid\mathbf X_t]+\underbrace{\mathbf X_{t+1}-\mathbb E[\mathbf X_{t+1}\mid\mathbf X_t]}_{\text{unexpected shock}}\). Then \(A_{t+1}-A_t=\kappa(\mathbf X_t,\mathbf W_{t+1})\) is conditionally normal given \(\mathbf X_t\) but not unconditionally normal.</p>
+<h2 id="17-3-long-horizon-valuation">17.3 Long Horizon Valuation</h2>
+<h3 id="17-3-1-motivating-example-eigenvalue-and-eigenvector">17.3.1 Motivating Example: Eigenvalue and Eigenvector</h3>
+<p>Let the \(n\times n\) matrix \(\mathbf F\) have all non-negative entries. If \(\mathbf e\) is an eigenvector with eigenvalue \(\varepsilon\) (17.14): \(\mathbf F\mathbf e=\varepsilon\mathbf e\), then \(\mathbf F^j\mathbf e=\varepsilon^j\mathbf e\).</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p><strong>Theorem 17.1 (Perron-Frobenius).</strong> 若 \(\mathbf F\) 元素全正，则绝对值最大的特征值 \(\varepsilon\) 为正，且对应的唯一（归一化后唯一）特征向量 \(\mathbf e\) 可取全正。</p></div>
+<h3 id="17-3-2-eigenfunction-and-eigenvalue">17.3.2 Eigenfunction and Eigenvalue</h3>
+<p>把 §17.3.1 的思路推广到泛函世界（Hansen-Scheinkman 2009 的充分条件下）：存在唯一特征函数 \(e(\cdot)\) 与特征值 \(\exp(\eta)\) 使 (17.15)：</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p><strong>Theorem 17.1 (Perron-Frobenius).</strong> If \(\mathbf F\) has all-positive entries, the largest-in-absolute-value eigenvalue \(\varepsilon\) is positive, and the associated unique (up to scale) eigenvector \(\mathbf e\) can be taken all-positive.</p></div>
+<h3 id="17-3-2-eigenfunction-and-eigenvalue">17.3.2 Eigenfunction and Eigenvalue</h3>
+<p>Extend §17.3.1 to the functional world (under Hansen-Scheinkman 2009 conditions): there exists a unique eigenfunction \(e(\cdot)\) and eigenvalue \(\exp(\eta)\) such that (17.15):</p>
+</div>
+<p>$$\mathbb E\!\left[\frac{\exp(A_{t+1})}{\exp(A_t)}e(\mathbf X_{t+1})\mid\mathbf X_t=\mathbf x\right]=e(\mathbf x)\exp(\eta),\tag{17.15}$$</p>
+<div class="lang zh">
+<p>其中 \(\exp(A_t)\) 是 (17.1)、(17.2) 的乘性泛函（条件 \(\mathbf X_t=\mathbf x\) 等价于 \(\mathcal F_t\)）。定义迭代算子 \(\mathbb M\) (17.18)：\(\mathbb M f(\mathbf x)\equiv\mathbb E[\frac{\exp(A_{t+1})}{\exp(A_t)}f(\mathbf X_{t+1})\mid\mathbf X_t=\mathbf x]\)；(17.15) 即 \(\mathbb M e(\mathbf x)=e(\mathbf x)\exp(\eta)\)。\(\mathbb M\) 的迭代性质 (17.19) \(\mathbb E[\frac{\exp(A_{t+2})}{\exp(A_t)}f(\mathbf X_{t+2})\mid\mathbf X_t=\mathbf x]=\mathbb M^2 f(\mathbf x)\)，迭代得 (17.16)：\(\mathbb M^j e(\mathbf x)=e(\mathbf x)\exp(j\eta)\)，即 \(\mathbb E[\frac{\exp(A_{t+j})}{\exp(A_t)}e(\mathbf X_{t+j})\mid\mathbf X_t=\mathbf x]=e(\mathbf x)\exp(j\eta)\)。由 (17.15) 取 \(j=1\) 整理得 (17.20)：</p>
+</div>
+<div class="lang en">
+<p>where \(\exp(A_t)\) is the multiplicative functional of (17.1), (17.2) (conditioning on \(\mathbf X_t=\mathbf x\) equals \(\mathcal F_t\)). Define the iteration operator \(\mathbb M\) (17.18): \(\mathbb M f(\mathbf x)\equiv\mathbb E[\frac{\exp(A_{t+1})}{\exp(A_t)}f(\mathbf X_{t+1})\mid\mathbf X_t=\mathbf x]\); (17.15) is \(\mathbb M e(\mathbf x)=e(\mathbf x)\exp(\eta)\). The iteration property (17.19) \(\mathbb E[\frac{\exp(A_{t+2})}{\exp(A_t)}f(\mathbf X_{t+2})\mid\mathbf X_t=\mathbf x]=\mathbb M^2 f(\mathbf x)\) gives, iterating, (17.16): \(\mathbb M^j e(\mathbf x)=e(\mathbf x)\exp(j\eta)\), i.e. \(\mathbb E[\frac{\exp(A_{t+j})}{\exp(A_t)}e(\mathbf X_{t+j})\mid\mathbf X_t=\mathbf x]=e(\mathbf x)\exp(j\eta)\). From (17.15) with \(j=1\), rearranging gives (17.20):</p>
+</div>
+<p>$$\mathbb E\!\left[\frac{\exp(A_{t+1})}{\exp(A_t)}\frac{e(\mathbf X_{t+1})}{e(\mathbf X_t)}\exp(-\eta)\mid\mathbf X_t\right]=1.\tag{17.20}$$</p>
+<div class="lang zh">
+<h3 id="17-3-3-long-term-proportional-risk-compensation">17.3.3 Long Term Proportional Risk Compensation</h3>
+<p>定义 \(M_t=\exp(A_t)e(\mathbf X_t)\exp(-t\eta)\)，代入 (17.20) 得 \(\mathbb E[\frac{M_{t+1}}{M_t}\mid\mathbf X_t]=1\)，即 \(\mathbb E[M_{t+1}\mid\mathbf X_t]=M_t\) (17.21)：\(\{M_t\}\) 是<strong>鞅</strong>。由 \(M_t\) 定义重写乘性泛函 (17.22)：</p>
+</div>
+<div class="lang en">
+<h3 id="17-3-3-long-term-proportional-risk-compensation">17.3.3 Long Term Proportional Risk Compensation</h3>
+<p>Define \(M_t=\exp(A_t)e(\mathbf X_t)\exp(-t\eta)\); substituting into (17.20) gives \(\mathbb E[\frac{M_{t+1}}{M_t}\mid\mathbf X_t]=1\), i.e. \(\mathbb E[M_{t+1}\mid\mathbf X_t]=M_t\) (17.21): \(\{M_t\}\) is a <strong>martingale</strong>. From the definition of \(M_t\), rewrite the multiplicative functional (17.22):</p>
+</div>
+<p>$$\frac{\exp(A_{t+\tau})}{\exp(A_t)}=\underbrace{\frac{M_{t+\tau}}{M_t}}_{\text{permanent}}\,\underbrace{\frac{e(\mathbf X_t)}{e(\mathbf X_{t+\tau})}}_{\text{transient}}\,\underbrace{\exp(\tau\eta)}_{\text{constant}}.\tag{17.23}$$</p>
+<div class="lang zh">
+<p><strong>永久部分</strong>是鞅（积累过去变化、无未来条件变化）；<strong>暂时部分</strong>在 \(\{\mathbf X_t\}\) 平稳、\(e(\cdot)\) 正则时是平稳的（不积累）；常数 \(\exp(\tau\eta)\)。为消除永久与暂时部分的相关性，定义<strong>变测度</strong> \(\tilde{\mathbb E}\)（"tilde"测度，由鞅 \(M_t\) 改变测度）(17.24)：\(\mathbb E[\frac{M_{t+\tau}}{M_t}Y_{t+m}\mid\mathcal F_t]=\tilde{\mathbb E}[Y_{t+m}\mid\mathcal F_t]\)。新测度密度非负、积分为 1（由 \(M_t\) 定义与 (17.21) 保证）。则 (17.25)：\(\mathbb E[\frac{M_{t+\tau}}{M_t}\frac{e(\mathbf X_t)}{e(\mathbf X_{t+\tau})}\mid\mathcal F_t]=\tilde{\mathbb E}[\frac{e(\mathbf X_t)}{e(\mathbf X_{t+\tau})}\mid\mathcal F_t]\)。平稳性下 \(\tau\to\infty\) 时 \(\frac1\tau\ln(\tilde{\mathbb E}[\frac{e(\mathbf X_t)}{e(\mathbf X_{t+\tau})}\mid\mathcal F_t])\to0\)，故 (17.26)：</p>
+</div>
+<div class="lang en">
+<p>The <strong>permanent part</strong> is a martingale (accumulates past changes, no future conditional change); the <strong>transient part</strong> is stationary when \(\{\mathbf X_t\}\) is stationary and \(e(\cdot)\) regular (does not accumulate); plus the constant \(\exp(\tau\eta)\). To remove the correlation between permanent and transient parts, define a <strong>change of measure</strong> \(\tilde{\mathbb E}\) (the "tilde" measure, via the martingale \(M_t\)) (17.24): \(\mathbb E[\frac{M_{t+\tau}}{M_t}Y_{t+m}\mid\mathcal F_t]=\tilde{\mathbb E}[Y_{t+m}\mid\mathcal F_t]\). The new density is non-negative and integrates to 1 (guaranteed by the definition of \(M_t\) and (17.21)). Then (17.25): \(\mathbb E[\frac{M_{t+\tau}}{M_t}\frac{e(\mathbf X_t)}{e(\mathbf X_{t+\tau})}\mid\mathcal F_t]=\tilde{\mathbb E}[\frac{e(\mathbf X_t)}{e(\mathbf X_{t+\tau})}\mid\mathcal F_t]\). By stationarity, as \(\tau\to\infty\), \(\frac1\tau\ln(\tilde{\mathbb E}[\frac{e(\mathbf X_t)}{e(\mathbf X_{t+\tau})}\mid\mathcal F_t])\to0\), so (17.26):</p>
+</div>
+<p>$$\lim_{\tau\to\infty}\frac1\tau\ln\!\left(\mathbb E\!\left[\frac{\exp(A_{t+\tau})}{\exp(A_t)}\mid\mathcal F_t\right]\right)=\eta.\tag{17.26}$$</p>
+<div class="lang zh">
+<p>把 (17.26) 套用到 SDF \(\{S_t\}\) 与 CF \(\{G_t\}\)，分别得 (17.27)、(17.28)：\(\frac{S_{t+\tau}}{S_t}=\frac{M_{S,t+\tau}}{M_{S,t}}\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+\tau})}\exp(\tau\eta_S)\)、\(\frac{G_{t+\tau}}{G_t}=\frac{M_{G,t+\tau}}{M_{G,t}}\frac{e_G(\mathbf X_t)}{e_G(\mathbf X_{t+\tau})}\exp(\tau\eta_G)\)。</p>
+<p><strong>长期比例风险补偿。</strong> 把 (17.30)、(17.31)、(17.32) 三个极限（\(\lim\frac1\tau\ln\mathbb E[\frac{G_{t+\tau}}{G_t}]=\eta_G\)、\(\lim\frac1\tau\ln\mathbb E[\frac{S_{t+\tau}}{S_t}\frac{G_{t+\tau}}{G_t}]=\eta_G+\eta_S\)、\(\lim\frac1\tau\ln\mathbb E[\frac{S_{t+\tau}}{S_t}]=\eta_S\)）代入 (17.8) 得 (17.33)：长期比例风险补偿 \(=\eta_G-(\eta_G+\eta_S)+\eta_S=0\)。</p>
+<div class="callout"><div class="callout-title">Important</div><p><strong>结论（17.33）：</strong> 若 SDF <strong>无永久部分</strong>（即 (17.29) \(\frac{S_{t+\tau}}{S_t}=\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+\tau})}\exp(\tau\eta_S)\)，永久部分为常数 \(\frac12\) 退化），则长期风险补偿为零。直觉：被完全预期的长期变化不应获得补偿，故补偿全部来自永久（不可预期、代表偏好）部分。<strong>Case 2：</strong> 若 SDF 有永久部分（(17.27)），则 \(\frac{M_{S,t+\tau}}{M_{S,t}}\) 不一定是鞅，结果一般不为零——一般存在长期风险补偿。</p></div>
+<h3 id="17-3-4-long-term-holding-period-return-of-bond">17.3.4 Long Term Holding Period Return of Bond</h3>
+<p>设一只 \(\tau\) 期后支付 1 的债券，\(t\) 时价 \(\mathbb E[\frac{S_{t+\tau}}{S_t}\mid\mathcal F_t]\)、\(t+1\) 时价 \(\mathbb E[\frac{S_{t+\tau}}{S_{t+1}}\mid\mathcal F_{t+1}]\)。一期持有期收益 \(\mathrm{HPR}_1(\tau)\) (17.34)：</p>
+</div>
+<div class="lang en">
+<p>Applying (17.26) to the SDF \(\{S_t\}\) and CF \(\{G_t\}\) gives (17.27), (17.28): \(\frac{S_{t+\tau}}{S_t}=\frac{M_{S,t+\tau}}{M_{S,t}}\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+\tau})}\exp(\tau\eta_S)\), \(\frac{G_{t+\tau}}{G_t}=\frac{M_{G,t+\tau}}{M_{G,t}}\frac{e_G(\mathbf X_t)}{e_G(\mathbf X_{t+\tau})}\exp(\tau\eta_G)\).</p>
+<p><strong>Long-term proportional risk compensation.</strong> Substituting the three limits (17.30), (17.31), (17.32) (\(\lim\frac1\tau\ln\mathbb E[\frac{G_{t+\tau}}{G_t}]=\eta_G\), \(\lim\frac1\tau\ln\mathbb E[\frac{S_{t+\tau}}{S_t}\frac{G_{t+\tau}}{G_t}]=\eta_G+\eta_S\), \(\lim\frac1\tau\ln\mathbb E[\frac{S_{t+\tau}}{S_t}]=\eta_S\)) into (17.8) gives (17.33): long-term proportional risk compensation \(=\eta_G-(\eta_G+\eta_S)+\eta_S=0\).</p>
+<div class="callout"><div class="callout-title">Important</div><p><strong>Conclusion (17.33):</strong> If the SDF has <strong>no permanent part</strong> (i.e. (17.29) \(\frac{S_{t+\tau}}{S_t}=\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+\tau})}\exp(\tau\eta_S)\), the permanent part degenerating to a constant), the long-term risk compensation is zero. Intuition: fully expected long-run changes deserve no compensation, so all compensation comes from the permanent (unexpected, preference-representing) part. <strong>Case 2:</strong> if the SDF has a permanent part ((17.27)), \(\frac{M_{S,t+\tau}}{M_{S,t}}\) need not be a martingale and the result is generally nonzero — there is generally long-run risk compensation.</p></div>
+<h3 id="17-3-4-long-term-holding-period-return-of-bond">17.3.4 Long Term Holding Period Return of Bond</h3>
+<p>A bond pays 1 after \(\tau\) periods, priced at \(t\) by \(\mathbb E[\frac{S_{t+\tau}}{S_t}\mid\mathcal F_t]\) and at \(t+1\) by \(\mathbb E[\frac{S_{t+\tau}}{S_{t+1}}\mid\mathcal F_{t+1}]\). The one-period holding-period return \(\mathrm{HPR}_1(\tau)\) (17.34):</p>
+</div>
+<p>$$\mathrm{HPR}_1(\tau)=\frac{\mathbb E\!\left[\frac{S_{t+\tau}}{S_{t+1}}\mid\mathcal F_{t+1}\right]}{\mathbb E\!\left[\frac{S_{t+\tau}}{S_t}\mid\mathcal F_t\right]}.\tag{17.34}$$</p>
+<div class="lang zh">
+<p>设 (17.27)（SDF 有永久部分）。用变测度 \(\tilde{\mathbb E}\) 化简 (17.35)、(17.36)，并设 \(\tau\to\infty\) 时 \(\tilde{\mathbb E}[\frac{1}{e_S(\mathbf X_{t+\tau})}\mid\mathcal F_{t+1}]\to\tilde{\mathbb E}[\frac{1}{e_S(\mathbf X_{t+\tau})}\mid\mathcal F_t]\)（\(\mathbf X_{t+\tau}\) 在远期与 \(t,t+1\) 信息无关）(17.37)，得 (17.38)：\(\lim_{\tau\to\infty}\mathrm{HPR}_1(\tau)=\frac{e_S(\mathbf X_{t+1})}{e_S(\mathbf X_t)}\exp(-\eta_S)\)。代回 (17.27) 得 (17.39)：</p>
+</div>
+<div class="lang en">
+<p>Assume (17.27) (SDF has a permanent part). Simplifying with the tilde measure \(\tilde{\mathbb E}\) (17.35), (17.36), and assuming as \(\tau\to\infty\) that \(\tilde{\mathbb E}[\frac{1}{e_S(\mathbf X_{t+\tau})}\mid\mathcal F_{t+1}]\to\tilde{\mathbb E}[\frac{1}{e_S(\mathbf X_{t+\tau})}\mid\mathcal F_t]\) (\(\mathbf X_{t+\tau}\) is independent of \(t,t+1\) info in the far future) (17.37), gives (17.38): \(\lim_{\tau\to\infty}\mathrm{HPR}_1(\tau)=\frac{e_S(\mathbf X_{t+1})}{e_S(\mathbf X_t)}\exp(-\eta_S)\). Substituting back into (17.27) gives (17.39):</p>
+</div>
+<p>$$\frac{S_{t+1}}{S_t}=\frac{M_{S,t+1}}{M_{S,t}}\,(\mathrm{HPR}_1(\infty))^{-1}.\tag{17.39}$$</p>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p><strong>(17.39)：</strong> 给所有证券定价的 SDF 实际上等于"一个鞅 × 长期债券一期持有期收益的倒数"。这是个非常有力的结果。</p></div>
+<h2 id="17-4-literature-on-long-horizon-valuation">17.4 Literature on Long Horizon Valuation</h2>
+<h3 id="17-4-1-kazemi-1992">17.4.1 Kazemi (1992)</h3>
+<p>Kazemi (1992) 即 §17.3.4 的讨论，但<strong>假设 SDF 无永久部分</strong> (17.29)。于是 \(\frac{S_{t+1}}{S_t}=\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+1})}\exp(\eta_S)=(\mathrm{HPR}_1(\infty))^{-1}\)（连续时间下）：长期债券一期持有期收益（的倒数）本身就是 SDF，构成单因子定价模型。状态变量是否平稳可由数据检验。</p>
+<h3 id="17-4-2-alvarez-and-jermann-2005">17.4.2 Alvarez and Jermann (2005)</h3>
+<p>考虑 (17.27)（SDF 有永久部分），\(\frac{S_{t+1}}{S_t}=\frac{M_{S,t+1}}{M_{S,t}}\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+1})}\exp(\eta_S)\)，含鞅成分。他们发现：永久部分 \(\frac{M_{S,t+1}}{M_{S,t}}\) 极其波动，暂时部分相对次要。<strong>如何度量永久部分重要性：</strong> 定义对 \(m\equiv\frac{M_{S,t+1}}{M_{S,t}}\) 大小的度量 \(\mathbb E[\phi(m)]\)，要求 \(\phi(1)=0\)（永久部分退化为 1 时报告 0）、\(\phi\) 凸（由 Jensen \(\mathbb E[\phi(m)]\geq\phi(\mathbb E[m])=\phi(1)=0\)，总报告正值）。Alvarez-Jermann 取 \(\phi(m)=-\ln m\) (17.40)：度量 \(\mathbb E[-\ln\frac{M_{S,t+1}}{M_{S,t}}]\)。由平稳性与 Birkhoff 大数律 (17.41)：\(\mathbb E[-\ln\frac{M_{S,t+1}}{M_{S,t}}]=-\lim_{t\to\infty}\frac1t\mathbb E[\ln\frac{M_{S,t}}{M_{S,0}}]\)。定义 \(L(\frac{S_t}{S_0})\) (17.42)：\(\equiv\frac1t\ln(\mathbb E[\frac{S_t}{S_0}])-\frac1t\mathbb E[\ln\frac{S_t}{S_0}]\)（Part A − Part B），结合 (17.27) 算得 \(\lim_{t\to\infty}L(\frac{S_t}{S_0})=\mathbb E[-\ln\frac{M_{S,t+1}}{M_{S,t}}]\)。再对任意资产 \(i\) 用 SDF 定价 \(\mathbb E[\frac{S_t}{S_0}R_{0,t}^i]=1\) (17.43)、对无风险资产 (17.45)，结合 Jensen 得 (17.44)、(17.46)：</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p><strong>(17.39):</strong> the SDF pricing all securities equals "a martingale × the inverse of the long bond's one-period holding-period return." A very powerful result.</p></div>
+<h2 id="17-4-literature-on-long-horizon-valuation">17.4 Literature on Long Horizon Valuation</h2>
+<h3 id="17-4-1-kazemi-1992">17.4.1 Kazemi (1992)</h3>
+<p>Kazemi (1992) is exactly §17.3.4 but <strong>assumes the SDF has no permanent part</strong> (17.29). Then \(\frac{S_{t+1}}{S_t}=\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+1})}\exp(\eta_S)=(\mathrm{HPR}_1(\infty))^{-1}\) (in continuous time): the (inverse of the) long bond's one-period holding return is itself the SDF, a one-factor pricing model. Stationarity of the state can be tested with data.</p>
+<h3 id="17-4-2-alvarez-and-jermann-2005">17.4.2 Alvarez and Jermann (2005)</h3>
+<p>Consider (17.27) (SDF has a permanent part), \(\frac{S_{t+1}}{S_t}=\frac{M_{S,t+1}}{M_{S,t}}\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+1})}\exp(\eta_S)\), with a martingale component. They find: the permanent part \(\frac{M_{S,t+1}}{M_{S,t}}\) is hugely volatile, the transient part relatively unimportant. <strong>Measuring the permanent part's importance:</strong> define a measurement \(\mathbb E[\phi(m)]\) of the size of \(m\equiv\frac{M_{S,t+1}}{M_{S,t}}\), requiring \(\phi(1)=0\) (reports 0 when the permanent part degenerates to 1) and \(\phi\) convex (by Jensen \(\mathbb E[\phi(m)]\geq\phi(\mathbb E[m])=\phi(1)=0\), always reports a positive value). Alvarez-Jermann use \(\phi(m)=-\ln m\) (17.40): the measurement \(\mathbb E[-\ln\frac{M_{S,t+1}}{M_{S,t}}]\). By stationarity and Birkhoff's LLN (17.41): \(\mathbb E[-\ln\frac{M_{S,t+1}}{M_{S,t}}]=-\lim_{t\to\infty}\frac1t\mathbb E[\ln\frac{M_{S,t}}{M_{S,0}}]\). Define \(L(\frac{S_t}{S_0})\) (17.42): \(\equiv\frac1t\ln(\mathbb E[\frac{S_t}{S_0}])-\frac1t\mathbb E[\ln\frac{S_t}{S_0}]\) (Part A − Part B); combined with (17.27), \(\lim_{t\to\infty}L(\frac{S_t}{S_0})=\mathbb E[-\ln\frac{M_{S,t+1}}{M_{S,t}}]\). Pricing any asset \(i\) via \(\mathbb E[\frac{S_t}{S_0}R_{0,t}^i]=1\) (17.43) and the risk-free asset (17.45), with Jensen, gives (17.44), (17.46):</p>
+</div>
+<p>$$\mathbb E\!\left[-\ln\frac{M_{S,t+1}}{M_{S,t}}\right]\geq\max_i\lim_{t\to\infty}\frac1t\left[\mathbb E\!\left[\ln(R_{0,t}^i)\right]-\ln(R_{0,t}^f)\right].\tag{17.46}$$</p>
+<div class="lang zh">
+<p><strong>解读（熵界 entropy bound）：</strong> 右端 \(\frac1t[\mathbb E[\ln R_{0,t}^i]-\ln R_{0,t}^f]\) 是资产 \(i\) 的平均一期长期风险溢价。(17.46) 说永久部分的度量不小于任意资产的最大平均长期风险溢价（数据中显然为正），从而证明 <strong>SDF 永久部分的重要性</strong>。</p>
+<h3 id="17-4-3-recovery-theorem-ross-2015">17.4.3 Recovery Theorem: Ross (2015)</h3>
+<p>Ross (2015) 假设<strong>市场完全、SDF 无鞅部分</strong> (17.29)，证明可仅从资产价格<strong>复原</strong>物理概率分布与 SDF。施加 \(n\) 态马尔可夫链结构以降低自由度。设转移概率矩阵 \(\mathbf P=[p_{ij}]\)（\(n^2-n\) 自由度，每行和为 1）、SDF 矩阵 \(\mathbf S=[s_{ij}]\)（\(s_{ij}\) 为今天状态 \(i\)、明天状态 \(j\) 时一单位现金流的状态价格密度）、Arrow-Debreu 价格矩阵 \(\mathbf A=[a_{ij}]\)，\(a_{ij}=p_{ij}s_{ij}\)。由 (17.29)，\(\mathbf S\) 自由度可降到 \(n\)（\(e_S(\mathbf X_i)\) 至多取 \(n\) 值，\(\frac{S_{t+1}}{S_t}=\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+1})}\exp(\eta_S)\) 至多 \(n-1\) 个比值 + 1 个 \(\eta_S\) = \(n\)）。</p>
+<p><strong>复原策略：</strong> ① 从期权数据估 \(\mathbf A\)；② 设 \(\mathbf P\) 元素严格为正（无套利下 \(\mathbf A\) 亦全正）；③ 由 Theorem 17.1，\(\mathbf A\) 绝对值最大特征值 \(\varepsilon>0\)、对应特征向量 \(\mathbf e=(e_1,\dots,e_n)'\) 可全正；④ 构造 \(\tilde{\mathbf P}=[\tilde p_{ij}]\)，\(\tilde p_{ij}\equiv\frac{a_{ij}e_j}{\varepsilon e_i}\)。则 \(\tilde p_{ij}>0\)、\(\sum_j\tilde p_{ij}=1\)（用 \(\mathbf A\mathbf e=\varepsilon\mathbf e\)），是合法转移概率。</p>
+<p>Ross (2015) 宣称 \(\tilde{\mathbf P}=\mathbf P\)（物理测度）。但<strong>这仅在 SDF 无永久部分 (17.29) 时成立</strong>。验证：设 \(\tilde{\mathbf P}=\mathbf P\)，则 \(\tilde s_{ij}=\frac{a_{ij}}{\tilde p_{ij}}=\frac{e_i}{e_j}\varepsilon\) (17.47)、(17.48)，恰对应 (17.29) 形式 \(\frac{S_{t+1}}{S_t}=\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+1})}\exp(\eta_S)\)（\(e_i\)↔\(e_S(\mathbf X_t)\)、\(\varepsilon\)↔\(\exp(\eta_S)\)）。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>若 SDF <strong>有</strong>永久部分（(17.27)，由 Alvarez-Jermann 2005 的证据，这是现实情形），则与 \(\tilde{\mathbf P}\) 相伴的 \(\tilde{\mathbf S}\) 不再正确，\(\tilde{\mathbf P}\neq\mathbf P\)，<strong>Ross 复原定理失效</strong>。此时 \(\tilde{\mathbf P}\) 复原的是"tilde"测度下抵消永久部分的非物理转移概率矩阵 (17.25 型)。</p></div>
+<h2 id="17-5-shock-elasticities">17.5 Shock Elasticities</h2>
+<p>考察<strong>一次性冲击</strong>如何影响某段期间的定价，即冲击弹性。</p>
+<h3 id="17-5-1-one-period-shock-elasticities">17.5.1 One-Period Shock Elasticities</h3>
+<p>设状态 \(\{\mathbf X_t:t=0,1\}\)（\(n\times1\) 马尔可夫）、冲击 \(\mathbf W_1\sim\mathcal N(\mathbf 0,\mathbf I)\)（\(k\times1\)）。SDF 过程 (17.49)：\(\ln S_1-\ln S_0=\beta_S(\mathbf X_0)+\boldsymbol\alpha_S(\mathbf X_0)\cdot\mathbf W_1\)；CF 过程 (17.50)：\(\ln G_1-\ln G_0=\beta_G(\mathbf X_0)+\boldsymbol\alpha_G(\mathbf X_0)\cdot\mathbf W_1\)。CF 毛收益 \(R^G_{0,1}\) (17.51)：\(\frac{G_1}{\mathbb E[G_1\frac{S_1}{S_0}\mid\mathcal F_0]}\)。对数期望收益（≈净收益）(17.52)、无风险 (17.53)，二者之差即风险溢价：</p>
+</div>
+<div class="lang en">
+<p><strong>Interpretation (entropy bound):</strong> the RHS \(\frac1t[\mathbb E[\ln R_{0,t}^i]-\ln R_{0,t}^f]\) is asset \(i\)'s average one-period long-run risk premium. (17.46) says the measurement of the permanent part is no less than the maximum average long-run risk premium of any asset (clearly positive in data), proving the <strong>importance of the SDF's permanent part</strong>.</p>
+<h3 id="17-4-3-recovery-theorem-ross-2015">17.4.3 Recovery Theorem: Ross (2015)</h3>
+<p>Ross (2015) assumes a <strong>complete market and no martingale part of the SDF</strong> (17.29), and shows the physical distribution and the SDF can be <strong>recovered</strong> from asset prices alone. An \(n\)-state Markov chain reduces the degrees of freedom. Let the transition matrix \(\mathbf P=[p_{ij}]\) (\(n^2-n\) d.o.f., each row sums to 1), the SDF matrix \(\mathbf S=[s_{ij}]\) (\(s_{ij}\) the state-price density of one unit of cash flow when today is state \(i\) and tomorrow state \(j\)), and the Arrow-Debreu price matrix \(\mathbf A=[a_{ij}]\) with \(a_{ij}=p_{ij}s_{ij}\). By (17.29), the d.o.f. of \(\mathbf S\) drops to \(n\) (\(e_S(\mathbf X_i)\) takes at most \(n\) values; \(\frac{S_{t+1}}{S_t}=\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+1})}\exp(\eta_S)\) has at most \(n-1\) ratios + 1 \(\eta_S\) = \(n\)).</p>
+<p><strong>Recovery strategy:</strong> ① estimate \(\mathbf A\) from option data; ② assume all entries of \(\mathbf P\) strictly positive (no-arbitrage then makes \(\mathbf A\) all-positive); ③ by Theorem 17.1, \(\mathbf A\)'s largest-absolute-value eigenvalue \(\varepsilon>0\) with all-positive eigenvector \(\mathbf e=(e_1,\dots,e_n)'\); ④ construct \(\tilde{\mathbf P}=[\tilde p_{ij}]\), \(\tilde p_{ij}\equiv\frac{a_{ij}e_j}{\varepsilon e_i}\). Then \(\tilde p_{ij}>0\), \(\sum_j\tilde p_{ij}=1\) (using \(\mathbf A\mathbf e=\varepsilon\mathbf e\)), a valid transition probability.</p>
+<p>Ross (2015) claims \(\tilde{\mathbf P}=\mathbf P\) (the physical measure). But <strong>this holds only when the SDF has no permanent part (17.29)</strong>. Verify: if \(\tilde{\mathbf P}=\mathbf P\), then \(\tilde s_{ij}=\frac{a_{ij}}{\tilde p_{ij}}=\frac{e_i}{e_j}\varepsilon\) (17.47), (17.48), matching the (17.29) form \(\frac{S_{t+1}}{S_t}=\frac{e_S(\mathbf X_t)}{e_S(\mathbf X_{t+1})}\exp(\eta_S)\) (\(e_i\)↔\(e_S(\mathbf X_t)\), \(\varepsilon\)↔\(\exp(\eta_S)\)).</p>
+<div class="callout"><div class="callout-title">Warning</div><p>If the SDF <strong>does</strong> have a permanent part ((17.27), the realistic case by the Alvarez-Jermann 2005 evidence), the \(\tilde{\mathbf S}\) associated with \(\tilde{\mathbf P}\) is no longer right and \(\tilde{\mathbf P}\neq\mathbf P\), so the <strong>Ross recovery theorem fails</strong>. Then \(\tilde{\mathbf P}\) recovers the non-physical transition matrix under the "tilde" measure that cancels the permanent part (form 17.25).</p></div>
+<h2 id="17-5-shock-elasticities">17.5 Shock Elasticities</h2>
+<p>Study how a <strong>one-time shock</strong> affects pricing over a period — shock elasticities.</p>
+<h3 id="17-5-1-one-period-shock-elasticities">17.5.1 One-Period Shock Elasticities</h3>
+<p>State \(\{\mathbf X_t:t=0,1\}\) (\(n\times1\) Markov), shock \(\mathbf W_1\sim\mathcal N(\mathbf 0,\mathbf I)\) (\(k\times1\)). SDF process (17.49): \(\ln S_1-\ln S_0=\beta_S(\mathbf X_0)+\boldsymbol\alpha_S(\mathbf X_0)\cdot\mathbf W_1\); CF process (17.50): \(\ln G_1-\ln G_0=\beta_G(\mathbf X_0)+\boldsymbol\alpha_G(\mathbf X_0)\cdot\mathbf W_1\). CF gross return \(R^G_{0,1}\) (17.51): \(\frac{G_1}{\mathbb E[G_1\frac{S_1}{S_0}\mid\mathcal F_0]}\). The log expected return (≈ net return) (17.52), the risk-free (17.53); their difference is the risk premium:</p>
+</div>
+<p>$$\underbrace{-\boldsymbol\alpha_S(\mathbf X_0)}_{\text{shock prices}}\cdot\underbrace{\boldsymbol\alpha_G(\mathbf X_0)}_{\text{shock exposures}}.$$</p>
+<div class="lang zh">
+<p>称 \(\boldsymbol\alpha_G(\mathbf X_0)\) 为<strong>冲击暴露 (shock exposures)</strong>（CF 过程对冲击各分量的载荷），\(-\boldsymbol\alpha_S(\mathbf X_0)\) 为<strong>冲击价格 (shock prices)</strong>（每单位暴露对收益的影响，与价格相关）。</p>
+<p><strong>修正现金流过程。</strong> 定义 \(t=1\) 现金流的标量修正因子 \(H_1(r)\) (17.54)：\(\ln H_1(r)=r\boldsymbol\nu(\mathbf X_0)\cdot\mathbf W_1-\frac12 r^2\boldsymbol\nu(\mathbf X_0)\cdot\boldsymbol\nu(\mathbf X_0)\)，\(\boldsymbol\nu(\mathbf X_0)\) 为 \(k\times1\)。修正后 \(G_1^{\text{modified}}=G_1 H_1(r)\) 把冲击暴露由 \(\boldsymbol\alpha_G(\mathbf X_0)\) 改为 \(\boldsymbol\alpha_G(\mathbf X_0)+r\boldsymbol\nu(\mathbf X_0)\) (17.55)。假设 \(\boldsymbol\nu(\mathbf X_0)\cdot\boldsymbol\nu(\mathbf X_0)=1\) (17.56)；性质：\(\mathrm{Var}(\boldsymbol\nu(\mathbf X_0)\cdot\mathbf W_1)=1\)、\(\mathbb E[H_1(r)\mid\mathbf X_0]=1\) (17.57)、\(H_1(r)>0\) (17.58)。故 \(H_1(r)\) 可作改变测度的密度，新测度 \(\tilde{\mathbb E}^{H_1(r)}\) 满足 \(\tilde{\mathbb E}^{H_1(r)}[\mathbf W_1\mid\mathbf X_0]=r\boldsymbol\nu(\mathbf X_0)\)（Remark 17.2）。</p>
+<p>对修正资产取毛收益 \(R^{G,\text{modified}}_{0,1}\)，由 (17.55) 代入 (17.52) 得 (17.59)。<strong>弹性定义</strong>：对 \(\ln\mathbb E[R^{G,\text{modified}}_{0,1}\mid\mathcal F_0]\) 关于 \(r\) 在 \(r=0\) 处求导 (17.64 一期版本)，得三种弹性：</p>
+</div>
+<div class="lang en">
+<p>Call \(\boldsymbol\alpha_G(\mathbf X_0)\) the <strong>shock exposures</strong> (the CF process's loadings on each shock component) and \(-\boldsymbol\alpha_S(\mathbf X_0)\) the <strong>shock prices</strong> (the impact of each unit of exposure on the return, closely related to prices).</p>
+<p><strong>Modified cash-flow process.</strong> Define a scalar modification factor \(H_1(r)\) for the \(t=1\) cash flow (17.54): \(\ln H_1(r)=r\boldsymbol\nu(\mathbf X_0)\cdot\mathbf W_1-\frac12 r^2\boldsymbol\nu(\mathbf X_0)\cdot\boldsymbol\nu(\mathbf X_0)\), \(\boldsymbol\nu(\mathbf X_0)\) being \(k\times1\). The modified \(G_1^{\text{modified}}=G_1 H_1(r)\) changes the shock exposure from \(\boldsymbol\alpha_G(\mathbf X_0)\) to \(\boldsymbol\alpha_G(\mathbf X_0)+r\boldsymbol\nu(\mathbf X_0)\) (17.55). Assume \(\boldsymbol\nu(\mathbf X_0)\cdot\boldsymbol\nu(\mathbf X_0)=1\) (17.56); properties: \(\mathrm{Var}(\boldsymbol\nu(\mathbf X_0)\cdot\mathbf W_1)=1\), \(\mathbb E[H_1(r)\mid\mathbf X_0]=1\) (17.57), \(H_1(r)>0\) (17.58). So \(H_1(r)\) can serve as a change-of-measure density, with the new measure \(\tilde{\mathbb E}^{H_1(r)}\) satisfying \(\tilde{\mathbb E}^{H_1(r)}[\mathbf W_1\mid\mathbf X_0]=r\boldsymbol\nu(\mathbf X_0)\) (Remark 17.2).</p>
+<p>Taking the gross return \(R^{G,\text{modified}}_{0,1}\) of the modified asset, substituting (17.55) into (17.52) gives (17.59). <strong>Elasticity definitions</strong>: differentiating \(\ln\mathbb E[R^{G,\text{modified}}_{0,1}\mid\mathcal F_0]\) w.r.t. \(r\) at \(r=0\) (one-period version of (17.64)) gives three elasticities:</p>
+</div>
+<p>$$\underbrace{\varepsilon_R}_{\text{shock price}}=\underbrace{\varepsilon_O}_{\text{shock exposure}}-\underbrace{\varepsilon_C}_{\text{shock cost}}.$$</p>
+<div class="lang zh">
+<ul>
+<li><strong>冲击价格弹性 \(\varepsilon_R\)</strong>：\(\frac{d}{dr}\ln\mathbb E[R^{G,\text{modified}}_{0,1}\mid\mathcal F_0]\big|_{r=0}=-\boldsymbol\alpha_S(\mathbf X_0)\cdot\boldsymbol\nu(\mathbf X_0)\)——当原现金流 \(G_1\) 的冲击暴露沿 \(\boldsymbol\nu(\mathbf X_0)\,dr\) 移动时，预期收益的百分比变化。</li>
+<li><strong>冲击暴露弹性 \(\varepsilon_O\)</strong>：\(\frac{d}{dr}\ln\mathbb E[\frac{G_1}{G_0}H_1(r)\mid\mathcal F_0]\big|_{r=0}\)——预期现金流的百分比变化。</li>
+<li><strong>冲击成本弹性 \(\varepsilon_C\)</strong>：\(\frac{d}{dr}\ln\mathbb E[\frac{G_1}{G_0}\frac{S_1}{S_0}H_1(r)\mid\mathcal F_0]\big|_{r=0}\)——承担冲击的成本（现金流价格）的百分比变化。</li>
+</ul>
+<h3 id="17-5-2-multi-period-shock-elasticities">17.5.2 Multi-Period Shock Elasticities</h3>
+<p>推广到多期 \(\{\mathbf X_t,\mathbf W_t:t=0,1,2,\dots\}\)。SDF (17.60)、CF (17.61) 为乘性泛函；修正只在 \(t=1\) 发生，因子 \(H_1(r)\) (17.62)，修正现金流 \(G_t^{\text{modified}}=G_t H_1(r)\)（\(t\geq1\)，因 (17.61) 乘性结构，\(t=1\) 的倍数传到所有 \(G_{t+\tau}\)）。毛收益 \(R^{G,\text{modified}}_{0,t}\) (17.63)。对 \(\ln\mathbb E[R^{G,\text{modified}}_{0,t}\mid\mathbf X_0=\mathbf x]\) 在 \(r=0\) 求导 (17.64)：冲击价格弹性 = 冲击暴露弹性 − 冲击成本弹性。一般地令 \(m_t\) 代表 \(G_t\) 或 \(G_t S_t\)，导数 (17.65)：\(=\boldsymbol\nu(\mathbf x)\cdot\frac{\mathbb E[\frac{m_t}{m_0}\mathbf W_1\mid\mathbf X_0=\mathbf x]}{\mathbb E[\frac{m_t}{m_0}\mid\mathbf X_0=\mathbf x]}\)。由 (17.23) 设 \(\frac{m_t}{m_0}=\frac{M_t}{M_0}\frac{e(\mathbf X_0)}{e(\mathbf X_t)}\exp(t\eta)\) (17.66)（永久×暂时×常数），用变测度 (17.67) 与远期协方差为零，得长期极限 (17.69)：\(\lim_{t\to\infty}\frac{d}{dr}\ln\mathbb E[\frac{m_t}{m_0}H_1(r)\mid\mathbf X_0=\mathbf x]\big|_{r=0}=\boldsymbol\nu(\mathbf x)\cdot\tilde{\mathbb E}[\mathbf W_1\mid\mathbf X_0=\mathbf x]\)。</p>
+<div class="callout"><div class="callout-title">Note</div><p>代入具体 \(m_t\)（\(G_tS_t\) 或 \(G_t\)）：若 \(S_t\) 有永久部分，\(G_tS_t\) 与 \(G_t\) 的 tilde 测度不同、冲击价格弹性不为零；若 \(S_t\) 无永久部分则相同、为零。</p></div>
+<p><strong>Example 17.1（向量自回归）.</strong> \(\mathbf X_{t+1}=\mathbf A\mathbf X_t+\mathbf B\mathbf W_{t+1}\)（\(\mathbf W\sim\mathcal N(\mathbf 0,\mathbf I)\) i.i.d.）(17.70)、\(\ln C_{t+1}-\ln C_t=\mu_c+\mathbf U_c\cdot\mathbf X_t+\mathbf F_c\cdot\mathbf W_{t+1}\) (17.71)、\(\ln H_1(r)=r\boldsymbol\nu(\mathbf X_0)\cdot\mathbf W_1-\frac12 r^2\boldsymbol\nu(\mathbf X_0)\cdot\boldsymbol\nu(\mathbf X_0)\) (17.62)。由 He (2019a) §12.4.4 的 (12.10) 计算 \(\frac{d}{dr}\ln\mathbb E[\frac{C_t}{C_0}H_1(r)\mid\mathbf X_0=\mathbf x]\big|_{r=0}\) (17.72)，得 (17.73)：\(=(\mathbf F_c'+\mathbf U_c'(\mathbf I-\mathbf A)^{-1}(\mathbf I-\mathbf A^{t-1})\mathbf B)\boldsymbol\nu(\mathbf X_0)\)。</p>
+<h3 id="17-5-3-compare-shock-elasticity-to-impulse-response-function">17.5.3 Compare Shock Elasticity to Impulse Response Function</h3>
+<p>设 \(\mathbf X_{t+1}=\mathbf A\mathbf X_t+\mathbf B\mathbf W_{t+1}\) (17.74)、\(\ln H_1(r)\) 同前。定义伪脉冲响应 \(\widehat{\mathrm{IRF}}_{1,t}(\mathbf W_1)=\mathbb E[\frac{Y_t}{Y_0}\mid\mathbf X_0,\mathbf W_1]\) (17.75)（非严格 IRF，但相关）。\(\frac{Y_t}{Y_0}\) 的冲击弹性 \(\mathrm{SE}_{1,t}\) (17.76)：</p>
+</div>
+<div class="lang en">
+<ul>
+<li><strong>Shock-price elasticity \(\varepsilon_R\)</strong>: \(\frac{d}{dr}\ln\mathbb E[R^{G,\text{modified}}_{0,1}\mid\mathcal F_0]\big|_{r=0}=-\boldsymbol\alpha_S(\mathbf X_0)\cdot\boldsymbol\nu(\mathbf X_0)\) — the percentage change in expected return when the original \(G_1\)'s shock exposure moves by \(\boldsymbol\nu(\mathbf X_0)\,dr\).</li>
+<li><strong>Shock-exposure elasticity \(\varepsilon_O\)</strong>: \(\frac{d}{dr}\ln\mathbb E[\frac{G_1}{G_0}H_1(r)\mid\mathcal F_0]\big|_{r=0}\) — the percentage change in expected cash flow.</li>
+<li><strong>Shock-cost elasticity \(\varepsilon_C\)</strong>: \(\frac{d}{dr}\ln\mathbb E[\frac{G_1}{G_0}\frac{S_1}{S_0}H_1(r)\mid\mathcal F_0]\big|_{r=0}\) — the percentage change in the cost (price) of bearing the shock.</li>
+</ul>
+<h3 id="17-5-2-multi-period-shock-elasticities">17.5.2 Multi-Period Shock Elasticities</h3>
+<p>Extend to multiple periods \(\{\mathbf X_t,\mathbf W_t:t=0,1,2,\dots\}\). SDF (17.60), CF (17.61) are multiplicative functionals; the modification happens only at \(t=1\), factor \(H_1(r)\) (17.62), modified cash flow \(G_t^{\text{modified}}=G_t H_1(r)\) (\(t\geq1\), since by the (17.61) multiplicative structure the \(t=1\) multiple propagates to all \(G_{t+\tau}\)). Gross return \(R^{G,\text{modified}}_{0,t}\) (17.63). Differentiating \(\ln\mathbb E[R^{G,\text{modified}}_{0,t}\mid\mathbf X_0=\mathbf x]\) at \(r=0\) (17.64): shock-price = shock-exposure − shock-cost elasticity. Generally, letting \(m_t\) represent \(G_t\) or \(G_t S_t\), the derivative (17.65): \(=\boldsymbol\nu(\mathbf x)\cdot\frac{\mathbb E[\frac{m_t}{m_0}\mathbf W_1\mid\mathbf X_0=\mathbf x]}{\mathbb E[\frac{m_t}{m_0}\mid\mathbf X_0=\mathbf x]}\). By (17.23) set \(\frac{m_t}{m_0}=\frac{M_t}{M_0}\frac{e(\mathbf X_0)}{e(\mathbf X_t)}\exp(t\eta)\) (17.66) (permanent × transient × constant); using the change of measure (17.67) and zero far-future covariance, the long-run limit (17.69): \(\lim_{t\to\infty}\frac{d}{dr}\ln\mathbb E[\frac{m_t}{m_0}H_1(r)\mid\mathbf X_0=\mathbf x]\big|_{r=0}=\boldsymbol\nu(\mathbf x)\cdot\tilde{\mathbb E}[\mathbf W_1\mid\mathbf X_0=\mathbf x]\).</p>
+<div class="callout"><div class="callout-title">Note</div><p>Plugging specific \(m_t\) (\(G_t S_t\) or \(G_t\)): if \(S_t\) has a permanent part, the tilde measures for \(G_t S_t\) and \(G_t\) differ and the shock-price elasticity is nonzero; if \(S_t\) has none they coincide and it is zero.</p></div>
+<p><strong>Example 17.1 (vector autoregression).</strong> \(\mathbf X_{t+1}=\mathbf A\mathbf X_t+\mathbf B\mathbf W_{t+1}\) (\(\mathbf W\sim\mathcal N(\mathbf 0,\mathbf I)\) i.i.d.) (17.70), \(\ln C_{t+1}-\ln C_t=\mu_c+\mathbf U_c\cdot\mathbf X_t+\mathbf F_c\cdot\mathbf W_{t+1}\) (17.71), \(\ln H_1(r)=r\boldsymbol\nu(\mathbf X_0)\cdot\mathbf W_1-\frac12 r^2\boldsymbol\nu(\mathbf X_0)\cdot\boldsymbol\nu(\mathbf X_0)\) (17.62). Using (12.10) in He (2019a) §12.4.4 to compute \(\frac{d}{dr}\ln\mathbb E[\frac{C_t}{C_0}H_1(r)\mid\mathbf X_0=\mathbf x]\big|_{r=0}\) (17.72) gives (17.73): \(=(\mathbf F_c'+\mathbf U_c'(\mathbf I-\mathbf A)^{-1}(\mathbf I-\mathbf A^{t-1})\mathbf B)\boldsymbol\nu(\mathbf X_0)\).</p>
+<h3 id="17-5-3-compare-shock-elasticity-to-impulse-response-function">17.5.3 Compare Shock Elasticity to Impulse Response Function</h3>
+<p>Let \(\mathbf X_{t+1}=\mathbf A\mathbf X_t+\mathbf B\mathbf W_{t+1}\) (17.74), \(\ln H_1(r)\) as before. Define the pseudo-IRF \(\widehat{\mathrm{IRF}}_{1,t}(\mathbf W_1)=\mathbb E[\frac{Y_t}{Y_0}\mid\mathbf X_0,\mathbf W_1]\) (17.75) (not the strict IRF, but related). The shock elasticity of \(\frac{Y_t}{Y_0}\), \(\mathrm{SE}_{1,t}\) (17.76):</p>
+</div>
+<p>$$\mathrm{SE}_{1,t}=\frac{d}{dr}\ln\mathbb E^{H_1(r)}\!\left[\widehat{\mathrm{IRF}}_{1,t}(\mathbf W_1)\mid\mathbf X_0\right]\Big|_{r=0},\tag{17.76}$$</p>
+<div class="lang zh">
+<p>即冲击弹性是伪 IRF 的加权平均（权重为 \(H_1(r)\) 测度下的概率）。<strong>特例：</strong> 若 \(\ln(\frac{Y_t}{Y_0})\) 条件正态，\(\mathbb E[\ln\frac{Y_t}{Y_0}\mid\mathbf X_0,\mathbf W_1]=\mathbf k\cdot\mathbf W_1\)，则 (17.77) \(\mathbb E[H_1(r)\mathbb E[\frac{Y_t}{Y_0}\mid\mathbf X_0,\mathbf W_1]\mid\mathbf X_0]=e^{r\mathbf k\cdot\boldsymbol\nu(\mathbf X_0)+\text{constant}}\)，代入 (17.76) 得 \(\mathrm{SE}_{1,t}=\mathbf k\cdot\boldsymbol\nu(\mathbf X_0)\)。若设 \(\mathbf W_1=\boldsymbol\nu(\mathbf X_0)\)，则 \(\frac{Y_t}{Y_0}\) 的冲击弹性恰等于 \(\ln(\frac{Y_t}{Y_0})\) 的伪 IRF。</p>
+<h2 id="17-6-approximation-under-recursive-utility">17.6 Approximation under Recursive Utility</h2>
+<p>禀赋经济，随机消费序列 \(\{C_t\}\) 外生（\(C_t\) 类比上文状态向量 \(\mathbf X_t\)）。</p>
+<h3 id="17-6-1-recursive-utility">17.6.1 Recursive Utility</h3>
+<p>把 (9.1) 的 Epstein-Zin 效用等价改写 (17.78)：\(V_t=[(1-\beta)C_t^{1-\rho}+\beta(R_t^{1-\rho})]^{\frac1{1-\rho}}\)，\(R_t=\mathbb E[V_{t+1}^{1-\gamma}\mid\mathcal F_t]^{\frac1{1-\gamma}}\) (17.79)。\(\gamma\) 管风险厌恶、\(\rho\) 管 IES、\(\beta\) 为贴现因子。对数对象 \(v_t\equiv\ln V_t\)、\(c_t\equiv\ln C_t\)、\(r_t\equiv\ln R_t\)、\(s_t\equiv S_t\)。对数化 (17.80)：\(v_t=\frac1{1-\rho}\ln[(1-\beta)e^{(1-\rho)c_t}+\beta(e^{(1-\rho)r_t})]\)、(17.81)：\(r_t=\frac1{1-\gamma}\ln\mathbb E[e^{(1-\gamma)v_{t+1}}\mid\mathcal F_t]\)。</p>
+<h3 id="17-6-2-approximation-of-value-function">17.6.2 Approximation of Value Function</h3>
+<p>设 \(v_t,c_t,r_t\) 均为 \(h\) 的函数（\(h\) 度量对不确定性的暴露），\(C_{t+1}(h)=\psi(C_t(h),h\mathbf W_{t+1},h)\)。\(h=0\) 时无不确定性。在 \(h=0\) 处对 \(v_t(h)\) 做二阶展开 \(v_t(h)\approx v_t(0)+hv_t'(0)+\frac{h^2}2 v_t''(0)\) (17.108)。</p>
+<ul>
+<li><strong>零阶</strong> (17.82)：\(v_t(0)=\frac1{1-\rho}\ln[(1-\beta)e^{(1-\rho)c_t(0)}+\beta(e^{(1-\rho)r_t(0)})]\)，\(r_t(0)=v_{t+1}(0)\) (17.83)。设确定情形消费增长恒定 \(c_{t+1}(0)-c_t(0)=\eta_c\) (17.84)，由 (17.78) 在 \((C_t,V_{t+1})\) 一次齐次得 \(v_t(0)-c_t(0)=\eta_{v-c}\) 常数 (17.85)，解出 \(e^{(1-\rho)\eta_{v-c}}=\frac{1-\beta}{1-\beta e^{(1-\rho)\eta_c}}\)。</li>
+<li><strong>一阶</strong> (17.87)（定义 \(\lambda\equiv\frac{\beta e^{(1-\rho)(\eta_{v-c}+\eta_c)}}{(1-\beta)+\beta e^{(1-\rho)(\eta_{v-c}+\eta_c)}}\)）：</li>
+</ul>
+</div>
+<div class="lang en">
+<p>i.e. the shock elasticity is a weighted average of the pseudo-IRF (weights being probabilities under the \(H_1(r)\) measure). <strong>Special case:</strong> if \(\ln(\frac{Y_t}{Y_0})\) is conditionally normal with \(\mathbb E[\ln\frac{Y_t}{Y_0}\mid\mathbf X_0,\mathbf W_1]=\mathbf k\cdot\mathbf W_1\), then (17.77) \(\mathbb E[H_1(r)\mathbb E[\frac{Y_t}{Y_0}\mid\mathbf X_0,\mathbf W_1]\mid\mathbf X_0]=e^{r\mathbf k\cdot\boldsymbol\nu(\mathbf X_0)+\text{constant}}\), and (17.76) gives \(\mathrm{SE}_{1,t}=\mathbf k\cdot\boldsymbol\nu(\mathbf X_0)\). If \(\mathbf W_1=\boldsymbol\nu(\mathbf X_0)\), the shock elasticity of \(\frac{Y_t}{Y_0}\) exactly equals the pseudo-IRF of \(\ln(\frac{Y_t}{Y_0})\).</p>
+<h2 id="17-6-approximation-under-recursive-utility">17.6 Approximation under Recursive Utility</h2>
+<p>Endowment economy, exogenous random consumption sequence \(\{C_t\}\) (\(C_t\) analogous to the state vector \(\mathbf X_t\) above).</p>
+<h3 id="17-6-1-recursive-utility">17.6.1 Recursive Utility</h3>
+<p>Rewrite the (9.1) Epstein-Zin utility equivalently (17.78): \(V_t=[(1-\beta)C_t^{1-\rho}+\beta(R_t^{1-\rho})]^{\frac1{1-\rho}}\), \(R_t=\mathbb E[V_{t+1}^{1-\gamma}\mid\mathcal F_t]^{\frac1{1-\gamma}}\) (17.79). \(\gamma\) governs risk aversion, \(\rho\) governs IES, \(\beta\) is the discount factor. Log objects \(v_t\equiv\ln V_t\), \(c_t\equiv\ln C_t\), \(r_t\equiv\ln R_t\), \(s_t\equiv S_t\). In logs (17.80): \(v_t=\frac1{1-\rho}\ln[(1-\beta)e^{(1-\rho)c_t}+\beta(e^{(1-\rho)r_t})]\), (17.81): \(r_t=\frac1{1-\gamma}\ln\mathbb E[e^{(1-\gamma)v_{t+1}}\mid\mathcal F_t]\).</p>
+<h3 id="17-6-2-approximation-of-value-function">17.6.2 Approximation of Value Function</h3>
+<p>Let \(v_t,c_t,r_t\) all be functions of \(h\) (\(h\) measures exposure to uncertainty), \(C_{t+1}(h)=\psi(C_t(h),h\mathbf W_{t+1},h)\). At \(h=0\) there is no uncertainty. A second-order expansion of \(v_t(h)\) at \(h=0\): \(v_t(h)\approx v_t(0)+hv_t'(0)+\frac{h^2}2 v_t''(0)\) (17.108).</p>
+<ul>
+<li><strong>Zeroth order</strong> (17.82): \(v_t(0)=\frac1{1-\rho}\ln[(1-\beta)e^{(1-\rho)c_t(0)}+\beta(e^{(1-\rho)r_t(0)})]\), \(r_t(0)=v_{t+1}(0)\) (17.83). Assume constant certainty consumption growth \(c_{t+1}(0)-c_t(0)=\eta_c\) (17.84); by homogeneity of degree 1 of (17.78) in \((C_t,V_{t+1})\), \(v_t(0)-c_t(0)=\eta_{v-c}\) constant (17.85), solving \(e^{(1-\rho)\eta_{v-c}}=\frac{1-\beta}{1-\beta e^{(1-\rho)\eta_c}}\).</li>
+<li><strong>First order</strong> (17.87) (define \(\lambda\equiv\frac{\beta e^{(1-\rho)(\eta_{v-c}+\eta_c)}}{(1-\beta)+\beta e^{(1-\rho)(\eta_{v-c}+\eta_c)}}\)):</li>
+</ul>
+</div>
+<p>$$v_t'(0)=(1-\lambda)c_t'(0)+\lambda r_t'(0).\tag{17.87}$$</p>
+<div class="lang zh">
+<ul>
+<li><strong>二阶</strong> (17.88)：\(v_t''(0)=(1-\lambda)c_t''(0)+\lambda r_t''(0)+(1-\lambda)\lambda(c_t'(0)-r_t'(0))^2\)。</li>
+</ul>
+<p>剩下需刻画连续价值的对数 \(r_t(h)\) (17.81)。<strong>两种近似（两种假设）：</strong></p>
+<p><strong>第一种：\(\gamma\) 固定（与 \(h\) 无关）.</strong> 零阶 \(r_t(0)=v_{t+1}(0)\) (17.89)；一阶 \(r_t'(0)=\mathbb E[v_{t+1}'(0)\mid\mathcal F_t]\) (17.90)；二阶 (17.91)：\(r_t''(0)=\mathbb E[v_{t+1}''(0)\mid\mathcal F_t]+(1-\gamma)\underbrace{(\mathbb E[(v_{t+1}'(0))^2\mid\mathcal F_t]-(\mathbb E[v_{t+1}'(0)\mid\mathcal F_t])^2)}_{\text{conditional variance of 1st-order approx}}\)。</p>
+<p><strong>第二种：\(\gamma\) 与 \(h\) 相关</strong> \(1-\gamma=\frac{1-\gamma_0}h\)（\(\gamma\) 随暴露 \(h\) 正相关变动）。定义 \(\tilde v_t(h)\equiv\frac{v_t(h)-v_t(0)}h\)、\(\tilde r_t(h)\equiv\frac{r_t(h)-v_{t+1}(0)}h\)，得性质 (17.93)–(17.100)：\(\tilde v_t(0)=v_t'(0)\)、\(2\tilde v_t'(0)=v_t''(0)\)、\(\tilde r_t(0)=r_t'(0)\)、\(2\tilde r_t'(0)=r_t''(0)\)。一阶 (17.102)：\(r_t'(0)=\frac1{1-\gamma_0}\ln\mathbb E[e^{(1-\gamma_0)(v_{t+1}'(0))}\mid\mathcal F_t]\)；定义 \(\frac{\tilde M_{t+1}}{\tilde M_{t,t+1}}\equiv\frac{e^{(1-\gamma_0)(v_{t+1}'(0))}}{\mathbb E[e^{(1-\gamma_0)(v_{t+1}'(0))}\mid\mathcal F_t]}\) (17.104)，二阶 (17.105)：\(r_t''(0)=\mathbb E[v_{t+1}''(0)\frac{\tilde M_{t+1}}{\tilde M_{t,t+1}}\mid\mathcal F_t]\)。</p>
+<p><strong>合并</strong>（取第二种）(17.106)、(17.107)，结合 (17.85) 得 (17.108)：\(v_t(h)=v_t(0)+hv_t'(0)+\frac{h^2}2 v_t''(0)\)，<strong>仅依赖外生消费动态</strong>（因 \(v_t'(0),v_t''(0)\) 又由 \(c_t'(0),c_t''(0),v_{t+1}'(0),v_{t+1}''(0)\) 决定，迭代下全由消费动态决定）。关键：\(v_t(h)\) 依赖<strong>所有未来期</strong>的消费动态，体现 Epstein-Zin 递归效用的<strong>前瞻（非时间可分）</strong>性质。</p>
+</div>
+<div class="lang en">
+<ul>
+<li><strong>Second order</strong> (17.88): \(v_t''(0)=(1-\lambda)c_t''(0)+\lambda r_t''(0)+(1-\lambda)\lambda(c_t'(0)-r_t'(0))^2\).</li>
+</ul>
+<p>It remains to characterize the log continuation value \(r_t(h)\) (17.81). <strong>Two approximations (two assumptions):</strong></p>
+<p><strong>First: \(\gamma\) fixed (independent of \(h\)).</strong> Zeroth order \(r_t(0)=v_{t+1}(0)\) (17.89); first order \(r_t'(0)=\mathbb E[v_{t+1}'(0)\mid\mathcal F_t]\) (17.90); second order (17.91): \(r_t''(0)=\mathbb E[v_{t+1}''(0)\mid\mathcal F_t]+(1-\gamma)\underbrace{(\mathbb E[(v_{t+1}'(0))^2\mid\mathcal F_t]-(\mathbb E[v_{t+1}'(0)\mid\mathcal F_t])^2)}_{\text{conditional variance of 1st-order approx}}\).</p>
+<p><strong>Second: \(\gamma\) related to \(h\)</strong> via \(1-\gamma=\frac{1-\gamma_0}h\) (\(\gamma\) varies positively with exposure \(h\)). Define \(\tilde v_t(h)\equiv\frac{v_t(h)-v_t(0)}h\), \(\tilde r_t(h)\equiv\frac{r_t(h)-v_{t+1}(0)}h\), giving properties (17.93)–(17.100): \(\tilde v_t(0)=v_t'(0)\), \(2\tilde v_t'(0)=v_t''(0)\), \(\tilde r_t(0)=r_t'(0)\), \(2\tilde r_t'(0)=r_t''(0)\). First order (17.102): \(r_t'(0)=\frac1{1-\gamma_0}\ln\mathbb E[e^{(1-\gamma_0)(v_{t+1}'(0))}\mid\mathcal F_t]\); define \(\frac{\tilde M_{t+1}}{\tilde M_{t,t+1}}\equiv\frac{e^{(1-\gamma_0)(v_{t+1}'(0))}}{\mathbb E[e^{(1-\gamma_0)(v_{t+1}'(0))}\mid\mathcal F_t]}\) (17.104), second order (17.105): \(r_t''(0)=\mathbb E[v_{t+1}''(0)\frac{\tilde M_{t+1}}{\tilde M_{t,t+1}}\mid\mathcal F_t]\).</p>
+<p><strong>Combine</strong> (taking the second way) (17.106), (17.107), with (17.85), giving (17.108): \(v_t(h)=v_t(0)+hv_t'(0)+\frac{h^2}2 v_t''(0)\), which <strong>depends only on the exogenous consumption dynamics</strong> (since \(v_t'(0),v_t''(0)\) are in turn determined by \(c_t'(0),c_t''(0),v_{t+1}'(0),v_{t+1}''(0)\), iteratively all by consumption dynamics). Key point: \(v_t(h)\) depends on consumption dynamics in <strong>all future periods</strong>, reflecting the <strong>forward-looking (non-time-separable)</strong> property of Epstein-Zin recursive utility.</p>
+</div>
+<h3 id="17-6-3-approximation-of-stochastic-discount-factor">17.6.3 Approximation of Stochastic Discount Factor</h3>
+<div class="lang zh">
+<p>由 (9.12)，EZ 的 SDF 满足 (17.109)：\(\frac{S_{t+1}}{S_t}=\beta(\frac{C_{t+1}}{C_t})^{-\rho}(\frac{V_{t+1}}{R_t})^{\rho-\gamma}\)。取对数 (17.110)：\(s_{t+1}-s_t=\ln\beta-\rho\underbrace{(c_{t+1}-c_t)}_{\text{Term A}}+(\rho-\gamma)\underbrace{(v_{t+1}-r_t)}_{\text{Term B}}\)。Term A 直接展开 (17.111)；Term B 用 \(h\) 展开 (17.112)、(17.113)。在 \(h=1\)（即 \(\gamma=\gamma_0\)）下合并 (17.111)、(17.113) 入 (17.110) 得 SDF 增量近似 (17.114)，<strong>同样仅依赖外生消费动态</strong>（与价值函数 (17.108) 同理）。</p>
+</div>
+<div class="lang en">
+<p>By (9.12), the EZ SDF satisfies (17.109): \(\frac{S_{t+1}}{S_t}=\beta(\frac{C_{t+1}}{C_t})^{-\rho}(\frac{V_{t+1}}{R_t})^{\rho-\gamma}\). In logs (17.110): \(s_{t+1}-s_t=\ln\beta-\rho\underbrace{(c_{t+1}-c_t)}_{\text{Term A}}+(\rho-\gamma)\underbrace{(v_{t+1}-r_t)}_{\text{Term B}}\). Term A expands directly (17.111); Term B expands in \(h\) (17.112), (17.113). At \(h=1\) (i.e. \(\gamma=\gamma_0\)), combining (17.111), (17.113) into (17.110) gives the SDF-increment approximation (17.114), which <strong>again depends only on the exogenous consumption dynamics</strong> (as for the value function (17.108)).</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 17.3.</strong> 该禀赋经济消费过程外生，故所有动态都基于消费动态。生产经济中消费内生，根本驱动源是技术冲击或其他供给侧外生冲击。</p>
+<p><strong>Remark 17.4.</strong> 该展开说明：在单位暴露 \(h=1\) 附近，若把暴露 \(h\) 改变一点，未来消费（状态变量）动态按 §17.2.1 更新，进而 \(v_t,s_t\) 的动态按 (17.108)、(17.114) 收敛到对应新 \(h\) 的新水平——清晰展示变化与收敛如何通过此近似发生。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 17.3.</strong> In this endowment economy the consumption process is exogenous, so all dynamics rest on consumption dynamics. In a production economy consumption is endogenous and the fundamental driver is the technology shock or other supply-side exogenous shocks.</p>
+<p><strong>Remark 17.4.</strong> The expansion shows: near unit exposure \(h=1\), perturbing the exposure \(h\) a little updates future consumption (state-variable) dynamics per §17.2.1, whereby the dynamics of \(v_t,s_t\) converge per (17.108), (17.114) to the new level corresponding to the new \(h\) — clearly displaying how changes and convergence occur through this approximation.</p></div>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Alvarez, F. and U. J. Jermann (2005). Using Asset Prices to Measure the Persistence of the Marginal Utility of Wealth. <em>Econometrica</em> 73(6), 1977–2016.</li>
+<li>Hansen, L. P. and J. A. Scheinkman (2009). Long-Term Risk: An Operator Approach. <em>Econometrica</em> 77(1), 177–234.</li>
+<li>Kazemi, H. B. (1992). An Intertemporal Model of Asset Prices in a Markov Economy with a Limiting Stationary Distribution. <em>The Review of Financial Studies</em> 5(1), 85–104.</li>
+<li>Ross, S. (2015). The Recovery Theorem. <em>The Journal of Finance</em> 70(2), 615–648.</li>
+<li>He, X. (2019a). <em>Econometrics / Statistics Notes by Xindi He.</em></li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#17-1-foundation">17.1 Foundation</a></li>
+          <li><a href="#17-1-1-setup">17.1.1 Setup</a></li>
+          <li><a href="#17-1-2-multiplicative-functional">17.1.2 Multiplicative Functional</a></li>
+          <li><a href="#17-1-2-multiplicative-functional">17.1.2 Multiplicative Functional</a></li>
+          <li><a href="#17-1-3-proportional-risk-compensation">17.1.3 Proportional Risk Compensation</a></li>
+          <li><a href="#17-1-3-proportional-risk-compensation">17.1.3 Proportional Risk Compensation</a></li>
+        <li><a href="#17-2-two-ways-to-characterize-state-vector">17.2 Two Ways to Characterize State Vector</a></li>
+          <li><a href="#17-2-1-small-noise-approximation-around-steady-state">17.2.1 Small Noise Approximation around Steady State</a></li>
+        <li><a href="#17-2-two-ways-to-characterize-state-vector">17.2 Two Ways to Characterize State Vector</a></li>
+          <li><a href="#17-2-1-small-noise-approximation-around-steady-state">17.2.1 Small Noise Approximation around Steady State</a></li>
+          <li><a href="#17-2-2-discrete-state-markov-chain">17.2.2 Discrete State Markov Chain</a></li>
+        <li><a href="#17-3-long-horizon-valuation">17.3 Long Horizon Valuation</a></li>
+          <li><a href="#17-3-1-motivating-example-eigenvalue-and-eigenvector">17.3.1 Motivating Example: Eigenvalue and Eigenvector</a></li>
+          <li><a href="#17-2-2-discrete-state-markov-chain">17.2.2 Discrete State Markov Chain</a></li>
+        <li><a href="#17-3-long-horizon-valuation">17.3 Long Horizon Valuation</a></li>
+          <li><a href="#17-3-1-motivating-example-eigenvalue-and-eigenvector">17.3.1 Motivating Example: Eigenvalue and Eigenvector</a></li>
+          <li><a href="#17-3-2-eigenfunction-and-eigenvalue">17.3.2 Eigenfunction and Eigenvalue</a></li>
+          <li><a href="#17-3-2-eigenfunction-and-eigenvalue">17.3.2 Eigenfunction and Eigenvalue</a></li>
+          <li><a href="#17-3-3-long-term-proportional-risk-compensation">17.3.3 Long Term Proportional Risk Compensation</a></li>
+          <li><a href="#17-3-3-long-term-proportional-risk-compensation">17.3.3 Long Term Proportional Risk Compensation</a></li>
+          <li><a href="#17-3-4-long-term-holding-period-return-of-bond">17.3.4 Long Term Holding Period Return of Bond</a></li>
+          <li><a href="#17-3-4-long-term-holding-period-return-of-bond">17.3.4 Long Term Holding Period Return of Bond</a></li>
+        <li><a href="#17-4-literature-on-long-horizon-valuation">17.4 Literature on Long Horizon Valuation</a></li>
+          <li><a href="#17-4-1-kazemi-1992">17.4.1 Kazemi (1992)</a></li>
+          <li><a href="#17-4-2-alvarez-and-jermann-2005">17.4.2 Alvarez and Jermann (2005)</a></li>
+        <li><a href="#17-4-literature-on-long-horizon-valuation">17.4 Literature on Long Horizon Valuation</a></li>
+          <li><a href="#17-4-1-kazemi-1992">17.4.1 Kazemi (1992)</a></li>
+          <li><a href="#17-4-2-alvarez-and-jermann-2005">17.4.2 Alvarez and Jermann (2005)</a></li>
+          <li><a href="#17-4-3-recovery-theorem-ross-2015">17.4.3 Recovery Theorem: Ross (2015)</a></li>
+        <li><a href="#17-5-shock-elasticities">17.5 Shock Elasticities</a></li>
+          <li><a href="#17-5-1-one-period-shock-elasticities">17.5.1 One-Period Shock Elasticities</a></li>
+          <li><a href="#17-4-3-recovery-theorem-ross-2015">17.4.3 Recovery Theorem: Ross (2015)</a></li>
+        <li><a href="#17-5-shock-elasticities">17.5 Shock Elasticities</a></li>
+          <li><a href="#17-5-1-one-period-shock-elasticities">17.5.1 One-Period Shock Elasticities</a></li>
+          <li><a href="#17-5-2-multi-period-shock-elasticities">17.5.2 Multi-Period Shock Elasticities</a></li>
+          <li><a href="#17-5-3-compare-shock-elasticity-to-impulse-response-function">17.5.3 Compare Shock Elasticity to Impulse Response Function</a></li>
+          <li><a href="#17-5-2-multi-period-shock-elasticities">17.5.2 Multi-Period Shock Elasticities</a></li>
+          <li><a href="#17-5-3-compare-shock-elasticity-to-impulse-response-function">17.5.3 Compare Shock Elasticity to Impulse Response Function</a></li>
+        <li><a href="#17-6-approximation-under-recursive-utility">17.6 Approximation under Recursive Utility</a></li>
+          <li><a href="#17-6-1-recursive-utility">17.6.1 Recursive Utility</a></li>
+          <li><a href="#17-6-2-approximation-of-value-function">17.6.2 Approximation of Value Function</a></li>
+        <li><a href="#17-6-approximation-under-recursive-utility">17.6 Approximation under Recursive Utility</a></li>
+          <li><a href="#17-6-1-recursive-utility">17.6.1 Recursive Utility</a></li>
+          <li><a href="#17-6-2-approximation-of-value-function">17.6.2 Approximation of Value Function</a></li>
+          <li><a href="#17-6-3-approximation-of-stochastic-discount-factor">17.6.3 Approximation of Stochastic Discount Factor</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

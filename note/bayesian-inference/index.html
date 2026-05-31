@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7. Bayesian Inference – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>7. Bayesian Inference</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">贝叶斯推断</span><span class="lang en">Bayesian Inference</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">先验后验</span><span class="lang en">Prior Posterior</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">可容许性</span><span class="lang en">Admissibility</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">共轭性</span><span class="lang en">Conjugacy</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">指数族</span><span class="lang en">Exponential Family</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">MCMC</span><span class="lang en">MCMC</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：贝叶斯推断。</strong> <strong>§7.1 基础</strong>：似然 \(L(\theta\mid x)=f(x\mid\theta)\)；<strong>充分性</strong>（统计量 \(T(x)\) 使 \(x\mid T(x)\) 不依赖 \(\theta\)）、<strong>条件性</strong>、<strong>似然原理</strong>（关于 \(\theta\) 的信息全在 \(L(\theta\mid x)\)，Birnbaum 1962：似然原理 ⟺ 充分性 + 条件性）；<strong>贝叶斯推断</strong>——先验 \(\pi(\theta)\) + 似然 → 后验 \(\pi(\theta\mid x)=\frac{L(\theta\mid x)\pi(\theta)}{m(x)}\) (7.1)，\(\propto L\pi\)；频率派（\(\theta_0\) 固定未知、\(x\) 随机）vs 贝叶斯派（\(x\) 给定、\(\theta\) 随机）。<strong>§7.2 可容许性与贝叶斯估计</strong>：频率风险 \(\mathcal R(\theta,\delta)=\mathbb E_\theta[\mathcal L]\)、后验期望损失 \(\rho(\pi,\delta)\)、积分风险 \(r(\pi,\delta)\)；<strong>可容许</strong>（无估计量占优）；<strong>贝叶斯估计量</strong>最小化 \(\rho\) / \(r\)；可容许 ≈ 贝叶斯（命题 7.5/7.6、定理 7.2/7.3）；MLE 在 \(k\ge3\) 时不可容许（James-Stein 占优）。<strong>§7.3 指数族、共轭、先验</strong>：\(k\) 参数指数族 \(f(x\mid\theta)=\exp(\sum c_i(\theta)T_i(x)+d(\theta)+S(x))\mathbf 1_A\)；<strong>共轭</strong>（先验、后验同族）；正态-正态共轭（后验精度 = 先验精度 + 数据精度，后验均值 = 精度加权平均）。<strong>§7.4 数值方法</strong>：非共轭时用蒙特卡洛积分——<strong>重要性抽样</strong>（权重 \(\omega_j=\pi/\phi\)，高维差）、<strong>MCMC</strong>（构造以后验为平稳分布的马氏链；<strong>平衡条件</strong> \(k(\theta'\mid\theta)\pi(\theta)=k(\theta\mid\theta')\pi(\theta')\) ⇒ \(\pi\) 平稳；<strong>Metropolis-Hastings</strong> 接受概率；<strong>Gibbs 抽样</strong>逐维条件抽样）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: Bayesian inference.</strong> <strong>§7.1 Foundations</strong>: likelihood \(L(\theta\mid x)=f(x\mid\theta)\); <strong>sufficiency</strong> (a statistic \(T(x)\) with \(x\mid T(x)\) not depending on \(\theta\)), <strong>conditionality</strong>, the <strong>likelihood principle</strong> (all information about \(\theta\) is in \(L(\theta\mid x)\); Birnbaum 1962: the likelihood principle ⟺ sufficiency + conditionality); <strong>Bayesian inference</strong> — prior \(\pi(\theta)\) + likelihood → posterior \(\pi(\theta\mid x)=\frac{L(\theta\mid x)\pi(\theta)}{m(x)}\) (7.1), \(\propto L\pi\); frequentist (\(\theta_0\) fixed unknown, \(x\) random) vs Bayesian (\(x\) given, \(\theta\) random). <strong>§7.2 Admissibility and Bayes estimators</strong>: frequentist risk \(\mathcal R(\theta,\delta)=\mathbb E_\theta[\mathcal L]\), posterior expected loss \(\rho(\pi,\delta)\), integrated risk \(r(\pi,\delta)\); <strong>admissible</strong> (no estimator dominates); the <strong>Bayes estimator</strong> minimizes \(\rho\) / \(r\); admissible ≈ Bayes (Propositions 7.5/7.6, Theorems 7.2/7.3); the MLE is inadmissible for \(k\ge3\) (James-Stein dominates). <strong>§7.3 Exponential families, conjugacy, priors</strong>: the \(k\)-parameter exponential family \(f(x\mid\theta)=\exp(\sum c_i(\theta)T_i(x)+d(\theta)+S(x))\mathbf 1_A\); <strong>conjugacy</strong> (prior and posterior in the same family); normal-normal conjugacy (posterior precision = prior + data precision, posterior mean = precision-weighted average). <strong>§7.4 Numerical methods</strong>: for non-conjugate cases use Monte Carlo integration — <strong>importance sampling</strong> (weights \(\omega_j=\pi/\phi\), poor in high dimensions), <strong>MCMC</strong> (build a Markov chain with the posterior as its stationary distribution; the <strong>balance condition</strong> \(k(\theta'\mid\theta)\pi(\theta)=k(\theta\mid\theta')\pi(\theta')\) ⇒ \(\pi\) stationary; <strong>Metropolis-Hastings</strong> acceptance probability; <strong>Gibbs sampling</strong> dimension-by-dimension conditional sampling).</p></div>
+</div>
+<h2 id="7-1-introduction">7.1 Introduction</h2>
+<div class="lang zh">
+<p><strong>7.1.1 框架.</strong> 未知参数 \(\theta\in\Theta\)（测度 \(\mu(d\theta)\)）；观测 \(x\in X\)（测度 \(\nu(dx)\)）；密度 \(f(x\mid\theta)\)（关于 \(\nu\)）；<strong>似然函数</strong> \(L(\theta\mid x)=f(x\mid\theta)\)；做实验得 \(x\sim f(x\mid\theta)\)。</p>
+<p><strong>7.1.2 充分性.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 7.1 / 命题 7.1
+<strong>充分统计量</strong>：\(x\) 的统计量 \(T(x)\) 是<strong>充分的</strong> 若 \(x\) 给定 \(T(x)\) 的条件分布不依赖 \(\theta\)。<strong>命题 7.1（充分性原理）</strong>：导致同一充分统计量值（\(T(x)=T(y)\)）的两个观测 \(x,y\) 应导致关于 \(\theta\) 的相同推断。</p></div>
+<p><strong>7.1.3 条件性.</strong> <strong>命题 7.2（条件性原理）</strong>：若有两个关于 \(\theta\) 的实验、以某概率 \(p\) 恰好执行其一，则推断只应依赖于所选实验与其观测。</p>
+<p><strong>7.1.4 似然原理.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>命题 7.3 / 定理 7.1
+<strong>命题 7.3（似然原理）</strong>：观测 \(x\) 带来的关于 \(\theta\) 的信息<strong>全部</strong>包含在 \(L(\theta\mid x)\) 中；若两观测的似然成比例 \(L(\theta\mid x)=cL(\theta\mid y)\)（\(c>0\)），则二者导致相同推断。<strong>定理 7.1（Birnbaum 1962）</strong>：似然原理 ⟺ 条件性原理 + 充分性原理。</p></div>
+<p><strong>7.1.5 似然原理的推论.</strong> <strong>命题 7.4（停止规则原理）</strong>：若一列实验由停止规则 \(\tau\) 决定何时停止，则关于 \(\theta\) 的推断只应通过最终样本依赖 \(\tau\)（而非停止规则本身）。</p>
+</div>
+<div class="lang en">
+<p><strong>7.1.1 Framework.</strong> Unknown parameter \(\theta\in\Theta\) (measure \(\mu(d\theta)\)); observation \(x\in X\) (measure \(\nu(dx)\)); density \(f(x\mid\theta)\) (w.r.t. \(\nu\)); <strong>likelihood function</strong> \(L(\theta\mid x)=f(x\mid\theta)\); an experiment yields \(x\sim f(x\mid\theta)\).</p>
+<p><strong>7.1.2 Sufficiency.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 7.1 / Proposition 7.1
+<strong>Sufficient statistic</strong>: a statistic \(T(x)\) of \(x\) is <strong>sufficient</strong> if the conditional distribution of \(x\) given \(T(x)\) does not depend on \(\theta\). <strong>Proposition 7.1 (sufficiency principle)</strong>: two observations \(x,y\) leading to the same sufficient-statistic value (\(T(x)=T(y)\)) should lead to the same inference about \(\theta\).</p></div>
+<p><strong>7.1.3 Conditionality.</strong> <strong>Proposition 7.2 (conditionality principle)</strong>: if two experiments about \(\theta\) are available and exactly one is carried out with some probability \(p\), the inference should depend only on the selected experiment and its observation.</p>
+<p><strong>7.1.4 Likelihood principle.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 7.3 / Theorem 7.1
+<strong>Proposition 7.3 (likelihood principle)</strong>: the information about \(\theta\) brought by an observation \(x\) is <strong>entirely</strong> contained in \(L(\theta\mid x)\); if two observations have proportional likelihoods \(L(\theta\mid x)=cL(\theta\mid y)\) (\(c>0\)), they lead to the same inference. <strong>Theorem 7.1 (Birnbaum 1962)</strong>: the likelihood principle ⟺ the conditionality principle + the sufficiency principle.</p></div>
+<p><strong>7.1.5 Consequences of the likelihood principle.</strong> <strong>Proposition 7.4 (stopping rule principle)</strong>: if a sequence of experiments is directed by a stopping rule \(\tau\) deciding when to stop, the inference about \(\theta\) should depend on \(\tau\) only through the resulting sample (not the stopping rule itself).</p>
+</div>
+<div class="lang zh">
+<p><strong>7.1.6 贝叶斯推断.</strong> 先验 \(\pi(\theta)\) 为关于 \(\mu\) 的密度，后验 \(\pi(\theta\mid x)\) 满足</p>
+<p>$$\pi(\theta\mid x)=\frac{L(\theta\mid x)\pi(\theta)}{m(x)} \tag{7.1}$$</p>
+<p>\(m(x)=\int_\Theta L(\theta\mid x)\pi(\theta)\mu(d\theta)\) 是 \(x\) 的边际分布。因 \(L(\theta\mid x)=f(x\mid\theta)\)，分子 \(L(\theta\mid x)\pi(\theta)=f(x\mid\theta)\pi(\theta)=f(x,\theta)\) 为 \(x,\theta\) 的联合密度——(7.1) 即 <strong>Bayes 法则</strong> \(\mathbb P(A\mid E)=\frac{\mathbb P(E\mid A)\mathbb P(A)}{\mathbb P(E)}\)。于是</p>
+<p>$$\pi(\theta\mid x)\propto L(\theta\mid x)\pi(\theta),\qquad\log\pi(\theta\mid x)=\log L(\theta\mid x)+\log\pi(\theta)-\log m(x)$$</p>
+<p><strong>7.1.7 频率派 vs 贝叶斯派.</strong></p>
+<ul>
+<li><strong>频率派</strong>：真参数 \(\theta_0\) 存在但未知；观测 \(x\sim f(x\mid\theta)\) 是随机的。</li>
+<li><strong>贝叶斯派</strong>：推断时观测 \(x\sim f(x\mid\theta)\) 已给定；真参数 \(\theta_0\sim\pi(\theta\mid x)\) 被视为随机。</li>
+</ul>
+</div>
+<div class="lang en">
+<p><strong>7.1.6 Bayesian inference.</strong> The prior \(\pi(\theta)\) is a density w.r.t. \(\mu\), and the posterior \(\pi(\theta\mid x)\) satisfies</p>
+<p>$$\pi(\theta\mid x)=\frac{L(\theta\mid x)\pi(\theta)}{m(x)} \tag{7.1}$$</p>
+<p>where \(m(x)=\int_\Theta L(\theta\mid x)\pi(\theta)\mu(d\theta)\) is the marginal distribution of \(x\). Since \(L(\theta\mid x)=f(x\mid\theta)\), the numerator \(L(\theta\mid x)\pi(\theta)=f(x\mid\theta)\pi(\theta)=f(x,\theta)\) is the joint density of \(x,\theta\) — so (7.1) is <strong>Bayes' rule</strong> \(\mathbb P(A\mid E)=\frac{\mathbb P(E\mid A)\mathbb P(A)}{\mathbb P(E)}\). Hence</p>
+<p>$$\pi(\theta\mid x)\propto L(\theta\mid x)\pi(\theta),\qquad\log\pi(\theta\mid x)=\log L(\theta\mid x)+\log\pi(\theta)-\log m(x)$$</p>
+<p><strong>7.1.7 Frequentist vs Bayesian.</strong></p>
+<ul>
+<li><strong>Frequentist</strong>: a true parameter \(\theta_0\) exists but is unknown; the observation \(x\sim f(x\mid\theta)\) is random.</li>
+<li><strong>Bayesian</strong>: at inference time the observation \(x\sim f(x\mid\theta)\) is given; the true parameter \(\theta_0\sim\pi(\theta\mid x)\) is treated as random.</li>
+</ul>
+</div>
+<h2 id="7-2-admissibility-and-bayes-estimators">7.2 Admissibility and Bayes Estimators</h2>
+<div class="lang zh">
+<p><strong>7.2.1 框架.</strong> \(\theta\in\Theta\subset\mathbb R^m\)、\(x\in X\subset\mathbb R^n\)、密度 \(f(x\mid\theta)\)、先验 \(\pi(\theta)\)、决策 \(\delta(x)\in\mathcal D\)（\(\delta:\mathbb R^n\to\mathbb R^m\)）、损失 \(\mathcal L(\theta,\delta(x))\)（如二次损失 \(\|\theta-\delta(x)\|^2\)）。</p>
+<p><strong>7.2.2 风险.</strong></p>
+<ul>
+<li><strong>频率风险（平均损失）</strong> \(\mathcal R(\theta,\delta)=\mathbb E_\theta[\mathcal L(\theta,\delta(x))]=\int_X\mathcal L(\theta,\delta(x))f(x\mid\theta)dx\)。</li>
+<li><strong>后验期望损失</strong> \(\rho(\pi,\delta)=\mathbb E_\pi[\mathcal L(\theta,\delta(x))\mid x]=\int_\Theta\mathcal L(\theta,\delta(x))\pi(\theta\mid x)d\theta\)。</li>
+<li><strong>积分风险</strong> \(r(\pi,\delta)=\int_X\rho(\pi,\delta)m(x)dx=\int_\Theta\mathcal R(\theta,\delta)\pi(\theta)d\theta=\mathbb E_\pi[\mathcal R(\theta,\delta)]\)（两种积分次序给出同一值）。</li>
+</ul>
+<p><strong>7.2.3 可容许性.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 7.2 / 7.3
+<strong>可容许</strong>：估计量 \(\delta_0\) <strong>可容许</strong> 若不存在 \(\delta_1\) <strong>占优</strong> \(\delta_0\)（即 \(\mathcal R(\theta,\delta_1)\le\mathcal R(\theta,\delta_0)\) 处处成立、且至少一个 \(\theta_0\) 处严格）。（Remark 7.1：可容许性用 \(\mathcal R(\theta,\delta)\)，是<strong>频率派</strong>概念。）<strong>贝叶斯估计量</strong> \(\delta^\pi(x)\in\arg\min_\delta\rho(\pi,\delta)\)，亦最小化 \(r(\pi,\delta)\)；\(r(\pi)\equiv r(\pi,\delta^\pi)\) 称 <strong>Bayes 风险</strong>。</p></div>
+<p><strong>命题 7.5</strong>：\(\pi\) 在 \(\Theta\) 上严格正、Bayes 风险有限、\(\mathcal R(\theta,\delta)\) 对每个 \(\delta\) 连续，则 Bayes 估计量可容许。<strong>命题 7.6</strong>：唯一的 Bayes 估计量可容许。<strong>定理 7.2</strong>：\(\Theta\) 紧、\(\mathcal R\) 凸、所有估计量风险连续，则每个非 Bayes 估计量 \(\delta'\) 被某 Bayes 估计量 \(\delta^\pi\) 占优。<strong>定理 7.3</strong>：一定条件下，可容许估计量是 Bayes 估计量序列的极限。</p>
+<p><strong>例 7.1（MLE 不可容许，\(k\ge3\)）.</strong> \(\hat\theta\sim N(\theta,\Omega)\)、二次损失 \(\mathcal L(\theta,\delta)=(\delta-\theta)'(\delta-\theta)\)，则 <strong>James-Stein 估计量</strong> \(\delta_{JS}(\hat\theta)=(1-\frac{k-2}{\|\hat\theta\|^2})\hat\theta\) 占优 MLE \(\hat\theta\)，故 MLE 不可容许。</p>
+</div>
+<div class="lang en">
+<p><strong>7.2.1 Framework.</strong> \(\theta\in\Theta\subset\mathbb R^m\), \(x\in X\subset\mathbb R^n\), density \(f(x\mid\theta)\), prior \(\pi(\theta)\), decision \(\delta(x)\in\mathcal D\) (\(\delta:\mathbb R^n\to\mathbb R^m\)), loss \(\mathcal L(\theta,\delta(x))\) (e.g. quadratic loss \(\|\theta-\delta(x)\|^2\)).</p>
+<p><strong>7.2.2 Risk.</strong></p>
+<ul>
+<li><strong>Frequentist risk (average loss)</strong> \(\mathcal R(\theta,\delta)=\mathbb E_\theta[\mathcal L(\theta,\delta(x))]=\int_X\mathcal L(\theta,\delta(x))f(x\mid\theta)dx\).</li>
+<li><strong>Posterior expected loss</strong> \(\rho(\pi,\delta)=\mathbb E_\pi[\mathcal L(\theta,\delta(x))\mid x]=\int_\Theta\mathcal L(\theta,\delta(x))\pi(\theta\mid x)d\theta\).</li>
+<li><strong>Integrated risk</strong> \(r(\pi,\delta)=\int_X\rho(\pi,\delta)m(x)dx=\int_\Theta\mathcal R(\theta,\delta)\pi(\theta)d\theta=\mathbb E_\pi[\mathcal R(\theta,\delta)]\) (the two integration orders give the same value).</li>
+</ul>
+<p><strong>7.2.3 Admissibility.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definitions 7.2 / 7.3
+<strong>Admissible</strong>: an estimator \(\delta_0\) is <strong>admissible</strong> if no \(\delta_1\) <strong>dominates</strong> \(\delta_0\) (i.e. \(\mathcal R(\theta,\delta_1)\le\mathcal R(\theta,\delta_0)\) everywhere with strict inequality for at least one \(\theta_0\)). (Remark 7.1: admissibility uses \(\mathcal R(\theta,\delta)\), a <strong>frequentist</strong> concept.) <strong>Bayes estimator</strong> \(\delta^\pi(x)\in\arg\min_\delta\rho(\pi,\delta)\), which also minimizes \(r(\pi,\delta)\); \(r(\pi)\equiv r(\pi,\delta^\pi)\) is the <strong>Bayes risk</strong>.</p></div>
+<p><strong>Proposition 7.5</strong>: if \(\pi\) is strictly positive on \(\Theta\), the Bayes risk is finite, and \(\mathcal R(\theta,\delta)\) is continuous for every \(\delta\), then the Bayes estimator is admissible. <strong>Proposition 7.6</strong>: a unique Bayes estimator is admissible. <strong>Theorem 7.2</strong>: if \(\Theta\) is compact, \(\mathcal R\) convex, and all estimators have continuous risk, then every non-Bayes estimator \(\delta'\) is dominated by some Bayes estimator \(\delta^\pi\). <strong>Theorem 7.3</strong>: under certain conditions, admissible estimators are limits of sequences of Bayes estimators.</p>
+<p><strong>Example 7.1 (MLE inadmissible, \(k\ge3\)).</strong> \(\hat\theta\sim N(\theta,\Omega)\), quadratic loss \(\mathcal L(\theta,\delta)=(\delta-\theta)'(\delta-\theta)\); then the <strong>James-Stein estimator</strong> \(\delta_{JS}(\hat\theta)=(1-\frac{k-2}{\|\hat\theta\|^2})\hat\theta\) dominates the MLE \(\hat\theta\), so the MLE is inadmissible.</p>
+</div>
+<h2 id="7-3-exponential-families-conjugacy-and-priors">7.3 Exponential Families, Conjugacy, and Priors</h2>
+<div class="lang zh">
+<p><strong>7.3.1 指数族.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 7.4（\(k\) 参数指数族）
+若存在 \(\theta\) 的实值函数 \(c_1,\dots,c_k\) 与 \(d\)、\(x\in\mathbb R^n\) 的实值函数 \(T_1,\dots,T_k\) 与 \(S\)、以及集合 \(A\subset\mathbb R^n\)，使
+$$f(x\mid\theta)=\exp\Big(\sum_{i=1}^kc_i(\theta)T_i(x)+d(\theta)+S(x)\Big)\mathbf 1_A(x)$$
+则 \(\{f(\cdot\mid\theta)\mid\theta\in\Theta\}\) 称 <strong>\(k\) 参数指数族</strong>。\(T(x)=(T_1(x),\dots,T_k(x))\) 是<strong>自然充分统计量</strong>（给定 \(T(x)\) 后密度退化为 \(c\cdot\exp(S(x))\)，不含 \(\theta\)）。</p></div>
+<p><strong>例 7.2（正态是指数族）.</strong> \(x\sim N(\mu,\sigma^2)\)、\(\theta=(\mu,\sigma^2)\)：\(f(x\mid\theta)=\exp(\frac\mu{\sigma^2}x-\frac1{2\sigma^2}x^2-\frac12(\frac{\mu^2}{\sigma^2}+\log(2\pi\sigma^2)))\)，故 \(c_1=\frac\mu{\sigma^2},c_2=-\frac1{2\sigma^2},T_1=x,T_2=x^2,d=-\frac12(\frac{\mu^2}{\sigma^2}+\log(2\pi\sigma^2)),S=0,A=\mathbb R\)。</p>
+<p><strong>7.3.2 共轭性.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 7.6 / 命题 7.7 / 命题 7.8
+<strong>共轭</strong>：若先验 \(\pi(\theta)\) 属某参数族、后验 \(\pi(\theta\mid x)\) 也属该族，则该族对似然 \(\{f(\cdot\mid\theta)\}\) <strong>共轭</strong>。<strong>命题 7.7</strong>：\(k+1\) 参数指数族先验对 \(k\) 参数指数族似然共轭，后验由超参数更新 \(t_i\to t_i+T_i(x)\)、\(t_{k+1}\to t_{k+1}+1\) 得到。<strong>命题 7.8（正态-正态共轭）</strong>：\(f(x\mid\theta)\sim N(\theta,\sigma^2)\)、先验 \(\pi(\theta)\sim N(\mu,\tau^2)\)，则后验 \(\pi(\theta\mid x)\sim N(\tilde\mu,\tilde\tau^2)\)，
+$$\tilde\tau^{-2}=\tau^{-2}+\sigma^{-2},\qquad\tilde\mu=\frac{\sigma^{-2}}{\sigma^{-2}+\tau^{-2}}x+\frac{\tau^{-2}}{\sigma^{-2}+\tau^{-2}}\mu$$</p>
+<p>[!tip] Remark 7.3
+后验<strong>精度</strong> \(\tilde\tau^{-2}\) = 先验精度 \(\tau^{-2}\) + 数据精度 \(\sigma^{-2}\)；后验<strong>均值</strong> \(\tilde\mu\) = 先验均值 \(\mu\) 与观测 \(x\) 按各自精度加权的平均。直觉：更新应增加精度，且更精确的来源在更新后的均值中占更高权重。</p></div>
+<p><strong>7.3.3 一些分布与共轭表.</strong> Poisson \(\mathcal P(\theta)\)、Gamma \(\mathcal G(\alpha,\beta)\)（\(\chi^2_p=\mathcal G(p/2,1/2)\)）、Beta \(Be(\alpha,\beta)\)。常见共轭对（Robert 2007, 表 3.3.1）：</p>
+<table>
+<thead>
+<tr>
+<th>似然 \(f(x\mid\theta)\)</th>
+<th>先验 \(\pi\)</th>
+<th>后验 \(\pi(\theta\mid x)\)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Binomial \(\mathcal B(n,\theta)\)</td>
+<td>Beta \(Be(\alpha,\beta)\)</td>
+<td>\(Be(\alpha+x,\beta+n-x)\)</td>
+</tr>
+<tr>
+<td>Normal \(N(\mu,1/\theta)\)</td>
+<td>Gamma \(\mathcal G(\alpha,\beta)\)</td>
+<td>\(\mathcal G(\alpha+0.5,\beta+(\mu-x)^2/2)\)</td>
+</tr>
+<tr>
+<td>Gamma \(\mathcal G(\nu/2,\theta)\)</td>
+<td>Gamma \(\mathcal G(\alpha,\beta)\)</td>
+<td>\(\mathcal G(\alpha+\nu/2,\beta+x)\)</td>
+</tr>
+<tr>
+<td>Poisson \(\mathcal P(\theta)\)</td>
+<td>Gamma \(\mathcal G(\alpha,\beta)\)</td>
+<td>\(\mathcal G(\alpha+x,\beta+1)\)</td>
+</tr>
+</tbody>
+</table>
+<p>（Binomial-Beta 推广到 Multinomial-Dirichlet。）</p>
+</div>
+<div class="lang en">
+<p><strong>7.3.1 Exponential families.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 7.4 (\(k\)-parameter exponential family)
+If there exist real-valued functions \(c_1,\dots,c_k\) and \(d\) of \(\theta\), real-valued functions \(T_1,\dots,T_k\) and \(S\) of \(x\in\mathbb R^n\), and a set \(A\subset\mathbb R^n\) such that
+$$f(x\mid\theta)=\exp\Big(\sum_{i=1}^kc_i(\theta)T_i(x)+d(\theta)+S(x)\Big)\mathbf 1_A(x)$$
+then \(\{f(\cdot\mid\theta)\mid\theta\in\Theta\}\) is a <strong>\(k\)-parameter exponential family</strong>. \(T(x)=(T_1(x),\dots,T_k(x))\) is the <strong>natural sufficient statistic</strong> (given \(T(x)\), the density degenerates to \(c\cdot\exp(S(x))\), with no \(\theta\)).</p></div>
+<p><strong>Example 7.2 (normal is exponential).</strong> \(x\sim N(\mu,\sigma^2)\), \(\theta=(\mu,\sigma^2)\): \(f(x\mid\theta)=\exp(\frac\mu{\sigma^2}x-\frac1{2\sigma^2}x^2-\frac12(\frac{\mu^2}{\sigma^2}+\log(2\pi\sigma^2)))\), so \(c_1=\frac\mu{\sigma^2},c_2=-\frac1{2\sigma^2},T_1=x,T_2=x^2,d=-\frac12(\frac{\mu^2}{\sigma^2}+\log(2\pi\sigma^2)),S=0,A=\mathbb R\).</p>
+<p><strong>7.3.2 Conjugacy.</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 7.6 / Proposition 7.7 / Proposition 7.8
+<strong>Conjugacy</strong>: if the prior \(\pi(\theta)\) is in some parametric family and the posterior \(\pi(\theta\mid x)\) is also in that family, the family is <strong>conjugate</strong> to the likelihood \(\{f(\cdot\mid\theta)\}\). <strong>Proposition 7.7</strong>: a \(k+1\)-parameter exponential-family prior is conjugate to a \(k\)-parameter exponential-family likelihood, with the posterior obtained by updating hyperparameters \(t_i\to t_i+T_i(x)\), \(t_{k+1}\to t_{k+1}+1\). <strong>Proposition 7.8 (normal-normal conjugacy)</strong>: \(f(x\mid\theta)\sim N(\theta,\sigma^2)\), prior \(\pi(\theta)\sim N(\mu,\tau^2)\); then the posterior \(\pi(\theta\mid x)\sim N(\tilde\mu,\tilde\tau^2)\),
+$$\tilde\tau^{-2}=\tau^{-2}+\sigma^{-2},\qquad\tilde\mu=\frac{\sigma^{-2}}{\sigma^{-2}+\tau^{-2}}x+\frac{\tau^{-2}}{\sigma^{-2}+\tau^{-2}}\mu$$</p>
+<p>[!tip] Remark 7.3
+The posterior <strong>precision</strong> \(\tilde\tau^{-2}\) = prior precision \(\tau^{-2}\) + data precision \(\sigma^{-2}\); the posterior <strong>mean</strong> \(\tilde\mu\) = a precision-weighted average of the prior mean \(\mu\) and the observation \(x\). Intuition: updating should increase precision, and a more precise source carries higher weight in the updated mean.</p></div>
+<p><strong>7.3.3 Some distributions and a conjugacy table.</strong> Poisson \(\mathcal P(\theta)\), Gamma \(\mathcal G(\alpha,\beta)\) (\(\chi^2_p=\mathcal G(p/2,1/2)\)), Beta \(Be(\alpha,\beta)\). Common conjugate pairs (Robert 2007, Table 3.3.1):</p>
+<table>
+<thead>
+<tr>
+<th>Likelihood \(f(x\mid\theta)\)</th>
+<th>Prior \(\pi\)</th>
+<th>Posterior \(\pi(\theta\mid x)\)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Binomial \(\mathcal B(n,\theta)\)</td>
+<td>Beta \(Be(\alpha,\beta)\)</td>
+<td>\(Be(\alpha+x,\beta+n-x)\)</td>
+</tr>
+<tr>
+<td>Normal \(N(\mu,1/\theta)\)</td>
+<td>Gamma \(\mathcal G(\alpha,\beta)\)</td>
+<td>\(\mathcal G(\alpha+0.5,\beta+(\mu-x)^2/2)\)</td>
+</tr>
+<tr>
+<td>Gamma \(\mathcal G(\nu/2,\theta)\)</td>
+<td>Gamma \(\mathcal G(\alpha,\beta)\)</td>
+<td>\(\mathcal G(\alpha+\nu/2,\beta+x)\)</td>
+</tr>
+<tr>
+<td>Poisson \(\mathcal P(\theta)\)</td>
+<td>Gamma \(\mathcal G(\alpha,\beta)\)</td>
+<td>\(\mathcal G(\alpha+x,\beta+1)\)</td>
+</tr>
+</tbody>
+</table>
+<p>(Binomial-Beta generalizes to Multinomial-Dirichlet.)</p>
+</div>
+<h2 id="7-4-numerical-methods-for-bayesian-inference">7.4 Numerical Methods for Bayesian Inference</h2>
+<div class="lang zh">
+<p><strong>7.4.1 动机.</strong> 近二十年数值方法的发展使贝叶斯推断不再局限于易积分的共轭分布。核心问题是计算形如 (7.3) 的积分；普遍困难是维度灾难；核心思路是<strong>抽一组 \(\theta\) 再取平均</strong>——重要性抽样、MCMC。</p>
+<p><strong>7.4.2 问题.</strong> 关注 \(\mathbb E(g(\theta))=\int_\Theta g(\theta)\pi(\theta)\lambda(d\theta)\) (7.3)（\(g\) 是数据的某特征，如方差，或 \(\mathbb P(\theta>\) 某值$)$）。<strong>蒙特卡洛积分</strong>：用随机抽取的 \(\theta^{(j)},j=1,\dots,n\) 的平均近似 \(\mathbb E(g(\theta))\)。（注：以下 \(\pi(\theta)\) 只需知道到一个标度常数；略去对观测 \(x\) 的条件，记 \(\pi(\theta)\) 即后验。）</p>
+<p><strong>7.4.3 重要性抽样.</strong> 选一个方便的近似密度 \(\phi(\theta)\)（你或许没有 \(\pi\) 本身，故选更易抽样的 \(\phi\)），从 \(\phi\) 抽 i.i.d. 样本 \(\theta^{(j)}\)，用<strong>权重</strong>把 \(\phi\) 转回真密度：</p>
+<p>$$\omega_j=\frac{\pi(\theta^{(j)})}{\phi(\theta^{(j)})},\qquad\bar g_n=\frac{\frac1n\sum_{j=1}^n\omega_jg(\theta^{(j)})}{\sum_{j=1}^n\omega_j}$$</p>
+<p>缺点：<strong>高维表现差</strong>（\(\phi\) 与 \(\pi\) 的边际差异在高维累积），应尽量取 \(\phi\) 接近 \(\pi\)（还需当心一方有肥尾）。</p>
+</div>
+<div class="lang en">
+<p><strong>7.4.1 Motivation.</strong> Over the last two decades, the development of numerical methods freed Bayesian inference from being restricted to easily-integrable conjugate distributions. The core question is to compute integrals of the form (7.3); the pervasive difficulty is the curse of dimensionality; the key idea is to <strong>draw a sample of \(\theta\)'s then average</strong> — importance sampling, MCMC.</p>
+<p><strong>7.4.2 Question.</strong> We care about \(\mathbb E(g(\theta))=\int_\Theta g(\theta)\pi(\theta)\lambda(d\theta)\) (7.3) (\(g\) a feature of the data, e.g. the variance, or \(\mathbb P(\theta>\) some value$)\(). **Monte Carlo integration**: approximate \)\mathbb E(g(\theta))$ by the average of randomly drawn \(\theta^{(j)},j=1,\dots,n\). (Note: below \(\pi(\theta)\) need only be known up to a scaling constant; we drop the conditioning on \(x\), writing \(\pi(\theta)\) for the posterior.)</p>
+<p><strong>7.4.3 Importance sampling.</strong> Choose a convenient approximating density \(\phi(\theta)\) (you may not have \(\pi\) itself, so pick a more tractable \(\phi\)), draw an i.i.d. sample \(\theta^{(j)}\) from \(\phi\), and convert \(\phi\) back to the true density via <strong>weights</strong>:</p>
+<p>$$\omega_j=\frac{\pi(\theta^{(j)})}{\phi(\theta^{(j)})},\qquad\bar g_n=\frac{\frac1n\sum_{j=1}^n\omega_jg(\theta^{(j)})}{\sum_{j=1}^n\omega_j}$$</p>
+<p>Drawback: <strong>poor in high dimensions</strong> (the marginal discrepancies between \(\phi\) and \(\pi\) add up), so try to make \(\phi\) close to \(\pi\) (and watch out for one having fat tails).</p>
+</div>
+<div class="lang zh">
+<p><strong>7.4.4 马尔可夫链蒙特卡洛（MCMC）.</strong> 因重要性抽样的维度问题而发展。<strong>Monte Carlo</strong> 指用随机抽取做积分，<strong>Markov-Chain</strong> 指用马氏链找 \(\theta\)。思路：不需 i.i.d.，可让抽取随时间相关，平稳分布即后验。找一条以<strong>遍历分布</strong> \(\pi(\theta)\) 为目标的马氏序列 \(\theta^{(j)}\)，按样本平均 \(\bar g_n=\frac1n\sum g(\theta^{(j)})\) 估计（遍历性使其收敛到 \(\mathbb E(g(\theta))\)）。</p>
+<p><strong>7.4.5 平衡条件.</strong> 设 \(\theta\) 上的马氏链转移核密度 \(k(\theta'\mid\theta)\)，\(\mathbb P(\theta'\in A\mid\theta)=\int_{\theta'\in A}k(\theta'\mid\theta)\lambda(d\theta')\)。</p>
+<div class="callout"><div class="callout-title">Important</div><p>命题 7.9（平衡条件）
+若转移核 \(k(\theta'\mid\theta)\) 对 \(\pi(\theta)\) 满足<strong>平衡条件</strong>
+$$k(\theta'\mid\theta)\pi(\theta)=k(\theta\mid\theta')\pi(\theta')$$
+则 \(\pi(\theta)\) 是平稳分布。</p>
+<p>[!note]- 证明（命题 7.9）
+验证 \(\int_\Theta k(\theta'\mid\theta)\pi(\theta)d\theta=\pi(\theta')\)：
+$$\int_\Theta k(\theta'\mid\theta)\pi(\theta)d\theta=\int_\Theta k(\theta\mid\theta')\pi(\theta')d\theta=\pi(\theta')\underbrace{\int_\Theta k(\theta\mid\theta')d\theta}_{=1}=\pi(\theta')$$
+（第一步用平衡条件，最后用转移核积分为 1）。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<p><strong>7.4.4 Markov-Chain Monte Carlo (MCMC).</strong> Developed because of importance sampling's dimensionality issues. <strong>Monte Carlo</strong> refers to integration by random draws, <strong>Markov-Chain</strong> to using a Markov chain to find \(\theta\)'s. Idea: i.i.d. is not needed; draws may be correlated over time, with the stationary distribution being the posterior. Find a Markov sequence \(\theta^{(j)}\) targeting the <strong>ergodic distribution</strong> \(\pi(\theta)\), and estimate by the sample average \(\bar g_n=\frac1n\sum g(\theta^{(j)})\) (ergodicity makes it converge to \(\mathbb E(g(\theta))\)).</p>
+<p><strong>7.4.5 Balance condition.</strong> Let the Markov chain on \(\theta\) have transition-kernel density \(k(\theta'\mid\theta)\), with \(\mathbb P(\theta'\in A\mid\theta)=\int_{\theta'\in A}k(\theta'\mid\theta)\lambda(d\theta')\).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 7.9 (Balance condition)
+If the transition kernel \(k(\theta'\mid\theta)\) satisfies the <strong>balance condition</strong> for \(\pi(\theta)\)
+$$k(\theta'\mid\theta)\pi(\theta)=k(\theta\mid\theta')\pi(\theta')$$
+then \(\pi(\theta)\) is a stationary distribution.</p>
+<p>[!note]- Proof (Proposition 7.9)
+Verify \(\int_\Theta k(\theta'\mid\theta)\pi(\theta)d\theta=\pi(\theta')\):
+$$\int_\Theta k(\theta'\mid\theta)\pi(\theta)d\theta=\int_\Theta k(\theta\mid\theta')\pi(\theta')d\theta=\pi(\theta')\underbrace{\int_\Theta k(\theta\mid\theta')d\theta}_{=1}=\pi(\theta')$$
+(the first step uses the balance condition, the last that the kernel integrates to 1). \(\blacksquare\)</p></div>
+</div>
+<div class="lang zh">
+<p><strong>7.4.6 Metropolis-Hastings 算法.</strong> 给定后验 \(\pi\)（其平稳的转移核 \(k\) 难直接构造）。从任意核（<strong>提议分布</strong>）\(q\) 出发（一般不满足平衡条件），把它「修正」成满足平衡条件的核。第 \(m+1\) 次抽取的候选 \(\xi\) 以<strong>接受概率</strong></p>
+<p>$$\rho(\xi\mid\theta^{(m)})=\min\Big\{1,\frac{q(\theta^{(m)}\mid\xi)\pi(\xi)}{q(\xi\mid\theta^{(m)})\pi(\theta^{(m)})}\Big\}$$</p>
+<p>被接受：\(\theta^{(m+1)}=\xi\)（概率 \(\rho\)），否则 \(\theta^{(m+1)}=\theta^{(m)}\)。<strong>随机游走提议</strong>（\(\xi=\theta^{(m)}+\epsilon\)，\(\epsilon\) 关于 0 对称、如零均值正态）使 \(q\) 对称、接受概率简化为</p>
+<p>$$\rho(\xi\mid\theta^{(m)})=\min\Big\{1,\frac{\pi(\xi)}{\pi(\theta^{(m)})}\Big\}$$</p>
+<p>（注意 \(\pi\) 只需知到标度常数——比值抵消之）。</p>
+<p><strong>7.4.7 Gibbs 抽样.</strong> 当 \(\theta\) 是向量时，沿 88 维一次性做 MCMC 接受率会极小；<strong>更好的办法是一次抽一维</strong>。给定 \(\theta^{(m)}=(\theta_1^{(m)},\dots,\theta_r^{(m)})\)，逐分量按「给定其余分量的条件后验」抽取：</p>
+<p>$$\begin{aligned}\theta_1^{(m+1)}&\sim\pi_1(\theta_1\mid\theta_2^{(m)},\dots,\theta_r^{(m)})\\\theta_2^{(m+1)}&\sim\pi_2(\theta_2\mid\theta_1^{(m+1)},\theta_3^{(m)},\dots,\theta_r^{(m)})\\&\;\;\vdots\\\theta_r^{(m+1)}&\sim\pi_r(\theta_r\mid\theta_1^{(m+1)},\dots,\theta_{r-1}^{(m+1)})\end{aligned}$$</p>
+<p>（每步都用已更新的分量；单维抽样的接受性质远好于高维。）</p>
+</div>
+<div class="lang en">
+<p><strong>7.4.6 Metropolis-Hastings algorithm.</strong> Given a posterior \(\pi\) (whose stationary transition kernel \(k\) is hard to construct directly). Start from any kernel (the <strong>proposal distribution</strong>) \(q\) (generally not satisfying the balance condition) and "correct" it into a kernel satisfying the balance condition. The candidate \(\xi\) for the \(m+1\)st draw is accepted with <strong>acceptance probability</strong></p>
+<p>$$\rho(\xi\mid\theta^{(m)})=\min\Big\{1,\frac{q(\theta^{(m)}\mid\xi)\pi(\xi)}{q(\xi\mid\theta^{(m)})\pi(\theta^{(m)})}\Big\}$$</p>
+<p>\(\theta^{(m+1)}=\xi\) (with probability \(\rho\)), otherwise \(\theta^{(m+1)}=\theta^{(m)}\). A <strong>random-walk proposal</strong> (\(\xi=\theta^{(m)}+\epsilon\), \(\epsilon\) symmetric around 0, e.g. zero-mean normal) makes \(q\) symmetric, simplifying the acceptance probability to</p>
+<p>$$\rho(\xi\mid\theta^{(m)})=\min\Big\{1,\frac{\pi(\xi)}{\pi(\theta^{(m)})}\Big\}$$</p>
+<p>(note \(\pi\) need only be known up to a scaling constant — the ratio cancels it).</p>
+<p><strong>7.4.7 Gibbs sampling.</strong> When \(\theta\) is a vector, doing MCMC along all 88 dimensions at once gives a tiny acceptance ratio; <strong>a better idea is to draw one dimension at a time</strong>. Given \(\theta^{(m)}=(\theta_1^{(m)},\dots,\theta_r^{(m)})\), draw each component from its "conditional posterior given the others":</p>
+<p>$$\begin{aligned}\theta_1^{(m+1)}&\sim\pi_1(\theta_1\mid\theta_2^{(m)},\dots,\theta_r^{(m)})\\\theta_2^{(m+1)}&\sim\pi_2(\theta_2\mid\theta_1^{(m+1)},\theta_3^{(m)},\dots,\theta_r^{(m)})\\&\;\;\vdots\\\theta_r^{(m+1)}&\sim\pi_r(\theta_r\mid\theta_1^{(m+1)},\dots,\theta_{r-1}^{(m+1)})\end{aligned}$$</p>
+<p>(each step uses the already-updated components; one-dimensional sampling has far better acceptance behavior than high-dimensional.)</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>本章脉络
+<strong>从「似然原理」到「后验」到「数值后验」。</strong> §7.1 由充分性 + 条件性 = 似然原理（信息全在 \(L\)）引出贝叶斯更新 (7.1)，对比频率派/贝叶斯派对「随机性」的不同定位。§7.2 用频率风险 \(\mathcal R\)、积分风险 \(r\) 把估计量比较形式化：可容许性是频率派标准，而贝叶斯估计量最小化后验期望损失；二者在适当条件下几乎等价（甚至 MLE 在高维 \(k\ge3\) 被 James-Stein 占优而不可容许）。§7.3 指数族 + 共轭性使后验解析可得（正态-正态的「精度相加」是范例）。§7.4 在非共轭/高维下转向数值：重要性抽样、MCMC（平衡条件 → Metropolis-Hastings → Gibbs）。<strong>下一章 Kalman 滤波是贝叶斯递归更新在状态空间模型中的应用。</strong></p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Chapter arc
+<strong>From the "likelihood principle" to the "posterior" to the "numerical posterior."</strong> §7.1 derives the likelihood principle (all information is in \(L\)) from sufficiency + conditionality, leading to Bayesian updating (7.1), and contrasts how frequentists and Bayesians locate "randomness." §7.2 formalizes estimator comparison via frequentist risk \(\mathcal R\) and integrated risk \(r\): admissibility is a frequentist criterion, while the Bayes estimator minimizes posterior expected loss; the two are nearly equivalent under suitable conditions (and the MLE is even inadmissible in high dimensions \(k\ge3\), dominated by James-Stein). §7.3 makes the posterior analytically available via exponential families + conjugacy (the "precisions add" of normal-normal is the canonical case). §7.4 turns to numerics for non-conjugate / high-dimensional cases: importance sampling, MCMC (balance condition → Metropolis-Hastings → Gibbs). <strong>The next chapter's Kalman filter is an application of Bayesian recursive updating in state-space models.</strong></p></div>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#7-1-introduction">7.1 Introduction</a></li>
+        <li><a href="#7-2-admissibility-and-bayes-estimators">7.2 Admissibility and Bayes Estimators</a></li>
+        <li><a href="#7-3-exponential-families-conjugacy-and-priors">7.3 Exponential Families, Conjugacy, and Priors</a></li>
+        <li><a href="#7-4-numerical-methods-for-bayesian-inference">7.4 Numerical Methods for Bayesian Inference</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

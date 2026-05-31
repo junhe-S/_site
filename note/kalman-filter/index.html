@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8. The Kalman Filter – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>8. The Kalman Filter</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">卡尔曼滤波</span><span class="lang en">Kalman Filter</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">状态空间模型</span><span class="lang en">State Space Model</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">递归更新</span><span class="lang en">Recursive Updating</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">卡尔曼增益</span><span class="lang en">Kalman Gain</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">条件正态</span><span class="lang en">Conditional Normal</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：卡尔曼滤波。</strong> <strong>§8.1 两个引理</strong>：联合正态下的条件分布——<strong>引理 8.1</strong> \((X,Y)'\sim N(0,\cdot)\) 则 \(X\mid Y\sim N(AY,S_{XX'\mid Y})\)，\(A=S_{XY'}S_{YY'}^{-1}\)；<strong>引理 8.2</strong> 由 \(Y\mid\xi\sim N(H\xi,\Sigma)\)、\(\xi\sim N(\hat\xi,\Omega)\) 得后验 \(\xi\mid Y\sim N(\hat\xi+G(Y-H\hat\xi),\Omega-GS_{YY'}G')\)（即贝叶斯递归更新的正态版本）。<strong>§8.2 状态空间系统</strong>：可观测方程 \(Y_t=H_t\xi_t+\varepsilon_t\)、状态方程 \(\xi_{t+1}=F_{t+1}\xi_t+\eta_{t+1}\)，状态 \(\xi_t\) 不可观测。<strong>递归更新三步</strong>：(1) 用 \(t-1\) 信息预测 \(Y_t\)；(2) 观测到 \(Y_t\) 后更新对 \(\xi_t\) 的推断——<strong>卡尔曼增益</strong> \(G_t\)、<strong>卡尔曼滤波方程</strong> \(\hat\xi_{t\mid t}=\hat\xi_{t\mid t-1}+G_t(Y_t-H_t\hat\xi_{t\mid t-1})\)；(3) 由状态方程预测 \(\xi_{t+1}\)——<strong>卡尔曼预测</strong> \(\hat\xi_{t+1\mid t}=F_{t+1}\hat\xi_{t\mid t}\)。卡尔曼滤波不需正态假设（彼时为线性最小二乘）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: the Kalman filter.</strong> <strong>§8.1 Two lemmas</strong>: conditional distributions under joint normality — <strong>Lemma 8.1</strong> \((X,Y)'\sim N(0,\cdot)\) gives \(X\mid Y\sim N(AY,S_{XX'\mid Y})\), \(A=S_{XY'}S_{YY'}^{-1}\); <strong>Lemma 8.2</strong> from \(Y\mid\xi\sim N(H\xi,\Sigma)\), \(\xi\sim N(\hat\xi,\Omega)\) gives the posterior \(\xi\mid Y\sim N(\hat\xi+G(Y-H\hat\xi),\Omega-GS_{YY'}G')\) (the normal version of Bayesian recursive updating). <strong>§8.2 State-space system</strong>: observable equation \(Y_t=H_t\xi_t+\varepsilon_t\), state equation \(\xi_{t+1}=F_{t+1}\xi_t+\eta_{t+1}\), with the state \(\xi_t\) unobservable. <strong>Recursive updating in three steps</strong>: (1) forecast \(Y_t\) using information up to \(t-1\); (2) after observing \(Y_t\), update the inference about \(\xi_t\) — the <strong>Kalman gain</strong> \(G_t\), the <strong>Kalman filter equation</strong> \(\hat\xi_{t\mid t}=\hat\xi_{t\mid t-1}+G_t(Y_t-H_t\hat\xi_{t\mid t-1})\); (3) forecast \(\xi_{t+1}\) from the state equation — the <strong>Kalman predictor</strong> \(\hat\xi_{t+1\mid t}=F_{t+1}\hat\xi_{t\mid t}\). The Kalman filter needs no normality assumption (then it is linear least squares).</p></div>
+</div>
+<h2 id="8-1-two-useful-lemmas">8.1 Two Useful Lemmas</h2>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>引理 8.1（联合正态的条件分布）
+设 \(\begin{pmatrix}X\\Y\end{pmatrix}\sim N\Big(\begin{pmatrix}0\\0\end{pmatrix},\begin{bmatrix}S_{XX'}&S_{XY'}\\S_{YX'}&S_{YY'}\end{bmatrix}\Big)\)。则
+$$X\mid Y\sim N(AY,S_{XX'\mid Y})$$
+\(A=S_{XY'}S_{YY'}^{-1}\)、\(S_{XX'\mid Y}=S_{XX'}-S_{XY'}S_{YY'}^{-1}S_{YX'}=S_{XX'}-AS_{YX'}A'\)。</p>
+<p>[!note]- 证明（引理 8.1）
+考虑线性回归 \(X=AY+\varepsilon\)，\(\mathbb E(\varepsilon Y')=0\)、\(\mathbb E(\varepsilon\mid Y)=0\)。则 \(\mathbb E(X\mid Y)=\mathbb E(AY+\varepsilon\mid Y)=AY\)。两边乘 \(Y'\) 取期望解 \(A\)：\(\mathbb E(XY')=A\mathbb E(YY')\Rightarrow S_{XY'}=AS_{YY'}\Rightarrow A=S_{XY'}S_{YY'}^{-1}\)。条件方差 \(\mathrm{Var}(X\mid Y)=\mathrm{Var}(\varepsilon)=\mathbb E((X-AY)(X-AY)')=S_{XX'}-AS_{YY'}A'=S_{XX'}-S_{XY'}S_{YY'}^{-1}S_{YX'}\)。\(\blacksquare\)</p>
+<p>[!important] 引理 8.2
+设 \(Y\mid H,\xi\sim N(H\xi,\Sigma)\)、\(\xi\mid H\sim N(\hat\xi,\Omega)\)。则 \(\begin{pmatrix}\xi\\Y\end{pmatrix}\mid H\sim N\Big(\begin{pmatrix}\hat\xi\\H\hat\xi\end{pmatrix},\begin{bmatrix}S_{\xi\xi'}&S_{\xi Y'}\\S_{Y\xi'}&S_{YY'}\end{bmatrix}\Big)\)，且
+$$\xi\mid Y,H\sim N\big(\hat\xi+S_{\xi Y'}S_{YY'}^{-1}(Y-H\hat\xi),\;\Omega-S_{\xi Y'}S_{YY'}^{-1}S_{Y\xi'}\big)\sim N(\hat\xi+G\hat\varepsilon,\;\Omega-GS_{YY'}G')$$
+其中 \(S_{\xi\xi'}=\Omega\)、\(S_{\xi Y'}=\Omega H'\)、\(S_{YY'}=H\Omega H'+\Sigma\)、\(G=S_{\xi Y'}S_{YY'}^{-1}\)、\(\hat\varepsilon=Y-H\hat\xi\)。</p>
+<p>[!note]- 证明（引理 8.2）
+写 \(Y=H\xi+\varepsilon\)、\(\xi=\hat\xi+\nu\)（\(\varepsilon\sim N(0,\Sigma)\)、\(\nu\sim N(0,\Omega)\)），则 \(Y=H\hat\xi+H\nu+\varepsilon\)。\(\mathbb E(\xi\mid H)=\hat\xi\)、\(\mathbb E(Y\mid H)=H\hat\xi\)；\(S_{\xi\xi'}=\mathrm{Cov}(\nu,\nu'\mid H)=\Omega\)、\(S_{\xi Y'}=\mathrm{Cov}(\nu,\nu'\mid H)H'=\Omega H'\)、\(S_{YY'}=H\Omega H'+\Sigma\)。再对 \((\xi-\hat\xi;Y-H\hat\xi)\) 用引理 8.1 得条件均值 \(\hat\xi+G(Y-H\hat\xi)\)、条件方差 \(\Omega-GS_{YY'}G'\)。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Lemma 8.1 (Conditional distribution under joint normality)
+Let \(\begin{pmatrix}X\\Y\end{pmatrix}\sim N\Big(\begin{pmatrix}0\\0\end{pmatrix},\begin{bmatrix}S_{XX'}&S_{XY'}\\S_{YX'}&S_{YY'}\end{bmatrix}\Big)\). Then
+$$X\mid Y\sim N(AY,S_{XX'\mid Y})$$
+with \(A=S_{XY'}S_{YY'}^{-1}\), \(S_{XX'\mid Y}=S_{XX'}-S_{XY'}S_{YY'}^{-1}S_{YX'}=S_{XX'}-AS_{YX'}A'\).</p>
+<p>[!note]- Proof (Lemma 8.1)
+Consider the linear regression \(X=AY+\varepsilon\) with \(\mathbb E(\varepsilon Y')=0\), \(\mathbb E(\varepsilon\mid Y)=0\). Then \(\mathbb E(X\mid Y)=\mathbb E(AY+\varepsilon\mid Y)=AY\). Multiply by \(Y'\) and take expectations to solve for \(A\): \(\mathbb E(XY')=A\mathbb E(YY')\Rightarrow S_{XY'}=AS_{YY'}\Rightarrow A=S_{XY'}S_{YY'}^{-1}\). The conditional variance \(\mathrm{Var}(X\mid Y)=\mathrm{Var}(\varepsilon)=\mathbb E((X-AY)(X-AY)')=S_{XX'}-AS_{YY'}A'=S_{XX'}-S_{XY'}S_{YY'}^{-1}S_{YX'}\). \(\blacksquare\)</p>
+<p>[!important] Lemma 8.2
+Let \(Y\mid H,\xi\sim N(H\xi,\Sigma)\), \(\xi\mid H\sim N(\hat\xi,\Omega)\). Then \(\begin{pmatrix}\xi\\Y\end{pmatrix}\mid H\sim N\Big(\begin{pmatrix}\hat\xi\\H\hat\xi\end{pmatrix},\begin{bmatrix}S_{\xi\xi'}&S_{\xi Y'}\\S_{Y\xi'}&S_{YY'}\end{bmatrix}\Big)\), and
+$$\xi\mid Y,H\sim N\big(\hat\xi+S_{\xi Y'}S_{YY'}^{-1}(Y-H\hat\xi),\;\Omega-S_{\xi Y'}S_{YY'}^{-1}S_{Y\xi'}\big)\sim N(\hat\xi+G\hat\varepsilon,\;\Omega-GS_{YY'}G')$$
+where \(S_{\xi\xi'}=\Omega\), \(S_{\xi Y'}=\Omega H'\), \(S_{YY'}=H\Omega H'+\Sigma\), \(G=S_{\xi Y'}S_{YY'}^{-1}\), \(\hat\varepsilon=Y-H\hat\xi\).</p>
+<p>[!note]- Proof (Lemma 8.2)
+Write \(Y=H\xi+\varepsilon\), \(\xi=\hat\xi+\nu\) (\(\varepsilon\sim N(0,\Sigma)\), \(\nu\sim N(0,\Omega)\)), so \(Y=H\hat\xi+H\nu+\varepsilon\). \(\mathbb E(\xi\mid H)=\hat\xi\), \(\mathbb E(Y\mid H)=H\hat\xi\); \(S_{\xi\xi'}=\mathrm{Cov}(\nu,\nu'\mid H)=\Omega\), \(S_{\xi Y'}=\mathrm{Cov}(\nu,\nu'\mid H)H'=\Omega H'\), \(S_{YY'}=H\Omega H'+\Sigma\). Applying Lemma 8.1 to \((\xi-\hat\xi;Y-H\hat\xi)\) gives the conditional mean \(\hat\xi+G(Y-H\hat\xi)\) and conditional variance \(\Omega-GS_{YY'}G'\). \(\blacksquare\)</p></div>
+</div>
+<h2 id="8-2-the-state-space-system">8.2 The State Space System</h2>
+<div class="lang zh">
+<p><strong>8.2.1 要素.</strong> 数据 \(Y_t\in\mathbb R^n\)（\(t=1,\dots,T\)，<strong>可观测</strong>）；状态变量 \(\xi_t\in\mathbb R^r\)（<strong>不可观测</strong>）；参数 \(H_t,F_t,\Sigma_t,\Phi_t\)（可随时间变、有时已知有时需估计；本章视为<strong>已知</strong>）。</p>
+<p><strong>8.2.2 状态空间系统.</strong> <strong>可观测方程</strong>：</p>
+<p>$$Y_t=H_t\xi_t+\varepsilon_t,\quad\varepsilon_t\sim N(0,\Sigma_t)$$</p>
+<p><strong>状态方程</strong>：</p>
+<p>$$\xi_{t+1}=F_{t+1}\xi_t+\eta_{t+1},\quad\eta_{t+1}\sim N(0,\Phi_{t+1})$$</p>
+<p>假设 \(\varepsilon_t\) 与 \(\eta_t\) 独立。卡尔曼滤波<strong>不需正态假设</strong>（彼时所有公式为线性最小二乘）。</p>
+<p><strong>8.2.3 递归更新.</strong> 给定 \(t-1\) 及之前信息预测 \(\xi_t\)：\(\xi_t\sim N(\hat\xi_{t\mid t-1},\Omega_{t\mid t-1})\)（下标 \(t\mid t-1\) 表示用截至 \(t-1\) 的信息对日期 \(t\) 的估计）。目标是求<strong>卡尔曼预测</strong> \(\hat\xi_{t+1\mid t}\) 与 \(\xi_{t+1}\) 的<strong>预测误差协方差矩阵</strong> \(\Omega_{t+1\mid t}\)。三步：</p>
+</div>
+<div class="lang en">
+<p><strong>8.2.1 Ingredients.</strong> Data \(Y_t\in\mathbb R^n\) (\(t=1,\dots,T\), <strong>observable</strong>); state variable \(\xi_t\in\mathbb R^r\) (<strong>unobservable</strong>); parameters \(H_t,F_t,\Sigma_t,\Phi_t\) (may vary over time, sometimes known and sometimes to be estimated; treated as <strong>known</strong> in this chapter).</p>
+<p><strong>8.2.2 The state-space system.</strong> <strong>Observable equation</strong>:</p>
+<p>$$Y_t=H_t\xi_t+\varepsilon_t,\quad\varepsilon_t\sim N(0,\Sigma_t)$$</p>
+<p><strong>State equation</strong>:</p>
+<p>$$\xi_{t+1}=F_{t+1}\xi_t+\eta_{t+1},\quad\eta_{t+1}\sim N(0,\Phi_{t+1})$$</p>
+<p>assuming \(\varepsilon_t\) and \(\eta_t\) are independent. The Kalman filter needs <strong>no normality assumption</strong> (then all formulas are linear least squares).</p>
+<p><strong>8.2.3 Recursive updating.</strong> Forecasting \(\xi_t\) given information up to and including \(t-1\): \(\xi_t\sim N(\hat\xi_{t\mid t-1},\Omega_{t\mid t-1})\) (the subscript \(t\mid t-1\) means the estimate of date \(t\) based on information up to \(t-1\)). The goal is the <strong>Kalman predictor</strong> \(\hat\xi_{t+1\mid t}\) and the <strong>prediction error covariance matrix</strong> \(\Omega_{t+1\mid t}\) for \(\xi_{t+1}\). Three steps:</p>
+</div>
+<div class="lang zh">
+<p><strong>(1) 用 \(t-1\) 信息预测 \(Y_t\).</strong> 由 \(\xi_t\sim N(\hat\xi_{t\mid t-1},\Omega_{t\mid t-1})\) 与 \(Y_t=H_t\xi_t+\varepsilon_t\)：</p>
+<p>$$Y_t\sim N(\hat Y_t,S_{YY'\mid t}),\quad\hat Y_t=H_t\hat\xi_{t\mid t-1},\;S_{YY'\mid t}=H_t\Omega_{t\mid t-1}H_t'+\Sigma_t$$</p>
+<p><strong>(2) 观测 \(Y_t\)，更新对 \(\xi_t\) 的推断.</strong> 预测误差 \(\hat\varepsilon_t=Y_t-\hat Y_t=Y_t-H_t\hat\xi_{t\mid t-1}\)。考虑回归</p>
+<p>$$\xi_t-\hat\xi_{t\mid t-1}=G_t(Y_t-H_t\hat\xi_{t\mid t-1})+e_t \tag{8.1}$$</p>
+<p><strong>卡尔曼增益</strong> \(G_t=S_{\xi Y'\mid t}S_{YY'\mid t}^{-1}\)，\(S_{\xi Y'\mid t}=\mathrm{Cov}(\xi_t,Y_t')=\Omega_{t\mid t-1}H_t'\)。由引理 8.2 得<strong>卡尔曼滤波方程</strong>（\(\xi_t\) 的更新分布）：</p>
+<p>$$\xi_t\sim N(\hat\xi_{t\mid t},\Omega_{t\mid t}),\quad\hat\xi_{t\mid t}=\hat\xi_{t\mid t-1}+G_t(Y_t-H_t\hat\xi_{t\mid t-1})$$</p>
+<p>$$\Omega_{t\mid t}=\Omega_{t\mid t-1}-G_tS_{YY'\mid t}G_t'=\Omega_{t\mid t-1}-S_{\xi Y'\mid t}S_{YY'\mid t}^{-1}S_{Y\xi'\mid t}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 8.1（更新的直觉）
+事前 \(\xi_t\sim N(\hat\xi_{t\mid t-1},\Omega_{t\mid t-1})\) 对应事前回归 \(\xi_t-\hat\xi_{t\mid t-1}=G_t(Y_t-H_t\hat\xi_{t\mid t-1})+e_t\)（观测 \(Y_t\) 前 \(G_t(Y_t-H_t\hat\xi_{t\mid t-1})\) 是均值零的随机量）。观测到 \(Y_t\) 后，\(G_t(Y_t-H_t\hat\xi_{t\mid t-1})\) 变为<strong>已实现的常数</strong>，故新均值 \(\hat\xi_{t\mid t}\) 应纳入它、新方差 \(\Omega_{t\mid t}\) 应<strong>减去</strong> \(G_t(Y_t-H_t\hat\xi_{t\mid t-1})\) 的方差——这正是「观测降低不确定性」。</p></div>
+<p><strong>(3) 预测 \(\xi_{t+1}\).</strong> 由状态方程 \(\xi_{t+1}=F_{t+1}\xi_t+\eta_{t+1}\) 与更新分布 \(\xi_t\sim N(\hat\xi_{t\mid t},\Omega_{t\mid t})\)：</p>
+<p>$$\xi_{t+1}\sim N(\hat\xi_{t+1\mid t},\Omega_{t+1\mid t}),\quad\hat\xi_{t+1\mid t}=F_{t+1}\hat\xi_{t\mid t},\;\Omega_{t+1\mid t}=F_{t+1}\Omega_{t\mid t}F_{t+1}'+\Phi_{t+1}$$</p>
+<p><strong>8.2.4 初始化.</strong> 当起始状态 \(\xi_1\) 已知时，可设 \(\hat\xi_{1\mid0}=\mathbf 0\)、\(\Omega_{1\mid0}=\mathbf 0\)，递归即可逐期推进。</p>
+</div>
+<div class="lang en">
+<p><strong>(1) Forecast \(Y_t\) using information up to \(t-1\).</strong> From \(\xi_t\sim N(\hat\xi_{t\mid t-1},\Omega_{t\mid t-1})\) and \(Y_t=H_t\xi_t+\varepsilon_t\):</p>
+<p>$$Y_t\sim N(\hat Y_t,S_{YY'\mid t}),\quad\hat Y_t=H_t\hat\xi_{t\mid t-1},\;S_{YY'\mid t}=H_t\Omega_{t\mid t-1}H_t'+\Sigma_t$$</p>
+<p><strong>(2) Observe \(Y_t\), update the inference about \(\xi_t\).</strong> The forecast error \(\hat\varepsilon_t=Y_t-\hat Y_t=Y_t-H_t\hat\xi_{t\mid t-1}\). Consider the regression</p>
+<p>$$\xi_t-\hat\xi_{t\mid t-1}=G_t(Y_t-H_t\hat\xi_{t\mid t-1})+e_t \tag{8.1}$$</p>
+<p>with the <strong>Kalman gain</strong> \(G_t=S_{\xi Y'\mid t}S_{YY'\mid t}^{-1}\), \(S_{\xi Y'\mid t}=\mathrm{Cov}(\xi_t,Y_t')=\Omega_{t\mid t-1}H_t'\). By Lemma 8.2, the <strong>Kalman filter equation</strong> (the updated distribution of \(\xi_t\)):</p>
+<p>$$\xi_t\sim N(\hat\xi_{t\mid t},\Omega_{t\mid t}),\quad\hat\xi_{t\mid t}=\hat\xi_{t\mid t-1}+G_t(Y_t-H_t\hat\xi_{t\mid t-1})$$</p>
+<p>$$\Omega_{t\mid t}=\Omega_{t\mid t-1}-G_tS_{YY'\mid t}G_t'=\Omega_{t\mid t-1}-S_{\xi Y'\mid t}S_{YY'\mid t}^{-1}S_{Y\xi'\mid t}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 8.1 (intuition for updating)
+The ex-ante \(\xi_t\sim N(\hat\xi_{t\mid t-1},\Omega_{t\mid t-1})\) matches the ex-ante regression \(\xi_t-\hat\xi_{t\mid t-1}=G_t(Y_t-H_t\hat\xi_{t\mid t-1})+e_t\) (before observing \(Y_t\), \(G_t(Y_t-H_t\hat\xi_{t\mid t-1})\) is a mean-zero random quantity). After observing \(Y_t\), \(G_t(Y_t-H_t\hat\xi_{t\mid t-1})\) becomes a <strong>realized constant</strong>, so the new mean \(\hat\xi_{t\mid t}\) should incorporate it and the new variance \(\Omega_{t\mid t}\) should <strong>subtract</strong> the variance of \(G_t(Y_t-H_t\hat\xi_{t\mid t-1})\) — exactly "observation reduces uncertainty."</p></div>
+<p><strong>(3) Forecast \(\xi_{t+1}\).</strong> From the state equation \(\xi_{t+1}=F_{t+1}\xi_t+\eta_{t+1}\) and the updated distribution \(\xi_t\sim N(\hat\xi_{t\mid t},\Omega_{t\mid t})\):</p>
+<p>$$\xi_{t+1}\sim N(\hat\xi_{t+1\mid t},\Omega_{t+1\mid t}),\quad\hat\xi_{t+1\mid t}=F_{t+1}\hat\xi_{t\mid t},\;\Omega_{t+1\mid t}=F_{t+1}\Omega_{t\mid t}F_{t+1}'+\Phi_{t+1}$$</p>
+<p><strong>8.2.4 Initializing.</strong> When the starting state \(\xi_1\) is known, set \(\hat\xi_{1\mid0}=\mathbf 0\), \(\Omega_{1\mid0}=\mathbf 0\), and the recursion advances period by period.</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>本章脉络
+<strong>卡尔曼滤波 = 状态空间模型上的贝叶斯递归更新。</strong> §8.1 的两个正态条件分布引理是引擎：引理 8.1 给联合正态的条件均值/方差，引理 8.2 把它包装成「先验 \(N(\hat\xi,\Omega)\) + 观测方程 \(N(H\xi,\Sigma)\) → 后验」的更新公式。§8.2 把这套更新沿时间递归：预测 \(Y_t\) → 用观测误差经卡尔曼增益 \(G_t\) 更新 \(\xi_t\)（滤波方程，方差下降）→ 经状态方程外推到 \(\xi_{t+1}\)（预测方程，方差因 \(\Phi\) 上升），循环往复。这正是 [[bayesian-inference]] 中后验更新思想在动态状态空间中的落地。<strong>下一章转入（单变量）时间序列分析本身。</strong></p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Chapter arc
+<strong>The Kalman filter = Bayesian recursive updating on a state-space model.</strong> §8.1's two normal-conditional-distribution lemmas are the engine: Lemma 8.1 gives the conditional mean/variance under joint normality, and Lemma 8.2 packages it into the updating formula "prior \(N(\hat\xi,\Omega)\) + observation equation \(N(H\xi,\Sigma)\) → posterior." §8.2 recurses this update over time: forecast \(Y_t\) → update \(\xi_t\) via the Kalman gain \(G_t\) using the observation error (the filter equation, variance falls) → extrapolate to \(\xi_{t+1}\) via the state equation (the prediction equation, variance rises through \(\Phi\)), and repeat. This is exactly the posterior-updating idea of [[bayesian-inference]] realized in a dynamic state space. <strong>The next chapter turns to (univariate) time-series analysis itself.</strong></p></div>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#8-1-two-useful-lemmas">8.1 Two Useful Lemmas</a></li>
+        <li><a href="#8-2-the-state-space-system">8.2 The State Space System</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

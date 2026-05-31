@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>20. Econometric Causality – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>20. Econometric Causality</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">因果推断</span><span class="lang en">Causal Inference</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">结构模型</span><span class="lang en">Structural Model</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">潜在结果</span><span class="lang en">Potential Outcomes</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">自主方程</span><span class="lang en">Autonomous Equations</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">有向无环图</span><span class="lang en">DAG</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">中介分析</span><span class="lang en">Mediation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：计量经济学中的因果性。</strong> <strong>§20.1 统计模型 vs 结构模型</strong>：统计方法研究"因之果（effects of causes）"，把处理视作黑箱；计量方法研究"果之因（causes of effects）"，构建显式经济模型以窥探黑箱。<strong>§20.2 结构模型</strong>：<strong>定义 20.1</strong> 结构模型 = 参数对一类干预不变；"全因（all causes）"模型 \(Y=\mathbf X_b\beta_b+\mathbf X_p\beta_p+U\)（20.1）、一般式 \(Y=G(\mathbf X,\theta,U)\)。<strong>§20.3 政策评估问题</strong>：三步（反事实/识别/估计）、三类关注问题（评估已实施干预=内部有效性、预测到他环境=外部有效性/可移植性、预测从未实施的干预=结构方法领域）；§20.3.3 政策与处理（状态 \(s\in\mathcal S\)、agent 类型 \(\omega\in\Omega\)、\(Y(s,\omega)\)、处理分配机制 \(\tau:\Omega\to\mathcal S\)、约束 \(a:\Omega\to\mathcal A\)、<strong>定义 20.2</strong> 政策制度 \(p=(a,\tau)\)）。<strong>§20.4 因果框架</strong>：Rubin-Holland 因果模型（基于潜在结果、无机制）vs 自主方程（结构方程系统）。<strong>§20.5 Rubin-Holland 模型</strong>：潜在结果回顾、RCT（\(Y(t)\perp T\)）、匹配（\(Y(t)\perp T\mid X\)）、中介（\(T\to M\to Y\)、直接/间接/总效应、顺序可忽略性、ADE/AIE）、IV（排除性+相关性→LATE）；§20.5.2 批评（不评估因果关系、不允许不可观测变量）。<strong>§20.6 自主方程</strong>：<strong>定义 20.1</strong> 由四要素定义（随机变量 \(\{X,V,U,Y\}\)、互相独立误差、自主结构方程 \(f_Y,f_X,f_U,f_V\)、因果映射）；DAG（Figure 6）；子代/后代/亲代；局部 Markov 条件（<strong>定义 20.3</strong> 递归性、<strong>定义 20.4</strong> LMC）；fixing（do 算子）vs conditioning。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: causality in econometrics.</strong> <strong>§20.1 Statistical vs structural model</strong>: the statistical approach studies "effects of causes," treating treatment as a black box; the econometric approach studies "causes of effects," building explicit economic models to look inside the black box. <strong>§20.2 Structural model</strong>: <strong>Definition 20.1</strong> structural model = parameters invariant to a class of interventions; the "all causes" model \(Y=\mathbf X_b\beta_b+\mathbf X_p\beta_p+U\) (20.1), the general form \(Y=G(\mathbf X,\theta,U)\). <strong>§20.3 Policy evaluation problems</strong>: three steps (counterfactuals / identification / estimation), three problems of interest (evaluate implemented interventions = internal validity, forecast to other environments = external validity / transportability, forecast never-implemented interventions = domain of structural approach); §20.3.3 policy and treatment (state \(s\in\mathcal S\), agent type \(\omega\in\Omega\), \(Y(s,\omega)\), assignment mechanism \(\tau:\Omega\to\mathcal S\), constraint \(a:\Omega\to\mathcal A\), <strong>Definition 20.2</strong> policy regime \(p=(a,\tau)\)). <strong>§20.4 Causal frameworks</strong>: the Rubin-Holland causal model (potential-outcomes based, no mechanism) vs autonomous equations (a structural system of equations). <strong>§20.5 Rubin-Holland model</strong>: recap of potential outcomes, RCT (\(Y(t)\perp T\)), matching (\(Y(t)\perp T\mid X\)), mediation (\(T\to M\to Y\), direct/indirect/total effect, sequential ignorability, ADE/AIE), IV (exclusion + relevance → LATE); §20.5.2 criticisms (does not assess causal relationship, no unobservables). <strong>§20.6 Autonomous equations</strong>: <strong>Definition 20.1</strong> defined by four components (random variables \(\{X,V,U,Y\}\), mutually independent errors, autonomous structural equations \(f_Y,f_X,f_U,f_V\), causal mappings); DAG (Figure 6); children / descendants / parents; the local Markov condition (<strong>Definition 20.3</strong> recursive property, <strong>Definition 20.4</strong> LMC); fixing (the do operator) vs conditioning.</p></div>
+</div>
+<h2 id="20-1-statistical-model-vs-structural-model">20.1 Statistical Model vs Structural Model</h2>
+<div class="lang zh">
+<ul>
+<li><strong>因果性的统计方法：处理效应模型</strong></li>
+<li>统计方法研究<strong>因之果（effects of causes）</strong>。</li>
+<li>统计学家试图正确描述效应本身，而不操心这些效应的来源或机制。</li>
+<li>处理或干预被视作一个<strong>黑箱</strong>，其机制不明。</li>
+<li><strong>因果性的计量方法：结构模型</strong></li>
+<li>计量方法在统计之外还带有经济学，这意味着计量方法研究<strong>果之因（causes of effects）</strong>。</li>
+<li>计量经济学家关心处理结果与处理选择之间关系背后的机制，他们试图恢复结果得以产生的<strong>因果机制</strong>。</li>
+<li>这一方法要求构建显式的经济模型，从而帮助我们窥探黑箱内部。</li>
+</ul>
+<h2 id="20-2-structural-model">20.2 Structural Model</h2>
+<div class="callout"><div class="callout-title">Important</div><p>定义 20.1（结构模型 Structural model）
+结构模型是一个结构系统，其中某些参数对<strong>一类干预</strong>不变。</p>
+<p>[!tip] 注记 20.1
+注意结构系统中的参数无需对<strong>所有可能的</strong>干预都不变，也不涉及援引任何特定的功能形式或任何特定的估计方法。只要我们知道系统某一不变的部分（甚至无需知道如何描述它们之间的关系），它就是结构性的。</p></div>
+</div>
+<div class="lang en">
+<ul>
+<li><strong>Statistical approach for causality: treatment effect model</strong></li>
+<li>The statistical approach to causality studies <strong>effects of causes</strong>.</li>
+<li>Statisticians are trying to correctly describe the effect without worrying about the sources or mechanisms of those effects.</li>
+<li>The treatment or interventions is a <strong>black-box</strong>, whose mechanisms remain unclear.</li>
+<li><strong>Econometric approach for causality: structural model</strong></li>
+<li>The econometric approach to causality features economics in addition to statistics, which means that the econometric approach to causality studies the <strong>causes of effects</strong>.</li>
+<li>Econometricians are interested in the mechanisms behind the relationship between treatment outcomes and treatment choices, and they try to recover the causal mechanism by which outcomes are produced.</li>
+<li>This approach requires building explicit economic models, which helps us look into the black-box.</li>
+</ul>
+<h2 id="20-2-structural-model">20.2 Structural Model</h2>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 20.1 (Structural model)
+A structural model is a structural system in which some parameters are invariant to a class of interventions.</p>
+<p>[!tip] Remark 20.1
+Note that the parameters in the structural system need not to be invariant to all possible interventions, nor does it involve invoking any specific functional forms or any particular method for estimation. As long as we know the invariant feature of some part of the system (not even necessary to know how to describe their relationships), it is structural.</p></div>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>例 20.1（一个结构关系）
+考虑如下模型：
+$$Y=\mathbf X_b\cdot\beta_b+\mathbf X_p\cdot\beta_p+U\tag{20.1}$$
+(20.1) 是一个"全因（all causes）"模型，因为它包含 \(Y\) 变化的所有可能原因，特别地：
+- \(U\) 是任何人都未观测到的变量；
+- \(\mathbf X_b\) 是对政策变化保持不变的背景变量；
+- \(\mathbf X_p\) 是可被干预操纵的政策变量。</p>
+<p>设系数 \((\beta_b,\beta_p)\) 对 \((\mathbf X_b,\mathbf X_p)\) 的移动不变、且这些移动导致 \(Y\) 的移动，则 (20.1) 是结构性的。</p>
+<p>[!tip] 注记 20.2
+只要存在某种稳定、不变的东西，我们就可以称之为"结构"。具有这种不变参数或"结构"的模型称为结构模型。经济模型（无论微观还是宏观）通常比非结构模型提供围绕经济上有意义的变量的更稳定的关系。</p></div>
+<p>类似于 (20.1)，一个更一般的结构模型例如可以是
+$$Y=G(\mathbf X,\theta,U)$$
+若函数 \(G(\cdot,\cdot,\cdot)\) 对 \(\mathbf X\) 的移动不变，则它是结构性的。此时不变参数是那些刻画 \(G(\cdot,\cdot,\cdot)\) 函数形式的参数，而干预类即 \(\mathbf X\) 中所有可能的变化之集合。</p>
+<p>某些情形下，所有参数中只有一部分是结构性的。例如，设在 (20.1) 中只有 \(\beta_p\) 对 \((\mathbf X_b,\mathbf X_p)\) 的移动不变、而 \(\beta_b\) 不是，则该模型对 \(\beta_p\) 仍是结构性的、但对 \(\beta_b\) 不是。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 20.3
+故计量因果方法希望找到结构性的（稳定的）因果关系及其背后的原因，而统计方法主要聚焦于正确地学习那个一次性的效应。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Example 20.1 (A structural relationship)
+Consider the following model:
+$$Y=\mathbf X_b\cdot\beta_b+\mathbf X_p\cdot\beta_p+U\tag{20.1}$$
+(20.1) is an "all causes" model since it includes all possible causes of changes in \(Y\), in particular:
+- \(U\) is variables unobserved by anyone;
+- \(\mathbf X_b\) is the background variables that remains unchanged for a policy change;
+- \(\mathbf X_p\) is policy variables that can be manipulated for interventions.</p>
+<p>Suppose that the coefficients \((\beta_b,\beta_p)\) are invariant to the shifts in \((\mathbf X_b,\mathbf X_p)\) and to variables that cause those shifts, then (20.1) is structural.</p>
+<p>[!tip] Remark 20.2
+As long as there is something stable and unchanging, we can call it a "structure." The models that have that unchanging parameters or "structures" are called structural models. Economic models (both micro and macro) are more often than not structural models that offer stable relationships among economically meaningful variables.</p></div>
+<p>Similar to (20.1), a more general structural model, for example, could be
+$$Y=G(\mathbf X,\theta,U)$$
+which is structural if function \(G(\cdot,\cdot,\cdot)\) is invariant to shifts in \(\mathbf X\). Then, the invariant parameters are the parameters that pin down the functional form of \(G(\cdot,\cdot,\cdot)\), and the class of manipulations is the set of all possible changes in \(\mathbf X\).</p>
+<p>In some cases, only part of all the parameters are structural. For example, suppose in (20.1) only \(\beta_p\) is invariant to the shifts in \((\mathbf X_b,\mathbf X_p)\), while \(\beta_b\) is not. Then, the model is still structural for \(\beta_p\), but not structural for \(\beta_b\).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 20.3
+So, econometric causality approach hopes to find the structural (stable) causal relationships and the reasons behind it, while statistical approach mainly focus on learning about the one-time effect correctly.</p></div>
+</div>
+<h2 id="20-3-policy-evaluation-problems">20.3 Policy Evaluation Problems</h2>
+<div class="lang zh">
+<p><strong>20.3.1 三个一般步骤</strong></p>
+<p>进行计量因果推断与政策分析有三个一般步骤：
+1. 定义来自一个良好设定的结构（或称"理论"）的<strong>反事实或关注参数</strong>。
+2. <strong>识别</strong>因果参数——它假设性地用总体数据提供一个把数据映到关注参数的算法或函数。注意此步<strong>不涉及估计或抽样</strong>。
+3. <strong>估计</strong>——它要求我们用实际观测到的有限样本做推断。</p>
+<p><strong>20.3.2 三类关注问题</strong></p>
+<ol>
+<li><strong>评估已实施干预对结果的影响</strong>（可以是对某特定环境的影响，例如考虑控制 (20.1) 中的环境变量）。</li>
+<li>(a) 这些可以是用某些客观数字度量的<strong>客观评估</strong>。</li>
+<li>(b) 也可以是用某些主观报告度量的<strong>主观评估</strong>。</li>
+<li>(c) 这些评估可在<strong>事前或事后</strong>进行。</li>
+<li>(d) 该问题只聚焦于<strong>内部有效性（internal validity）</strong>。</li>
+<li><strong>预测在一个环境实施的干预对其他环境的影响</strong>。</li>
+<li>(a) 该问题聚焦于<strong>外部有效性（external validity）</strong>，因为它取一个在某环境识别的处理参数（或参数集）来预测其在另一环境的效应。</li>
+<li>(b) 外部有效性也称为<strong>可移植性（transportability）</strong>。</li>
+<li><strong>预测历史上从未经历过的干预的影响</strong>。</li>
+<li>(a) 该问题要求带有从未实施过的成分的<strong>结构模型</strong>，这属于计量因果方法的领域。</li>
+</ol>
+<p>例如，关于政策评估问题中的关注参数，可参见 §14.3 的 Roy 模型。</p>
+</div>
+<div class="lang en">
+<p><strong>20.3.1 Three general steps</strong></p>
+<p>There are three general steps in conducting a econometric causal inference and policy analysis:
+1. Define <strong>counterfactuals or parameters of interest</strong> that come out of a well-specified structure (or, call it theory).
+2. <strong>Identify</strong> causal parameters, which hypothetically uses the population data to provide an algorithm or function that maps the data into the parameters of interest. Note that no estimation or sampling is involved in this step.
+3. <strong>Estimation</strong>, which requires that we do inference using the actually observed finite samples.</p>
+<p><strong>20.3.2 Three problems of interest</strong></p>
+<ol>
+<li><strong>Evaluating the impacts of implemented interventions on outcomes</strong> (could be impacts in a particular environment, e.g. consider controlling the environment variables in (20.1)).</li>
+<li>(a) These could <strong>objective evaluations</strong> measured by some objective figures.</li>
+<li>(b) These could also be <strong>subjective evaluations</strong> measured by some subjective reporting.</li>
+<li>(c) These evaluations could be conducted <strong>ex-ante or ex-post</strong>.</li>
+<li>(d) This problem only focuses on <strong>internal validity</strong>.</li>
+<li><strong>Forecasting the impacts of interventions implemented in one environment in other environments</strong>.</li>
+<li>(a) This problem focuses on <strong>external validity</strong> since it take a treatment parameter or a set of parameters identified in one environment to forecast the effect in another environment.</li>
+<li>(b) The external validity is also known as <strong>transportability</strong>.</li>
+<li><strong>Forecasting the impacts of interventions never historically experienced</strong>.</li>
+<li>(a) This problem requires <strong>structural models</strong> with new (never previously experienced) ingredients, which is in the domain of econometric approach to causality.</li>
+</ol>
+<p>See Roy model in subsection 14.3 for an example of parameters of interest in an policy evaluation problem.</p>
+</div>
+<div class="lang zh">
+<p><strong>20.3.3 政策与处理</strong></p>
+<p>可用如下记号更好地理解政策与处理之间的关系。
+- 定义对应于状态（处理）\(s\)、agent 类型 \(\omega\) 的结果为 \(Y(s,\omega)\)。
+- \(\omega\in\Omega\) 涵盖影响结果 \(Y\) 的 agent 的所有特征，\(\Omega\) 是所有被刻画 agent 之集合。
+- \(s\in\mathcal S\)，\(\mathcal S\) 是所有可能处理之集合。
+  - 例如，若 \(\mathcal S=\{0,1\}\)，则只有两种处理，即二值处理情形。
+- 功能形式 \(Y(\cdot,\cdot)\) 可由某个经济理论生成。
+- \(Y(s,\omega)\) 是个体 \(\omega\) 在选定处理 \(s\) 后的已实现结果。
+- 在指定状态之前，\(Y(\cdot,\omega)\) 对 agent \(\omega\) 而言未知，但可被估计。</p>
+<p><strong>个体（客观与主观）处理效应</strong></p>
+<p>现在可考虑个体（客观）处理效应（处理定义为从状态 \(s'\) 切换到状态 \(s\)）对 agent \(\omega\) 为
+$$Y(s,\omega)-Y(s',\omega)\quad\text{for }s\ne s',\text{ and }s,s'\in\mathcal S$$</p>
+<p>设 agent 的效用函数为 \(R(Y(s,\omega))\)，则也可估计主观处理效应（处理定义为从状态 \(s'\) 切换到状态 \(s\)）为
+$$R(Y(s,\omega))-R(Y(s',\omega))$$</p>
+</div>
+<div class="lang en">
+<p><strong>20.3.3 Policy and treatment</strong></p>
+<p>We can better understand the relationship between policy and treatment with the following notations.
+- Define outcomes corresponding to state (treatment) \(s\) for an agent characterized by \(\omega\) as \(Y(s,\omega)\).
+- \(\omega\in\Omega\) encompasses all features of agents that affect outcome \(Y\), where \(\Omega\) is the set of all characterized agents.
+- \(s\in\mathcal S\), where \(\mathcal S\) is the set of all possible treatments.
+  - For example, if \(\mathcal S=\{0,1\}\), there are only two treatments, which becomes the binary treatment case.
+- The functional form \(Y(\cdot,\cdot)\) may be generated by an economic theory.
+- \(Y(s,\omega)\) are the realized outcomes for individual \(\omega\) after state (treatment) \(s\) is chosen.
+- Before specifying state, \(Y(\cdot,\omega)\) is not known to agent \(\omega\) but can be estimated.</p>
+<p><strong>Individual objective and subjective treatment effect</strong></p>
+<p>Now, we can think about the individual (objective) treatment effect (treatment defined as switching from state \(s'\) to state \(s\)) for agent \(\omega\) as
+$$Y(s,\omega)-Y(s',\omega)\quad\text{for }s\ne s',\text{ and }s,s'\in\mathcal S$$</p>
+<p>Suppose the agent's utility function is \(R(Y(s,\omega))\), then we can also estimate the subjective treatment effect (treatment defined as switching from state \(s'\) to state \(s\)) by
+$$R(Y(s,\omega))-R(Y(s',\omega))$$</p>
+</div>
+<div class="lang zh">
+<p><strong>处理分配机制</strong></p>
+<p>我们把<strong>处理分配机制</strong>定义为一个规则 \(\tau\in\mathcal T:\Omega\to\mathcal S\)，它给每个 \(\omega\) 分配一个处理。\(\mathcal T\) 是所有可能分配规则之集合。</p>
+<p>政策本质上是一种处理分配机制，它选择谁得到什么。更具体地，它选择个体 \(\omega\) 并指定 \(\omega\) 收到的处理 \(s\in\mathcal S\)。</p>
+<p>可通过引入<strong>约束分配机制</strong> \(a\in\mathcal A:\Omega\to\mathcal B\)（其中 \(\mathcal B\) 是所有可能约束之集合）进一步丰富处理分配机制。用文字说，\(a\) 是 agent 在做处理决定时面对的、基于 agent 类型 \(\omega\) 的一个约束。于是处理分配机制变为
+$$\tau\in\mathcal T:\Omega\times\mathcal A\times\mathcal B\to\mathcal S$$
+即：对给定机制 \(a\)（它基于 agent 类型挑选一个约束），机制 \(\tau\) 挑选 agent 对处理（状态 \(s\)）的选择。注意此处 \(\mathcal B\) 是冗余的，因为 \(a\in\mathcal A\) 已经把约束 \(b\in\mathcal B\) 钉死了。纳入 \(\mathcal B\) 只是提醒 agent 在做处理决定时确实面对约束。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 20.2（政策制度 Policy regime）
+政策制度 \(p\in\mathcal P\) 是一对 \((a,\tau)\in\mathcal A\times\mathcal T\)，它把记为 \(\omega\in\Omega\) 的 agent 映到处理 \(s\in\mathcal S\)，其中 \(\mathcal P=\mathcal A\times\mathcal T\) 是所有可能政策之集合。</p></div>
+<p>这里，约束空间 \(\mathcal B\) 可视作某工具的所有取值之集合，\(\mathcal A\) 是把工具值分配给个体的所有可能分配之集合。于是，可类似地把<strong>完全顺从（full compliance）</strong> 定义为所有 agent 都被工具（约束）移动，这是 \(\mathcal B\) 与 \(\mathcal S\) 之间的一一映射、以及 \(\mathcal A\) 与 \(\mathcal T\) 之间的一一映射，从而可把 \(a\in\mathcal A\) 定义为处理分配机制——这在完全顺从情形下成立、\(\tau\in\mathcal T\) 冗余而被略去。</p>
+</div>
+<div class="lang en">
+<p><strong>Treatment assignment mechanism</strong></p>
+<p>We define a <strong>treatment assignment mechanism</strong> as a rule \(\tau\in\mathcal T:\Omega\to\mathcal S\), which assigns a treatment to each \(\omega\). \(\mathcal T\) is the set of all possible assignment rules.</p>
+<p>A policy is basically a treatment assignment mechanism, which selects who gets what. More specifically, it selects individuals \(\omega\) and specifies the treatment \(s\in\mathcal S\) received by \(\omega\).</p>
+<p>We can further complicate the treatment assignment mechanism by introducing the constraint assignment mechanism \(a\in\mathcal A:\Omega\to\mathcal B\) where \(\mathcal B\) is the set of all possible constraints faced by the agent when making a treatment decision. In words, \(a\) picks a constraint based on agent's type \(\omega\). Then, the treatment assignment mechanism becomes
+$$\tau\in\mathcal T:\Omega\times\mathcal A\times\mathcal B\to\mathcal S$$
+which means that for a given mechanism \(a\) that picks a constraint based on agent's type, the mechanism \(\tau\) picks the agent's choice of treatment (state \(s\)). Note that the \(\mathcal B\) is redundant here since \(a\in\mathcal A\) already pins down the constraint \(b\in\mathcal B\). Inclusion of \(\mathcal B\) is just a reminder that agents do face constraints when making decision on treatment.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 20.2 (Policy regime)
+A policy regime \(p\in\mathcal P\) is a pair \((a,\tau)\in\mathcal A\times\mathcal T\) that maps agents denoted by \(\omega\in\Omega\) into treatments \(s\in\mathcal S\), where \(\mathcal P=\mathcal A\times\mathcal T\) is the set of all possible policies.</p></div>
+<p>Here, the constraint space \(\mathcal B\) can be regarded as a set of all values of an instrument, and \(\mathcal A\) is the set of all possible assignments that assigns instrument value to individuals. So, we can analogously define full compliance as all agents are shifted by instrument (constraints), which is a one-on-one mapping between instrument values and treatment values, i.e. we have one-on-one mapping between \(\mathcal B\) and \(\mathcal S\), and between \(\mathcal A\) and \(\mathcal T\), and thus we can define \(a\in\mathcal A\) as the treatment assignment mechanism, which is true because in the case of full compliance, \(\tau\in\mathcal T\) is redundant and drops out.</p>
+</div>
+<h2 id="20-4-causal-frameworks">20.4 Causal Frameworks</h2>
+<div class="lang zh">
+<p>接下来两小节将覆盖两种因果框架：
+1. <strong>Rubin-Holland 因果模型</strong>：这是一个基于潜在结果的因果模型，但其中没有选择机制（结构），也不在此框架内提供对结果的解释。
+2. <strong>自主方程（Autonomous Equations）</strong>：这是一个施加联系可观测量与不可观测量的方程系统的结构模型。</p>
+<h2 id="20-5-rubin-holland">20.5 Rubin-Holland 因果模型：潜在结果的语言</h2>
+<p><strong>20.5.1 潜在结果模型回顾</strong></p>
+<p>我们已在 §14、15、16 详细讨论过潜在结果模型，这里简要回顾其精髓。
+- 记号：
+  - \(T\) 是处理选择，其实现记为 \(t\)。
+  - \(Y\) 是结果。
+    - agent \(\omega\) 在固定 \(T=t\) 时的潜在结果 \(Y\) 记为 \(Y_\omega(t)\)。
+    - 对 \(\omega\)，处理 \(t'\) 相对 \(t\) 的因果效应为 \(Y_\omega(t')-Y_\omega(t)\)。
+    - 已观测结果为
+$$Y=\sum_{t\in\text{supp}(T)}Y(t)\times\mathbf 1\{T=t\}$$
+    这在二值处理情形下即切换回归。
+  - \(X\) 是基线特征（用作控制的背景变量），其支撑记为 \(\mathcal X\)、c.d.f 记为 \(F(\cdot)\)。
+- 在<strong>随机对照试验（RCT）</strong> 假设下：
+  - 假设 \(Y(t)\perp T\)。
+  - 可识别 \(t_1\) 相对 \(t_0\) 的平均处理效应（ATE）为
+$$\begin{aligned}\mathbb E[Y(t_1)-Y(t_0)]&=\mathbb E[Y(t_1)]-\mathbb E[Y(t_0)]\\&=\underbrace{\mathbb E[Y(t_1)\mid T=t_1]}_{\text{Observable}}-\underbrace{\mathbb E[Y(t_0)\mid T=t_0]}_{\text{Observable}}\end{aligned}$$</p>
+</div>
+<div class="lang en">
+<p>There are two causal frameworks to be covered in the following two subsections:
+1. <strong>Rubin-Holland Causal Model</strong>: this is a causal model based on potential outcomes but there is no choice mechanisms (structures) and no explanations of outcomes provided in this framework.
+2. <strong>Autonomous Equations</strong>: this is a structural model imposing a system of equations that link both observables and unobservables.</p>
+<h2 id="20-5-rubin-holland-causal-model-the-language-of-potential-outcomes">20.5 Rubin-Holland Causal Model: the Language of Potential Outcomes</h2>
+<p><strong>20.5.1 Recap of potential outcomes model</strong></p>
+<p>We have discussed potential outcome models in detail previously in section 14, 15, and 16. Here we briefly review the essence of those models.
+- Notations:
+  - \(T\) is the treatment choice, whose realizations are represented by \(t\).
+  - \(Y\) is the outcome.
+    - Potential outcome \(Y\) of agent \(\omega\) for fixed \(T=t\) is \(Y_\omega(t)\).
+    - The causal effect of \(t'\) versus \(t\) for \(\omega\) is \(Y_\omega(t')-Y_\omega(t)\).
+    - The observed outcome is then
+$$Y=\sum_{t\in\text{supp}(T)}Y(t)\times\mathbf 1\{T=t\}$$
+    which is known as the switching regression in the binary treatment case.
+  - \(X\) is baseline characteristics (background variables used as controls) whose support is denoted by \(\mathcal X\), and c.d.f. is denoted by \(F(\cdot)\).
+- Under <strong>Randomized Control Trial (RCT)</strong> assumption:
+  - We assume that \(Y(t)\perp T\).
+  - We can identify the average treatment effect (ATE) of \(t_1\) versus \(t_0\) by
+$$\begin{aligned}\mathbb E[Y(t_1)-Y(t_0)]&=\mathbb E[Y(t_1)]-\mathbb E[Y(t_0)]\\&=\underbrace{\mathbb E[Y(t_1)\mid T=t_1]}_{\text{Observable}}-\underbrace{\mathbb E[Y(t_0)\mid T=t_0]}_{\text{Observable}}\end{aligned}$$</p>
+</div>
+<div class="lang zh">
+<ul>
+<li>在<strong>匹配（matching）</strong> 假设下：</li>
+<li>假设 \(Y(t)\perp T\mid X\)。</li>
+<li>
+<p>可识别 \(t_1\) 相对 \(t_0\) 的 ATE 为
+$$\begin{aligned}\mathbb E[Y(t_1)-Y(t_0)]&=\int_{x\in\mathcal X}\big(\mathbb E[Y(t_1)\mid X=x]-\mathbb E[Y(t_0)\mid X=x]\big)\,dF(x)\\&=\int_{x\in\mathcal X}\big(\mathbb E[Y(t_1)\mid T=t_1,X=x]-\mathbb E[Y(t_0)\mid T=t_0,X=x]\big)\,dF(x)\\&=\int_{x\in\mathcal X}\Big(\underbrace{\mathbb E[Y(t_1)\mid T=t_1,X=x]}_{\text{Observable}}-\underbrace{\mathbb E[Y(t_0)\mid T=t_0,X=x]}_{\text{Observable}}\Big)\,dF(x)\end{aligned}$$</p>
+</li>
+<li>
+<p>在<strong>中介（mediation）</strong> 假设下：</p>
+</li>
+<li>有四个关注的随机变量：\(Y\)、\(M\)、\(T\) 与 \(X\)。<ul>
+<li>\(Y\)、\(T\)、\(X\) 同前。\(T\) 的支撑记为 \(\mathcal T\)、c.d.f 记为 \(H(\cdot)\)。</li>
+<li>\(M\) 是<strong>中介变量（mediation variable）</strong>。\(M\) 的支撑记为 \(\mathcal M\)、c.d.f 记为 \(G(\cdot)\)。</li>
+</ul>
+</li>
+<li>\(T\) 影响 \(Y\) 有两条渠道：
+$$T\to M\to Y$$<ul>
+<li>渠道 1：<strong>直接效应</strong>，即 \(T\) 在固定 \(M\) 时直接影响 \(Y\)。</li>
+<li>渠道 2：<strong>间接效应</strong>，即 \(T\) 只通过影响 \(M\)、再由 \(M\) 影响 \(Y\)。</li>
+<li>两条渠道可共存。直接效应（DE）加间接效应（IE）即<strong>总效应（TE）</strong>。</li>
+</ul>
+</li>
+<li><strong>顺序可忽略性（sequential ignorability）</strong> 假设：<ul>
+<li>假设 \((Y(t',m),M(t))\perp T\mid X\)，即 \(T\) 对结果变量与中介变量在给定 \(X\) 时都外生。</li>
+<li>还假设 \(Y(t',m)\perp M(t)\mid(T,X)\)，即 \(M\) 对结果变量在给定 \(T\) 与 \(X\) 时外生。</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="lang en">
+<ul>
+<li>Under the <strong>matching</strong> assumption:</li>
+<li>We assume that \(Y(t)\perp T\mid X\).</li>
+<li>
+<p>We can identify the average treatment effect (ATE) of \(t_1\) versus \(t_0\) by
+$$\begin{aligned}\mathbb E[Y(t_1)-Y(t_0)]&=\int_{x\in\mathcal X}\big(\mathbb E[Y(t_1)\mid X=x]-\mathbb E[Y(t_0)\mid X=x]\big)\,dF(x)\\&=\int_{x\in\mathcal X}\big(\mathbb E[Y(t_1)\mid T=t_1,X=x]-\mathbb E[Y(t_0)\mid T=t_0,X=x]\big)\,dF(x)\\&=\int_{x\in\mathcal X}\Big(\underbrace{\mathbb E[Y(t_1)\mid T=t_1,X=x]}_{\text{Observable}}-\underbrace{\mathbb E[Y(t_0)\mid T=t_0,X=x]}_{\text{Observable}}\Big)\,dF(x)\end{aligned}$$</p>
+</li>
+<li>
+<p>Under the <strong>mediation</strong> assumption:</p>
+</li>
+<li>There are four random variables of interest: \(Y\), \(M\), \(T\) and \(X\).<ul>
+<li>\(Y\), \(T\) and \(X\) are as usual. \(T\) has a support denoted by \(\mathcal T\), and c.d.f. is denoted by \(H(\cdot)\).</li>
+<li>\(M\) is the <strong>mediation variable</strong>. \(M\) has a support denoted by \(\mathcal M\), and c.d.f. is denoted by \(G(\cdot)\).</li>
+</ul>
+</li>
+<li>There are two channels for \(T\) to affect \(Y\):
+$$T\to M\to Y$$<ul>
+<li>Channel 1: direct effect, i.e. \(T\) directly affects \(Y\) holding \(M\) fixed.</li>
+<li>Channel 2: indirect effect, i.e. \(T\) only affects \(Y\) through affecting \(M\) and then \(M\) affecting \(Y\).</li>
+<li>Two channels could coexist. Direct effect (DE) plus indirect effect (IE) is the total effect (TE).</li>
+</ul>
+</li>
+<li><strong>Sequential ignorability</strong> assumption:<ul>
+<li>We assume that \((Y(t',m),M(t))\perp T\mid X\), i.e. \(T\) is exogenous to both outcome variable and mediation variable conditional on \(X\).</li>
+<li>We also assume that \(Y(t',m)\perp M(t)\mid(T,X)\), i.e. \(M\) is exogenous to the outcome variable conditional on \(T\) and \(X\).</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="lang zh">
+<ul>
+<li>
+<p>在可忽略性假设下，平均直接效应与间接效应都可被识别：</p>
+<ul>
+<li>\(T=t_1\) 相对 \(T=t_0\)、对已实现（仅可观测）处理为 \(t\) 的 agent 的<strong>平均直接效应（ADE）</strong>，记为 \(\text{ADE}(t)\)：
+$$\begin{aligned}\text{ADE}(t)&\equiv\mathbb E[Y(t_1,M(t))-Y(t_0,M(t))]\\&=\int_{\mathcal X}\big(\mathbb E[Y(t_1,M(t))\mid X=x]-\mathbb E[Y(t_0,M(t))\mid X=x]\big)\,dF(x)\\&=\int_{\mathcal X}\big(\mathbb E[Y(t_1,M(t))\mid T=t_1,X=x]-\mathbb E[Y(t_0,M(t))\mid T=t_0,X=x]\big)\,dF(x)\\&=\int_{\mathcal M}\int_{\mathcal X}\Big(\underbrace{\mathbb E[Y(t_1,M(t))\mid M=m,T=t_1,X=x]}_{\text{Observable}}-\underbrace{\mathbb E[Y(t_0,M(t))\mid M=m,T=t_0,X=x]}_{\text{Observable}}\Big)\,dF(x)\,dG(m)\end{aligned}$$</li>
+<li>\(T=t_1\) 相对 \(T=t_0\)、对已实现（仅可观测）处理为 \(t\) 的 agent 的<strong>平均间接效应（AIE）</strong>，记为 \(\text{AIE}(t)\)：
+$$\begin{aligned}\text{AIE}(t)&\equiv\mathbb E[Y(t,M(t_1))-Y(t,M(t_0))]\\&=\int_{\mathcal X}\big(\mathbb E[Y(t,M(t_1))\mid X=x]-\mathbb E[Y(t,M(t_0))\mid X=x]\big)\,dF(x)\\&=\int_{\mathcal X}\Big(\underbrace{\mathbb E[Y(t,M(t_1))\mid T=t_1,X=x]}_{\text{Observable}}-\underbrace{\mathbb E[Y(t,M(t_0))\mid T=t_0,X=x]}_{\text{Observable}}\Big)\,dF(x)\end{aligned}$$</li>
+</ul>
+</li>
+<li>
+<p>在<strong>工具变量（IV）</strong> 假设下：</p>
+</li>
+<li>假设<ul>
+<li>排除性（Exclusion）：\(Y(t)\perp Z\mid T\)；</li>
+<li>IV 相关性（IV relevance）：\(Z\not\perp T\)。</li>
+</ul>
+</li>
+<li>可识别 \(z_1\) 相对 \(z_0\) 的顺从者的局部平均处理效应（LATE）。</li>
+</ul>
+</div>
+<div class="lang en">
+<ul>
+<li>
+<p>Under ignorability assumption, both the average direct and indirect effects can be identified:</p>
+<ul>
+<li>Average Direct Effect (ADE) of \(T=t_1\) versus \(T=t_0\), for agents whose realized (only observable) treatment is \(t\), is denoted by \(\text{ADE}(t)\):
+$$\begin{aligned}\text{ADE}(t)&\equiv\mathbb E[Y(t_1,M(t))-Y(t_0,M(t))]\\&=\int_{\mathcal X}\big(\mathbb E[Y(t_1,M(t))\mid X=x]-\mathbb E[Y(t_0,M(t))\mid X=x]\big)\,dF(x)\\&=\int_{\mathcal X}\big(\mathbb E[Y(t_1,M(t))\mid T=t_1,X=x]-\mathbb E[Y(t_0,M(t))\mid T=t_0,X=x]\big)\,dF(x)\\&=\int_{\mathcal M}\int_{\mathcal X}\Big(\underbrace{\mathbb E[Y(t_1,M(t))\mid M=m,T=t_1,X=x]}_{\text{Observable}}-\underbrace{\mathbb E[Y(t_0,M(t))\mid M=m,T=t_0,X=x]}_{\text{Observable}}\Big)\,dF(x)\,dG(m)\end{aligned}$$</li>
+<li>Average Indirect Effect (AIE) of \(T=t_1\) versus \(T=t_0\), for agents whose realized (only observable) treatment is \(t\), is denoted by \(\text{AIE}(t)\):
+$$\begin{aligned}\text{AIE}(t)&\equiv\mathbb E[Y(t,M(t_1))-Y(t,M(t_0))]\\&=\int_{\mathcal X}\big(\mathbb E[Y(t,M(t_1))\mid X=x]-\mathbb E[Y(t,M(t_0))\mid X=x]\big)\,dF(x)\\&=\int_{\mathcal X}\Big(\underbrace{\mathbb E[Y(t,M(t_1))\mid T=t_1,X=x]}_{\text{Observable}}-\underbrace{\mathbb E[Y(t,M(t_0))\mid T=t_0,X=x]}_{\text{Observable}}\Big)\,dF(x)\end{aligned}$$</li>
+</ul>
+</li>
+<li>
+<p>Under the <strong>instrumental variable</strong> assumption:</p>
+</li>
+<li>We assume that<ul>
+<li>Exclusion: \(Y(t)\perp Z\mid T\);</li>
+<li>IV relevance: \(Z\not\perp T\).</li>
+</ul>
+</li>
+<li>We can identify the local average treatment effect (LATE) of compliers for \(z_1\) versus \(z_0\).</li>
+</ul>
+</div>
+<div class="lang zh">
+<p><strong>20.5.2 对潜在结果语言的批评</strong>
+- 潜在结果模型不是一个适当的因果框架，因为它不评估任何因果关系。
+  - 例如，在工具变量假设下，因果关系 \(Z\to T\to Y\) 是隐含的，但从未被正式表述。
+- 潜在结果模型不允许不可观测变量。</p>
+<h2 id="20-6">20.6 自主方程：用于更丰富因果分析的结构模型</h2>
+<p><strong>20.6.1 自主方程的定义</strong></p>
+<p>自主（Autonomous）与结构（structural）是同义词。</p>
+<p>一个因果模型由四个组成部分定义：
+- 由分析者观测和/或不观测的随机变量 \(\mathcal S=\{X,V,U,Y\}\)。
+- 互相独立的误差项 \(\epsilon_Y,\epsilon_U,\epsilon_X,\epsilon_V\)。
+- 自主的结构方程 \(f_Y,f_U,f_X,f_V\)。
+  - 我们所说的<strong>自主性（autonomy）</strong> 是指对参数变化不变的确定性函数。
+  - 自主方程也称为<strong>结构方程</strong>。</p>
+</div>
+<div class="lang en">
+<p><strong>20.5.2 Criticisms of the language of potential outcomes</strong>
+- Potential outcome model is not a proper causal framework, because it does not assess any causal relationships.
+  - For example, under the instrument variable assumption, causal relationship \(Z\to T\to Y\) is implied, but never formally articulated.
+- Potential outcome model does not allow for unobserved variables.</p>
+<h2 id="20-6-autonomous-equations-structural-model-for-richer-causal-analysis">20.6 Autonomous Equations: Structural Model for Richer Causal Analysis</h2>
+<p><strong>20.6.1 Definition of autonomous equations</strong></p>
+<p>Autonomous and structural are synonyms.</p>
+<p>A causal model is defined by four components:
+- Random variables that are observed and/or unobserved by the analyst \(\mathcal S=\{X,V,U,Y\}\).
+- Error terms that are mutually independent \(\epsilon_Y,\epsilon_U,\epsilon_X,\epsilon_V\).
+- Structural equations that are autonomous, \(f_Y,f_U,f_X,f_V\).
+  - By autonomy we mean deterministic functions that are invariant to changes in the arguments.
+  - Autonomous equations are also called structural equations.</p>
+</div>
+<div class="lang zh">
+<ul>
+<li>把每个变量的成因映射出来的因果关系：
+$$\begin{aligned}Y&=f_Y(X,U,\epsilon_Y)&&Y\text{ observed}\\X&=f_X(V,\epsilon_X)&&X\text{ observed}\\U&=f_U(V,\epsilon_U)&&U\text{ unobserved}\\V&=f_V(\epsilon_V)&&V\text{ unobserved}\end{aligned}$$</li>
+</ul>
+<p>我们也可把这些函数表示为一个<strong>有向无环图（DAG）</strong>（见 Figure 6）。</p>
+<p><strong>图示（Figure 6，DAG，已转述）：</strong> 标题为"Causal Model Inside the Box"。共四个节点：两个不可观测变量 \(V\)、\(U\) 在上方，两个可观测变量 \(X\)、\(Y\) 在下方。有向边为：\(V\to U\)、\(V\to X\)、\(U\to Y\)、\(X\to Y\)。即 \(V\) 同时引起 \(U\) 与 \(X\)；\(U\) 与 \(X\) 共同引起 \(Y\)。</p>
+<p>若我们认为功能形式 \(f_Y,f_X,f_U,f_V\) 对政策变化（即变量的变化）不变，则我们拥有所需的<strong>可移植性（transportability）</strong> 性质，这意味着可用某些数据集（已实现的政策）估计这些功能形式，再把所估计的功能形式用于其他数据集（反事实政策）。</p>
+<p><strong>20.6.2 子代、后代与亲代</strong></p>
+<p>该图有：
+- <strong>子代（Children）</strong>：被其他变量直接引起的变量：
+$$Ch(V)=\{U,X\}\text{ and }Ch(X)=Ch(U)=\{Y\}$$
+- <strong>后代（Descendants）</strong>：
+$$DE(V)=\{U,X,Y\}\text{ and }D(U)=D(U)=\{Y\}$$
+- <strong>亲代（Parents）</strong>：直接引起其他变量的变量：
+$$PA(Y)=\{X,U\}\text{ and }PA(X)=PA(U)=\{V\}$$</p>
+</div>
+<div class="lang en">
+<ul>
+<li>Causal relationships that map the inputs causing each variable:
+$$\begin{aligned}Y&=f_Y(X,U,\epsilon_Y)&&Y\text{ observed}\\X&=f_X(V,\epsilon_X)&&X\text{ observed}\\U&=f_U(V,\epsilon_U)&&U\text{ unobserved}\\V&=f_V(\epsilon_V)&&V\text{ unobserved}\end{aligned}$$</li>
+</ul>
+<p>We can also represent these functions as a Directed Acyclic Graph (DAG) (see Figure 6).</p>
+<p><strong>Figure 6 (DAG, paraphrased):</strong> titled "Causal Model Inside the Box." Four nodes: the two unobserved variables \(V\), \(U\) on top, the two observed variables \(X\), \(Y\) at the bottom. The directed edges are \(V\to U\), \(V\to X\), \(U\to Y\), \(X\to Y\). That is, \(V\) causes both \(U\) and \(X\); \(U\) and \(X\) jointly cause \(Y\).</p>
+<p>If we think the functional forms \(f_Y,f_X,f_U,f_V\) are invariant to policy changes (i.e. changes in variables), then we have the desired transportability property, which means that we can estimate the functional forms with some data sets (realized policies) and then use those estimated functional forms in other data sets (counterfactual policies).</p>
+<p><strong>20.6.2 Children, descendants and parents</strong></p>
+<p>This graph has:
+- <strong>Children</strong>: variables directly caused by other variables:
+$$Ch(V)=\{U,X\}\text{ and }Ch(X)=Ch(U)=\{Y\}$$
+- <strong>Descendants</strong>:
+$$DE(V)=\{U,X,Y\}\text{ and }D(U)=D(U)=\{Y\}$$
+- <strong>Parents</strong>: variables that directly cause other variables:
+$$PA(Y)=\{X,U\}\text{ and }PA(X)=PA(U)=\{V\}$$</p>
+</div>
+<div class="lang zh">
+<p><strong>20.6.3 局部 Markov 条件（LMC）</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 20.3（递归性 Recursive property）
+当没有变量是自身的后代时，我们说该模型满足<strong>递归性</strong>。</p>
+<p>[!important] 定义 20.4（局部 Markov 条件 Local Markov Condition, LMC）
+一个变量在给定其亲代后，与它的非后代独立。更正式地，若一个模型满足 LMC，则
+$$Y\perp\underbrace{\mathcal S\setminus(DE(Y)\cup Y)}_{\text{non-descendant set}}\mid PA(Y)\quad\forall Y\in\mathcal S$$
+其中 \(\mathcal S\) 是模型中所有变量之集合，\(Y\) 是 \(\mathcal S\) 中任一变量。</p></div>
+<p><strong>20.6.4 fixing 与 conditioning</strong></p>
+<ul>
+<li><strong>fixing（固定，即 do 算子）</strong>：在固定 \(X=x\) 下的模型表示为
+$$\begin{aligned}Y&=f_Y(x,U,\epsilon_Y)\\X&=x\\U&=f_U(V,\epsilon_U)\\V&=f_V(\epsilon_V)\end{aligned}$$</li>
+<li>fixing 是一个思想实验、一个假设性的"若 \(X=x\)"的控制，故我们不需要用条件概率，仍使用原始概率。</li>
+<li>fixing 是一个因果算子（使用无条件分布），而非统计算子。</li>
+<li>fixing 不影响其祖先的分布。</li>
+<li>fixing 具有因果方向。</li>
+<li><strong>conditioning（条件化）</strong>：</li>
+<li>在条件化下，概率（p.d.f）被替换为条件概率。</li>
+<li>conditioning 是一个统计算子。</li>
+<li>conditioning 影响所有变量的分布。</li>
+<li>conditioning 没有因果方向。</li>
+</ul>
+</div>
+<div class="lang en">
+<p><strong>20.6.3 Local Markov condition (LMC)</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 20.3 (Recursive property)
+We say that a model satisfies the recursive property when no variable is descendant of itself.</p>
+<p>[!important] Definition 20.4 (Local Markov Condition, LMC)
+A variable is independent of its non-descendants conditioned on its parents. More formally, if a model satisfies LMC, then
+$$Y\perp\underbrace{\mathcal S\setminus(DE(Y)\cup Y)}_{\text{non-descendant set}}\mid PA(Y)\quad\forall Y\in\mathcal S$$
+where \(\mathcal S\) is the set of all variables in the model, and \(Y\) is any variable in \(\mathcal S\).</p></div>
+<p><strong>20.6.4 Fixing versus conditioning</strong></p>
+<ul>
+<li><strong>Fixing (the do operator)</strong>: model representation under fixing \(X=x\) is
+$$\begin{aligned}Y&=f_Y(x,U,\epsilon_Y)\\X&=x\\U&=f_U(V,\epsilon_U)\\V&=f_V(\epsilon_V)\end{aligned}$$</li>
+<li>Fixing is a thought experiment, a hypothetical control if \(X=x\), so we don't need to use conditional probability, and we still use the original probability.</li>
+<li>Fixing is a causal operator (uses unconditional distribution) but not a statistical operator.</li>
+<li>Fixing does not affect the distribution of its ancestors.</li>
+<li>Fixing has causal direction.</li>
+<li><strong>Conditioning</strong>:</li>
+<li>Under conditioning, probability (p.d.f) is replaced by conditional probability.</li>
+<li>Conditioning is a statistical operator.</li>
+<li>Conditioning affects the distribution of all variables.</li>
+<li>Conditioning has no causal direction.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#20-1-statistical-model-vs-structural-model">20.1 Statistical Model vs Structural Model</a></li>
+        <li><a href="#20-2-structural-model">20.2 Structural Model</a></li>
+        <li><a href="#20-2-structural-model">20.2 Structural Model</a></li>
+        <li><a href="#20-3-policy-evaluation-problems">20.3 Policy Evaluation Problems</a></li>
+        <li><a href="#20-4-causal-frameworks">20.4 Causal Frameworks</a></li>
+        <li><a href="#20-5-rubin-holland">20.5 Rubin-Holland 因果模型：潜在结果的语言</a></li>
+        <li><a href="#20-5-rubin-holland-causal-model-the-language-of-potential-outcomes">20.5 Rubin-Holland Causal Model: the Language of Potential Outcomes</a></li>
+        <li><a href="#20-6">20.6 自主方程：用于更丰富因果分析的结构模型</a></li>
+        <li><a href="#20-6-autonomous-equations-structural-model-for-richer-causal-analysis">20.6 Autonomous Equations: Structural Model for Richer Causal Analysis</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

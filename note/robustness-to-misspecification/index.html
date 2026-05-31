@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>18. Robustness to Misspecification – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>18. Robustness to Misspecification</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 30, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">稳健性</span><span class="lang en">Robustness</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">模型误设</span><span class="lang en">Misspecification</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">模糊厌恶</span><span class="lang en">Ambiguity Aversion</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">递归效用</span><span class="lang en">Recursive Utility</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章综述<strong>对模型误设的稳健性 (robustness to misspecification)</strong> 文献核心思想（Hansen-Sargent 2001）。代理人不 100% 确信基准模型对应真实概率测度，于是做<strong>审慎调整 (cautious adjustment)</strong>：在所有"与基准模型偏离不太远"的概率测度上<strong>最小化</strong>未来连续价值，得到连续价值的保守下界。偏离的惩罚由<strong>条件相对熵 (conditional relative entropy)</strong> 度量，惩罚强度参数 \(\xi\) 代表对基准模型的信心。核心结果：求解此最小化问题得到的最优似然比是<strong>指数倾斜 (exponential tilting)</strong> 形式 (18.8)，而把它代回目标函数 (18.9) 恰好等于 <strong>Epstein-Zin 递归效用</strong>的连续价值 (18.10)，且当 \(\xi=\frac{1}{\gamma-1}\) 时二者完全相同。于是<strong>稳健性/模糊厌恶</strong>在数学上等价于<strong>更高的风险厌恶</strong>（更小的 \(\xi\) ⟺ 更大的 \(\gamma\)）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter surveys the core idea of the <strong>robustness to misspecification</strong> literature (Hansen-Sargent 2001). The agent is not 100% sure the baseline model corresponds to the true probability measure, so makes a <strong>cautious adjustment</strong>: <strong>minimizing</strong> the future continuation value over all probability measures "not too far" from the baseline, yielding a conservative lower bound on the continuation value. The penalty for deviating is measured by the <strong>conditional relative entropy</strong>, with penalty strength \(\xi\) representing confidence in the baseline. Key result: the optimal likelihood ratio solving this minimization is an <strong>exponential tilting</strong> (18.8), and plugging it back into the objective (18.9) exactly equals the continuation value of <strong>Epstein-Zin recursive utility</strong> (18.10), being identical when \(\xi=\frac{1}{\gamma-1}\). So <strong>robustness / ambiguity aversion</strong> is mathematically equivalent to <strong>higher risk aversion</strong> (smaller \(\xi\) ⟺ larger \(\gamma\)).</p></div>
+</div>
+<h2 id="18-1-setup">18.1 Setup</h2>
+<div class="lang zh">
+<p>设代理人有递归效用（即 Epstein-Zin 偏好），等价于 (9.1) 改写的 (18.1)：</p>
+</div>
+<div class="lang en">
+<p>The agent has recursive utility (Epstein-Zin preference), equivalent to (9.1) rewritten as (18.1):</p>
+</div>
+<p>$$V_t=\left[(1-\beta)C_t^{1-\rho}+\beta(R_t^{1-\rho})\right]^{\frac1{1-\rho}}\tag{18.1}$$</p>
+<p>$$R_t=\mathbb E\!\left[V_{t+1}^{1-\gamma}\mid\mathcal F_t\right]^{\frac1{1-\gamma}}\tag{18.2}$$</p>
+<div class="lang zh">
+<p>\(R_t\) 为连续价值，\(V_t\) 为当前价值函数，\(C_t\) 为即期消费，\(\mathcal F_t\) 为 \(t\) 时信息。对数对象 \(v_t\equiv\ln V_t\)、\(c_t\equiv\ln C_t\)、\(r_t\equiv\ln R_t\)。<strong>条件似然比 (conditional likelihood ratio)</strong> 记为 \(\frac{N_{t+1}}{N_t}\)，满足 \(\mathbb E[\frac{N_{t+1}}{N_t}\mid\mathcal F_t]=1\)（保证新概率测度积分为 1）与 \(\frac{N_{t+1}}{N_t}\geq0\)（保证非负）。故 \(\frac{N_{t+1}}{N_t}\) 是合法的改变测度密度。</p>
+<h2 id="18-2-the-minimization-problem">18.2 The Minimization Problem</h2>
+<p>代理人求解最小化问题 (18.3)：</p>
+</div>
+<div class="lang en">
+<p>\(R_t\) is the continuation value, \(V_t\) the current value function, \(C_t\) instant consumption, \(\mathcal F_t\) time-\(t\) information. Log objects \(v_t\equiv\ln V_t\), \(c_t\equiv\ln C_t\), \(r_t\equiv\ln R_t\). The <strong>conditional likelihood ratio</strong> \(\frac{N_{t+1}}{N_t}\) satisfies \(\mathbb E[\frac{N_{t+1}}{N_t}\mid\mathcal F_t]=1\) (so the new measure integrates to 1) and \(\frac{N_{t+1}}{N_t}\geq0\) (non-negativity). So \(\frac{N_{t+1}}{N_t}\) is a valid change-of-measure density.</p>
+<h2 id="18-2-the-minimization-problem">18.2 The Minimization Problem</h2>
+<p>The agent solves the minimization (18.3):</p>
+</div>
+<p>$$\min_{\frac{N_{t+1}}{N_t}}\ \mathbb E\!\left[\frac{N_{t+1}}{N_t}v_{t+1}\mid\mathcal F_t\right]+\xi\,\mathbb E\!\left[\frac{N_{t+1}}{N_t}(\ln N_{t+1}-\ln N_t)\mid\mathcal F_t\right]\tag{18.3}$$</p>
+<p>$$\text{s.t.}\quad\mathbb E\!\left[\frac{N_{t+1}}{N_t}\mid\mathcal F_t\right]=1,\qquad\frac{N_{t+1}}{N_t}\geq0.\tag{18.4}$$</p>
+<div class="lang zh">
+<p>(18.5) \(\frac{N_{t+1}}{N_t}\geq0\) 自动满足（可写 \(\ln N_{t+1}\)、\(\ln N_t\)）。</p>
+<p><strong>解读。</strong></p>
+<ul>
+<li>似然比 \(\frac{N_{t+1}}{N_t}\) 把概率测度由基准模型改为某个其他测度。</li>
+<li>\(\mathbb E[\frac{N_{t+1}}{N_t}v_{t+1}\mid\mathcal F_t]\) 是新测度下的期望连续价值。</li>
+<li>\(\xi\,\mathbb E[\frac{N_{t+1}}{N_t}(\ln N_{t+1}-\ln N_t)\mid\mathcal F_t]\) 称<strong>条件相对熵 (conditional relative entropy)</strong>，度量从基准模型改到其他测度的惩罚值。其<strong>凸性与非负性</strong>保证它是合理的"距离"惩罚（定义 \(\varepsilon(n)=n\ln n\)，\(\varepsilon'(n)=1+\ln n\)、\(\varepsilon''(n)=\frac1n>0\)，故 \(\frac{N_{t+1}}{N_t}(\ln N_{t+1}-\ln N_t)\) 凸；由 Jensen \(\mathbb E[\frac{N_{t+1}}{N_t}(\ln N_{t+1}-\ln N_t)\mid\mathcal F_t]\geq\underbrace{\mathbb E[\frac{N_{t+1}}{N_t}\mid\mathcal F_t]}_{=1}\ln(\underbrace{\mathbb E[\frac{N_{t+1}}{N_t}\mid\mathcal F_t]}_{=1})=0\)，惩罚恒非负）。</li>
+<li>\(\xi\) 是惩罚项的拉格朗日乘子/惩罚载荷，代表对基准模型的<strong>信心</strong>：\(\xi\) 越大，偏离惩罚越大，代理人越不愿偏离基准（\(\xi\to\infty\) 时 \(\frac{N_{t+1}}{N_t}\to1\)，直接用基准模型）。</li>
+<li>该审慎调整把连续价值取为<strong>所有概率测度下的保守下界</strong>（最小化），体现<strong>模糊厌恶 (ambiguity aversion)</strong>：代理人对真实概率测度本身不确定。</li>
+<li>\(\xi\) 可时变，意味着在宏观经济好/坏时对基准模型的信心不同。</li>
+</ul>
+</div>
+<div class="lang en">
+<p>(18.5) \(\frac{N_{t+1}}{N_t}\geq0\) is automatically satisfied (one can write \(\ln N_{t+1}\), \(\ln N_t\)).</p>
+<p><strong>Interpretation.</strong></p>
+<ul>
+<li>The likelihood ratio \(\frac{N_{t+1}}{N_t}\) changes the measure from the baseline to some other measure.</li>
+<li>\(\mathbb E[\frac{N_{t+1}}{N_t}v_{t+1}\mid\mathcal F_t]\) is the expected continuation value under the new measure.</li>
+<li>\(\xi\,\mathbb E[\frac{N_{t+1}}{N_t}(\ln N_{t+1}-\ln N_t)\mid\mathcal F_t]\) is the <strong>conditional relative entropy</strong>, the penalty for moving from the baseline to another measure. Its <strong>convexity and non-negativity</strong> make it a sensible "distance" penalty (define \(\varepsilon(n)=n\ln n\), \(\varepsilon'(n)=1+\ln n\), \(\varepsilon''(n)=\frac1n>0\), so \(\frac{N_{t+1}}{N_t}(\ln N_{t+1}-\ln N_t)\) is convex; by Jensen \(\mathbb E[\frac{N_{t+1}}{N_t}(\ln N_{t+1}-\ln N_t)\mid\mathcal F_t]\geq\underbrace{\mathbb E[\frac{N_{t+1}}{N_t}\mid\mathcal F_t]}_{=1}\ln(\underbrace{\mathbb E[\frac{N_{t+1}}{N_t}\mid\mathcal F_t]}_{=1})=0\), always non-negative).</li>
+<li>\(\xi\) is the Lagrange multiplier / penalty loading, representing <strong>confidence</strong> in the baseline: larger \(\xi\) means a larger deviation penalty, so the agent is less willing to deviate (\(\xi\to\infty\) gives \(\frac{N_{t+1}}{N_t}\to1\), using the baseline directly).</li>
+<li>This cautious adjustment sets the continuation value to a <strong>conservative lower bound across all measures</strong> (minimization), reflecting <strong>ambiguity aversion</strong>: the agent is unsure of the true measure itself.</li>
+<li>\(\xi\) may be time-dependent, meaning confidence in the baseline differs in good/bad macroeconomic times.</li>
+</ul>
+</div>
+<h2 id="18-3-solve-the-minimization-problem">18.3 Solve the Minimization Problem</h2>
+<div class="lang zh">
+<p>对 (18.3)–(18.4) 作拉格朗日（乘子 \(\mu\)），对 \(\frac{N_{t+1}}{N_t}\) 取一阶条件 (18.6)：</p>
+</div>
+<div class="lang en">
+<p>Form the Lagrangian for (18.3)–(18.4) (multiplier \(\mu\)), take the f.o.c. w.r.t. \(\frac{N_{t+1}}{N_t}\) (18.6):</p>
+</div>
+<p>$$\frac{N_{t+1}}{N_t}=e^{-\frac1\xi v_{t+1}}e^{-\frac1\xi\mu-1}.\tag{18.6}$$</p>
+<div class="lang zh">
+<p>代入约束 (18.4) 钉住乘子 (18.7)：\(e^{-\frac1\xi\mu-1}=\frac{1}{\mathbb E[e^{-\frac1\xi v_{t+1}}\mid\mathcal F_t]}\)。结合 (18.6) 得最优似然比 (18.8)：</p>
+</div>
+<div class="lang en">
+<p>Substituting into the constraint (18.4) pins the multiplier (18.7): \(e^{-\frac1\xi\mu-1}=\frac{1}{\mathbb E[e^{-\frac1\xi v_{t+1}}\mid\mathcal F_t]}\). Combined with (18.6), the optimal likelihood ratio (18.8):</p>
+</div>
+<p>$$\frac{N_{t+1}}{N_t}=\frac{e^{-\frac1\xi v_{t+1}}}{\mathbb E\!\left[e^{-\frac1\xi v_{t+1}}\mid\mathcal F_t\right]}.\tag{18.8}$$</p>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 18.1.</strong> (18.8) 是<strong>指数倾斜 (exponential tilting)</strong>：给较小的 \(v_{t+1}\)（坏结果）赋更高权重，故求解出的 \(\frac{N_{t+1}}{N_t}\) 把测度倾向坏结果——保守。\(\xi\to\infty\) 时 \(\frac{N_{t+1}}{N_t}\to1\)（回到基准，无倾斜）。</p></div>
+<p><strong>理解目标函数。</strong> 把 (18.8) 代回目标函数 (18.3)，化简得 (18.9)：</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 18.1.</strong> (18.8) is <strong>exponential tilting</strong>: it places higher weight on smaller \(v_{t+1}\) (bad outcomes), so the solved \(\frac{N_{t+1}}{N_t}\) tilts the measure toward bad outcomes — conservative. As \(\xi\to\infty\), \(\frac{N_{t+1}}{N_t}\to1\) (back to baseline, no tilt).</p></div>
+<p><strong>Understanding the objective.</strong> Substituting (18.8) back into the objective (18.3) and simplifying gives (18.9):</p>
+</div>
+<p>$$\text{Objective (18.3)}=-\xi\ln\!\left(\mathbb E\!\left[e^{-\frac1\xi v_{t+1}}\mid\mathcal F_t\right]\right).\tag{18.9}$$</p>
+<div class="lang zh">
+<p>而由 (18.2)，递归效用的连续价值对数 (18.10)：\(r_t=\frac{1}{1-\gamma}\ln(\mathbb E[e^{(1-\gamma)v_{t+1}}\mid\mathcal F_t])\)。比较 (18.9) 与 (18.10)：若设</p>
+</div>
+<div class="lang en">
+<p>By (18.2), the log continuation value of recursive utility (18.10): \(r_t=\frac{1}{1-\gamma}\ln(\mathbb E[e^{(1-\gamma)v_{t+1}}\mid\mathcal F_t])\). Comparing (18.9) and (18.10): if we set</p>
+</div>
+<p>$$\xi=\frac{1}{\gamma-1},$$</p>
+<div class="lang zh">
+<p>则 (18.9) 与 (18.10) 完全相同。</p>
+<p><strong>解读。</strong></p>
+<ul>
+<li>最小化问题的目标函数 (18.3) 恰是递归（Epstein-Zin）效用下的期望连续价值——这为递归效用提供了一个<strong>辩护</strong>：对风险持保守态度的代理人本就会拥有递归效用函数。</li>
+<li>递归效用因此可理解为内嵌<strong>模糊厌恶</strong>：代理人在所有可能概率测度上最小化、用最坏不确定性下的期望连续价值。</li>
+<li>之所以是<strong>最小化</strong>而非 max-min 问题，是因为消费序列外生、无可选；在带生产与消费-投资权衡的经济中，递归效用的连续价值才会是 max-min 问题的解。</li>
+<li>\(\gamma\) 很大 ⟺ \(\xi\) 很小：偏离基准的惩罚很小、会选更保守的测度。故"选更保守测度（更小 \(\xi\)）"等价于"更高风险厌恶（更大 \(\gamma\)）"——再次印证<strong>稳健性与递归效用的联系</strong>。</li>
+</ul>
+<p><strong>偏好冲击 (preference shock)。</strong></p>
+<ul>
+<li>一种理解：偏好冲击通过 \(\xi\) 体现。\(\xi\) 时变会改变所选似然比 \(\frac{N_{t+1}}{N_t}\) 与对应测度，从而改变连续价值。</li>
+<li>另一种理解：通过 \(C_t\)。仍用 \(C_t\) 表递归效用，但 \(C_t\) 为<strong>有效消费</strong>，显式定义 \(C_t=\tilde C_t D_t\)，\(\tilde C_t\) 为实际消费、\(D_t\) 为外生偏好移位项（如平稳一阶差分过程、AR 过程、随机波动率过程等）。</li>
+<li>两种方式都可把价格的一部分归于偏好冲击；但需谨慎："偏好冲击"的故事也可能其实经由其他渠道（如改变生产能力）影响资产价格，未必真经由偏好。</li>
+</ul>
+</div>
+<div class="lang en">
+<p>then (18.9) and (18.10) are exactly the same.</p>
+<p><strong>Interpretation.</strong></p>
+<ul>
+<li>The objective (18.3) of the minimization is exactly the expected continuation value under recursive (Epstein-Zin) utility — a <strong>justification</strong> for recursive utility: agents with conservative attitudes toward risk would naturally have a recursive utility function.</li>
+<li>Recursive utility can thus be understood as embedding <strong>ambiguity aversion</strong>: the agent minimizes over all possible measures, using the expected continuation value under the worst uncertainty.</li>
+<li>It is a <strong>minimization</strong> rather than a max-min problem because the consumption sequence is exogenous with no choice; in an economy with production and a consumption-investment trade-off, the recursive-utility continuation value would be the solution to a max-min problem.</li>
+<li>Large \(\gamma\) ⟺ small \(\xi\): the deviation penalty is small and a more conservative measure is chosen. So "choosing a more conservative measure (smaller \(\xi\))" equals "higher risk aversion (larger \(\gamma\))" — again confirming the <strong>link between robustness and recursive utility</strong>.</li>
+</ul>
+<p><strong>Preference shock.</strong></p>
+<ul>
+<li>One view: the preference shock acts through \(\xi\). A time-varying \(\xi\) changes the selected likelihood ratio \(\frac{N_{t+1}}{N_t}\) and its measure, hence the continuation value.</li>
+<li>Another view: through \(C_t\). Still use \(C_t\) for recursive utility, but \(C_t\) is <strong>effective consumption</strong>, explicitly \(C_t=\tilde C_t D_t\), with \(\tilde C_t\) the actual consumption and \(D_t\) an exogenous preference shifter (e.g. a stationary first-difference, AR, or stochastic-volatility process).</li>
+<li>Either way one can attribute part of the price to a preference shock; but be cautious — the "preference shock" story may in fact operate through other channels (e.g. changing production capacity) rather than truly through preferences.</li>
+</ul>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Hansen, L. P. and T. J. Sargent (2001). Robust Control and Model Uncertainty. <em>American Economic Review</em> 91(2), 60–66.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#18-1-setup">18.1 Setup</a></li>
+        <li><a href="#18-2-the-minimization-problem">18.2 The Minimization Problem</a></li>
+        <li><a href="#18-2-the-minimization-problem">18.2 The Minimization Problem</a></li>
+        <li><a href="#18-3-solve-the-minimization-problem">18.3 Solve the Minimization Problem</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

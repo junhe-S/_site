@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4. Euler Equations, Transversality for Dynamic Problems – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>4. Euler Equations, Transversality for Dynamic Problems</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">宏观经济学</span><span class="lang en">Macroeconomics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">动态优化</span><span class="lang en">Dynamic Optimization</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">欧拉方程</span><span class="lang en">Euler Equation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">横截性条件</span><span class="lang en">Transversality Condition</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">哈密顿量</span><span class="lang en">Hamiltonian</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">最大值原理</span><span class="lang en">Maximum Principle</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：动态问题的欧拉方程、横截性条件与哈密顿量。</strong> <strong>§4.1 离散时间</strong>：状态序列设定 \(V^\star(x_0)=\max\sum\beta^t F(x_t,x_{t+1})\)（状态 \(X\)、对应 \(\Gamma\)、期间回报 \(F\)、贴现 \(\beta\)、值函数 \(V^\star\)）与控制-状态设定（控制 \(U\)、状态转移 \(g\)、\(F(x,y)=\max_u\{h(x,u):y=g(x,u)\}\)）；<strong>定义 4.1 欧拉方程（EE）</strong> \(F_y(x_t,x_{t+1})+\beta F_x(x_{t+1},x_{t+2})=0\)、<strong>定义 4.2 横截性条件（TC）</strong> \(\lim_t\beta^t F_x(x_t,x_{t+1})\cdot x_t=0\)；<strong>命题 4.1</strong> EE+TC 在正则条件下充要（凹性证明）；<strong>定义 4.3 稳态</strong> \(F_y(\bar x,\bar x)+\beta F_x(\bar x,\bar x)=0\)；EE 用 lag 1/lag 2 定 \(\psi\)、<strong>事实 4.1</strong> 唯一性、<strong>定义 4.4 打靶法</strong>。<strong>§4.2 连续时间</strong>：状态序列设定 \(\int e^{-\rho t}F(x,\dot x)dt\)；<strong>定义 4.5 EE</strong> \(F_x+\rho F_{\dot x}=F_{\dot x x}\dot x+F_{\dot x\dot x}\ddot x\)（4.3）、<strong>定义 4.6 TC</strong> \(\lim e^{-\rho T}F_{\dot x}x=0\)；<strong>命题 4.2</strong> 充要（凹性 + 分部积分）；<strong>定义 4.7 稳态</strong> \(F_x(\bar x,0)+\rho F_{\dot x}(\bar x,0)=0\)；控制-状态设定 + <strong>最大值原理（哈密顿量）</strong>：<strong>定义 4.8</strong> \(H=h+\lambda g\)、<strong>命题 4.3</strong> \(H_u=0\)、\(\dot\lambda=\rho\lambda-H_x\)、\(\dot x=g\)、TC \(\lim e^{-\rho T}\lambda x=0\)（注记 4.4 协态解释、启发式拉格朗日证明）。<strong>§4.2.6</strong> 哈密顿量与 EE 的关系（\(\lambda=-F_{\dot x}\) ⟹ 回到 EE）。<strong>§4.3</strong> 离散/连续两套设定的汇总。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: Euler equations, transversality conditions and Hamiltonian for dynamic problems.</strong> <strong>§4.1 Discrete time</strong>: the state-sequence set-up \(V^\star(x_0)=\max\sum\beta^t F(x_t,x_{t+1})\) (states \(X\), correspondence \(\Gamma\), period-return \(F\), discount \(\beta\), value function \(V^\star\)) and the control-state set-up (controls \(U\), law of motion \(g\), \(F(x,y)=\max_u\{h(x,u):y=g(x,u)\}\)); <strong>Definition 4.1 Euler equation (EE)</strong> \(F_y(x_t,x_{t+1})+\beta F_x(x_{t+1},x_{t+2})=0\), <strong>Definition 4.2 transversality condition (TC)</strong> \(\lim_t\beta^t F_x(x_t,x_{t+1})\cdot x_t=0\); <strong>Proposition 4.1</strong> EE+TC necessary &amp; sufficient under regularity (concavity proof); <strong>Definition 4.3 steady state</strong> \(F_y(\bar x,\bar x)+\beta F_x(\bar x,\bar x)=0\); EE pins down \(\psi\) via lag 1/lag 2, <strong>Fact 4.1</strong> uniqueness, <strong>Definition 4.4 shooting algorithm</strong>. <strong>§4.2 Continuous time</strong>: the state-sequence set-up \(\int e^{-\rho t}F(x,\dot x)dt\); <strong>Definition 4.5 EE</strong> \(F_x+\rho F_{\dot x}=F_{\dot x x}\dot x+F_{\dot x\dot x}\ddot x\) (4.3), <strong>Definition 4.6 TC</strong> \(\lim e^{-\rho T}F_{\dot x}x=0\); <strong>Proposition 4.2</strong> necessary &amp; sufficient (concavity + integration by parts); <strong>Definition 4.7 steady state</strong> \(F_x(\bar x,0)+\rho F_{\dot x}(\bar x,0)=0\); control-state set-up + the <strong>maximum principle (Hamiltonian)</strong>: <strong>Definition 4.8</strong> \(H=h+\lambda g\), <strong>Proposition 4.3</strong> \(H_u=0\), \(\dot\lambda=\rho\lambda-H_x\), \(\dot x=g\), TC \(\lim e^{-\rho T}\lambda x=0\) (Remark 4.4 co-state interpretation, heuristic Lagrangian proof). <strong>§4.2.6</strong> relationship between Hamiltonian and EE (\(\lambda=-F_{\dot x}\) ⟹ back to EE). <strong>§4.3</strong> summary of both set-ups in discrete and continuous time.</p></div>
+</div>
+<h2 id="4-1-discrete-time">4.1 Discrete Time</h2>
+<div class="lang zh">
+<p>本节讨论建立离散时间序列最大化问题的两种等价方式：状态序列设定与控制-状态序列设定。我们只聚焦状态序列设定下该最大化问题的解以避免冗余（两种设定差别不大）。下一节的连续时间问题中将讨论两种设定的解。</p>
+<p><strong>4.1.1 离散状态序列设定</strong></p>
+<p>考虑如下优化问题：
+$$V^\star(x_0)=\max_{\{x_{t+1}\}_{t=0}^\infty}\sum_{t=0}^\infty\beta^t F(x_t,x_{t+1})\quad\text{s.t.}\quad x_{t+1}\in\Gamma(x_t),\ \text{for }\forall t\ge0,\quad x_0\text{ given}$$
+其中：
+- \(X\)：\(x_t\in X\) 对 \(\forall t\ge0\)。\(X\) 是<strong>状态集</strong>。状态是一个抽象概念，是随时间演化、并导致其他依赖变量变化的主要变量。（例如新古典增长模型中，状态变量是每期的资本量。）
+- \(\Gamma:X\to X\)。\(\Gamma\) 是当前期状态 \(x_t\) 与下一期状态 \(x_{t+1}\) 之间的<strong>对应（correspondence）</strong>。之所以是对应而非映射，是因为对每个 \(x_t\) 可能有多个可行的 \(x_{t+1}\)。\(\Gamma(x_t)\) 可解释为 \(x_{t+1}\) 的可行集；对每个 \(x\in X\)，\(\Gamma(x)\) 是当前状态为 \(x\) 时下期状态变量的可行值集合。其图（graph）为
+$$\text{Gr}(\Gamma)\equiv\{(y,x)\in X^2:x\in X,y\in\Gamma(x)\}$$
+即所有可能的 \((y,x)\) 对之集合，称为 \(\Gamma\) 的图。为在不引用具体时间 \(t\) 的情况下分析跨期问题，我们用 \(x\) 记当前期状态、\(y\) 记下一期状态。
+- \(F:\text{Gr}(\Gamma)\to\mathbb R\)。<strong>期间回报函数</strong>。回报也是抽象概念，可以是效用、负的总成本、利润等等。
+- \(\beta\in(0,1)\)。<strong>贴现因子</strong>。例如期间回报是效用则 \(\beta\) 是效用的贴现因子；是利润则 \(\beta\) 是货币的贴现因子，与利率相关（离散时间下 \(\beta=\frac{1}{1+r}\)）。
+- \(V^\star(x_0):\mathbb R\to\mathbb R\)。<strong>值函数</strong>，衡量所有期间回报之和的最大现值。值函数只是初始状态的函数，因为它假设每个未来期都会基于前一期做出最优选择，故起点 \(x_0\) 决定一切；值函数假设 agent 对未来有完美知识，能算出所有可能回报的现值并取最大。\(V^\star(x_0)\) 是函数而非对应——即便多条路径产生相同最大值，最大值也唯一。</p>
+<p>该问题的解是使值函数最大化的状态变量序列 \(\{x_{t+1}\}_{t=0}^\infty\)。</p>
+</div>
+<div class="lang en">
+<p>In this section, we will discuss two equivalent ways of setting up a discrete time sequence maximization problem, i.e. state sequence set-up and control-state sequence set-up. We will talk about the solutions to this maximization problem only focusing on the state sequence set-up to avoid redundancy since two set-ups are not that different. Later in the next section for the continuous time problem, we will discuss solutions to both set-ups.</p>
+<p><strong>4.1.1 Discrete state sequence set-up</strong></p>
+<p>Consider the following optimization problem:
+$$V^\star(x_0)=\max_{\{x_{t+1}\}_{t=0}^\infty}\sum_{t=0}^\infty\beta^t F(x_t,x_{t+1})\quad\text{s.t.}\quad x_{t+1}\in\Gamma(x_t),\ \text{for }\forall t\ge0,\quad x_0\text{ given}$$
+where:
+- \(X\): \(x_t\in X\) for \(\forall t\ge0\). \(X\) is the <strong>set of states</strong>. State is an abstract notion, the main variable of interest that evolves over time and results in the change of other dependent variables. (For example, in the Neoclassical Growth Model, the state variable is the amount of capital in each period.)
+- \(\Gamma:X\to X\). \(\Gamma\) is the <strong>correspondence</strong> between current period state variable \(x_t\) and next period state variable \(x_{t+1}\). The reason that \(\Gamma\) is a correspondence instead of a mapping is because there might be multiple possible values of \(x_{t+1}\) for each \(x_t\). \(\Gamma(x_t)\) can be interpreted as the feasibility set of \(x_{t+1}\); for each \(x\in X\), \(\Gamma(x)\) is the set of feasible values for the next period state variable if the current state is \(x\). Its graph is given by
+$$\text{Gr}(\Gamma)\equiv\{(y,x)\in X^2:x\in X,y\in\Gamma(x)\}$$
+i.e. the set of all possible \((y,x)\) pairs, which is called the graph of \(\Gamma\). To analyze a general inter-temporal problem without referring to a specific period \(t\), we use the current period state variable as \(x\) and the next period state variable as \(y\).
+- \(F:\text{Gr}(\Gamma)\to\mathbb R\). The <strong>period-return function</strong>. The return is also an abstract notion, which could be utility, minus total cost, profit, etc.
+- \(\beta\in(0,1)\). The <strong>discount factor</strong>. For example, if the period-return is utility, the \(\beta\) is the discount factor for utility; if the period-return function is about profit, then the \(\beta\) is the discount factor for money, related to interest rate (in discrete time version, \(\beta\) can be written as \(\frac{1}{1+r}\)).
+- \(V^\star(x_0):\mathbb R\to\mathbb R\). The <strong>value function</strong>, which measures the maximum present value of sum of all the period-returns. It is a function of only the beginning state because the value function assumes that the optimum choice will be made for each future period based on one period before, so the origin point \(x_0\) determines everything; the value function assumes the agent has perfect knowledge about the future, so it is possible to calculate the current value of all possible returns and choose the maximum among them. \(V^\star(x_0)\) is a function, not a correspondence, because there is only one maximum even though it is possible that multiple paths yield the same maximum value.</p>
+<p>The solution to this problem is a sequence of state variable \(\{x_{t+1}\}_{t=0}^\infty\) that maximizes the value function.</p>
+</div>
+<div class="lang zh">
+<p><strong>4.1.2 离散控制-状态序列设定</strong></p>
+<p>可用另一种方式构造同一问题：
+$$V^\star(x_0)=\max_{\{u_t\}_{t=0}^\infty}\sum_{t=0}^\infty\beta^t h(x_t,u_t)\quad\text{s.t.}\quad x_{t+1}=g(x_t,u_t),\ u_t\in U,\ x_0\text{ given}$$
+- \(X\)、\(\beta\) 同 4.1.1。
+- \(U\)：\(u_t\in U\) 对 \(\forall t\ge0\)。\(U\) 是<strong>可行控制集</strong>。控制变量 \(u_t\) 是在 \(t\) 期采取、用以影响 \(x_{t+1}\) 的行动。
+- \(g:X\times U\to X\)。状态的<strong>运动规律（law of motion）</strong>。有了 \(g\)，可见 \(\Gamma(x)\) 即可行集 \(\Gamma(x)=\{y:\exists u\in U\text{ s.t. }y=g(x,u)\}\)，意即任意可行的 \(y\) 都可由至少一个可行控制 \(u\) 达到。
+- \(h:X\times U\to\mathbb R\)。期间回报函数，与状态序列问题中的 \(F\) 含义相同。\(h\) 与 \(F\) 的关系为
+$$F(x,y)=\max_u\{h(x,u):u\in U,y=g(x,u)\}$$
+因为可能有多个 \(u\) 以相同 \(x\) 达到相同 \(y\)，我们选取期间回报最大的那个 \(u\)——函数 \(F\) 隐含了这一最大化步骤。若只有一个 \(u\) 达到 \(y\)（多数情况），则 \(F(x,y)=h(x,u)\) s.t. \(y=g(x,u)\) 应成立。</p>
+<p>该问题的解是使值函数最大化的控制变量序列 \(\{u_t\}_{t=0}^\infty\)。</p>
+</div>
+<div class="lang en">
+<p><strong>4.1.2 Discrete control-state sequence set-up</strong></p>
+<p>We can construct the same problem in another way:
+$$V^\star(x_0)=\max_{\{u_t\}_{t=0}^\infty}\sum_{t=0}^\infty\beta^t h(x_t,u_t)\quad\text{s.t.}\quad x_{t+1}=g(x_t,u_t),\ u_t\in U,\ x_0\text{ given}$$
+- \(X\), \(\beta\) are defined as in 4.1.1.
+- \(U\): \(u_t\in U\) for \(\forall t\ge0\). \(U\) is the <strong>set of feasible controls</strong>. Control variable \(u_t\) is the action taken in period \(t\) to affect \(x_{t+1}\).
+- \(g:X\times U\to X\). The <strong>law of motion</strong> of state. With the definition of \(g\), it is easier to see that \(\Gamma(x)\) is the feasibility set \(\Gamma(x)=\{y:\exists u\in U\text{ s.t. }y=g(x,u)\}\), which means that any feasible \(y\) can be achieved by at least one feasible control \(u\).
+- \(h:X\times U\to\mathbb R\). The period-return function, which means exactly the same as \(F\) in the state sequence problem. The relationship between \(h\) and \(F\) is
+$$F(x,y)=\max_u\{h(x,u):u\in U,y=g(x,u)\}$$
+Since there might be multiple choices of \(u\) to achieve the same \(y\) based on \(x\), we choose the one that has the maximized period return — the function \(F\) implicitly includes this maximizing step. If there is only one \(u\) to achieve \(y\), which is true in most cases, then \(F(x,y)=h(x,u)\) s.t. \(y=g(x,u)\) should hold.</p>
+<p>The solution to this problem is a sequence of control variable \(\{u_t\}_{t=0}^\infty\) that maximizes the value function.</p>
+</div>
+<div class="lang zh">
+<p><strong>4.1.3 欧拉方程（EE）与横截性条件（TC）——离散时间</strong></p>
+<p>聚焦状态序列设定来讨论该最大化问题的解。为此假设 \(X\subseteq\mathbb R^m\)、\(F\in C^1\)、\(\beta\in(0,1)\)。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 4.1（欧拉方程 Euler Equation——离散时间）
+路径 \(\{x_{t+1}\}_{t=0}^\infty\) 满足 EE，若
+$$F_y(x_t,x_{t+1})+\beta F_x(x_{t+1},x_{t+2})=0,\quad\text{for }\forall t\ge0$$</p>
+<p>[!important] 定义 4.2（横截性条件 Transversality Condition——离散时间）
+路径 \(\{x_{t+1}\}_{t=0}^\infty\) 满足 TC，若
+$$\lim_{t\to\infty}\beta^t F_x(x_t,x_{t+1})\cdot x_t=0$$</p>
+<p>[!important] 命题 4.1
+在正则条件下，EE 与 TC 是 \(\{x_{t+1}\}_{t=0}^\infty\) 最优（即状态序列问题的解）的必要且充分条件。</p>
+<p>[!tip] 注记 4.1
+由于 \(x\) 可能是向量，EE 必须对 \(x\) 的每个元素成立。在 TC 定义中，点号表示内积。</p>
+<p>[!tip] 注记 4.2
+实际上，EE 就是对 \(\forall t\ge0\) 关于 \(x_{t+1}\) 的一阶条件；TC 意味着太远的未来回报不重要。EE 要求每期的最大化，是<strong>局部配置最大化（local allocation maximizing）</strong> 的概念。注意：即便 EE 满足，我们也可能得到一个序列——每期回报更低、资源被无限累积到未来却永远被往后推、永不实现。这种序列显然非最优，故需 TC 来避免被困在这种"假最大化"序列里，这使 TC 成为<strong>整体配置最大化（overall allocation maximizing）</strong> 的概念。</p></div>
+</div>
+<div class="lang en">
+<p><strong>4.1.3 Euler equation (EE) and Transversality condition (TC) - discrete time</strong></p>
+<p>Now let's focus on the state sequence set-up to discuss the solution to the maximization problem. To proceed, let's assume that \(X\subseteq\mathbb R^m\), \(F\in C^1\) and \(\beta\in(0,1)\).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 4.1 (Euler Equation - discrete time)
+The path \(\{x_{t+1}\}_{t=0}^\infty\) satisfies EE if
+$$F_y(x_t,x_{t+1})+\beta F_x(x_{t+1},x_{t+2})=0,\quad\text{for }\forall t\ge0$$</p>
+<p>[!important] Definition 4.2 (Transversality Condition - discrete time)
+The path \(\{x_{t+1}\}_{t=0}^\infty\) satisfies TC if
+$$\lim_{t\to\infty}\beta^t F_x(x_t,x_{t+1})\cdot x_t=0$$</p>
+<p>[!important] Proposition 4.1
+Under regularity conditions, EE and TC are necessary and sufficient for \(\{x_{t+1}\}_{t=0}^\infty\) to be optimal, i.e. the solution to the state sequence problem.</p>
+<p>[!tip] Remark 4.1
+Since \(x\) could potentially be a vector, the EE must hold for each element of \(x\). And in the definition of TC, the dot means inner product.</p>
+<p>[!tip] Remark 4.2
+Actually, EE is just the f.o.c. of \(x_{t+1}\) for \(\forall t\ge0\). TC means that the return in the too far away future is not important. EE requires maximization in each period, which is a concept of <strong>local allocation maximizing</strong>. Note that even the EE is satisfied, we could end up obtaining a sequence \(\{x_{t+1}\}_{t=0}^\infty\) such that each period has a lower period-return and resources are accumulated to infinity in the future that will always be pushed further and never realizes. Such sequence is clearly not optimal, so we need TC to avoid being trapped in this fake maximizing sequence, which makes TC a concept of <strong>overall allocation maximizing</strong>.</p></div>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>- 证明（命题 4.1，正则条件下）
+正则条件：\(F(x,y)\) 在 \((x,y)\) 上凹；\(F_x(x^\star_t,x^\star_{t+1})\ge0\)（\(\{x^\star_{t+1}\}_{t=0}^\infty\) 为最优路径）；\(F\in C^1\)。</p>
+<p><strong>充分性。</strong> 由 \(f\) 凹，
+$$f(x)-f(x_0)\le f'(x_0)(x-x_0),\quad\text{for }\forall x\tag{4.1}$$
+（若 \(x\in\mathbb R^m\)、\(f:\mathbb R^m\to\mathbb R\)，则 \(f'(x_0)\) 是在 \(x_0\) 处取值的 \(1\times m\) 偏导向量。）目标：若 \(\{x^\star_{t+1}\}_{t=0}^\infty\) 满足 EE 与 TC，则它是最优路径。取任意路径 \(\{x_{t+1}\}_{t=0}^\infty\)，\(x_0=x^\star_0\)，要证 \(\lim_{T\to\infty}\sum_{t=0}^T\beta^t[F(x_t,x_{t+1})-F(x^\star_t,x^\star_{t+1})]\le0\)。由 (4.1)，
+$$F(x_t,x_{t+1})-F(x^\star_t,x^\star_{t+1})\le F_x(x^\star_t,x^\star_{t+1})(x_t-x^\star_t)+F_y(x^\star_t,x^\star_{t+1})(x_{t+1}-x^\star_{t+1})$$
+求和并重新组合：注意 \(x_0=x^\star_0\) 使首项为零，每个含 EE 的方括号 \([F_y(x^\star_t,x^\star_{t+1})+\beta F_x(x^\star_{t+1},x^\star_{t+2})]\) 为零，只剩最后一项：
+$$\begin{aligned}\lim_{T\to\infty}\sum_{t=0}^T\beta^t[\cdots]&\le\lim_{T\to\infty}\beta^T F_y(x^\star_T,x^\star_{T+1})(x_{T+1}-x^\star_{T+1})\\&=\lim_{T\to\infty}-\beta^{T+1}F_x(x^\star_{T+1},x^\star_{T+2})(x_{T+1}-x^\star_{T+1})\\&\le\lim_{T\to\infty}\beta^{T+1}F_x(x^\star_{T+1},x^\star_{T+2})x^\star_{T+1}=0\quad\because\text{TC}\end{aligned}$$
+其中倒数第二行用 EE（\(F_y(x^\star_T,x^\star_{T+1})=-\beta F_x(x^\star_{T+1},x^\star_{T+2})\)），最后用 \(F_x\ge0\) 与 \(x_{T+1}\ge0\) 弃去非负项、并由 TC 得零。</p>
+<p><strong>必要性。</strong> 在最优路径 \(\{x^\star_{t+1}\}_{t=0}^\infty\) 周围加扰动。考虑 \(\{x_{t+1}(\alpha,\varepsilon)\}_{t=0}^\infty\)，其中 \(x_t(\alpha,\varepsilon)=x^\star_t+\alpha\varepsilon_t\) 对 \(\forall t\ge0\)，\(\alpha\in\mathbb R\)、\(\varepsilon=\{\varepsilon_t\}_{t=0}^\infty\)、\(\varepsilon_t\in\mathbb R^m\)，并设 \(\varepsilon_0=0\) 使序列可比。定义
+$$V^\star(x_0)=v(0)=\lim_{T\to\infty}\sum_{t=0}^T\beta^t F(x_t(0,\varepsilon),x_{t+1}(0,\varepsilon))=\lim_{T\to\infty}\sum_{t=0}^T\beta^t F(x^\star_t,x^\star_{t+1})$$
+$$v(\alpha)=\lim_{T\to\infty}\sum_{t=0}^T\beta^t F(x_t(\alpha,\varepsilon),x_{t+1}(\alpha,\varepsilon))$$
+对任意使 \(x_{t+1}(\alpha,\varepsilon)\in\Gamma(x_t(\alpha,\varepsilon))\) 的 \(\alpha,\varepsilon\)（即扰动路径可行）。\(v(0)\) 是最大值，故 \(\alpha=0\) 最大化 \(v\)，一阶条件 \(\frac{\partial v(0)}{\partial\alpha}=0\)。设求导与取极限可交换，整理后得
+$$0=\frac{\partial v(0)}{\partial\alpha}=\lim_{T\to\infty}\sum_{t=0}^T\beta^t\left[F_y(x^\star_t,x^\star_{t+1})+\beta F_x(x^\star_{t+1},x^\star_{t+2})\right]\varepsilon_{t+1}+\beta^T F_y(x^\star_T,x^\star_{T+1})\varepsilon_{T+1}\tag{4.2}$$
+为保证任意期的任意偏离都次优，需 (4.2) 对任意单个 \(\varepsilon_{t+1}\ne0\) 成立，故方括号为零——即 EE。则
+$$0=\frac{\partial v(0)}{\partial\alpha}=\lim_{T\to\infty}\beta^T F_y(x^\star_T,x^\star_{T+1})\varepsilon_{T+1}$$
+取 \(\varepsilon_{T+1}=x^\star_{T+1}\)、并将 \(T\) 替换为 \(T+1\)，得
+$$\lim_{T\to\infty}\beta^T F_x(x^\star_T,x^\star_{T+1})x^\star_T=0$$
+这正是 TC。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>- Proof (Proposition 4.1, under regularity conditions)
+Regularity conditions: \(F(x,y)\) is concave in \((x,y)\); \(F_x(x^\star_t,x^\star_{t+1})\ge0\) where \(\{x^\star_{t+1}\}_{t=0}^\infty\) is the optimal path; \(F\in C^1\).</p>
+<p><strong>Sufficiency.</strong> Since \(f\) is concave,
+$$f(x)-f(x_0)\le f'(x_0)(x-x_0),\quad\text{for }\forall x\tag{4.1}$$
+(Note that if \(x\in\mathbb R^m\) and \(f:\mathbb R^m\to\mathbb R\), then \(f'(x_0)\) is a \(1\times m\) partial vector evaluated at \(x_0\).) The goal is to show that if \(\{x^\star_{t+1}\}_{t=0}^\infty\) satisfies EE and TC, then it is the optimal path. Take an arbitrary path \(\{x_{t+1}\}_{t=0}^\infty\) with \(x_0=x^\star_0\), and we want to show that \(\lim_{T\to\infty}\sum_{t=0}^T\beta^t[F(x_t,x_{t+1})-F(x^\star_t,x^\star_{t+1})]\le0\). Using (4.1),
+$$F(x_t,x_{t+1})-F(x^\star_t,x^\star_{t+1})\le F_x(x^\star_t,x^\star_{t+1})(x_t-x^\star_t)+F_y(x^\star_t,x^\star_{t+1})(x_{t+1}-x^\star_{t+1})$$
+Sum and regroup: note \(x_0=x^\star_0\) makes the first term zero, each square bracket containing EE \([F_y(x^\star_t,x^\star_{t+1})+\beta F_x(x^\star_{t+1},x^\star_{t+2})]\) is zero, so only the last term stays:
+$$\begin{aligned}\lim_{T\to\infty}\sum_{t=0}^T\beta^t[\cdots]&\le\lim_{T\to\infty}\beta^T F_y(x^\star_T,x^\star_{T+1})(x_{T+1}-x^\star_{T+1})\\&=\lim_{T\to\infty}-\beta^{T+1}F_x(x^\star_{T+1},x^\star_{T+2})(x_{T+1}-x^\star_{T+1})\\&\le\lim_{T\to\infty}\beta^{T+1}F_x(x^\star_{T+1},x^\star_{T+2})x^\star_{T+1}=0\quad\because\text{TC}\end{aligned}$$
+where the second last line uses EE (\(F_y(x^\star_T,x^\star_{T+1})=-\beta F_x(x^\star_{T+1},x^\star_{T+2})\)), and the last drops the non-negative term using \(F_x\ge0\) and \(x_{T+1}\ge0\) and reaches zero by TC.</p>
+<p><strong>Necessity.</strong> Add a variation around the optimal path \(\{x^\star_{t+1}\}_{t=0}^\infty\). Consider \(\{x_{t+1}(\alpha,\varepsilon)\}_{t=0}^\infty\) where \(x_t(\alpha,\varepsilon)=x^\star_t+\alpha\varepsilon_t\) for \(\forall t\ge0\), \(\alpha\in\mathbb R\), \(\varepsilon=\{\varepsilon_t\}_{t=0}^\infty\) with \(\varepsilon_t\in\mathbb R^m\), and set \(\varepsilon_0=0\) to make the sequences comparable. Define
+$$V^\star(x_0)=v(0)=\lim_{T\to\infty}\sum_{t=0}^T\beta^t F(x_t(0,\varepsilon),x_{t+1}(0,\varepsilon))=\lim_{T\to\infty}\sum_{t=0}^T\beta^t F(x^\star_t,x^\star_{t+1})$$
+$$v(\alpha)=\lim_{T\to\infty}\sum_{t=0}^T\beta^t F(x_t(\alpha,\varepsilon),x_{t+1}(\alpha,\varepsilon))$$
+for any \(\alpha,\varepsilon\) such that \(x_{t+1}(\alpha,\varepsilon)\in\Gamma(x_t(\alpha,\varepsilon))\) (the variation path is feasible). \(v(0)\) is the maximum, so \(\alpha=0\) maximizes \(v\), and the f.o.c. \(\frac{\partial v(0)}{\partial\alpha}=0\). Suppose differentiation and taking limit are interchangeable; after rearranging,
+$$0=\frac{\partial v(0)}{\partial\alpha}=\lim_{T\to\infty}\sum_{t=0}^T\beta^t\left[F_y(x^\star_t,x^\star_{t+1})+\beta F_x(x^\star_{t+1},x^\star_{t+2})\right]\varepsilon_{t+1}+\beta^T F_y(x^\star_T,x^\star_{T+1})\varepsilon_{T+1}\tag{4.2}$$
+To make sure any deviation from the optimal path in any period is sub-optimal, we need (4.2) to hold for \(\varepsilon_{t+1}\ne0\) for any single \(t+1\), so the square bracket must be zero — which is EE. Then
+$$0=\frac{\partial v(0)}{\partial\alpha}=\lim_{T\to\infty}\beta^T F_y(x^\star_T,x^\star_{T+1})\varepsilon_{T+1}$$
+Take \(\varepsilon_{T+1}=x^\star_{T+1}\) and substitute \(T\) for \(T+1\):
+$$\lim_{T\to\infty}\beta^T F_x(x^\star_T,x^\star_{T+1})x^\star_T=0$$
+which is exactly TC. \(\blacksquare\)</p></div>
+</div>
+<div class="lang zh">
+<p><strong>4.1.4 稳态</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 4.3（稳态 Steady state）
+\(\bar x\) 是稳态，若它求解
+$$F_y(\bar x,\bar x)+\beta F_x(\bar x,\bar x)=0$$</p>
+<p>[!tip] 注记 4.3
+\(\bar x\) 之所以称为稳态，是因为一旦在某期 \(x_s=\bar x\)，此后的最优路径就是保持不动，即 \(x_t=\bar x\) 对 \(\forall t\ge s\)。为何保持不动最优？由定义，\(\bar x\) 保持不动满足 EE；它也满足 TC，因为 \(F_x(\bar x,\bar x)x̄\) 是固定数，故 \(\lim\beta^t F_x(\bar x,\bar x)\bar x=0\)。注意这一论证依赖 \(F(x,y)\) 在 \((x,y)\) 上凹的假设，因为 EE 与 TC 的充分性依赖 \(F\) 的凹性。</p></div>
+<p><strong>4.1.5 用 lag 1 与 lag 2 由 EE 确定状态变量</strong></p>
+<p>可用 EE 以某期状态变量的 lag 1 与 lag 2 信息确定其最优水平。定义 \(x_{t+2}=\psi(x_{t+1},x_t)\)，则 EE 可写为
+$$F_y(x_t,x_{t+1})+\beta F_x(x_{t+1},\psi(x_{t+1},x_t))=0$$
+为使 EE 钉住 \(\psi\)，需 \(F_x\) 随 \(\psi\) 变化。若 \(F_x\) 不随 \(\psi\) 移动，则这不是动态问题——因为优化可局部进行而不影响后续各期。一言以蔽之，只要问题是动态的，\(\psi\) 就可由 EE 钉住（即便未必唯一钉住）。</p>
+<div class="callout"><div class="callout-title">Important</div><p>事实 4.1
+若 \(X\)、\(F\)、\(\Gamma\) 满足如下凸性条件，则动态问题至多有一个解：\(X\subseteq\mathbb R^m\)；\(F(x,y)\) 是 \(C^1\)，\(F(x,y)\) 在 \((x,y)\) 上严格凹、在 \(x\) 上严格递增，\(\beta\in(0,1)\)；\(\Gamma\) 凸且在 \(x\) 上递增，即 \(x^\star>x\Rightarrow\Gamma(x)\subseteq\Gamma(x^\star)\)。</p>
+<p>[!important] 定义 4.4（打靶法 Shooting algorithm）
+给定 \(x_0\)，任意选一个 \(x_1\)，然后用 EE 生成序列 \(\{x_t\}_{t=2}^\infty\)。检验该序列是否满足 TC。若满足，则由 EE 与 TC 的充分性，该序列最优；若不满足，则试另一个 \(x_1\)。</p></div>
+<p>对任意收敛到唯一稳态的系统，打靶法都有效，因为从任意一个可能在路径上的点出发，都能到达同一目的地。</p>
+</div>
+<div class="lang en">
+<p><strong>4.1.4 Steady state</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 4.3 (Steady state)
+\(\bar x\) is a steady state if it solves
+$$F_y(\bar x,\bar x)+\beta F_x(\bar x,\bar x)=0$$</p>
+<p>[!tip] Remark 4.3
+The reason why \(\bar x\) is called the steady state is that after reaching \(x_s=\bar x\), the optimal path thereafter is to stay put, i.e. \(x_t=\bar x\) for \(\forall t\ge s\). Why is staying put optimal? By definition, \(\bar x\) staying put satisfies EE. And it also satisfies TC since \(F_x(\bar x,\bar x)\bar x\) is a fixed number and thus \(\lim\beta^t F_x(\bar x,\bar x)\bar x=0\). Notice such argument depends on the assumption that \(F(x,y)\) is concave in \((x,y)\), since the sufficiency of EE and TC depends on the concavity of \(F\).</p></div>
+<p><strong>4.1.5 EE determines state variable using its lag 1 and lag 2</strong></p>
+<p>We can use EE to determine the optimal level of state variable in a period with its lag 1 and lag 2 information. Define \(x_{t+2}=\psi(x_{t+1},x_t)\), and EE can be written as
+$$F_y(x_t,x_{t+1})+\beta F_x(x_{t+1},\psi(x_{t+1},x_t))=0$$
+In order to have EE pin down \(\psi\), we need \(F_x\) to change with \(\psi\). If \(F_x\) is not moving with \(\psi\), then this is not a dynamic problem since the optimization can be done locally without affecting any periods later on. In a word, as long as the problem is dynamic, \(\psi\) could be pinned down by EE (even though it may not be uniquely pinned down).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Fact 4.1
+If \(X\), \(F\), \(\Gamma\) satisfies the following convexity conditions, then the dynamic problem has at most one solution: \(X\subseteq\mathbb R^m\); \(F(x,y)\) is \(C^1\), \(F(x,y)\) is strictly concave in \((x,y)\), \(F(x,y)\) is strictly increasing in \(x\), and \(\beta\in(0,1)\); \(\Gamma\) is convex and increasing in \(x\), i.e. \(x^\star>x\Rightarrow\Gamma(x)\subseteq\Gamma(x^\star)\).</p>
+<p>[!important] Definition 4.4 (Shooting algorithm)
+Given \(x_0\), arbitrarily select an \(x_1\), then use EE to generate a sequence \(\{x_t\}_{t=2}^\infty\). Check if this sequence satisfies TC. If yes, by the sufficiency of EE and TC, this sequence is optimal. If no, try another \(x_1\).</p></div>
+<p>For any system that converges to a unique steady state, the shooting algorithm works since we can reach the same destination starting from any point that could be on the path.</p>
+</div>
+<h2 id="4-2-continuous-time">4.2 Continuous Time</h2>
+<div class="lang zh">
+<p>与离散时间相同，本节先讨论建立同一问题的两种等价方式：连续状态序列设定与连续控制-状态序列设定。这里将讨论两种设定的解：连续状态序列用连续时间 EE 与 TC；连续控制-状态用<strong>哈密顿量（Hamiltonian）</strong>。最后讨论各设定下的稳态。</p>
+<p><strong>4.2.1 连续状态序列设定</strong></p>
+<p>考虑如下连续时间问题：
+$$V^\star(x_0)=\max_{\{\dot x(t)\}_{t=0}^\infty}\lim_{T\to\infty}\int_0^T e^{-\rho t}F(x(t),\dot x(t))\,dt\quad\text{s.t.}\quad\dot x(t)\in\Gamma(x(t)),\ \text{for }\forall t\ge0,\quad x_0\text{ given}$$
+其中：
+- \(X\) 是状态集，与离散时间相同。\(\Gamma:X\to\dot X\) 是当前期状态 \(x_t\) 与其对时间导数之间的对应，其图为 \(\text{Gr}(\Gamma)\equiv\{(x,\dot x):x\in X,\dot x\in\Gamma(x)\}\)。
+- \(F(x,\dot x):\text{Gr}(\Gamma)\to\mathbb R\) 是期间回报函数。
+- \(\rho\in(0,1)\)：按惯例，连续时间用 \(\rho\) 代替 \(\beta\) 作贴现因子。
+- \(V^\star(x_0):\mathbb R\to\mathbb R\) 是值函数，与离散时间相同。</p>
+<p>该问题的解是使值函数最大化的状态变量对时间导数的序列 \(\{\dot x\}_{t=0}^\infty\)。</p>
+<p><strong>4.2.2 欧拉方程（EE）与横截性条件（TC）——连续时间</strong></p>
+<p>与离散时间一样，可用连续时间的 EE 与 TC 来验证连续状态序列设定中的最优路径。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 4.5（欧拉方程 Euler Equation——连续时间）
+路径 \(\{\dot x(t)\}_{t=0}^\infty\) 满足 EE，若
+$$F_x(x(t),\dot x(t))+\rho F_{\dot x}(x(t),\dot x(t))=F_{\dot x x}(x(t),\dot x(t))\dot x(t)+F_{\dot x\dot x}(x(t),\dot x(t))\ddot x(t)\tag{4.3}$$
+对 \(\forall t\ge0\)。</p>
+<p>[!important] 定义 4.6（横截性条件 Transversality Condition——连续时间）
+路径 \(\{\dot x(t)\}_{t=0}^\infty\) 满足 TC，若
+$$\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x(T),\dot x(T))\cdot x(T)=0$$</p>
+<p>[!important] 命题 4.2
+在正则条件下，EE 与 TC 是 \(\{\dot x(t)\}_{t=0}^\infty\) 最优（即连续状态序列问题的解）的必要且充分条件。</p></div>
+</div>
+<div class="lang en">
+<p>Same as before, in this section, we will first discuss two equivalent ways to set up the same problem: continuous state sequence set-up and continuous control-state sequence set-up. In each set-up, we will discuss the solution to the problem. For continuous state, we will use the continuous time EE and TC; for continuous control-state, we will introduce <strong>Hamiltonian</strong>. Finally, we will discuss the steady state in each set-up.</p>
+<p><strong>4.2.1 Continuous state sequence set-up</strong></p>
+<p>Consider the following continuous time problem:
+$$V^\star(x_0)=\max_{\{\dot x(t)\}_{t=0}^\infty}\lim_{T\to\infty}\int_0^T e^{-\rho t}F(x(t),\dot x(t))\,dt\quad\text{s.t.}\quad\dot x(t)\in\Gamma(x(t)),\ \text{for }\forall t\ge0,\quad x_0\text{ given}$$
+where:
+- \(X\) is the set of states, which is the same as is defined in discrete time problems. \(\Gamma:X\to\dot X\) is the correspondence between current period state variable \(x_t\) and its derivative w.r.t. time, with graph \(\text{Gr}(\Gamma)\equiv\{(x,\dot x):x\in X,\dot x\in\Gamma(x)\}\).
+- \(F(x,\dot x):\text{Gr}(\Gamma)\to\mathbb R\) is the period-return function.
+- \(\rho\in(0,1)\): by convention, we use \(\rho\) instead of \(\beta\) as the discount factor for continuous time.
+- \(V^\star(x_0):\mathbb R\to\mathbb R\) is the value function, which is the same as is defined in discrete time problems.</p>
+<p>The solution to this problem is a sequence of the state variable's derivative w.r.t. time, i.e. \(\{\dot x\}_{t=0}^\infty\), that maximizes the value function.</p>
+<p><strong>4.2.2 Euler equation (EE) and Transversality condition (TC) - continuous time</strong></p>
+<p>Same as before, we can use EE and TC to verify the optimal path in the continuous state sequence set-up.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 4.5 (Euler Equation - continuous time)
+The path \(\{\dot x(t)\}_{t=0}^\infty\) satisfies EE if
+$$F_x(x(t),\dot x(t))+\rho F_{\dot x}(x(t),\dot x(t))=F_{\dot x x}(x(t),\dot x(t))\dot x(t)+F_{\dot x\dot x}(x(t),\dot x(t))\ddot x(t)\tag{4.3}$$
+for \(\forall t\ge0\).</p>
+<p>[!important] Definition 4.6 (Transversality Condition - continuous time)
+The path \(\{\dot x(t)\}_{t=0}^\infty\) satisfies TC if
+$$\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x(T),\dot x(T))\cdot x(T)=0$$</p>
+<p>[!important] Proposition 4.2
+Under regularity conditions, EE and TC are necessary and sufficient for \(\{\dot x(t)\}_{t=0}^\infty\) to be optimal, i.e. the solution to the continuous state sequence problem.</p></div>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>- 证明（命题 4.2，正则条件下）
+正则条件：\(F(x,\dot x)\) 在 \((x,\dot x)\) 上凹（充分性）；\(F_{\dot x}\le0\)（充分性）；\(\text{Gr}(\Gamma)\) 凸；最优路径内点；\(F\in C^1\)（必要性）；\(V(\alpha)\) 可微（必要性）。</p>
+<p><strong>充分性。</strong> 要证 \(\lim_{T\to\infty}\int_0^T e^{-\rho t}(F(x(t),\dot x(t))-F(x^\star(t),\dot x^\star(t)))\,dt\le0\)。由 \(F\) 凹，
+$$F(x(t),\dot x(t))-F(x^\star(t),\dot x^\star(t))\le F_x(x^\star,\dot x^\star)(x-x^\star)+F_{\dot x}(x^\star,\dot x^\star)(\dot x-\dot x^\star)$$
+故 \(\lim\int\le\underbrace{\lim\int e^{-\rho t}F_x(x^\star,\dot x^\star)(x-x^\star)dt}_{\text{Part A}}+\underbrace{\lim\int e^{-\rho t}F_{\dot x}(x^\star,\dot x^\star)(\dot x-\dot x^\star)dt}_{\text{Part B}}\)。对 Part B 分部积分：
+$$\begin{aligned}\text{Part B}&=\left[e^{-\rho t}F_{\dot x}(x^\star,\dot x^\star)(x-x^\star)\right]_0^T-\int_0^T e^{-\rho t}\underbrace{\left[F_{\dot x x}\dot x^\star+F_{\dot x\dot x}\ddot x^\star-\rho F_{\dot x}-F_x\right]}_{=0\text{ by EE}}(x-x^\star)dt\\&\quad-\int_0^T e^{-\rho t}(x-x^\star)F_x\,dt\\&=\underbrace{\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x^\star(T),\dot x^\star(T))x(T)}_{\le0}-\underbrace{\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x^\star(T),\dot x^\star(T))x^\star(T)}_{=0\ \because\text{TC}}\\&\quad-\lim_{T\to\infty}\int_0^T e^{-\rho t}(x-x^\star)F_x\,dt\\&\le-\text{Part A}\end{aligned}$$
+故 \(\text{Part A}+\text{Part B}\le0\)。</p>
+<p><strong>必要性。</strong> 扰动路径 \(x_{\alpha,\varepsilon}(t)=x(t)+\alpha\varepsilon(t)\)，\(\alpha\in\mathbb R\)，\(\varepsilon(t):\mathbb R_+\to\mathbb R^m\) 可微、\(\varepsilon(0)=0\)，\(\{x(t)\}_{t=0}^\infty\) 最优。
+$$v(\alpha)=\lim_{T\to\infty}\int_0^T e^{-\rho t}F(x_{\alpha,\varepsilon}(t),\dot x_{\alpha,\varepsilon}(t))\,dt=\lim_{T\to\infty}\int_0^T e^{-\rho t}F(x(t)+\alpha\varepsilon(t),\dot x(t)+\alpha\dot\varepsilon(t))\,dt$$
+扰动路径可行 \(\dot x_{\alpha,\varepsilon}(t)\in\Gamma(x_{\alpha,\varepsilon}(t))\)。\(v(0)\ge v(\alpha)\)，\(v\) 可微，一阶条件 \(\frac{\partial v(0)}{\partial\alpha}=0\)：
+$$0=\frac{\partial v(0)}{\partial\alpha}=\underbrace{\lim_{T\to\infty}\int_0^T e^{-\rho t}F_x(x,\dot x)\varepsilon\,dt}_{\text{Part A}}+\underbrace{\lim_{T\to\infty}\int_0^T e^{-\rho t}F_{\dot x}(x,\dot x)\dot\varepsilon\,dt}_{\text{Part B}}$$
+对 Part B 分部积分后合并 Part A，得
+$$0=\frac{\partial v(0)}{\partial\alpha}=\underbrace{\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x(T),\dot x(T))\varepsilon(T)}_{(4.4)}+\underbrace{\lim_{T\to\infty}\int_0^T e^{-\rho t}\left[F_x+\rho F_{\dot x}-F_{\dot x x}\dot x-F_{\dot x\dot x}\ddot x\right]\varepsilon\,dt}_{(4.5)}$$
+为保证任意期的偏离次优，需 (4.5) 中积分项对任意 \(\varepsilon(t)\ne0\) 为零——即 EE。再考虑首项 (4.4)，取特例 \(\varepsilon(T)=x(T)\)，该项应为零——即 TC。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>- Proof (Proposition 4.2, under regularity conditions)
+Regularity conditions: \(F(x,\dot x)\) is concave in \((x,\dot x)\) (for sufficiency); \(F_{\dot x}\le0\) (for sufficiency); \(\text{Gr}(\Gamma)\) is convex; optimal path is interior; \(F\in C^1\) (for necessity); \(V(\alpha)\) is differentiable (for necessity).</p>
+<p><strong>Sufficiency.</strong> We want to show \(\lim_{T\to\infty}\int_0^T e^{-\rho t}(F(x(t),\dot x(t))-F(x^\star(t),\dot x^\star(t)))\,dt\le0\). Since \(F\) is concave,
+$$F(x(t),\dot x(t))-F(x^\star(t),\dot x^\star(t))\le F_x(x^\star,\dot x^\star)(x-x^\star)+F_{\dot x}(x^\star,\dot x^\star)(\dot x-\dot x^\star)$$
+So \(\lim\int\le\underbrace{\lim\int e^{-\rho t}F_x(x^\star,\dot x^\star)(x-x^\star)dt}_{\text{Part A}}+\underbrace{\lim\int e^{-\rho t}F_{\dot x}(x^\star,\dot x^\star)(\dot x-\dot x^\star)dt}_{\text{Part B}}\). Apply integration by parts to Part B:
+$$\begin{aligned}\text{Part B}&=\left[e^{-\rho t}F_{\dot x}(x^\star,\dot x^\star)(x-x^\star)\right]_0^T-\int_0^T e^{-\rho t}\underbrace{\left[F_{\dot x x}\dot x^\star+F_{\dot x\dot x}\ddot x^\star-\rho F_{\dot x}-F_x\right]}_{=0\text{ by EE}}(x-x^\star)dt\\&\quad-\int_0^T e^{-\rho t}(x-x^\star)F_x\,dt\\&=\underbrace{\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x^\star(T),\dot x^\star(T))x(T)}_{\le0}-\underbrace{\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x^\star(T),\dot x^\star(T))x^\star(T)}_{=0\ \because\text{TC}}\\&\quad-\lim_{T\to\infty}\int_0^T e^{-\rho t}(x-x^\star)F_x\,dt\\&\le-\text{Part A}\end{aligned}$$
+So \(\text{Part A}+\text{Part B}\le0\).</p>
+<p><strong>Necessity.</strong> Variation path \(x_{\alpha,\varepsilon}(t)=x(t)+\alpha\varepsilon(t)\), \(\alpha\in\mathbb R\), \(\varepsilon(t):\mathbb R_+\to\mathbb R^m\) differentiable with \(\varepsilon(0)=0\), and \(\{x(t)\}_{t=0}^\infty\) optimal.
+$$v(\alpha)=\lim_{T\to\infty}\int_0^T e^{-\rho t}F(x_{\alpha,\varepsilon}(t),\dot x_{\alpha,\varepsilon}(t))\,dt=\lim_{T\to\infty}\int_0^T e^{-\rho t}F(x(t)+\alpha\varepsilon(t),\dot x(t)+\alpha\dot\varepsilon(t))\,dt$$
+The variational path is feasible \(\dot x_{\alpha,\varepsilon}(t)\in\Gamma(x_{\alpha,\varepsilon}(t))\). \(v(0)\ge v(\alpha)\), \(v\) is differentiable, f.o.c. \(\frac{\partial v(0)}{\partial\alpha}=0\):
+$$0=\frac{\partial v(0)}{\partial\alpha}=\underbrace{\lim_{T\to\infty}\int_0^T e^{-\rho t}F_x(x,\dot x)\varepsilon\,dt}_{\text{Part A}}+\underbrace{\lim_{T\to\infty}\int_0^T e^{-\rho t}F_{\dot x}(x,\dot x)\dot\varepsilon\,dt}_{\text{Part B}}$$
+Applying integration by parts to Part B and combining with Part A,
+$$0=\frac{\partial v(0)}{\partial\alpha}=\underbrace{\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x(T),\dot x(T))\varepsilon(T)}_{(4.4)}+\underbrace{\lim_{T\to\infty}\int_0^T e^{-\rho t}\left[F_x+\rho F_{\dot x}-F_{\dot x x}\dot x-F_{\dot x\dot x}\ddot x\right]\varepsilon\,dt}_{(4.5)}$$
+To make sure deviation in any period is sub-optimal, we need the integral in (4.5) to be zero for any \(\varepsilon(t)\ne0\) — which is EE. Also consider the first term (4.4), for the particular case \(\varepsilon(T)=x(T)\), this term should be zero — which is TC. \(\blacksquare\)</p></div>
+</div>
+<div class="lang zh">
+<p><strong>4.2.3 稳态</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 4.7（稳态 Steady state）
+\(\bar x\) 是稳态，若它求解
+$$F_x(\bar x,0)+\rho F_{\dot x}(\bar x,0)=0$$</p></div>
+<p>该定义直接来自 EE。注意稳态中 \(\dot x(t)=\ddot x(t)=0\)。重写 EE：
+$$F_x(\bar x,0)+\rho F_{\dot x}(\bar x,0)=F_{\dot x x}(\bar x,0)\cdot0+F_{\dot x\dot x}(\bar x,0)\cdot0\Rightarrow F_x(\bar x,0)+\rho F_{\dot x}(\bar x,0)=0$$</p>
+<p><strong>4.2.4 连续控制-状态序列设定</strong></p>
+<p>考虑如下连续时间问题：
+$$V^\star(x_0)=\max_{\{u(t)\}_{t=0}^\infty}\lim_{T\to\infty}\int_0^T e^{-\rho t}h(x(t),u(t))\,dt\quad\text{s.t.}\quad\dot x(t)=g(x(t),u(t)),\ u(t)\in U,\ \text{for }\forall t\ge0,\ x_0\text{ given}$$
+其中一切与离散控制-状态序列设定类比。</p>
+<p><strong>4.2.5 最大值原理：哈密顿量</strong></p>
+<p>这里引入一种新方法——<strong>哈密顿量（Hamiltonian）</strong>——来求解连续控制-状态设定中的问题。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 4.8（协态与哈密顿量 co-state and Hamiltonian）
+令 \(\lambda\) 是 \(\mathbb R^m\) 上的向量，称为<strong>协态变量（co-state variable）</strong>，\(H\) 为<strong>哈密顿量函数</strong>。它们定义为
+$$H(x,u,\lambda)=h(x,u)+\lambda g(x,u)$$
+其中 \(h\)、\(g\) 与 4.2.4 中相同。</p>
+<p>[!important] 命题 4.3
+在正则条件下，如下条件是路径 \(\{x(t)\}_{t=0}^\infty\) 与 \(\{u(t)\}_{t=0}^\infty\) 最优的必要且充分条件：
+$$H_u(x(t),u(t),\lambda(t))=0$$
+$$\dot\lambda(t)=\rho\lambda(t)-H_x(x(t),u(t),\lambda(t))$$
+$$\dot x(t)=g(x,u)$$
+对 \(\forall t\ge0\)。状态变量 \(x\) 有初值 \(x_0\)，协态变量 \(\lambda\) 有边界条件（TC）：
+$$\lim_{T\to\infty}e^{-\rho T}\lambda(T)x(T)=0$$</p></div>
+</div>
+<div class="lang en">
+<p><strong>4.2.3 Steady state</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 4.7 (Steady state)
+\(\bar x\) is a steady state if it solves
+$$F_x(\bar x,0)+\rho F_{\dot x}(\bar x,0)=0$$</p></div>
+<p>This definition of steady state is straight from EE. Note that in steady state \(\dot x(t)=\ddot x(t)=0\). Rewrite EE:
+$$F_x(\bar x,0)+\rho F_{\dot x}(\bar x,0)=F_{\dot x x}(\bar x,0)\cdot0+F_{\dot x\dot x}(\bar x,0)\cdot0\Rightarrow F_x(\bar x,0)+\rho F_{\dot x}(\bar x,0)=0$$</p>
+<p><strong>4.2.4 Continuous control-state sequence set-up</strong></p>
+<p>Consider the following continuous time problem:
+$$V^\star(x_0)=\max_{\{u(t)\}_{t=0}^\infty}\lim_{T\to\infty}\int_0^T e^{-\rho t}h(x(t),u(t))\,dt\quad\text{s.t.}\quad\dot x(t)=g(x(t),u(t)),\ u(t)\in U,\ \text{for }\forall t\ge0,\ x_0\text{ given}$$
+where everything is analogous to the discrete control-state sequence set-up.</p>
+<p><strong>4.2.5 The maximum principle: Hamiltonian</strong></p>
+<p>Here we will introduce a new method, which is called <strong>Hamiltonian</strong>, to solve the problem in the continuous control-state set-up.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 4.8 (co-state and Hamiltonian)
+Let \(\lambda\) be a vector on \(\mathbb R^m\) called <strong>co-state variable</strong>, and let \(H\) be the <strong>Hamiltonian function</strong>. They are defined as
+$$H(x,u,\lambda)=h(x,u)+\lambda g(x,u)$$
+where \(h\) and \(g\) are the same functions as in subsection 4.2.4.</p>
+<p>[!important] Proposition 4.3
+Under regularity conditions, the following conditions are necessary and sufficient for the path of \(\{x(t)\}_{t=0}^\infty\) and \(\{u(t)\}_{t=0}^\infty\) to be optimal:
+$$H_u(x(t),u(t),\lambda(t))=0$$
+$$\dot\lambda(t)=\rho\lambda(t)-H_x(x(t),u(t),\lambda(t))$$
+$$\dot x(t)=g(x,u)$$
+for \(\forall t\ge0\). The state variable \(x\) has an initial value of \(x_0\), and the co-state variable \(\lambda\) has a boundary condition (TC):
+$$\lim_{T\to\infty}e^{-\rho T}\lambda(T)x(T)=0$$</p></div>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p>注记 4.4（哈密顿量的直觉解释）
+- 协态变量 \(\lambda(t)\) 可解释为 \(t\) 期状态变量增加一单位的现值。协态的运动规律意味着：一单位增加的现值随时间流逝而增长，但因当前期回报已实现并此后被算作过去，故也会损失这部分；两个效应之净值导致协态变量的变化。
+- 第二、第三个方程仅是协态与状态由其本性与定义而来的运动规律。唯一的优化部分来自控制变量的一阶条件（第一个方程），它给出平衡瞬时回报（由 \(h\) 衡量）与贴现未来回报（由 \(\lambda g\) 衡量）的最优控制。
+- \(H(x,u,\lambda)\) 是瞬时回报加上状态变量增加一单位的贴现未来回报。这一函数的设计要求对控制变量的一阶条件同时考虑当前回报与未来回报，从而确定最优控制。</p>
+<p>[!note]- 启发式证明
+为连续控制-状态序列设定建立拉格朗日函数以导出哈密顿条件。用 \(e^{-\rho t}\lambda(t)\) 作 \(\dot x(t)=g(x(t),u(t))\) 的拉格朗日乘子，把一切转换到 \(t=0\) 的现值以便可比：
+$$\mathcal L(x,u,\lambda)=\lim_{T\to\infty}\left(\int_0^T e^{-\rho t}h(x(t),u(t))\,dt+\int_0^T e^{-\rho t}\lambda(t)[g(x(t),u(t))-\dot x(t)]\,dt\right)$$
+先对 \(\int_0^T e^{-\rho t}\lambda(t)\dot x(t)\,dt\) 分部积分：
+$$\int_0^T e^{-\rho t}\lambda(t)\dot x(t)\,dt=\left[e^{-\rho t}\lambda(t)x(t)\right]_0^T-\int_0^T\left[-\rho e^{-\rho t}\lambda(t)+e^{-\rho t}\dot\lambda(t)\right]x(t)\,dt$$
+代入并重排拉格朗日函数：
+$$\mathcal L(x,u,\lambda)=\lim_{T\to\infty}\int_0^T e^{-\rho t}h\,dt+\lim_{T\to\infty}\int_0^T e^{-\rho t}\left[\lambda g(x,u)-\rho\lambda(t)x(t)+\dot\lambda(t)x(t)\right]dt$$
+对 \(x(t)\) 求导：
+$$[x(t)]:\quad\frac{d\mathcal L}{dx(t)}=e^{-\rho t}\left[h_x+\lambda g_x-\rho\lambda+\dot\lambda\right]=0\Rightarrow\dot\lambda=\rho\lambda-h_x-\lambda g_x=\rho\lambda-H_x\tag{4.6}$$
+对 \(u(t)\) 求导：
+$$[u(t)]:\quad\frac{d\mathcal L}{du(t)}=e^{-\rho t}\left[h_u+\lambda g_u\right]=0\Rightarrow h_u+\lambda g_u=H_u=0\tag{4.7}$$
+对 \(\lambda(t)\) 求导：
+$$[\lambda(t)]:\quad\frac{d\mathcal L}{d\lambda(t)}=e^{-\rho t}\left[g(x,u)-\dot x\right]=0\Rightarrow\dot x=g(x,u)$$
+\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 4.4 (interpretations of the Hamiltonian)
+- The co-state variable \(\lambda(t)\) can be interpreted as the present value of one unit increase in the state variable at period \(t\). The law of motion of co-state simply means that the present value of one unit increase will grow as time flows, but it will also lose the current period return that one unit increase counted as past thereafter. So the net of the two effects will result in the change in the co-state variable.
+- The second and the third equation are just the law of motion of co-state and state variables by their nature and definition. The only optimization part comes from the f.o.c. of the control variable, which is the first equation. It gives us the optimal control that balances the instantaneous return measured by \(h\) and discounted future returns measured by \(\lambda g\).
+- \(H(x,u,\lambda)\) is the instantaneous return plus the discounted future return for one unit increase in the state variable. The design of this function requires the f.o.c. w.r.t. control variables to take both current return and future returns into consideration, which determines the optimal control.</p>
+<p>[!note]- Heuristic proof
+We can form the Lagrangian for the continuous control-state sequence set-up to derive the Hamiltonian conditions. We will use \(e^{-\rho t}\lambda(t)\) as the Lagrangian multiplier of \(\dot x(t)=g(x(t),u(t))\) to transfer everything into the present value of \(t=0\) to make them comparable:
+$$\mathcal L(x,u,\lambda)=\lim_{T\to\infty}\left(\int_0^T e^{-\rho t}h(x(t),u(t))\,dt+\int_0^T e^{-\rho t}\lambda(t)[g(x(t),u(t))-\dot x(t)]\,dt\right)$$
+First, do integral by parts on \(\int_0^T e^{-\rho t}\lambda(t)\dot x(t)\,dt\):
+$$\int_0^T e^{-\rho t}\lambda(t)\dot x(t)\,dt=\left[e^{-\rho t}\lambda(t)x(t)\right]_0^T-\int_0^T\left[-\rho e^{-\rho t}\lambda(t)+e^{-\rho t}\dot\lambda(t)\right]x(t)\,dt$$
+Plug in and rearrange the Lagrangian:
+$$\mathcal L(x,u,\lambda)=\lim_{T\to\infty}\int_0^T e^{-\rho t}h\,dt+\lim_{T\to\infty}\int_0^T e^{-\rho t}\left[\lambda g(x,u)-\rho\lambda(t)x(t)+\dot\lambda(t)x(t)\right]dt$$
+Take derivative w.r.t. \(x(t)\):
+$$[x(t)]:\quad\frac{d\mathcal L}{dx(t)}=e^{-\rho t}\left[h_x+\lambda g_x-\rho\lambda+\dot\lambda\right]=0\Rightarrow\dot\lambda=\rho\lambda-h_x-\lambda g_x=\rho\lambda-H_x\tag{4.6}$$
+Take derivative w.r.t. \(u(t)\):
+$$[u(t)]:\quad\frac{d\mathcal L}{du(t)}=e^{-\rho t}\left[h_u+\lambda g_u\right]=0\Rightarrow h_u+\lambda g_u=H_u=0\tag{4.7}$$
+Take derivative w.r.t. \(\lambda(t)\):
+$$[\lambda(t)]:\quad\frac{d\mathcal L}{d\lambda(t)}=e^{-\rho t}\left[g(x,u)-\dot x\right]=0\Rightarrow\dot x=g(x,u)$$
+\(\blacksquare\)</p></div>
+</div>
+<div class="lang zh">
+<p><strong>4.2.6 哈密顿量与欧拉方程的关系</strong></p>
+<p>若用连续状态序列设定与连续控制-状态设定描述同一问题，则状态序列设定中的 EE 与控制-状态设定中的哈密顿量应给出相同结果。考虑
+$$u=\dot x=g(x,u),\qquad F(x,\dot x)=h(x,u)$$
+此时两套设定描述同一问题。则
+$$H(x,u,\lambda)=F(x,\dot x)+\lambda\dot x$$
+故 (4.7) 即 \(H_u(x,u,\lambda)=0\Rightarrow F_{\dot x}(x,\dot x)+\lambda(t)=0\)，即
+$$\lambda(t)=-F_{\dot x}(x,\dot x)\tag{4.8}$$
+又 \(H_x(x,u,\lambda)=F_x(x,\dot x)\)，故 (4.6) 为
+$$\dot\lambda(t)=\rho\lambda(t)-F_x(x,\dot x)\tag{4.9}$$
+合并 (4.8) 与 (4.9)：
+$$\dot\lambda(t)=-\rho F_{\dot x}(x,\dot x)-F_x(x,\dot x)\tag{4.10}$$
+又可由 (4.8) 求 \(\dot\lambda(t)\)：
+$$\dot\lambda(t)=-F_{\dot x x}(x(t),\dot x(t))\dot x(t)-F_{\dot x\dot x}(x(t),\dot x(t))\ddot x(t)\tag{4.11}$$
+将 (4.11) 代入 (4.10) 并重排：
+$$\begin{aligned}-F_{\dot x x}(x(t),\dot x(t))\dot x(t)-F_{\dot x\dot x}(x(t),\dot x(t))\ddot x(t)&=-\rho F_{\dot x}(x,\dot x)-F_x(x,\dot x)\\\Rightarrow F_x(x,\dot x)+\rho F_{\dot x}(x,\dot x)&=F_{\dot x x}(x(t),\dot x(t))\dot x(t)+F_{\dot x\dot x}(x(t),\dot x(t))\ddot x(t)\end{aligned}$$
+这正是 EE。</p>
+</div>
+<div class="lang en">
+<p><strong>4.2.6 Relationship between Hamiltonian and Euler Equation</strong></p>
+<p>If we use the continuous state sequence set-up and continuous control-state set-up to describe the same problem, then the EE in the state sequence set-up and the Hamiltonian in the control-state set-up should yield the same results. Consider
+$$u=\dot x=g(x,u),\qquad F(x,\dot x)=h(x,u)$$
+Clearly, two set-ups describe the same problem in this case. Then,
+$$H(x,u,\lambda)=F(x,\dot x)+\lambda\dot x$$
+and thus (4.7) is \(H_u(x,u,\lambda)=0\Rightarrow F_{\dot x}(x,\dot x)+\lambda(t)=0\), i.e.
+$$\lambda(t)=-F_{\dot x}(x,\dot x)\tag{4.8}$$
+Since \(H_x(x,u,\lambda)=F_x(x,\dot x)\), equation (4.6) is
+$$\dot\lambda(t)=\rho\lambda(t)-F_x(x,\dot x)\tag{4.9}$$
+Together, equation (4.8) and equation (4.9) give us
+$$\dot\lambda(t)=-\rho F_{\dot x}(x,\dot x)-F_x(x,\dot x)\tag{4.10}$$
+We can derive \(\dot\lambda(t)\) from (4.8):
+$$\dot\lambda(t)=-F_{\dot x x}(x(t),\dot x(t))\dot x(t)-F_{\dot x\dot x}(x(t),\dot x(t))\ddot x(t)\tag{4.11}$$
+Plug equation (4.11) into equation (4.10) and rearrange:
+$$\begin{aligned}-F_{\dot x x}(x(t),\dot x(t))\dot x(t)-F_{\dot x\dot x}(x(t),\dot x(t))\ddot x(t)&=-\rho F_{\dot x}(x,\dot x)-F_x(x,\dot x)\\\Rightarrow F_x(x,\dot x)+\rho F_{\dot x}(x,\dot x)&=F_{\dot x x}(x(t),\dot x(t))\dot x(t)+F_{\dot x\dot x}(x(t),\dot x(t))\ddot x(t)\end{aligned}$$
+which is exactly EE.</p>
+</div>
+<h2 id="4-3-summary">4.3 Summary</h2>
+<div class="lang zh">
+<p><strong>4.3.1 离散时间</strong></p>
+<p><strong>(1) 状态序列设定</strong>
+$$\max_{\{x_{t+1}\}_{t=0}^\infty}\sum_{t=0}^\infty\beta^t F(x_t,x_{t+1})\quad\text{s.t.}\quad x_{t+1}\in\Gamma(x_t),\ x_0\text{ given}$$
+- <strong>欧拉方程</strong>：\(F_y(x_t,x_{t+1})+\beta F_x(x_{t+1},x_{t+2})=0\)，对 \(\forall t\ge0\)。
+- <strong>横截性条件</strong>：\(\lim_{T\to\infty}\beta^T F_x(x_T,x_{T+1})x_T=0\)。</p>
+<p><strong>(2) 控制-状态序列设定</strong>
+$$\max_{\{u_t\}_{t=0}^\infty}\sum_{t=0}^\infty\beta^t h(x_t,u_t)\quad\text{s.t.}\quad x_{t+1}=g(x_t,u_t),\ u_t\in U,\ x_0\text{ given}$$
+通过下面的关系回到状态序列设定：
+$$\Gamma(x)=\{y:\exists u\in U\ \text{s.t.}\ y=g(x,u)\},\qquad F(x,y)=\max_u\{h(x,u):u\in U,y=g(x,u)\}$$</p>
+<p><strong>4.3.2 连续时间</strong></p>
+<p><strong>(1) 状态序列设定</strong>
+$$\max_{\{\dot x(t)\}_{t=0}^\infty}\int_0^\infty e^{-\rho t}F(x(t),\dot x(t))\,dt\quad\text{s.t.}\quad\dot x(t)\in\Gamma(x(t)),\ x_0\text{ given}$$
+- <strong>欧拉方程</strong>：\(F_x+\rho F_{\dot x}=F_{\dot x x}\dot x+F_{\dot x\dot x}\ddot x\)，对 \(\forall t\ge0\)。
+- <strong>横截性条件</strong>：\(\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x(T),\dot x(T))x(T)=0\)。</p>
+<p><strong>(2) 控制-状态序列设定</strong>
+$$\max_{\{u(t)\}_{t=0}^\infty}\int_0^\infty e^{-\rho t}h(x(t),u(t))\,dt\quad\text{s.t.}\quad\dot x(t)=g(x(t),u(t)),\ u(t)\in U,\ x_0\text{ given}$$
+- <strong>哈密顿量</strong>：\(H(x,u,\lambda)=h(x,u)+\lambda g(x,u)\)。
+- <strong>最大值原理</strong>：
+$$H_u(x,u,\lambda)=0,\qquad\dot\lambda=\rho\lambda-H_x(x,u,\lambda),\qquad\dot x=g(x,u)$$
+- <strong>横截性条件</strong>：\(\lim_{T\to\infty}e^{-\rho T}\lambda(T)x(T)=0\)。</p>
+</div>
+<div class="lang en">
+<p><strong>4.3.1 Discrete time</strong></p>
+<p><strong>(1) State sequence set-up</strong>
+$$\max_{\{x_{t+1}\}_{t=0}^\infty}\sum_{t=0}^\infty\beta^t F(x_t,x_{t+1})\quad\text{s.t.}\quad x_{t+1}\in\Gamma(x_t),\ x_0\text{ given}$$
+- <strong>Euler equation</strong>: \(F_y(x_t,x_{t+1})+\beta F_x(x_{t+1},x_{t+2})=0\), for \(\forall t\ge0\).
+- <strong>Transversality condition</strong>: \(\lim_{T\to\infty}\beta^T F_x(x_T,x_{T+1})x_T=0\).</p>
+<p><strong>(2) Control-state sequence set-up</strong>
+$$\max_{\{u_t\}_{t=0}^\infty}\sum_{t=0}^\infty\beta^t h(x_t,u_t)\quad\text{s.t.}\quad x_{t+1}=g(x_t,u_t),\ u_t\in U,\ x_0\text{ given}$$
+Return to the state sequence set-up by using the following relationships:
+$$\Gamma(x)=\{y:\exists u\in U\ \text{s.t.}\ y=g(x,u)\},\qquad F(x,y)=\max_u\{h(x,u):u\in U,y=g(x,u)\}$$</p>
+<p><strong>4.3.2 Continuous time</strong></p>
+<p><strong>(1) State sequence set-up</strong>
+$$\max_{\{\dot x(t)\}_{t=0}^\infty}\int_0^\infty e^{-\rho t}F(x(t),\dot x(t))\,dt\quad\text{s.t.}\quad\dot x(t)\in\Gamma(x(t)),\ x_0\text{ given}$$
+- <strong>Euler equation</strong>: \(F_x+\rho F_{\dot x}=F_{\dot x x}\dot x+F_{\dot x\dot x}\ddot x\), for \(\forall t\ge0\).
+- <strong>Transversality condition</strong>: \(\lim_{T\to\infty}e^{-\rho T}F_{\dot x}(x(T),\dot x(T))x(T)=0\).</p>
+<p><strong>(2) Control-state sequence set-up</strong>
+$$\max_{\{u(t)\}_{t=0}^\infty}\int_0^\infty e^{-\rho t}h(x(t),u(t))\,dt\quad\text{s.t.}\quad\dot x(t)=g(x(t),u(t)),\ u(t)\in U,\ x_0\text{ given}$$
+- <strong>Hamiltonian</strong>: \(H(x,u,\lambda)=h(x,u)+\lambda g(x,u)\).
+- <strong>Maximum Principle</strong>:
+$$H_u(x,u,\lambda)=0,\qquad\dot\lambda=\rho\lambda-H_x(x,u,\lambda),\qquad\dot x=g(x,u)$$
+- <strong>Transversality condition</strong>: \(\lim_{T\to\infty}e^{-\rho T}\lambda(T)x(T)=0\).</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#4-1-discrete-time">4.1 Discrete Time</a></li>
+        <li><a href="#4-2-continuous-time">4.2 Continuous Time</a></li>
+        <li><a href="#4-3-summary">4.3 Summary</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

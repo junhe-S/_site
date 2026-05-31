@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>19. Learning from Data – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>19. Learning from Data</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">识别</span><span class="lang en">Identification</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">经验研究</span><span class="lang en">Empirical Research</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">溯因</span><span class="lang en">Abduction</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">抽样</span><span class="lang en">Sampling</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">假设检验</span><span class="lang en">Hypothesis Testing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">似然原理</span><span class="lang en">Likelihood Principle</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：如何从数据中学习。</strong> 退一步看经验研究的方法论。<strong>§19.1 经验研究的风格</strong>：描述性/因果/结构/校准四类研究在"与模型的联系、原始数据、计算复杂度、可复制性、辅助假设、识别来源、拟合优度、受众、规则、政策分析、领域实例"上的对比。<strong>§19.2 识别</strong>：可观测量 \(\mathbf W\sim g\in G\)、模型集 \(\Theta\)、关注参数 \(\rho=\pi(\theta)\)；<strong>定义 19.1</strong> 点识别（\(\Theta^\star\) 唯一）、部分识别（多元）、误设（\(\Theta^\star=\varnothing\)）；线性回归识别例。<strong>§19.3 溯因（abduction）</strong>：演绎/归纳/溯因（"白豆"三段论），<strong>定义 19.2</strong> 溯因 = 因惊奇而生成与修正模型。<strong>§19.4 溯因 vs 结构方法</strong>：Friedman（创建—检验—修正—迭代）vs Cowles/Popper（先定可容许假设集再识别）；溯因 vs 识别/Bayesian/交叉验证。<strong>§19.5 抽样</strong>：随机抽样（\(\omega^\star=1\)）、抽样规则 \(g(\mathbf x^\star)=\omega(\mathbf x^\star)f(\mathbf x^\star)/\int\omega f\)（19.1）、截断（truncation）、删失（censoring，I/II 型）、分层抽样（\(\omega(\mathbf y,\mathbf x)=\omega(\mathbf x)\) 给出 \(f(\mathbf y\mid\mathbf x)\) 的有效推断）。<strong>§19.6 假设检验</strong>：纯显著性检验与 \(p\) 值、样本量与拒绝概率（\(\mu_{\text{true}}>\mu_0\) 时拒绝概率随 \(T\) 趋于 1）、经典检验（事前、频率派、需预设停止规则）、似然原理（全部信息在样本/似然中）、Bayes 原理（先验 + 数据）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: how to learn from data.</strong> A step back to the methodology of empirical research. <strong>§19.1 Styles of empirical research</strong>: descriptive / causal / structural / calibration research compared across "link to formulated models, primary data, computational complexity, replication, auxiliary assumptions, sources of identification, goodness of fit, audience, rules, policy analysis, examples in profession." <strong>§19.2 Identification</strong>: observables \(\mathbf W\sim g\in G\), model set \(\Theta\), parameter of interest \(\rho=\pi(\theta)\); <strong>Definition 19.1</strong> point identification (\(\Theta^\star\) a singleton), partial identification (multiple), misspecification (\(\Theta^\star=\varnothing\)); a linear-regression identification example. <strong>§19.3 Abduction</strong>: deduction / induction / abduction (the "white beans" syllogism), <strong>Definition 19.2</strong> abduction = generating and revising models in response to surprises. <strong>§19.4 Abduction vs structural approach</strong>: Friedman (create-test-revise-iterate) vs Cowles/Popper (fix admissible set first, then identify); abduction vs identification / Bayesian / cross-validation. <strong>§19.5 Sampling</strong>: random sampling (\(\omega^\star=1\)), sampling rule \(g(\mathbf x^\star)=\omega(\mathbf x^\star)f(\mathbf x^\star)/\int\omega f\) (19.1), truncation, censoring (Type I/II), stratified sampling (\(\omega(\mathbf y,\mathbf x)=\omega(\mathbf x)\) gives valid inference on \(f(\mathbf y\mid\mathbf x)\)). <strong>§19.6 Hypothesis testing</strong>: pure significance tests and the \(p\)-value, sample size and rejection probability (when \(\mu_{\text{true}}>\mu_0\) the rejection probability goes to 1 as \(T\) grows), classical testing (ex-ante, frequentist, needs a pre-determined stopping rule), the likelihood principle (all information is in the sample/likelihood), the Bayesian principle (prior + data).</p></div>
+</div>
+<h2 id="19-1-styles-of-empirical-research">19.1 Styles of Empirical Research</h2>
+<div class="lang zh">
+<p>经验研究大致可分四类：<strong>描述性研究（"只讲事实"）</strong>、<strong>因果分析（实验/自然实验/"处理效应"）</strong>、<strong>结构分析</strong>、<strong>校准（calibration）</strong>。下表沿多个维度对比四者。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>描述性研究</th>
+<th>因果分析</th>
+<th>结构分析</th>
+<th>校准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>与精确表述模型的联系</td>
+<td>间接（聚焦"事实"）</td>
+<td>估计"效应"，所问问题常未嵌入精确经济模型</td>
+<td>紧密联系</td>
+<td>紧密联系</td>
+</tr>
+<tr>
+<td>原始数据的使用</td>
+<td>核心</td>
+<td>核心</td>
+<td>核心</td>
+<td>数据用得更多（去货架上挑现成估计），或挑选数据的特定矩</td>
+</tr>
+<tr>
+<td>计算复杂度</td>
+<td>简单分析：基础统计（有时复杂分析）</td>
+<td>线性模型常受青睐，但 TSLS 等非线性也用于匹配与其他模型</td>
+<td>视问题而定（简单模型、博弈论、动态、反事实理论可产出复杂模型）</td>
+<td>经济模型复杂、混合估计（样本矩；选定的矩；均值与方差的选取）与模拟</td>
+</tr>
+<tr>
+<td>可复制性</td>
+<td>大量检验与稳健性，多数据集（见 Fogel、Kuznets）</td>
+<td>有时在同一论文用多个数据集复制，鼓励复制；多数论文报告多设定、报告多数据集（见 Kuznets）</td>
+<td>因计算成本常只用一个数据集，计算成本是主因</td>
+<td>对替代参数化的敏感性分析；有时探索敏感性</td>
+</tr>
+<tr>
+<td>辅助假设</td>
+<td>模型与检验的使用</td>
+<td>线性、"简单"方法 鼓励（TSLS 因模型设定而起）</td>
+<td>分布假设、对功能形式的近期发展非参数版本</td>
+<td>对功能形式的明确假设；用熟悉模型</td>
+</tr>
+<tr>
+<td>识别来源</td>
+<td>非问题所在</td>
+<td>工具变量（搜索工具或排除）、随机化作工具</td>
+<td>有时不清楚、各种方法、需外部变异、跨方程限制（一致性）</td>
+<td>不考虑（可能与用于模型的估计不匹配）</td>
+</tr>
+<tr>
+<td>拟合优度</td>
+<td>简单汇总（无模型、无拟合概念）</td>
+<td>聚焦各种、量化各种、收到审视各种</td>
+<td>有时比较拟合的分布作为模型检验、模型 however、更常只与所选矩匹配</td>
+<td>拟合所选模型于任意一组矩、检查与数据的对齐</td>
+</tr>
+<tr>
+<td>受众</td>
+<td>一般</td>
+<td>一般与专家</td>
+<td>专家</td>
+<td>专家</td>
+</tr>
+<tr>
+<td>规则</td>
+<td>(i) 审慎记录来源；(ii) 在一般情境下拟合；(iii) 强调新数据集</td>
+<td>(i) 巧妙的工具；(ii) 新数据集；(iii) 对识别假设少有注意；(iv) 少有注意当下被估计的是什么</td>
+<td>(i) 显式模型（可解释经济学）；(ii) 关于参数的因果论断；(iii) 识别来源未必清楚</td>
+<td>(i) 严格经济学；(ii) 因果论断；(iii) 经验输入与拟合（所选矩）</td>
+</tr>
+<tr>
+<td>政策分析</td>
+<td>宽泛的结果（然而对因果的描述常领先于阶段）</td>
+<td>一般"政策效应"评估（许多政策已就位，无对福利或行为的度量）</td>
+<td>(i) 福利成本（商业周期成本）；(ii) 投票结果；(iii) 框架（评估新政策从未先试过的政策）</td>
+<td>显式福利与政策分析（商业周期成本）；(i) 福利成本（商业周期成本）；(ii) 投票结果</td>
+</tr>
+<tr>
+<td>领域实例</td>
+<td>Kuznets；Fogel；Friedman 与 Schwartz；Summers 与 Heston；Goldin 与 Katz</td>
+<td>Angrist、Krueger、Pischke 等</td>
+<td>Pakes；Berry；Keane 与 Wolpin；Hansen 与 Sargent</td>
+<td>Prescott 与 Kydland；Kydland 与 Wolpin、Rios-Rull；宏观经济学诸多论文</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="lang en">
+<p>Empirical research can be roughly divided into four styles: <strong>descriptive studies ("just the facts")</strong>, <strong>causal analysis (experiments / natural experiments / "treatment effects")</strong>, <strong>structural analysis</strong>, and <strong>calibration</strong>. The following table compares the four along several dimensions.</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Descriptive Studies</th>
+<th>Causal Analysis</th>
+<th>Structural Analysis</th>
+<th>Calibration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Link to precisely formulated models</td>
+<td>Indirect (focus on "facts")</td>
+<td>Estimate "the effect," question being addressed is often not formulated within a precise economic model</td>
+<td>Tight link</td>
+<td>Tight link</td>
+</tr>
+<tr>
+<td>Use of primary data</td>
+<td>Central</td>
+<td>Central</td>
+<td>Central</td>
+<td>More data used ("go to the shelf for the estimate") or else pick a few "relevant" moments of the data</td>
+</tr>
+<tr>
+<td>Computational complexity</td>
+<td>Simple analysis: basic statistics (sometimes complex analysis)</td>
+<td>Linear models often favored, but TSLS not necessarily in matching and other models</td>
+<td>Depends on problem (some simple, modern game theory, dynamics, and contract theory can produce complex models)</td>
+<td>Economic models complex, mixed estimation (sample moments; selected moments; means and variances) and simulation</td>
+</tr>
+<tr>
+<td>Replication</td>
+<td>Lots of testing and robustness checks; use of multiple data sets (see Fogel or Kuznets)</td>
+<td>Sometimes replicated in the latter papers; use of multiple data sets and confirmation is encouraged. Styles vary widely, however, and many papers report a single setting and one data set</td>
+<td>Often only one data set given computational costs; estimation on one data set alone is common. Computational costs are falling</td>
+<td>Sensitivity analysis in computation of the model; sensitivity to alternative parameters sometimes explored</td>
+</tr>
+<tr>
+<td>Auxiliary assumptions</td>
+<td>Use of linear and robustness checks; use of models</td>
+<td>Linearity; "simple" methods encouraged (TSLS issue) in model specification</td>
+<td>Distributional assumptions and functional form. Recent work develops nonparametric versions</td>
+<td>Explicit functional forms for the models based on familiar models</td>
+</tr>
+<tr>
+<td>Sources of identification</td>
+<td>Not an issue</td>
+<td>IV intuition (search for instrument or exclusion). Randomization is an instrument</td>
+<td>Sometimes unclear; like all approaches, requires external variation; cross-equation restrictions used (and model consistency)</td>
+<td>Not considered (possible mismatch between estimates used and model consistency)</td>
+</tr>
+<tr>
+<td>Goodness of fit</td>
+<td>Simple summaries (no model, no notion of fit)</td>
+<td>Focus on various; quantifies via residuals receive scrutiny</td>
+<td>Sometimes compares fitted to actual distributions as tests of model; however, more often only means are tested</td>
+<td>Fit a few selected models if any at all; check alignment with selected moments</td>
+</tr>
+<tr>
+<td>Audience</td>
+<td>General</td>
+<td>General and specialists</td>
+<td>Specialists</td>
+<td>Specialists</td>
+</tr>
+<tr>
+<td>Rules</td>
+<td>(i) Carefully document sources; (ii) fit in general context; (iii) emphasis on novel data sets</td>
+<td>(i) Clever instruments; (ii) novel data sets; (iii) little attention to identification assumptions; (iv) little attention to interpretation of what is being estimated</td>
+<td>(i) Explicit models (interpretable economic parameters); (ii) formal tests (causal sources of identification not as clear)</td>
+<td>(i) Rigorous economics; (ii) causal impact; (iii) empirical input and fit (selected moments)</td>
+</tr>
+<tr>
+<td>Policy Analysis</td>
+<td>Broad outcomes (however, description of policies often precedes causal phases)</td>
+<td>General "policy effects"; evaluation of policies in place; no measures of welfare or cost (however)</td>
+<td>(i) Welfare costs (costs of business cycles); (ii) voting outcomes; (iii) framework for evaluating new policies never tried</td>
+<td>Explicit welfare and policy analysis (costs of business cycles); (i) welfare costs (costs of business cycles); (ii) voting outcomes</td>
+</tr>
+<tr>
+<td>Examples in Profession</td>
+<td>Kuznets; Fogel; Friedman and Schwartz; Summers and Heston; Goldin and Katz</td>
+<td>Angrist, Krueger, Pischke, etc.</td>
+<td>Pakes; Berry; Keane and Wolpin; Hansen and Sargent</td>
+<td>Prescott and Kydland; Kydland and Wolpin, Rios-Rull; many papers in macroeconomics</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="19-2-identification">19.2 Identification</h2>
+<div class="lang zh">
+<p><strong>19.2.1 设定</strong>
+- 可观测量向量 \(\mathbf W\)，按 \(g\in G\) 分布。
+  - \(G\) 是 \(\mathbf W\) 所有可能分布之集合的一个子集，\(g\) 为一个已知分布。
+  - 注意分布是针对<strong>总体</strong>而非样本——识别这一步不涉及抽样。
+- \(\Theta\) 是所有可容许模型之集合。
+- \(\theta\in\Theta\) 为一个模型。
+- 关注参数 \(\rho=\pi(\theta)\)。
+  - \(\pi(\cdot)\) 是把模型映到关注参数的函数。</p>
+<p><strong>19.2.2 识别的定义</strong></p>
+<p>识别要求：给定 \(\mathbf W\) 的观测分布 \(g\)，我们有
+1. \(\theta\in\Theta\)；
+2. \(g_\theta=g\)。</p>
+<p>于是记被识别模型之集合为 \(\Theta^\star\)：
+$$\Theta^\star=\{\theta:\theta\in\Theta\text{ and }g_\theta=g\}$$
+记被识别的关注参数之集合为 \(\Pi^\star\)：
+$$\Pi^\star=\{\pi(\theta):\theta\in\Theta^\star\}$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 19.1（点识别、部分识别与误设）
+对被识别模型之集合 \(\Theta^\star\)：
+- 若 \(\Theta^\star\) 只有一个元素，则称模型<strong>点识别（point identified）</strong>；
+- 若 \(\Theta^\star\) 有多个元素，则称模型<strong>部分识别（partially identified）</strong>；
+- 若 \(\Theta^\star\) 为空，则称模型<strong>误设（misspecified）</strong>。</p></div>
+</div>
+<div class="lang en">
+<p><strong>19.2.1 Set-up</strong>
+- A vector \(\mathbf W\) of observables, distributed according to \(g\in G\).
+  - \(G\) is a subset of the set of all possible distributions of \(\mathbf W\), and \(g\) is a known distribution.
+  - Note that the distribution is for the <strong>population</strong>, not the sample. There is no sampling involved in the step of identification.
+- \(\Theta\) is the set of all allowable models.
+- \(\theta\in\Theta\) is a model.
+- Parameter of interest is \(\rho=\pi(\theta)\).
+  - \(\pi(\cdot)\) is a function that maps the model to the parameter of interest.</p>
+<p><strong>19.2.2 Definition of identification</strong></p>
+<p>Identification requires that given the observed distribution \(g\) of \(\mathbf W\), we have
+1. \(\theta\in\Theta\);
+2. \(g_\theta=g\).</p>
+<p>So, denote the set of identified models by \(\Theta^\star\) such that
+$$\Theta^\star=\{\theta:\theta\in\Theta\text{ and }g_\theta=g\}$$
+Denote the set of identified parameters of interest by \(\Pi^\star\) such that
+$$\Pi^\star=\{\pi(\theta):\theta\in\Theta^\star\}$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 19.1 (Point identification, partial identification and misspecification)
+For the set of identified models \(\Theta^\star\):
+- if \(\Theta^\star\) has only one element, then we say that the model is <strong>point identified</strong>;
+- if there are multiple elements in \(\Theta^\star\), then we say that the model is <strong>partially identified</strong>;
+- if \(\Theta^\star\) is empty, then we say that the model is <strong>misspecified</strong>.</p></div>
+</div>
+<div class="lang zh">
+<p><strong>19.2.3 例：线性回归的识别</strong>
+- 可观测量向量 \(\mathbf W=(Y,\mathbf X)\)。
+  - \(Y\in\mathbb R\)；
+  - \(\mathbf X\in\mathbb R^k\)。
+- 所有可容许模型之集合为
+$$\Theta=\left\{(\boldsymbol\beta,F):\mathbb E_F[\mathbf X u]=0,\ \mathbb E_F[\mathbf X\mathbf X']^{-1}\text{ exists}\right\}$$
+- 模型为 \(\theta=(\boldsymbol\beta,F)\)。
+  - \(\boldsymbol\beta\in\mathbb R^k\)；
+  - \(F\) 为 \((\mathbf X,u)\) 分布的 c.d.f。
+- \(G\) 使得 \(Y=\mathbf X'\boldsymbol\beta+u\)。
+- \(g\) 为从数据观测到的 \(\mathbf W=(Y,\mathbf X)\) 的分布。
+- 关注参数 \(\rho=\pi((\boldsymbol\beta,F))=\boldsymbol\beta\)。</p>
+<p>记由模型 \(\theta\) 导出的可观测量分布为 \(g_\theta\)，即 \(g_\theta\equiv\mathbb P_F(\mathbf X'\boldsymbol\beta+u\le Y,\mathbf X\le\mathbf x)\)（其中 \(\mathbb P_F(\mathbf X'\boldsymbol\beta+u\le Y,\mathbf X\le\mathbf x)\) 是 \(\mathbf W=(Y,\mathbf X)\) 由 \(\theta=(\boldsymbol\beta,F)\) 隐含的分布）。</p>
+<p>在该线性回归例中，设 \(\rho=\boldsymbol\beta\in\Pi^\star\)。若对所有 \(g\in G\) 有 \(\rho=\boldsymbol\beta=\phi(g)\)（对某函数 \(\phi(\cdot)\)），则称参数 \(\rho\) 是点识别的。</p>
+</div>
+<div class="lang en">
+<p><strong>19.2.3 Example: identification for linear regression</strong>
+- The vector of observables is \(\mathbf W=(Y,\mathbf X)\).
+  - \(Y\in\mathbb R\);
+  - \(\mathbf X\in\mathbb R^k\).
+- The set of all allowable models is
+$$\Theta=\left\{(\boldsymbol\beta,F):\mathbb E_F[\mathbf X u]=0,\ \mathbb E_F[\mathbf X\mathbf X']^{-1}\text{ exists}\right\}$$
+- The model is \(\theta=(\boldsymbol\beta,F)\).
+  - \(\boldsymbol\beta\in\mathbb R^k\);
+  - \(F\) is the c.d.f of a distribution of \((\mathbf X,u)\).
+- \(G\) is such that \(Y=\mathbf X'\boldsymbol\beta+u\).
+- \(g\) is the distribution of \(\mathbf W=(Y,\mathbf X)\) observed from data.
+- The parameter of interest is \(\rho=\pi((\boldsymbol\beta,F))=\boldsymbol\beta\).</p>
+<p>Denote the distribution of the observables derived from the model \(\theta\) by \(g_\theta\), i.e. \(g_\theta\equiv\mathbb P_F(\mathbf X'\boldsymbol\beta+u\le Y,\mathbf X\le\mathbf x)\) where \(\mathbb P_F(\mathbf X'\boldsymbol\beta+u\le Y,\mathbf X\le\mathbf x)\) is the distribution of \(\mathbf W=(Y,\mathbf X)\) implied by \(\theta=(\boldsymbol\beta,F)\).</p>
+<p>In this linear regression example, suppose that \(\rho=\boldsymbol\beta\in\Pi^\star\). If for \(\forall g\in G\), we have \(\rho=\boldsymbol\beta=\phi(g)\) for some function \(\phi(\cdot)\), then we say that parameter \(\rho\) is point identified.</p>
+</div>
+<h2 id="19-3-abduction-how-to-learn-from-surprises">19.3 Abduction: How to Learn from Surprises</h2>
+<div class="lang zh">
+<p>经验经济学的基本目标是从数据中学习。但在此基本目标背后，是一个更根本的问题：什么构成可容许的证据。研究者有时说让数据自己说话——但这从不成立，总有或多或少精确地嵌入"经验证据"中的先入之见。一个核心问题是：如何因新证据而修正这些先入之见。来看一种特定的应对惊奇的方法，称为<strong>溯因（abduction）</strong>。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 19.2（溯因 Abduction）
+溯因是<strong>因惊奇的发现而生成与修正模型、假设与数据</strong>的过程。</p></div>
+<p>用下面的类比来更好地理解演绎、归纳与溯因（"白豆"三段论）：</p>
+<ol>
+<li><strong>演绎（Deduction）</strong></li>
+<li>(a) 规则：这袋里的豆都是白的。</li>
+<li>(b) 情形：这些豆来自那袋。</li>
+<li>(c) 因此，结果：这些豆是白的。</li>
+<li><strong>归纳（Induction）</strong></li>
+<li>(a) 情形：这些豆来自这袋。</li>
+<li>(b) 结果：这些豆是白的。</li>
+<li>(c) 因此，规则：这袋里的豆都是白的。</li>
+<li><strong>溯因（Abduction）</strong></li>
+<li>(a) 规则：这袋里的豆都是白的。</li>
+<li>(b) 结果：这些豆是白的。</li>
+<li>(c) 因此，情形：这些豆来自那袋。</li>
+</ol>
+</div>
+<div class="lang en">
+<p>The fundamental goal of empirical economics is to learn from data. But behind this fundamental goal is a more fundamental question of what constitutes admissible evidence. Researchers sometimes say that the data speaks for itself. This is never true. There are always preconceptions embedded more or less precisely into "empirical evidence." A central question is how to revise these preconceptions in light of new evidence. Let's look at a particular method for reacting to surprises, which is called <strong>abduction</strong>.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 19.2 (Abduction)
+Abduction is the process of <strong>generating and revising models, hypotheses and data in response to surprising findings</strong>.</p></div>
+<p>Let's look at the following analogy to better understand deduction, induction and abduction (the "white beans" syllogism):</p>
+<ol>
+<li><strong>Deduction</strong></li>
+<li>(a) Rule: all the beans from a bag are white.</li>
+<li>(b) Case: these beans are from that bag.</li>
+<li>(c) Therefore, result: these beans are white.</li>
+<li><strong>Induction</strong></li>
+<li>(a) Case: these beans are from this bag.</li>
+<li>(b) Result: these beans are white.</li>
+<li>(c) Therefore, rule: all the beans from this bag are white.</li>
+<li><strong>Abduction</strong></li>
+<li>(a) Rule: all the beans from a bag are white.</li>
+<li>(b) Result: these beans are white.</li>
+<li>(c) Therefore, case: these beans are from that bag.</li>
+</ol>
+</div>
+<h2 id="19-4-abduction-vs-structural-approach">19.4 Abduction vs Structural Approach</h2>
+<div class="lang zh">
+<p><strong>Friedman 的方法论（溯因）</strong> 是：
+1. 创建理论
+2. 检验理论
+3. 修正理论
+4. 迭代</p>
+<p><strong>Cowles 的结构方法（Popper 的观点）</strong> 是：
+1. 先在所有可容许假设之集合上做决定（称为"模型"）。
+2. 然后从该假设子集中挑选与证据一致的那个（称为"识别"）。</p>
+<p>主要区别在于：Friedman 对模型结构施加尽可能少的限制，然后看数据来弄清模型该是什么样、什么与数据一致；故 Friedman 的方法涉及大量动态修正与重新检验模型，也需要交叉验证。然而，Cowles 认为应当存在一个可容许模型的集合，真模型必落在该子集内（在触及数据之前就确定）。问题是：若该子集中的所有假设都被证据拒绝，则此时该怎么办尚不清楚，且无法从惊奇中学习。而且，正如 Friedman 指出的，把过程细分为"先决定可容许集再识别"两步，有时是任意且有问题的——这只是一般溯因方法的一个特例。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 19.1
+Popper 的观点：先有一个假设，然后到现实世界去检验该假设真伪。溯因被明确地定义为与 Popper 观点相对立。对 Popper 派而言，计量经济学家应<strong>事前</strong>定义一个假设，然后基于数据接受或拒绝它。在溯因之下，把假设拿到数据面前之后，修正或更新假设是可接受的——这与 Popper 派相反。</p></div>
+</div>
+<div class="lang en">
+<p><strong>Friedman's methodology (abduction)</strong> is:
+1. Create theory
+2. Test theory
+3. Revise theory
+4. Iterate</p>
+<p><strong>Cowles's structural approach (Popperian's view)</strong> is:
+1. First decide on a set of all admissible hypotheses (called "model").
+2. Then, choose from that subset of hypotheses to find the one that is consistent with the evidence (called "identification").</p>
+<p>The major difference is that Friedman imposes as less restrictions as possible on the structure of the model, and then look at the data to figure out what the model should be that is consistent with the data, so Friedman's approach involves a lot of dynamic revising and retesting of the model, and also requires cross-validation. However, Cowles believes that there should be a set of admissible models, so the true model must come from that subset of admissible models, which is determined even before touching the data. The problem is, though, if all hypotheses in that subset are rejected by the evidence, then it is not clear what to do at that stage, and it's impossible to learn from surprises. And, as Friedman pointed out, such subdivision into two steps (decide admissible set and then identify) can be arbitrary and problematic at sometimes, which is just a special case of the general abductive approach.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 19.1
+Popperian's view: first, have a hypothesis, then go out in the world and test whether the hypothesis is true or false. Abduction is explicitly defined in opposition to this Popperian's view. For the Popperian, the econometrician should ex-ante define a hypothesis and then accept or reject his hypothesis based on the data. Under abduction, after taking the hypothesis to the data, it's acceptable to review or update the hypothesis.</p></div>
+</div>
+<div class="lang zh">
+<p><strong>溯因 vs 识别</strong></p>
+<p>溯因直接挑战识别。具体而言，识别分析把可容许模型的类视作在经验调查开始之前就已确定。而识别范式不提供修正模型的程序。</p>
+<p><strong>溯因 vs Bayesian</strong></p>
+<p>溯因与 Bayesian 相似，二者都涉及在观测新数据后动态修正与更新模型。但 Bayesian 无法应对"完全意料之外的惊奇"，因为先验排除了"完全令人意外的事实"。完全的惊奇只属于溯因的领域。</p>
+<p><strong>溯因与交叉验证</strong></p>
+<p>为给溯因过程提供依据，我们需要做<strong>交叉验证</strong>——本质上是用与"用于生成和修正模型"那部分数据相互独立的数据集来检验模型。例如，可随机将数据集分成两部分，用其中一部分生成并修正模型，再用另一部分检验模型。</p>
+</div>
+<div class="lang en">
+<p><strong>Abduction versus identification</strong></p>
+<p>Abduction is a direct challenge to the identification. In particular, identification analysis takes its class of admissible models as determined before an empirical investigation begins. And the identification paradigm does not give a procedure for revising models.</p>
+<p><strong>Abduction versus Bayesian</strong></p>
+<p>Abduction and Bayesian are similar in the sense that both involve dynamic revising and updating of the model after observing new data. But, Bayesian has no way to cope with the totally unexpected surprises as priors rule out "totally surprising facts." Total surprise is only in the domain of abduction.</p>
+<p><strong>Abduction and cross-validation</strong></p>
+<p>To justify the abduction process, we need to do cross-validation, which is basically testing the model using data sets that are independent of the one used to generate and revise the model. For example, we can randomly split the data set into two parts, then use one part to generate and revise the model and use the other part to test the model.</p>
+</div>
+<h2 id="19-5-sampling">19.5 Sampling</h2>
+<div class="lang zh">
+<p><strong>19.5.1 随机抽样</strong></p>
+<p>设每个 \(\mathbf X_i\) 是一组随机变量，它们关于 \(i\) 是 i.i.d. 的，联合 p.d.f 为 \(f(\mathbf X_i)\)。简单随机抽样以 \(\mathbf x_i\) 为各 \(\mathbf X_i\) 的一个实现来抽取样本，获得该样本的概率为
+$$\prod_{i=1}^{N}\mathbb P(\mathbf x_i)$$</p>
+<p>下面定义的抽样规则，对随机抽样有 \(\omega(\mathbf x^\star)=1\)（\(\forall\mathbf x^\star\)），从而 \(\omega^\star(\mathbf x^\star)=1\)，这意味着
+$$g(\mathbf x^\star)=f(\mathbf x^\star)$$</p>
+<p><strong>19.5.2 抽样规则</strong></p>
+<p>记原始随机变量为 \(\mathbf X\)（小写 \(\mathbf x\) 记 \(\mathbf X\) 的各取值），其 p.d.f 为 \(f(\cdot)\)，被抽数据记为 \(\mathbf X^\star\)（小写 \(\mathbf x^\star\) 记 \(\mathbf X^\star\) 的各取值）。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 19.3（抽样规则 Sampling rule）
+抽样规则创建一个非负的加权函数 \(\omega(\mathbf X)\)，它改变总体密度 \(f(\cdot)\) 以得到被抽数据的密度 \(g(\cdot)\)：
+$$g(\mathbf x^\star)=\frac{\omega(\mathbf x^\star)f(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}\tag{19.1}$$</p></div>
+<p>注意 (19.1) 的分母只是把 \(g(\mathbf x^\star)\) 归一化、使其积分为 1，从而是一个良定义的密度函数。或者，可定义 \(\omega^\star(\mathbf x^\star)\) 为
+$$\omega^\star(\mathbf x^\star)\equiv\frac{\omega(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}$$
+于是
+$$g(\mathbf x^\star)=\omega^\star(\mathbf x^\star)f(\mathbf x^\star)$$</p>
+<p>注意抽样规则可能在某些数据点 \(\mathbf x^\star\) 上取 \(\omega^\star(\mathbf x^\star)=0\)，这给出下面讨论的<strong>截断样本</strong>。</p>
+</div>
+<div class="lang en">
+<p><strong>19.5.1 Random sampling</strong></p>
+<p>Suppose that each of \(\mathbf X_i\)'s is a vector of random variables that are i.i.d. across \(i\)'s with a joint p.d.f \(f(\mathbf X_i)\). Simple random sampling attains each \(\mathbf x_i\) as a realization of \(\mathbf X_i\)'s, with the probability of obtaining the sample as
+$$\prod_{i=1}^{N}\mathbb P(\mathbf x_i)$$</p>
+<p>The sampling rule, which is defined below, for the random sampling is \(\omega(\mathbf x^\star)=1\) for \(\forall\mathbf x^\star\), and thus \(\omega^\star(\mathbf x^\star)=1\), which implies that
+$$g(\mathbf x^\star)=f(\mathbf x^\star)$$</p>
+<p><strong>19.5.2 Sampling rule</strong></p>
+<p>Denote the original random variable by \(\mathbf X\) (lowercase \(\mathbf x\) denotes each value of \(\mathbf X\)) whose p.d.f is \(f(\cdot)\), and the sampled data by \(\mathbf X^\star\) (lowercase \(\mathbf x^\star\) denotes each value of \(\mathbf X^\star\)).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 19.3 (Sampling rule)
+A sampling rule creates a non-negative weighting function \(\omega(\mathbf X)\) that alters the population density \(f(\cdot)\) to yield the density of sampled data \(g(\cdot)\) such that
+$$g(\mathbf x^\star)=\frac{\omega(\mathbf x^\star)f(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}\tag{19.1}$$</p></div>
+<p>Note that the denominator of (19.1) just normalizes \(g(\mathbf x^\star)\) to make it integrate up to 1 so that it is a well-defined density function. Alternatively, we can define \(\omega^\star(\mathbf x^\star)\) by
+$$\omega^\star(\mathbf x^\star)\equiv\frac{\omega(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}$$
+so that
+$$g(\mathbf x^\star)=\omega^\star(\mathbf x^\star)f(\mathbf x^\star)$$</p>
+<p>Note that it is possible that our sampling rule may put \(\omega^\star(\mathbf x^\star)=0\) on some data points \(\mathbf x^\star\), which gives us the truncated sample discussed below.</p>
+</div>
+<div class="lang zh">
+<p><strong>19.5.3 截断样本与截断随机变量</strong></p>
+<ul>
+<li><strong>截断样本（Truncated sample）</strong>：设 \(f(\cdot)\) 是随机变量 \(\mathbf X\) 的密度。若样本（单变量情形）只从 \((a,b)\) 取得（\(a,b\) 可为无穷），则称之为截断样本。</li>
+<li>若样本从 \((-\infty,b)\) 取得，则结果为<strong>右截断（right truncation）</strong>。</li>
+<li>若样本从 \((a,\infty)\) 取得，则结果为<strong>左截断（left truncation）</strong>。</li>
+<li><strong>截断随机变量（Truncated random variable）</strong>：设潜变量 \(\mathbf X\) 只在它落于 \((L,R)\) 时才被观测，记被观测随机变量为 \(\mathbf X^\star\)，则
+$$\mathbf X=\mathbf X^\star\text{ for }\mathbf X\in(L,R)$$</li>
+<li>若已知真实未截断总体密度 \(f(\mathbf X)\)，则截断随机变量 \(\mathbf X^\star\) 的密度 \(g(\mathbf X^\star)\) 为
+$$g(\mathbf x^\star)=\frac{f(\mathbf x^\star)}{\int_L^R f(\mathbf x^\star)\,d\mathbf x^\star}$$
+  或等价地，
+$$g(\mathbf x^\star)=\frac{\omega(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}f(\mathbf x^\star)\text{ with }\omega(\mathbf x^\star)=0\text{ if }\mathbf x^\star\notin(L,R)$$</li>
+<li>反之，若我们知道的是截断随机变量 \(\mathbf X^\star\) 的密度 \(g(\mathbf X^\star)\)、但不知真实未截断密度 \(f(\mathbf X)\)，则<strong>无法恢复</strong> \(f(\mathbf X)\)，因为我们既不知道被观测部分的概率权重（即 \(\int_L^R f(\mathbf x^\star)\,d\mathbf x^\star\)），也不知道被观测部分之外的密度结构。</li>
+</ul>
+</div>
+<div class="lang en">
+<p><strong>19.5.3 Truncated sample and truncated random variable</strong></p>
+<ul>
+<li><strong>Truncated sample</strong>: suppose \(f(\cdot)\) is the density of a random variable \(\mathbf X\). We call it a truncated sample if the sample is (in the univariate case) obtained only from \((a,b)\) for some \(a,b\) that can be potentially infinite.</li>
+<li>If the sample is obtained from \((-\infty,b)\), then the resulted sample is a right truncation.</li>
+<li>If the sample is obtained from \((a,\infty)\), then the resulted sample is a left truncation.</li>
+<li><strong>Truncated random variable</strong>: assume that \(\mathbf X\), the latent variable, can only be observed when it is within \((L,R)\), denote the observed random variable by \(\mathbf X^\star\), which is the truncated random variable, and we know that
+$$\mathbf X=\mathbf X^\star\text{ for }\mathbf X\in(L,R)$$</li>
+<li>Suppose that we know the true untruncated population density \(f(\mathbf X)\), then the density of truncated random variable \(\mathbf X^\star\), denoted by \(g(\mathbf X^\star)\), is
+$$g(\mathbf x^\star)=\frac{f(\mathbf x^\star)}{\int_L^R f(\mathbf x^\star)\,d\mathbf x^\star}$$
+  or equivalently,
+$$g(\mathbf x^\star)=\frac{\omega(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}f(\mathbf x^\star)\text{ with }\omega(\mathbf x^\star)=0\text{ if }\mathbf x^\star\notin(L,R)$$</li>
+<li>Suppose instead that we know the density \(g(\mathbf X^\star)\) of the truncated random variable \(\mathbf X^\star\) but don't know the true untruncated density \(f(\mathbf X)\), then it is impossible to recover \(f(\mathbf X)\) because we know neither the probability weight of the observed part (i.e. \(\int_L^R f(\mathbf x^\star)\,d\mathbf x^\star\)), nor the density structure outside the observed part.</li>
+</ul>
+</div>
+<div class="lang zh">
+<p><strong>19.5.4 删失样本</strong></p>
+<ul>
+<li><strong>删失样本（Censored sample）</strong>：与截断类似，只能在 \((L,R)\) 范围内观测到 \(\mathbf X\)，记被观测为 \(\mathbf X^\star\)。但与截断不同——截断中我们连"范围外观测的个数"都不知道——删失样本中我们<strong>知道范围外观测的个数</strong>，只是不知道这些范围外观测的取值。</li>
+<li><strong>删失随机变量（Censored random variable）</strong>：设随机变量 \(\mathbf X^\star\) 只能像截断随机变量那样在 \((L,R)\) 内取值，但范围外取值在整个总体中的概率权重是已知的，则称 \(\mathbf X^\star\) 为删失随机变量。</li>
+<li>直观地：</li>
+<li><strong>截断</strong>：例如，若用孔径为 \(d\) 的网在海上捕鱼，则鱼体大小的样本是左截断的，因为样本中永远不会出现长度小于 \(d\) 的鱼。</li>
+<li><strong>删失</strong>：例如，若用最小刻度为 \(\underline w\) 的秤称鱼，则鱼重的样本是删失的，因为你知道范围外样本的个数（即太轻的鱼），但不知道它们的重量。</li>
+</ul>
+<p>我们有两类删失：
+- <strong>I 型删失（Type I censoring）</strong>：只在变量落于某范围内时才观测到它，但范围外取值的个数是已知的。
+  - 例如，在灯泡烧毁实验中（一定数量的灯泡），若我们指定一个固定的观测时长，则得到 I 型删失样本，此时烧毁个数是随机变量、实验时间固定。</p>
+</div>
+<div class="lang en">
+<p><strong>19.5.4 Censored sample</strong></p>
+<ul>
+<li><strong>Censored sample</strong>: same as in truncation, we can only observe \(\mathbf X\) in the range \((L,R)\), which is denoted by \(\mathbf X^\star\). But unlike in truncation where we don't even know the number of outside observations, here in censored sample we know the number of outside observations but we just don't know the values of those outside points.</li>
+<li><strong>Censored random variable</strong>: suppose the random variable \(\mathbf X^\star\) can only take values in the range \((L,R)\) like the truncated random variable, but the probability weight of in-range values in the whole population is known, then \(\mathbf X^\star\) is a censored random variable.</li>
+<li>Intuitively:</li>
+<li><strong>Truncation</strong>: for example, if you are fishing on the sea using a net with hole diameter \(d\), then the sample of fish sizes is left truncated because there will never be a fish of length less than \(d\) appearing in your sample.</li>
+<li><strong>Censoring</strong>: for example, if you are using a scale with minimum of \(\underline w\) to weigh fish, then the sample of fish weights is censored because you know the number of outside sample points (i.e. those too light fish) but you don't know their weights.</li>
+</ul>
+<p>We have two types of censoring:
+- <strong>Type I censoring</strong>: we only observe a variable if it is in a range, but the number of values outside that range is known.
+  - For example, in the light bulb burnout experiment with certain number of bulbs, type I censored sample is obtained when we specify a fixed length of observation period, where the number of burnout is a random variable but the experiment time is fixed.</p>
+</div>
+<div class="lang zh">
+<ul>
+<li><strong>II 型删失（Type II censoring）</strong>：若已获得固定比例的样本则停止抽样。</li>
+<li>例如，在灯泡烧毁实验中，当我们指定一个固定比例的烧毁作为停止规则时，得到 II 型删失样本——此时烧毁个数固定、实验时间是随机变量。</li>
+<li>两类删失中，我们都知道被遗漏观测的个数，只是不知道它们的取值（如灯泡例中关注的烧毁时间）。</li>
+</ul>
+<p><strong>19.5.5 分层样本</strong></p>
+<p>设有两个随机变量 \(\mathbf X\) 与 \(\mathbf Y\)，关注给定 \(\mathbf X=\mathbf x\) 时 \(\mathbf Y\) 的条件密度 \(f(\mathbf y\mid\mathbf x)\)。\(\mathbf X\) 的分布不是直接关注的对象。</p>
+<p>此时，若样本完全只基于 \(\mathbf X\) 变量选取，即抽样规则 \(\omega(\mathbf y,\mathbf x)=\omega(\mathbf x)\)（\(\forall\mathbf y,\mathbf x\)），则该样本仍给出总体条件密度 \(f(\mathbf y\mid\mathbf x)\) 的有效推断。此类样本称为<strong>分层样本（stratified samples，按 \(\mathbf X\) 分层）</strong>。</p>
+<p>各层 \(\mathbf X=\mathbf x\) 的相对频率（估计密度）可能有偏，但只要 \(\mathbf Y\mid\mathbf X\) 在每层 \(\mathbf X=\mathbf x\) 内被随机抽样，则各层内的频率是无偏的。数学论证如下：</p>
+</div>
+<div class="lang en">
+<ul>
+<li><strong>Type II censoring</strong>: stop sampling if fixed proportion of sample is obtained.</li>
+<li>For example, in the light bulb burnout experiment, type II censored sample is obtained when we specify a fixed proportion of burnout as a stopping rule, where the number of burnout is fixed but the experiment time is a random variable.</li>
+<li>In both types, we know the number of left-out observations but just don't know their value (e.g. in the light bulb example the value of interest is the burnout time of each bulb).</li>
+</ul>
+<p><strong>19.5.5 Stratified sample</strong></p>
+<p>Suppose that we have two random variables \(\mathbf X\) and \(\mathbf Y\), and we focus on the conditional density \(f(\mathbf y\mid\mathbf x)\). We are interested in the distribution of \(\mathbf Y\) given each value \(\mathbf x\) of \(\mathbf X\). So, the distribution of \(\mathbf X\) is not of direct interest.</p>
+<p>In that case, if samples are selected solely on the \(\mathbf X\) variables, i.e. \(\omega(\mathbf y,\mathbf x)=\omega(\mathbf x)\) for \(\forall\mathbf y,\mathbf x\), then the sample selected by the sampling rule \(\omega(\mathbf y,\mathbf x)\) still gives us valid inference of the population conditional density \(f(\mathbf y\mid\mathbf x)\). Such samples are called stratified samples (stratified by \(\mathbf X\)).</p>
+<p>The relative frequencies of each stratum \(\mathbf X=\mathbf x\) might be biased, but the frequency (estimated density) within each stratum is unbiased if \(\omega(\mathbf y,\mathbf x)=\omega(\mathbf x)\), i.e. \(\mathbf Y\mid\mathbf X\) is randomly sampled within each stratum \(\mathbf X=\mathbf x\). See below for the mathematical argument:</p>
+</div>
+<div class="lang zh">
+<p>$$\begin{aligned}g(\mathbf y^\star,\mathbf x^\star)&=\frac{\omega(\mathbf y^\star,\mathbf x^\star)f(\mathbf y^\star,\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}\\&=\frac{\omega(\mathbf x^\star)f(\mathbf y^\star,\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}\\&=f(\mathbf y^\star\mid\mathbf x^\star)f(\mathbf x^\star)\frac{\omega(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}\end{aligned}$$</p>
+<p>且
+$$g(\mathbf x^\star)=\frac{\omega(\mathbf x^\star)f(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}$$</p>
+<p>于是
+$$g(\mathbf y^\star\mid\mathbf x^\star)=\frac{g(\mathbf y^\star,\mathbf x^\star)}{g(\mathbf x^\star)}=f(\mathbf y^\star\mid\mathbf x^\star)$$</p>
+<p>即被抽样本的条件密度 \(g(\mathbf y^\star\mid\mathbf x^\star)\) 恰等于总体条件密度 \(f(\mathbf y^\star\mid\mathbf x^\star)\)，从而分层抽样给出有效推断。</p>
+</div>
+<div class="lang en">
+<p>$$\begin{aligned}g(\mathbf y^\star,\mathbf x^\star)&=\frac{\omega(\mathbf y^\star,\mathbf x^\star)f(\mathbf y^\star,\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}\\&=\frac{\omega(\mathbf x^\star)f(\mathbf y^\star,\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}\\&=f(\mathbf y^\star\mid\mathbf x^\star)f(\mathbf x^\star)\frac{\omega(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}\end{aligned}$$</p>
+<p>and
+$$g(\mathbf x^\star)=\frac{\omega(\mathbf x^\star)f(\mathbf x^\star)}{\int\omega(\mathbf x^\star)f(\mathbf x^\star)\,d\mathbf x^\star}$$</p>
+<p>So,
+$$g(\mathbf y^\star\mid\mathbf x^\star)=\frac{g(\mathbf y^\star,\mathbf x^\star)}{g(\mathbf x^\star)}=f(\mathbf y^\star\mid\mathbf x^\star)$$</p>
+<p>i.e. the conditional density of the sampled data \(g(\mathbf y^\star\mid\mathbf x^\star)\) equals exactly the population conditional density \(f(\mathbf y^\star\mid\mathbf x^\star)\), so stratified sampling gives valid inference.</p>
+</div>
+<h2 id="19-6-hypothesis-testing">19.6 Hypothesis Testing</h2>
+<div class="lang zh">
+<p>本节希望在<strong>事前（ex-ante）</strong> 推断与<strong>事后（ex-post）</strong> 推断之间建立清晰区分。特别地，经典推断是事前的：在估计之前我们需要指定想跑哪些检验。似然原理与 Bayesian 推断是事后的：检验发生在看到数据之后。</p>
+<p><strong>19.6.1 纯显著性检验</strong></p>
+<p>这类检验只聚焦于一个原假设。在这些检验中，\(\mathbf Y=(Y_1,\dots,Y_N)\) 是来自样本的观测，\(t(\mathbf Y)\) 是检验统计量。</p>
+<p>若
+1. 我们知道 \(t(\mathbf Y)\) 在原假设 \(H_0\) 下的分布；
+2. \(t(\mathbf Y)\) 的值越大，反对原假设 \(H_0\) 的证据越强；</p>
+<p>则 \(\mathbb P_{\text{observed}}\) 的低值是反对原假设的强证据，其中
+$$\mathbb P_{\text{observed}}=\mathbb P\!\left(t\ge t_{\text{observed}}\mid H_0\text{ is true}\right)$$</p>
+<p>\(\mathbb P_{\text{observed}}\) 即 <strong>\(p\) 值</strong>——在 \(H_0\) 为真的前提下 \(t_{\text{observed}}\) 出现的概率。故 \(p\) 值低意味着：若 \(H_0\) 正确，\(t_{\text{observed}}\) 本不应出现，这意味着既然我们已观测到 \(t_{\text{observed}}\)，\(H_0\) 很可能为假。</p>
+</div>
+<div class="lang en">
+<p>In this subsection, we hope to establish a clear distinction between ex-ante and ex-post inference. In particular, classical inference is ex-ante. In advance of estimation, we need to specify which tests we want to run. The likelihood principle and Bayesian inference are ex-post. That is, testing happens after we see the data.</p>
+<p><strong>19.6.1 Pure significance tests</strong></p>
+<p>These tests focus exclusively on a null hypothesis. In these tests, \(\mathbf Y=(Y_1,\dots,Y_N)\) are observations from a sample and \(t(\mathbf Y)\) is a test statistic.</p>
+<p>If
+1. we know the distribution of \(t(\mathbf Y)\) under null hypothesis \(H_0\);
+2. the larger the value of \(t(\mathbf Y)\), the more the evidence against null hypothesis \(H_0\);</p>
+<p>then a low value of \(\mathbb P_{\text{observed}}\) is strong evidence against the null hypothesis, where
+$$\mathbb P_{\text{observed}}=\mathbb P\!\left(t\ge t_{\text{observed}}\mid H_0\text{ is true}\right)$$</p>
+<p>\(\mathbb P_{\text{observed}}\) is the \(p\)-value, which is the probability that \(t_{\text{observed}}\) would occur given that \(H_0\) is true. So, a low \(p\)-value implies that \(t_{\text{observed}}\) should not happen if \(H_0\) is correct, which means that \(H_0\) is very likely to be false given that we have already observed \(t_{\text{observed}}\).</p>
+</div>
+<div class="lang zh">
+<p><strong>19.6.2 样本量与拒绝概率</strong></p>
+<p>增大样本量与拒绝某假设之间存在机械的联系。具体地，若原假设并非恰好为真，则随样本量增大，在固定显著性水平上拒绝它的概率会很快趋于 1。</p>
+<p>例如，设我们跑如下检验：
+$$H_0:\bar X\sim N\!\left(\mu_0,\frac{\sigma^2}{T}\right),\qquad H_A:\bar X\sim N\!\left(\mu_A,\frac{\sigma^2}{T}\right)$$
+其中假设 \(\sigma^2\) 已知。对任意拒绝临界值 \(c\)，可由下式找到其对应的显著性水平 \(\alpha(c)\)：
+$$\mathbb P\!\left(\frac{\bar X-\mu_0}{\sqrt{\sigma^2/T}}>\frac{c-\mu_0}{\sqrt{\sigma^2/T}}\right)=\alpha(c)$$</p>
+<p>反过来，对任意显著性水平 \(\alpha\)，可由下式找到其对应的临界值 \(c(\alpha)\)：
+$$c(\alpha)=\mu_0+\sqrt{\frac{\sigma^2}{T}}\,\Phi^{-1}(1-\alpha)$$
+其中 \(\Phi(\cdot)\) 是标准正态分布的 c.d.f。</p>
+<p>现在，考虑固定拒绝规则、即固定临界值 \(c\) 的情形。对样本量 \(T\)，设真实均值为 \(\mu_{\text{true}}\)，则拒绝概率为</p>
+</div>
+<div class="lang en">
+<p><strong>19.6.2 Sample size and rejection probability</strong></p>
+<p>There's a mechanical relationship between increasing sample size and the rejection of a hypothesis. In particular, if the null is not exactly true, then we get the probability of rejections for a fixed significance level approaching 1 very fast as sample size increases.</p>
+<p>For example, suppose we run the test:
+$$H_0:\bar X\sim N\!\left(\mu_0,\frac{\sigma^2}{T}\right),\qquad H_A:\bar X\sim N\!\left(\mu_A,\frac{\sigma^2}{T}\right)$$
+where we assume that \(\sigma^2\) is known. For any critical value \(c\) for rejection, we can find its corresponding significance level \(\alpha(c)\) by
+$$\mathbb P\!\left(\frac{\bar X-\mu_0}{\sqrt{\sigma^2/T}}>\frac{c-\mu_0}{\sqrt{\sigma^2/T}}\right)=\alpha(c)$$</p>
+<p>Reversely, for any significance level \(\alpha\), we can find its corresponding critical value \(c(\alpha)\) by
+$$c(\alpha)=\mu_0+\sqrt{\frac{\sigma^2}{T}}\,\Phi^{-1}(1-\alpha)$$
+where \(\Phi(\cdot)\) is the c.d.f. of standard normal distribution.</p>
+<p>Now, consider the case where we fix the rejection rule, i.e. a fixed critical value \(c\). For a sample size \(T\), suppose the true mean is \(\mu_{\text{true}}\), then the probability of rejection is</p>
+</div>
+<div class="lang zh">
+<p>$$\begin{aligned}\mathbb P(\bar X>c)&=\mathbb P\!\left(\frac{\bar X-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}>\frac{c-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}\right)\\&=\mathbb P\!\left(\frac{\bar X-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}>\frac{\mu_0-\mu_{\text{true}}+\sqrt{\sigma^2/T}\,\Phi^{-1}(1-\alpha)}{\sqrt{\sigma^2/T}}\right)\\&=\mathbb P\!\left(\frac{\bar X-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}>\frac{\mu_0-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}+\Phi^{-1}(1-\alpha)\right)\\&=\mathbb P\!\left(\frac{\bar X-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}>\frac{\sqrt T(\mu_0-\mu_{\text{true}})}{\sigma}+\Phi^{-1}(1-\alpha)\right)\\&=\alpha\quad\text{when }\mu_0=\mu_A\end{aligned}$$</p>
+<p>然而，若 \(\mu_{\text{true}}>\mu_0\)，则拒绝概率 \(\mathbb P(\bar X>c)\) 趋于 1（因为随 \(T\to\infty\)，\(\frac{\sqrt T(\mu_0-\mu_{\text{true}})}{\sigma}\to-\infty\)）。</p>
+<p><strong>19.6.3 经典假设检验</strong></p>
+<p>经典假设检验是频率派的观点。基本上，它假设检验可重复多次、且当原假设为真时被拒绝的比例（即犯第一类错误的概率）应渐近地逼近显著性水平。故经典假设检验基于一个长期论证。</p>
+<p>然而，一些批评指出：尽管这种检验方法在水平上可以一致（即第一类错误概率逼近显著性水平），一致性却未必是个有意义的概念，因为这种检验方法很可能有较差的有限样本性质。</p>
+</div>
+<div class="lang en">
+<p>$$\begin{aligned}\mathbb P(\bar X>c)&=\mathbb P\!\left(\frac{\bar X-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}>\frac{c-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}\right)\\&=\mathbb P\!\left(\frac{\bar X-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}>\frac{\mu_0-\mu_{\text{true}}+\sqrt{\sigma^2/T}\,\Phi^{-1}(1-\alpha)}{\sqrt{\sigma^2/T}}\right)\\&=\mathbb P\!\left(\frac{\bar X-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}>\frac{\mu_0-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}+\Phi^{-1}(1-\alpha)\right)\\&=\mathbb P\!\left(\frac{\bar X-\mu_{\text{true}}}{\sqrt{\sigma^2/T}}>\frac{\sqrt T(\mu_0-\mu_{\text{true}})}{\sigma}+\Phi^{-1}(1-\alpha)\right)\\&=\alpha\quad\text{when }\mu_0=\mu_A\end{aligned}$$</p>
+<p>However, if \(\mu_{\text{true}}>\mu_0\), then the probability \(\mathbb P(\bar X>c)\) of rejection goes to one (since \(\frac{\sqrt T(\mu_0-\mu_{\text{true}})}{\sigma}\to-\infty\) as \(T\to\infty\)).</p>
+<p><strong>19.6.3 Classical hypothesis testing</strong></p>
+<p>Classical hypothesis testing is the frequentist's view. Basically, it assumes that the test can be repeated many times, and the fraction of rejection when the null is true should asymptotically approaches the probability of making type I error, i.e. significance error. So, classical hypothesis testing is based on a long run justification.</p>
+<p>However, some criticism is that although such testing approach can be consistent in level (i.e. probability of type I error approaches significance level), consistency is not always a meaningful concept because such testing approach is likely to have poor finite sample properties.</p>
+</div>
+<div class="lang zh">
+<p><strong>19.6.4 似然原理</strong></p>
+<p>似然原理认为
+- 全部信息都在样本中；
+- 我们应把似然视作样本的最佳概括。</p>
+<p>基本思想：我们只能观测到一个数据集。故在比较两个候选假设时，我们应接受那个为观测数据生成更高似然的假设（即获得观测数据集的概率）。直觉是：既然观测已经发生，我们应当相信使已实现观测的概率最高的那个假设。</p>
+<p><strong>19.6.5 Bayes 原理</strong></p>
+<p>Bayes 原理
+- 把先验信息（假设或模型设定）与样本信息结合使用；
+- 所施加的先验信息可以是主观的或客观的。</p>
+<p>总结：
+- 经典假设检验在假设生成过程中<strong>不使用数据</strong>；
+- 似然方法在似然最大化的假设生成过程中<strong>只使用数据</strong>；
+- Bayes 方法在假设生成过程中<strong>结合先验信息与数据信息</strong>。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 19.2
+对似然方法与 Bayes 方法，假设可能随样本量增大而改变——这并非坏事，故停止规则（即决定何时停止收集数据的规则）不涉及。然而，在 §19.6.2 我们已表明：对经典假设检验方法，随样本量增大，拒绝概率会剧烈波动，故我们不能一直收集和使用更多数据——那将导致以极端概率（如 0 或 1）拒绝原假设。所以只有对经典方法，我们才需要一个预先确定的停止规则。</p></div>
+</div>
+<div class="lang en">
+<p><strong>19.6.4 Likelihood principle</strong></p>
+<p>The likelihood principle believes that
+- all the information is in the sample;
+- we should look at the likelihood as the best summary of the sample.</p>
+<p>The basic idea is that we can only observe one data set. So, when comparing two candidate hypotheses, we should accept the hypothesis that generates higher likelihood for the observed data set (i.e. the probability of obtaining the observed data set). The intuition is that given the observation has already taken place, we should believe in the hypothesis that gives the highest probability of the realized observation.</p>
+<p><strong>19.6.5 Bayesian principle</strong></p>
+<p>The Bayesian principle
+- uses prior information (hypothesis or model specification) in conjunction with sample information;
+- the imposed prior information can be subjective or objective.</p>
+<p>In conclusion:
+- classical hypothesis testing uses no data in the hypothesis generating process;
+- likelihood approach uses only data in the likelihood-maximizing hypothesis generating process;
+- Bayesian approach uses the combination of prior information and the data information in the hypothesis generating process.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 19.2
+For the likelihood approach and Bayesian approach, the hypothesis might change as the sample size increases, which is not a bad thing, so the stopping rule, i.e. the rule governing the timing for stopping collecting data, is not involved. However, in subsection 19.6.2 we have shown that, for the classical hypothesis testing approach, the probability of rejection will vary wildly as the sample size increases, so we cannot keep collecting and using more data, which will lead to rejecting null with extreme probabilities (e.g. 0 or 1). So, only for classical approach do we need a pre-determined stopping rule.</p></div>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#19-1-styles-of-empirical-research">19.1 Styles of Empirical Research</a></li>
+        <li><a href="#19-2-identification">19.2 Identification</a></li>
+        <li><a href="#19-3-abduction-how-to-learn-from-surprises">19.3 Abduction: How to Learn from Surprises</a></li>
+        <li><a href="#19-4-abduction-vs-structural-approach">19.4 Abduction vs Structural Approach</a></li>
+        <li><a href="#19-5-sampling">19.5 Sampling</a></li>
+        <li><a href="#19-6-hypothesis-testing">19.6 Hypothesis Testing</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

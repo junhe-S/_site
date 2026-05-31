@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>12. Stochastic Dynamic Programming: Commodity Model – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>12. Stochastic Dynamic Programming: Commodity Model</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">宏观经济学</span><span class="lang en">Macroeconomics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">随机动态规划</span><span class="lang en">Stochastic Dynamic Programming</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">商品模型</span><span class="lang en">Commodity Model</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">存储</span><span class="lang en">Storage</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">社会剩余</span><span class="lang en">Social Surplus</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">贝尔曼方程</span><span class="lang en">Bellman Equation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：随机动态规划的商品模型。</strong> <strong>§12.1 设定</strong>：需求平稳 \(P=D(q)\)（向下倾斜、严正、连续）；供给——代表性卖家每期获随机禀赋 \(\omega_t\in(m,M)\)（i.i.d.、密度 \(\mu(\omega)\)、无生产成本）；社会剩余 \(u(q)=\int_0^q D(x)dx\)（严增、严凹、连续可微）；存储成本 \(\phi(y)\)（严增、严凸、\(\phi(0)=0\)）。<strong>§12.2 贝尔曼方程</strong>：两状态 \(V(x,\omega)=\max_{y\in[0,x+\omega]}\{u(x+\omega-y)-\phi(y)+\beta\int_m^M V(y,\omega')\mu(\omega')d\omega'\}\)；单状态 \(s=x+\omega\)（\(y\)=结转存货）\(V(s)=\max_{y\in[0,s]}\{u(s-y)-\phi(y)+\beta\int_m^M V(y+\omega')\mu(\omega')d\omega'\}\)；<strong>f.o.c.</strong> \(u'(s-y)+\phi'(y)\ge\beta\int_m^M V'(y+\omega')\mu(\omega')d\omega'\)（内点取等，LHS 增 RHS 减 ⟹ 唯一 \(y^\star=g(s)\) 且随 \(s\) 递增）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: the commodity model of stochastic dynamic programming.</strong> <strong>§12.1 Set-up</strong>: stationary demand \(P=D(q)\) (downward sloping, strictly positive, continuous); supply — the representative seller gets a random endowment \(\omega_t\in(m,M)\) each period (i.i.d., density \(\mu(\omega)\), no production cost); social surplus \(u(q)=\int_0^q D(x)dx\) (strictly increasing, strictly concave, continuously differentiable); cost of storage \(\phi(y)\) (strictly increasing, strictly convex, \(\phi(0)=0\)). <strong>§12.2 Bellman equation</strong>: two states \(V(x,\omega)=\max_{y\in[0,x+\omega]}\{u(x+\omega-y)-\phi(y)+\beta\int_m^M V(y,\omega')\mu(\omega')d\omega'\}\); one state \(s=x+\omega\) (\(y\) = inventory carried over) \(V(s)=\max_{y\in[0,s]}\{u(s-y)-\phi(y)+\beta\int_m^M V(y+\omega')\mu(\omega')d\omega'\}\); <strong>f.o.c.</strong> \(u'(s-y)+\phi'(y)\ge\beta\int_m^M V'(y+\omega')\mu(\omega')d\omega'\) (equality at interior; LHS increasing, RHS decreasing ⟹ unique \(y^\star=g(s)\) increasing in \(s\)).</p></div>
+</div>
+<h2 id="12-1-set-up">12.1 Set-up</h2>
+<div class="lang zh">
+<p><strong>12.1.1 需求</strong></p>
+<p>设需求平稳（即不随 \(t\) 变化）：\(P=D(q)\)，其中 \(q\) 是需求且被消费的量。假设函数 \(D\) 向下倾斜、严格为正、连续。</p>
+<p><strong>12.1.2 供给</strong></p>
+<p>每期，代表性卖家获得禀赋 \(\omega_t\in(m,M)\)，\(0<m<M<\infty\)。设 \(\omega_t\) 为 i.i.d.，密度记为 \(\mu(\omega)\)。又设无生产成本。</p>
+<p><strong>12.1.3 社会剩余</strong></p>
+<p>定义社会剩余为
+$$u(q)=\int_0^q D(x)dx$$
+由于 \(D\) 向下倾斜、严正、连续，\(u\) 关于 \(q\) 严格递增、严格凹、连续可微。</p>
+<p><strong>12.1.4 存储成本</strong></p>
+<p>定义把 \(y\) 单位商品存储一期的成本为 \(\phi(y)\)，其中 \(\phi(y)\) 连续、关于 \(y\) 严格递增、严格凸、连续可微、且 \(\phi(0)=0\)。</p>
+</div>
+<div class="lang en">
+<p><strong>12.1.1 Demand</strong></p>
+<p>Suppose the demand is stationary (i.e. doesn't change along with \(t\)) as \(P=D(q)\) where \(q\) is the amount demanded and consumed. Assume that the function \(D\) is downward sloping, strictly positive, and continuous.</p>
+<p><strong>12.1.2 Supply</strong></p>
+<p>In each period, the representative seller gets an endowment \(\omega_t\in(m,M)\) with \(0<m<M<\infty\). Suppose \(\omega_t\) is i.i.d.. Let \(\mu(\omega)\) be the density. Also assume there is no cost of production.</p>
+<p><strong>12.1.3 Social surplus</strong></p>
+<p>Define the social surplus as
+$$u(q)=\int_0^q D(x)dx$$
+Since we supposed that \(D\) is downward sloping, strictly positive and continuous, \(u\) is strictly increasing in \(q\), strictly concave in \(q\), and continuously differentiable.</p>
+<p><strong>12.1.4 Cost of storage</strong></p>
+<p>Define the cost of storing \(y\) units of commodity for one period as \(\phi(y)\) where \(\phi(y)\) is continuous, strictly increasing in \(y\), strictly convex in \(y\), continuously differentiable, and \(\phi(0)=0\).</p>
+</div>
+<h2 id="12-2-the-bellman-equation">12.2 The Bellman Equation</h2>
+<div class="lang zh">
+<p><strong>12.2.1 两状态变量的贝尔曼方程</strong></p>
+<p>考虑状态变量 \(S=(x,\omega)\)，其中内生状态 \(x\) 是当前期从上期结转的初始存货、\(\omega\) 是外生随机冲击。社会计划者的贝尔曼方程为
+$$V(x,\omega)=\max_{y\in\Gamma(x,\omega)}\left\{u(x+\omega-y)-\phi(y)+\beta\int_m^M V(y,\omega')\mu(\omega')d\omega'\right\}$$
+其中 \(\Gamma(x,\omega)=[0,x+\omega]\)。</p>
+<p><strong>12.2.2 仅一个状态变量的贝尔曼方程</strong></p>
+<p>考虑状态变量 \(s=x+\omega\)，\(x\)、\(\omega\) 同前。\(s\) 表示当前期的总供给。注意 \(y\) 不是下一期的总供给，而是结转到下一期的存货。社会计划者的贝尔曼方程为
+$$V(s)=\max_{y\in\Gamma(s)}\left\{u(s-y)-\phi(y)+\beta\int_m^M V(y+\omega')\mu(\omega')d\omega'\right\}$$
+其中 \(\Gamma(s)=[0,s]\)。</p>
+<p><strong>12.2.3 一阶条件</strong></p>
+<p>仅一个状态变量的贝尔曼方程
+$$V(s)=\max_{y\in\Gamma(s)}\left\{u(s-y)-\phi(y)+\beta\int_m^M V(y+\omega')\mu(\omega')d\omega'\right\}$$
+有一阶条件
+$$u'(s-y)+\phi'(y)\ge\beta\int_m^M V'(y+\omega')\mu(\omega')d\omega'$$
+在 \(y^\star>0\)（内点解）时取等号。注意可对 \(u\) 假设 Inada 条件以排除角点解 \(y^\star=s\)。由于 LHS 关于 \(y\) 递增、RHS 关于 \(y\) 递减，故有唯一解 \(y^\star=g(s)\)。此外，更大的 \(s\) 把 LHS 下移、使最优策略更大，即 \(\hat s>s\Rightarrow g(\hat s)>g(s)\)，故 \(g\) 关于 \(s\) 递增。</p>
+</div>
+<div class="lang en">
+<p><strong>12.2.1 Bellman equation with two state variables</strong></p>
+<p>Consider the state variable \(S=(x,\omega)\) where the endogenous state \(x\) is the current period's initial inventory carried over from last period and \(\omega\) is the exogenous stochastic shock. The Bellman equation for the social planner is as follows.
+$$V(x,\omega)=\max_{y\in\Gamma(x,\omega)}\left\{u(x+\omega-y)-\phi(y)+\beta\int_m^M V(y,\omega')\mu(\omega')d\omega'\right\}$$
+with \(\Gamma(x,\omega)=[0,x+\omega]\).</p>
+<p><strong>12.2.2 Bellman equation with only one state variable</strong></p>
+<p>Consider the state variable \(s=x+\omega\) where \(x\) and \(\omega\) are defined as before. Here \(s\) means the total supply of the current period. And \(y\) doesn't mean the total supply of next period; instead, \(y\) means the inventory carried over to next period. The Bellman equation for the social planner is as follows.
+$$V(s)=\max_{y\in\Gamma(s)}\left\{u(s-y)-\phi(y)+\beta\int_m^M V(y+\omega')\mu(\omega')d\omega'\right\}$$
+with \(\Gamma(s)=[0,s]\).</p>
+<p><strong>12.2.3 The first-order condition</strong></p>
+<p>The Bellman equation with only one state variable
+$$V(s)=\max_{y\in\Gamma(s)}\left\{u(s-y)-\phi(y)+\beta\int_m^M V(y+\omega')\mu(\omega')d\omega'\right\}$$
+has the f.o.c.
+$$u'(s-y)+\phi'(y)\ge\beta\int_m^M V'(y+\omega')\mu(\omega')d\omega'$$
+with equality if \(y^\star>0\) (interior solution). Note that we can assume an Inada condition on \(u\) to rule out the corner solution that \(y^\star=s\). Since the LHS is increasing in \(y\) and the RHS is decreasing in \(y\), there is a unique solution for \(y^\star=g(s)\). Moreover, a larger \(s\) will shift down the LHS so that the optimal policy is larger, i.e. for \(\hat s>s\), \(g(\hat s)>g(s)\). Therefore, \(g\) is increasing in \(s\).</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#12-1-set-up">12.1 Set-up</a></li>
+        <li><a href="#12-2-the-bellman-equation">12.2 The Bellman Equation</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

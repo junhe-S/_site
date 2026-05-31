@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>14. How to do Good Empirical Work – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>14. How to do Good Empirical Work</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">因果推断</span><span class="lang en">Causal Inference</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">潜在结果</span><span class="lang en">Potential Outcomes</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Roy 模型</span><span class="lang en">Roy Model</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">边际处理效应</span><span class="lang en">Marginal Treatment Effect</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">识别</span><span class="lang en">Identification</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">实证方法</span><span class="lang en">Empirical Methods</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：如何做好实证。</strong> <strong>§14.1 三步组织原则</strong>：(1) 定义<strong>目标参数</strong>（由反事实/思想实验界定）；(2) <strong>识别</strong>（目标参数是可观测与不可观测量的函数；识别把模型+总体数据映到目标参数信息；二值性质：要么可识别要么不可；是统计推断的前提）；(3) <strong>统计推断</strong>（有限样本→总体）。流程：样本 \(\xrightarrow{\text{统计推断}}\) 总体 \(\xrightarrow{\text{识别}}\) 不可观测参数。<strong>§14.2 同一问题不同记号</strong>：<strong>潜在结果模型</strong>（Neyman–Fisher–Quandt–Rubin）\(Y=DY_1+(1-D)Y_0\) vs <strong>潜变量模型</strong>（Roy 模型）\(Y=g(D,V)\)；OLS 在 \((Y_0,Y_1)\perp D\) 下 \(\beta^{\text{OLS}}=\text{ATE}\)，否则有 selection on gains / selection bias；工具变量 \(\beta^{\text{IV}}=\text{LATE}\)（compliers 的 ATE）；<strong>命题 14.1</strong> 倾向得分 \(\nu(W)=\mathbb E[D\mid W]=p(W)\)。<strong>§14.3 Roy 模型</strong>：\(Y_1-Y_0=X'(\beta_1-\beta_0)+(V_1-V_0)\)（可观测+不可观测，selection on unobservables）；<strong>边际处理效应</strong> \(\text{MTE}(u)=\mathbb E[Y_1-Y_0\mid U=u]\)，ATE/ATT/ATU/LATE/PRTE 都是 MTE 的加权平均（权重各异，和为 1）。<strong>§14.4 理论施加额外约束</strong>：Fréchet–Hoeffding 界（列联表只给边际、不给联合）。<strong>§14.5 自造数据做实验</strong>：机制分离、内部 vs 外部有效性、实验室 vs 田野、预注册、定性 vs 定量结论。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: how to do good empirical work.</strong> <strong>§14.1 Three steps as an organizing principle</strong>: (1) define the <strong>target parameters</strong> (always defined by a counterfactual / thought experiment); (2) <strong>identification</strong> (the target parameter is a function of observables and unobservables; identification maps model + population data into the target-parameter information; it has a binary property — either identified or not — and is a prerequisite for statistical inference); (3) <strong>statistical inference</strong> (finite sample → population). The flow: sample \(\xrightarrow{\text{stat. inference}}\) population \(\xrightarrow{\text{identification}}\) unobserved parameters. <strong>§14.2 Same problem, different notation</strong>: the <strong>potential outcome model</strong> (Neyman–Fisher–Quandt–Rubin) \(Y=DY_1+(1-D)Y_0\) vs <strong>latent variable models</strong> (the Roy model) \(Y=g(D,V)\); OLS gives \(\beta^{\text{OLS}}=\text{ATE}\) under \((Y_0,Y_1)\perp D\), otherwise selection on gains / selection bias; IV gives \(\beta^{\text{IV}}=\text{LATE}\) (ATE of compliers); <strong>Proposition 14.1</strong> the propensity score \(\nu(W)=\mathbb E[D\mid W]=p(W)\). <strong>§14.3 Roy model</strong>: \(Y_1-Y_0=X'(\beta_1-\beta_0)+(V_1-V_0)\) (observed + unobserved, selection on unobservables); the <strong>marginal treatment effect</strong> \(\text{MTE}(u)=\mathbb E[Y_1-Y_0\mid U=u]\), with ATE/ATT/ATU/LATE/PRTE all weighted averages of the MTE (different weights, integrating to 1). <strong>§14.4 Theory imposes additional restrictions</strong>: Fréchet–Hoeffding bounds (a contingency table gives marginals but not the joint). <strong>§14.5 Experiment: create your own data</strong>: mechanism separation, internal vs external validity, lab vs field, pre-registration, qualitative vs quantitative conclusions.</p></div>
+</div>
+<h2 id="14-1-three-steps-as-an-organizing-principle">14.1 Three Steps as an Organizing Principle</h2>
+<div class="lang zh">
+<p><strong>1. 定义目标参数（target parameters，有时称关心参数）。</strong>
+- 目标参数总由<strong>反事实</strong>界定。
+- 思考反事实需做<strong>思想实验</strong>：例如"若政府改变最低工资，失业会如何？"、"若两公司合并，价格会如何？"
+- 此步纯属思想实验，既不需数据也不需实验——这与"无操纵则无因果（no causation without manipulation）"的口号相悖。
+- 关键：精确刻画反事实问题、明确定义后续步骤要探究的参数。</p>
+<p><strong>2. 目标参数的识别（identification）。</strong>
+- 目标参数一般是可观测量（如种族、性别）与不可观测量（如能力、智力、未受处理者若受处理的潜在结果）的函数。
+- 识别问题是：在有总体数据（不受有限抽样限制）时，我们能从可观测数据中学到目标参数的什么。
+- 模型（理论）是一组为帮助识别而显式作出的假设。
+- 识别步骤把假设（模型）与总体数据映到关于目标参数的信息：
+  - 若在所述假设下、目标参数的不同取值蕴含可观测数据的不同分布，则参数<strong>可识别</strong>。
+  - 识别具<strong>二值性质</strong>：是或否的问题，目标参数要么可识别、要么不可。
+- 此步仅理论/假设性的，是第 3 步的前提：现实中我们一般无总体数据；识别基本问"若已知总体分布，能否恢复目标参数？"；若识别回答为否，则即便用我们手上的有限样本也学不到目标参数。</p>
+<p><strong>3. 统计推断（statistical inference）。</strong>
+- 实务中我们只见可观测量的有限样本，由此知样本分布、但不知总体分布。
+- 统计推断用样本去学总体。
+- 把识别与统计推断分开、并总是先识别后推断，是有益的。</p>
+</div>
+<div class="lang en">
+<p><strong>1. Defining the target parameters (sometimes called the parameters of interest).</strong>
+- A target parameter is always defined by a <strong>counterfactual</strong> that we are interested in.
+- Thinking about counterfactuals requires doing a <strong>thought experiment</strong>: e.g. "what would happen to unemployment if the government changes the minimum wage?", "what would happen to prices if two firms merge?"
+- This step is purely a thought experiment, requiring neither data nor experiment — which is contrary to the slogan "no causation without manipulation".
+- In this step, the key is to precisely specify the counterfactual question and unambiguously define the parameter we want to explore in the following steps.</p>
+<p><strong>2. Identification of the target parameter.</strong>
+- The target parameter is generally a function of both observables (e.g. race and gender) and unobservables (e.g. ability, intelligence, and the potential outcome of those not treated were they actually treated).
+- The question of identification is: what can we learn about the target parameter from observable data given that we have the data of the population (i.e. not restricted by limited sampling).
+- A model or theory is a set of assumptions explicitly made to help with identification.
+- The identification step maps assumptions (model) and population data to the information about the target parameter:
+  - A parameter is identified if, under the stated assumptions, alternative values of the target parameter imply different distributions of the observable data of the population.
+  - Identification has a <strong>binary property</strong>: a yes-or-no question, i.e. either target parameters are identified or not.
+- This step is just theoretical or hypothetical, and is a prerequisite for step 3: in reality, we never have access to population data in general; identification basically asks the simple question: can you recover the target parameter when you know the population distribution? If the answer to the identification question is no, then you also won't be able to learn about the target parameter with a finite sample that we have to deal with.</p>
+<p><strong>3. Statistical inference.</strong>
+- In practice, we only see a finite sample of data on the observables. From this we know the sample distribution. However, we don't know the population distribution of the data.
+- Statistical inference is using the sample to learn about the population.
+- It's useful to separate identification from statistical inference, and always do identification before statistical inference.</p>
+</div>
+<div class="lang zh">
+<p>整体流程：
+$$\text{sample}\ \xrightarrow{\text{statistical inference}}\ \text{population}\ \xrightarrow{\text{identification}}\ \text{unobserved parameters}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 14.1
+例：欲估教育回报。你有总体的随机抽取，想估上大学的收益。
+1. 目标参数是上大学对工资的效应（思想实验）。
+2. 识别是验证：在某些假设（模型）下，分析总体可观测数据，能否识别上大学对工资的效应（目标参数）。此步理论性的，条件于总体可观测变量的可得性。
+3. 统计推断：给定我手上的样本，实际能学到什么？</p></div>
+</div>
+<div class="lang en">
+<p>The overall flow:
+$$\text{sample}\ \xrightarrow{\text{statistical inference}}\ \text{population}\ \xrightarrow{\text{identification}}\ \text{unobserved parameters}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 14.1
+For example, imagine you want to estimate the returns to education. You have a random draw from the population, and you want to estimate the payoff of going to college.
+1. The target parameter is the effect on wage of going to college (thought experiment).
+2. Identification is verifying whether the effect of going to college (target parameter) can be identified under certain assumptions (model) by analyzing the population data on observables. This step is theoretical, conditional on the availability of population data on observable variables.
+3. Statistical inference: what can I actually learn given the sample I have?</p></div>
+</div>
+<h2 id="14-2-different-models-could-use-different-notations-for-the-same-problem">14.2 Different Models Could Use Different Notations for the Same Problem</h2>
+<div class="lang zh">
+<p>形式模型应在目标参数定义、识别、推断上很精确，但不同研究者可能对同一问题用很不同的记号与设定。本节用两个模型作例：
+- <strong>潜在结果模型（Potential outcome model）</strong>：Neyman–Fisher–Quandt–Rubin 模型。
+- <strong>经济选择模型（潜变量模型）</strong>：一般模型族，本节尤其聚焦 <strong>Roy 模型</strong>。</p>
+</div>
+<div class="lang en">
+<p>Formal models should be very precise in their target parameter definition, identification, and inference. But different researchers might use very different notation and model set-up for the same problem. This section uses the following two models as examples:
+- <strong>Potential outcome model</strong>: the Neyman–Fisher–Quandt–Rubin model.
+- <strong>Economic choice models (latent variable models)</strong>: a general set of models; we will in particular focus on the <strong>Roy model</strong>.</p>
+</div>
+<h3 id="14-2-1-potential-outcome-model">14.2.1 Potential Outcome Model</h3>
+<div class="lang zh">
+<p><strong>设定。</strong> 此模型给出一种建模世界的方式，与 Roy 模型相对（后者是同一问题的等价视角）。
+- \(\mathcal D\) 是互斥且穷尽的状态集。例：教育决策模型 \(\mathcal D=\{0,1\}\)，上大学 \(d=1\in\mathcal D\)、不上 \(d=0\in\mathcal D\)。
+- 对每个 \(d\in\mathcal D\)，\(Y_d\) 为<strong>潜在结果</strong>——若状态被外生设为 \(d\) 时会发生什么。实际我们只能观测到已实现的那一个结果，这正是识别的根本挑战。教育例中思想实验即"\(d=1\) 与 \(d=0\) 分别会怎样"。
+- 我们观测实际状态——随机变量 \(D\in\mathcal D\) 与相应结果 \(Y\)，满足
+$$Y=\sum_{d\in\mathcal D}Y_d\mathbf 1\{D=d\}=Y_D$$
+当 \(D\in\mathcal D\) 被观测，只 \(Y=Y_D\) 被揭示，\(Y_d\)（\(d\ne D\)）不可观测。</p>
+<p>聚焦教育决策模型的简单例。<strong>切换回归（switching regression）</strong>为
+$$Y=DY_1+(1-D)Y_0\tag{14.1}$$
+\(D\in\{0,1\}\) 为选择：\(D=1\) 上大学、\(D=0\) 不上；\(Y_1\) 为 \(D=1\) 时潜在结果、\(Y_0\) 为 \(D=0\) 时潜在结果。</p>
+</div>
+<div class="lang en">
+<p><strong>Set-up.</strong> This model offers one way of modeling the world in contrast to the Roy model, which is an alternative but equivalent view of the same problem.
+- \(\mathcal D\) is a mutually exclusive and exhaustive set of states. E.g. in a specific setting of the education decision model, \(\mathcal D=\{0,1\}\), getting college means \(d=1\in\mathcal D\) whereas not getting college means \(d=0\in\mathcal D\).
+- For each \(d\in\mathcal D\), \(Y_d\) is the potential outcome — what would have happened if the state were endogenously set \(d\). In fact we can only observe the realized one outcome, which is the fundamental challenge to identification. In the education decision model, the thought experiment is what happens when \(d=1\) as opposed to \(d=0\).
+- We observe the actual state, a random variable \(D\in\mathcal D\) and a corresponding outcome \(Y\), which satisfies
+$$Y=\sum_{d\in\mathcal D}Y_d\mathbf 1\{D=d\}=Y_D$$
+when \(D\in\mathcal D\) is observed, only \(Y=Y_D\) is revealed, but \(Y_d\) for \(d\ne D\) is unobserved.</p>
+<p>Let's focus on the simple example of the education decision model. The <strong>switching regression</strong> is
+$$Y=DY_1+(1-D)Y_0\tag{14.1}$$
+\(D\in\{0,1\}\) is a choice: \(D=1\) going to college, \(D=0\) not; \(Y_1\) is the potential outcome when \(D=1\), \(Y_0\) the potential outcome when \(D=0\).</p>
+</div>
+<div class="lang zh">
+<p><strong>OLS 回归。</strong> 无更多限制时 \(Y_1-Y_0\) 一般跨个体变化，故写带个体下标 \(i\) 的 OLS 回归
+$$Y_i=\alpha_i+\beta^{\text{OLS}}\cdot D_i+\varepsilon_i\tag{14.2}$$
+重排切换回归 (14.1) 以匹配 (14.2)：
+$$Y_i=D_iY_{i,1}+(1-D_i)Y_{i,0}\Rightarrow Y_i=\underbrace{\mathbb E[Y_{i,0}]}_{\alpha_i}+\underbrace{(Y_{i,1}-Y_{i,0})}_{\beta_i}\cdot D_i+\underbrace{Y_{i,0}-\mathbb E[Y_{i,0}]}_{\varepsilon_i}$$
+或 \(Y_i=\underbrace{(Y_{i,1}-Y_{i,0})}_{\beta_i}\cdot D_i+Y_{i,0}\)，\(\beta_i\) 为<strong>个体处理效应</strong>。\(\beta^{\text{OLS}}\) 的显式表达（推导见下）满足
+$$\beta^{\text{OLS}}=\mathbb E[Y\mid D=1]-\mathbb E[Y\mid D=0]\tag{14.4}$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 推导（(14.4) 的简单方式）
+$$\begin{aligned}\mathbb E[Y\mid D=1]-\mathbb E[Y\mid D=0]&=\mathbb E[\alpha+\beta^{\text{OLS}}\cdot D+\varepsilon\mid D=1]-\mathbb E[\alpha+\beta^{\text{OLS}}\cdot D+\varepsilon\mid D=0]\\&=\alpha+\beta^{\text{OLS}}-\alpha=\beta^{\text{OLS}}\end{aligned}$$
+只要 \(\mathbb E[\varepsilon\mid D]=0\) 成立，(14.4) 恒真——不论 \((Y_0,Y_1)\perp D\)（独立）是否成立。\(\blacksquare\)</p></div>
+<p><strong>情形 1：\((Y_0,Y_1)\perp D\)（独立）。</strong> 则 OLS 的 \(\beta^{\text{OLS}}\) 是 \(\beta_i=Y_{i,1}-Y_{i,0}\) 的总体平均：
+$$\begin{aligned}\beta^{\text{OLS}}&=\mathbb E[Y\mid D=1]-\mathbb E[Y\mid D=0]=\mathbb E[DY_1+(1-D)Y_0\mid D=1]-\mathbb E[DY_1+(1-D)Y_0\mid D=0]\\&=\mathbb E[Y_1\mid D=1]-\mathbb E[Y_0\mid D=0]\overset{\perp}{=}\mathbb E[Y_1]-\mathbb E[Y_0]=\underbrace{\mathbb E[Y_1-Y_0]}_{\text{ATE}}\end{aligned}$$
+即 \(\text{ATE}=\mathbb E[Y_1-Y_0]=\mathbb E[\beta_i]\)。</p>
+<p><strong>情形 2：\((Y_0,Y_1)\not\perp D\)（非独立）。</strong> 模型不说明个体为何受处理（上大学），但不排除 \(D\) 依赖 \((Y_0,Y_1)\) 的可能：
+- 若 \(D\) 依赖 \(Y_1-Y_0\)，如 \(D=\mathbf 1\{Y_1-Y_0>0\}=\mathbf 1\{Y_1>Y_0\}\)（更一般 \(\operatorname{Cov}(Y_1-Y_0,D)>0\)），则为 <strong>selection on the gains</strong>（只有教育收益高者才上大学）。
+- 若 \(D\) 依赖 \(Y_0\)，如 \(D=\mathbf 1\{Y_0\ge C\}\)（\(C\) 为某临界值，更一般 \(\operatorname{Cov}(Y_0,D)>0\)），则为 <strong>selection bias</strong>（只有 \(Y_0\) 足够高者才能上大学）。
+- 也可同时有 selection on gains 与 selection bias。</p>
+</div>
+<div class="lang en">
+<p><strong>OLS regression.</strong> Without further restrictions \(Y_1-Y_0\) may vary across individuals in general, so write an OLS regression with individual subscript \(i\):
+$$Y_i=\alpha_i+\beta^{\text{OLS}}\cdot D_i+\varepsilon_i\tag{14.2}$$
+Rearrange the switching regression (14.1) to match (14.2):
+$$Y_i=D_iY_{i,1}+(1-D_i)Y_{i,0}\Rightarrow Y_i=\underbrace{\mathbb E[Y_{i,0}]}_{\alpha_i}+\underbrace{(Y_{i,1}-Y_{i,0})}_{\beta_i}\cdot D_i+\underbrace{Y_{i,0}-\mathbb E[Y_{i,0}]}_{\varepsilon_i}$$
+or \(Y_i=\underbrace{(Y_{i,1}-Y_{i,0})}_{\beta_i}\cdot D_i+Y_{i,0}\), where \(\beta_i\) is the <strong>individual treatment effect</strong>. The explicit expression for \(\beta^{\text{OLS}}\) (derivation below) satisfies
+$$\beta^{\text{OLS}}=\mathbb E[Y\mid D=1]-\mathbb E[Y\mid D=0]\tag{14.4}$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Derivation (the simpler way to (14.4))
+$$\begin{aligned}\mathbb E[Y\mid D=1]-\mathbb E[Y\mid D=0]&=\mathbb E[\alpha+\beta^{\text{OLS}}\cdot D+\varepsilon\mid D=1]-\mathbb E[\alpha+\beta^{\text{OLS}}\cdot D+\varepsilon\mid D=0]\\&=\alpha+\beta^{\text{OLS}}-\alpha=\beta^{\text{OLS}}\end{aligned}$$
+As long as \(\mathbb E[\varepsilon\mid D]=0\) holds, (14.4) is always true regardless of whether we have \((Y_0,Y_1)\perp D\) (independence). \(\blacksquare\)</p></div>
+<p><strong>Case 1: \((Y_0,Y_1)\perp D\) (independence).</strong> Then the \(\beta^{\text{OLS}}\) from OLS is the population average of \(\beta_i=Y_{i,1}-Y_{i,0}\):
+$$\begin{aligned}\beta^{\text{OLS}}&=\mathbb E[Y\mid D=1]-\mathbb E[Y\mid D=0]=\mathbb E[DY_1+(1-D)Y_0\mid D=1]-\mathbb E[DY_1+(1-D)Y_0\mid D=0]\\&=\mathbb E[Y_1\mid D=1]-\mathbb E[Y_0\mid D=0]\overset{\perp}{=}\mathbb E[Y_1]-\mathbb E[Y_0]=\underbrace{\mathbb E[Y_1-Y_0]}_{\text{ATE}}\end{aligned}$$
+i.e. \(\text{ATE}=\mathbb E[Y_1-Y_0]=\mathbb E[\beta_i]\).</p>
+<p><strong>Case 2: \((Y_0,Y_1)\not\perp D\) (non-independence).</strong> The model says nothing about why individuals take treatment (go to college), but it does not preclude the probability that \(D\) could be dependent on \((Y_0,Y_1)\):
+- If \(D\) is dependent on \(Y_1-Y_0\), say \(D=\mathbf 1\{Y_1-Y_0>0\}=\mathbf 1\{Y_1>Y_0\}\) (or more generally \(\operatorname{Cov}(Y_1-Y_0,D)>0\)), then it indicates <strong>selection on the gains</strong> (only people receiving high gains from education would go to college).
+- If \(D\) is dependent on \(Y_0\), say \(D=\mathbf 1\{Y_0\ge C\}\) (\(C\) some critical value, or more generally \(\operatorname{Cov}(Y_0,D)>0\)), then it indicates <strong>selection bias</strong> (only the people with high enough \(Y_0\) could be treated, i.e. only smart enough people can go to college).
+- Sometimes we could have selection on the gains or selection bias or both.</p>
+</div>
+<div class="lang zh">
+<p><strong>工具变量。</strong> 引入工具 \(Z\)：
+$$D=ZD_1+(1-Z)D_0$$
+\(Z\in\{0,1\}\)，\(D_z\) 为 \(Z\) 外生设为 \(z\) 时实现处理 \(D\) 的值。这是二值工具的例，可（如 §5.6 Case 2）把工具按对处理的反应把 agents 划为四组：
+- <strong>Always takers（恒取者）</strong>：\(D_1=D_0=1\)，无论工具取值都受处理。
+- <strong>Compliers（顺从者）</strong>：\(D_1>D_0\)，\(Z=1\) 时受处理、\(Z=0\) 时不受。
+- <strong>Never takers（恒不取者）</strong>：\(D_1=D_0=0\)，无论工具取值都不受处理。
+- <strong>Defiers（违抗者）</strong>：\(D_1<D_0\)，\(Z=0\) 时受处理、\(Z=1\) 时不受（由单调性假设排除）。</p>
+<p>如 §5.6 所示，若工具 \(Z\) 恰当引入（满足外生性、相关性、单调性），则 \(\beta^{\text{IV}}\) 是 <strong>compliers 群体的局部平均处理效应（LATE）</strong>，即 compliers 的 ATE。</p>
+<p>潜在结果模型设定相对简单，关键在我们不对个体如何决定是否受处理施加很多结构。但我们确实需对反事实表态：你问什么问题，就得到什么目标参数。</p>
+</div>
+<div class="lang en">
+<p><strong>Instrumental variable.</strong> Introduce an instrument \(Z\):
+$$D=ZD_1+(1-Z)D_0$$
+where \(Z\in\{0,1\}\) and \(D_z\) is the value of realized treatment \(D\) if \(Z\) was endogenously set \(z\). This is an example of a binary instrument, and we can think of the instrument as partitioning agents into four different groups as discussed in Case 2 of §5.6:
+- <strong>Always takers</strong>: \(D_1=D_0=1\), i.e. those who always take treatment regardless of the value of the instrument.
+- <strong>Compliers</strong>: \(D_1>D_0\), i.e. those who take treatment when \(Z=1\) and don't take treatment when \(Z=0\).
+- <strong>Never takers</strong>: \(D_1=D_0=0\), i.e. those who never take treatment regardless of the value of the instrument.
+- <strong>Defiers</strong> (ruled out by the monotonicity assumption): \(D_1<D_0\), i.e. those who take treatment when \(Z=0\) and don't take treatment when \(Z=1\).</p>
+<p>As shown in §5.6, if the instrument \(Z\) is properly introduced (i.e. satisfying exogeneity, relevance and monotonicity), then \(\beta^{\text{IV}}\) is the <strong>local average treatment effect (LATE)</strong>, which is the ATE of the compliers group.</p>
+<p>In the potential outcome model, which has the relatively easier setting, the key is that we don't impose a lot of structure on how the individuals make decisions on whether or not to take treatment. We do, however, need to take a strong stand on counterfactuals: depending on the question you ask, you will get different target parameters.</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>例 14.1（项目评估）
+总要先精确定义问题、再定义目标参数。设 \(d\in\{0,1\}\) 表示是否参加某职业培训项目、\(Y\) 为标量市场结果（如收入）。\(D=1\) 观测 \(Y_1\)、\(D=0\) 观测 \(Y_0\)。可问的问题不同、目标参数不同：
+1. 若所有人都受训，平均收入是多少？目标参数 \(\mathbb E[Y_1]\)。
+2. 项目的平均效应？目标参数 \(\mathbb E[Y_1-Y_0]\)（即 <strong>ATE</strong>）。
+3. 关停项目的损失？目标参数 \(\mathbb E[Y_1-Y_0\mid D=1]\)（即 <strong>ATT</strong>，处理组平均处理效应）。
+4. 要求每个人都参加项目的效应？目标参数 \(\mathbb E[Y_1-Y_0\mid D=0]\)（即 <strong>ATU</strong>，未处理组平均处理效应）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Example 14.1 (Program Evaluation)
+We always need to precisely define the problem before we can define the target parameter. Suppose \(d\in\{0,1\}\) indicates participation in a job training program and \(Y\) is a scalar market outcome such as earnings. If \(D=1\) we observe \(Y_1\) and if \(D=0\) we observe \(Y_0\). There are many possible questions one could ask, and the target parameter varies:
+1. What would average earnings be if everyone were trained? Target parameter \(\mathbb E[Y_1]\).
+2. What is the average effect of the program? Target parameter \(\mathbb E[Y_1-Y_0]\) (a.k.a. <strong>ATE</strong>).
+3. What is the loss of shutting down the program? Target parameter \(\mathbb E[Y_1-Y_0\mid D=1]\) (a.k.a. average treatment effect on the treated, <strong>ATT</strong>).
+4. How about requiring everyone to participate in the program? Target parameter \(\mathbb E[Y_1-Y_0\mid D=0]\) (a.k.a. average treatment effect on the untreated, <strong>ATU</strong>).</p></div>
+</div>
+<h3 id="14-2-2-latent-variable-models">14.2.2 Latent Variable Models</h3>
+<div class="lang zh">
+<p>潜在结果记号的另一替代是<strong>潜变量记号</strong>，用于结果方程、选择方程、或两者。</p>
+<p><strong>用潜变量描述结果。</strong> 许多时候潜变量模型在结果方程引入不可观测变量 \(V\)，写
+$$Y=g(D,V)$$
+\(g\) 为不可观测变量 \(V\) 与做出选择 \(D\) 的函数。其因果解读隐含为：\(Y_d=g(d,V)\) 对每个 \(d\in\mathcal D\)；也常对 \(g\) 施加限制，如 \(g\) 为 Cobb–Douglas。</p>
+<p><strong>用潜变量描述选择。</strong> 主导情形是二值 \(D\) 且<strong>可分离</strong>的潜变量选择方程
+$$D=\mathbf 1\Big\{\underbrace{U}_{\text{latent var}}\le\underbrace{\nu(W)}_{\text{unknown fn}}\Big\}$$
+其中：\(W\equiv(X,Z)\) 为可观测量、\(Z\) 为工具；\(U\) 可直观理解为受处理的<strong>不情愿度</strong>，连续分布、归一化为 $[0,1]$ 上均匀分布。
+- 注：\(U\sim\text{Unif}[0,1]\) 的假设不失一般性——即便 \(U\) 服从某别的分布，仍有 \(U^\star=F_U(U)\)（\(U\) 的 CDF）服从 $[0,1]$ 上均匀分布。</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 脚注（\(U^\star=F_U(U)\sim\text{Unif}[0,1]\)）
+\(U^\star=F_U(U)\) 的 CDF 满足
+$$F_{U^\star}(a)=\mathbb P(U^\star\le a)=\mathbb P(F_U(U)\le a)=\mathbb P(U\le F_U^{-1}(a))=F_U(F_U^{-1}(a))=a$$
+而 \(U^\star\) 只在 $[0,1]$ 取值，故 \(U^\star\sim\text{Unif}[0,1]\)。</p></div>
+<p>定义 \(\nu^\star(W)\equiv F_U(\nu(W))\)，则
+$$D=\mathbf 1\{U\le\nu(W)\}\overset{F_U\uparrow}{=}\mathbf 1\{F_U(U)\le F_U(\nu(W))\}=\mathbf 1\{U^\star\le\nu^\star(W)\}$$
+即总可把非均匀分布的 \(U\) 变换为 $[0,1]$ 上均匀的 \(U^\star\)。</p>
+<div class="callout"><div class="callout-title">Important</div><p>命题 14.1
+$$\nu(W)=\mathbb E[D\mid W]=\mathbb P(D=1\mid W)\equiv p(W)$$</p>
+<p>[!note]- 证明
+由指示函数与均匀分布性质，
+$$\mathbb E[D\mid W]=\underbrace{\mathbb P(D=1\mid W)}_{\equiv p(W)}=\mathbb P(U\le\nu(W)\mid W)=\nu(W)$$
+\(\blacksquare\)</p></div>
+<p>\(p(W)\) 称<strong>倾向得分（propensity score）</strong>。</p>
+</div>
+<div class="lang en">
+<p>An alternative to potential outcome notation is latent variable notation, in the outcome equation, the choice equation, or both.</p>
+<p><strong>Latent variable notation to describe outcomes.</strong> Many times latent variable models introduce an unobserved variable \(V\) into the outcome equation and write
+$$Y=g(D,V)$$
+where \(g\) is a function of the unobserved variable \(V\) and the choice to make \(D\). A causal interpretation of this model is implicitly saying: \(Y_d=g(d,V)\) for every \(d\in\mathcal D\). It is also typical to make some restrictions on \(g\), e.g. \(g\) being Cobb–Douglas.</p>
+<p><strong>Latent variable notation to describe choices.</strong> The leading case is binary \(D\) with a <strong>separable</strong> latent variable choice equation
+$$D=\mathbf 1\Big\{\underbrace{U}_{\text{latent variable}}\le\underbrace{\nu(W)}_{\text{unknown function}}\Big\}$$
+where: \(W\equiv(X,Z)\) are observables with \(Z\) being the instruments; \(U\) can intuitively be understood as the <strong>unwillingness</strong> to take the treatment, continuously distributed and normalized to be uniform on $[0,1]$.
+- Note that the assumption \(U\sim\text{Unif}[0,1]\) is without loss of generality, because even in the general case where \(U\) follows some other distribution, we still have \(U^\star=F_U(U)\), which is the CDF of \(U\), that follows the uniform distribution on $[0,1]$.</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Footnote (\(U^\star=F_U(U)\sim\text{Unif}[0,1]\))
+The CDF of \(U^\star=F_U(U)\) satisfies
+$$F_{U^\star}(a)=\mathbb P(U^\star\le a)=\mathbb P(F_U(U)\le a)=\mathbb P(U\le F_U^{-1}(a))=F_U(F_U^{-1}(a))=a$$
+and \(U^\star\) only takes values in $[0,1]\(, so \)U^\star\sim\text{Unif}[0,1]$.</p></div>
+<p>Define \(\nu^\star(W)\equiv F_U(\nu(W))\); then
+$$D=\mathbf 1\{U\le\nu(W)\}\overset{F_U\text{ incr.}}{=}\mathbf 1\{F_U(U)\le F_U(\nu(W))\}=\mathbf 1\{U^\star\le\nu^\star(W)\}$$
+i.e. we can always transform a non-uniformly distributed \(U\) to a uniformly distributed \(U^\star\) on $[0,1]$.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 14.1
+$$\nu(W)=\mathbb E[D\mid W]=\mathbb P(D=1\mid W)\equiv p(W)$$</p>
+<p>[!note]- Proof
+By the property of the indicator function and the uniform distribution,
+$$\mathbb E[D\mid W]=\underbrace{\mathbb P(D=1\mid W)}_{\equiv p(W)}=\mathbb P(U\le\nu(W)\mid W)=\nu(W)$$
+\(\blacksquare\)</p></div>
+<p>\(p(W)\) is called the <strong>propensity score</strong>.</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p>注记 14.2（两种记号并排比较）
+1. <strong>潜在结果记号</strong>：结果 \(Y=DY_1+(1-D)Y_0\)；选择 \(D=D_1Z+D_0(1-Z)\)。
+2. <strong>潜变量记号</strong>：结果 \(Y=g(D,V)\)（\(g\) 为不可观测 \(V\) 与选择 \(D\) 的函数）；选择 \(D=\mathbf 1\{U\le\nu(W)\}\)，其中 \(W\equiv(X,Z)\) 可观测、\(Z\) 为工具，\(\nu\) 为未知函数，\(U\) 为连续分布并归一化为 $[0,1]$ 均匀的不可观测随机变量。</p>
+<p>Heckman 的工作用潜变量记号，《Mostly Harmless Econometrics》用潜在结果记号。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 14.2 (Side-by-side comparison)
+1. <strong>Potential outcome notation</strong>: outcome \(Y=DY_1+(1-D)Y_0\); choice \(D=D_1Z+D_0(1-Z)\).
+2. <strong>Latent variable notation</strong>: outcome \(Y=g(D,V)\) (\(g\) a function of the unobserved \(V\) and the choice \(D\)); choice \(D=\mathbf 1\{U\le\nu(W)\}\), where \(W\equiv(X,Z)\) are observables with \(Z\) being the instruments, \(\nu\) is an unknown function, and \(U\) is an unobservable random variable that is continuously distributed and normalized to be uniform on $[0,1]$.</p>
+<p>Heckman's work uses latent variable notation, and <em>Mostly Harmless Econometrics</em> uses potential outcome notation.</p></div>
+</div>
+<h2 id="14-3-roy-model">14.3 Roy Model</h2>
+<h3 id="14-3-1-combination-of-potential-outcome-notation-and-latent-variable-notation">14.3.1 Combination of Potential Outcome Notation and Latent Variable Notation</h3>
+<div class="lang zh">
+<p>潜变量模型的一个特例是上面定义的可分离潜变量选择方程加潜在结果方程的组合，即
+$$Y=Y_1D+Y_0(1-D),\qquad D_z=\mathbf 1\Big\{U\le\nu\big(\underbrace{W}_{=(X,Z)}\big)\Big\}$$
+<strong>常见 Roy 模型</strong>为
+$$\begin{aligned}Y_0&=X'\beta_0+V_0\\Y_1&=X'\beta_1+V_1\\D&=\mathbf 1\{U\le W'\gamma\}\end{aligned}$$
+\((V_0,V_1,U)\) 为不可观测变量、\(W\equiv(X,Z)\) 为可观测变量。注意潜在结果之差是可观测与不可观测异质性的函数：
+$$Y_1-Y_0=\underbrace{X'(\beta_1-\beta_0)}_{\text{obs}}+\underbrace{V_1-V_0}_{\text{unobs}}$$
+当 \(U\) 与 \((V_0,V_1)\) 相依时，选择决策 \(D\) 依赖 \((V_0,V_1)\)，称 <strong>selection on unobservables（基于不可观测量的选择）</strong>。又
+$$\begin{aligned}Y&=DY_1+(1-D)Y_0=(Y_1-Y_0)\cdot D+Y_0=[X'(\beta_1-\beta_0)+V_1-V_0]\cdot D+X'\beta_0+V_0\\&=X'(\beta_1-\beta_0)\cdot D+(V_1-V_0)\cdot D+X'\beta_0+V_0\end{aligned}$$
+把处理 \(D\) 的效应（系数）拆为两部分：通过可观测 \(X\) 的 \(X'(\beta_1-\beta_0)\)、通过不可观测 \((V_0,V_1)\) 的 \((V_1-V_0)\)。</p>
+<p>注意 Roy 模型有两个隐藏假设：
+1. <strong>无均衡效应。</strong> 例：考虑学费下降的政策（学费是 \(X\) 中一可观测变量）。若学费下降足够大，技能溢价会下降、从而 \(Y_1-Y_0\) 下降。这种技能溢价随政策的下降是均衡效应。本例说"无均衡效应"即假设政策变化对技能溢价影响小到可忽略，即 \(X\) 只影响 \(D\) 的值、不影响 \(Y_0,Y_1\) 的值。
+2. <strong>系数无跨个体异质性。</strong> \(\beta_0,\beta_1,\gamma\) 不随 agents 变化。</p>
+</div>
+<div class="lang en">
+<p>A special case of the latent variable model is a combination of the separable latent variable choice equation defined above plus the potential outcome equation, i.e.
+$$Y=Y_1D+Y_0(1-D),\qquad D_z=\mathbf 1\Big\{U\le\nu\big(\underbrace{W}_{=(X,Z)}\big)\Big\}$$
+A common version of the <strong>Roy Model</strong> is
+$$\begin{aligned}Y_0&=X'\beta_0+V_0\\Y_1&=X'\beta_1+V_1\\D&=\mathbf 1\{U\le W'\gamma\}\quad(\text{choice or selection equation})\end{aligned}$$
+where \((V_0,V_1,U)\) are unobservable variables and \(W\equiv(X,Z)\) are observable variables. Notice that the difference in potential outcomes is a function of both observed and unobserved heterogeneity:
+$$Y_1-Y_0=\underbrace{X'(\beta_1-\beta_0)}_{\text{observed}}+\underbrace{V_1-V_0}_{\text{unobserved}}$$
+When \(U\) and \((V_0,V_1)\) are dependent, the selection decision \(D\) is dependent on \((V_0,V_1)\), so we call it <strong>selection on unobservables</strong>. And notice that
+$$\begin{aligned}Y&=DY_1+(1-D)Y_0=(Y_1-Y_0)\cdot D+Y_0=[X'(\beta_1-\beta_0)+V_1-V_0]\cdot D+X'\beta_0+V_0\\&=X'(\beta_1-\beta_0)\cdot D+(V_1-V_0)\cdot D+X'\beta_0+V_0\end{aligned}$$
+breaks down the effect (coefficient) of treatment \(D\) into two parts: \(X'(\beta_1-\beta_0)\) through observable \(X\), and \((V_1-V_0)\) through unobservable \((V_0,V_1)\).</p>
+<p>Notice that there are some buried assumptions in the Roy model. In particular:
+1. <strong>No equilibrium effects.</strong> To understand what this means, consider a policy change of a decrease in tuition for schooling where tuition is one observable variable in \(X\). If the decrease in tuition itself was large enough, the skill premium for additional schooling would decrease, which decreases \(Y_1-Y_0\). This decrease in the skill premium is an equilibrium effect. So for this example, when we say no equilibrium effects, we're essentially saying that the policy change is small enough not to affect the skill premium, which means \(X\) only affects the value of \(D\), not the value of \(Y_0\) and \(Y_1\).
+2. <strong>No heterogeneity in coefficients among agents.</strong> The values of \(\beta_0,\beta_1\) and \(\gamma\) don't vary among agents.</p>
+</div>
+<h3 id="14-3-2-marginal-treatment-effect">14.3.2 Marginal Treatment Effect</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义（边际处理效应 MTE）
+定义<strong>边际处理效应（MTE）</strong>为
+$$\text{MTE}(u)=\mathbb E[Y_1-Y_0\mid U=u]$$
+即首阶段不可观测量 \(U=u\) 的那群 agents 的 ATE。</p></div>
+<p>当且仅当 MTE 非常数时，存在不可观测处理异质性。许多量可写成 MTE 的加权平均：
+- <strong>ATE</strong> 是 MTE 的<strong>无权</strong>平均：
+$$\text{ATE}=\mathbb E[\mathbb E[Y_1-Y_0\mid U=u]]=\int_0^1\text{MTE}(u)\times\underbrace{1}_{\omega_{\text{ATE}}(u)}\,du$$
+\(\omega_{\text{ATE}}(u)=1\) 来自 \(U\sim\text{Unif}[0,1]\)。
+- <strong>ATT</strong> 是 MTE 的加权平均：
+$$\text{ATT}=\mathbb E[Y_1-Y_0\mid D=1]=\int_0^1\text{MTE}(u)\underbrace{\frac{\mathbb P(p(Z)\ge u)}{\mathbb P(D=1)}}_{\omega_{\text{ATT}}(u)}\,du$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 推导（ATT）
+$$\begin{aligned}\text{ATT}&=\mathbb E[Y_1-Y_0\mid D=1]=\mathbb E[Y_1-Y_0\mid U\le p(Z)]\\&\overset{\text{outer }\mathbb E\text{ w.r.t. }U}{=}\mathbb E[\mathbb E[Y_1-Y_0\mid U\le p(Z),U=u]]\\&\overset{Z\perp(Y_0,Y_1)}{=}\mathbb E\Big[\mathbb E[(Y_1-Y_0)\mathbf 1\{U\le p(Z)\}\mid U=u]\tfrac1{\mathbb P(U\le p(Z))}\Big]\\&=\mathbb E\Big[\underbrace{\mathbb E[Y_1-Y_0\mid U=u]}_{\text{MTE}(u)}\mathbb E[\mathbf 1\{u\le p(Z)\}]\tfrac1{\mathbb P(D=1)}\Big]\\&=\mathbb E\Big[\text{MTE}(u)\mathbb P(p(Z)\ge u)\tfrac1{\mathbb P(D=1)}\Big]=\int_0^1\text{MTE}(u)\underbrace{\tfrac{\mathbb P(p(Z)\ge u)}{\mathbb P(D=1)}}_{\omega_{\text{ATT}}(u)}\,du\end{aligned}$$
+其中 \(p(Z)\) 是倾向得分（命题 14.1），\(\mathbb P(p(Z)\ge u)=\mathbb P(u\le\nu(Z))=\mathbb P(D=1\mid U=u)\)。\(\blacksquare\)</p></div>
+<p>直观：\(\mathbb P(p(Z)\ge u)\) 是 \(U=u\) 中受处理人的比例，分母 \(\mathbb P(D=1)\) 把它归一化使权重加总为 1。\(\omega_{\text{ATT}}(u)\) 是 \(U=u\) 的受处理者在全部受处理者中的权重——我们对更低 \(u\)（更不情愿受处理）的人加更高权重。</p>
+<ul>
+<li><strong>ATU</strong> 也是 MTE 的加权平均：
+$$\text{ATU}=\mathbb E[Y_1-Y_0\mid D=0]=\int_0^1\text{MTE}(u)\underbrace{\frac{\mathbb P(p(Z)<u)}{\mathbb P(D=0)}}_{\omega_{\text{ATU}}(u)}\,du$$
+（对更高 \(u\) 的人加更高权重，即最不可能受处理者。）</li>
+</ul>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition (Marginal treatment effect, MTE)
+Define the <strong>marginal treatment effect (MTE)</strong> as
+$$\text{MTE}(u)=\mathbb E[Y_1-Y_0\mid U=u]$$
+i.e. the ATE for those agents with first-stage unobservable \(U=u\).</p></div>
+<p>There is unobserved treatment heterogeneity if and only if non-constant MTE. Many quantities can be written as a weighted average of the MTE:
+- <strong>ATE</strong> is the <strong>unweighted</strong> average of the MTE:
+$$\text{ATE}=\mathbb E[\mathbb E[Y_1-Y_0\mid U=u]]=\int_0^1\text{MTE}(u)\times\underbrace{1}_{\omega_{\text{ATE}}(u)}\,du$$
+where \(\omega_{\text{ATE}}(u)=1\) comes from \(U\sim\text{Unif}[0,1]\).
+- <strong>ATT</strong> (average treatment effect on the treated) is the weighted average of the MTE:
+$$\text{ATT}=\mathbb E[Y_1-Y_0\mid D=1]=\int_0^1\text{MTE}(u)\underbrace{\frac{\mathbb P(p(Z)\ge u)}{\mathbb P(D=1)}}_{\omega_{\text{ATT}}(u)}\,du$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Derivation (ATT)
+$$\begin{aligned}\text{ATT}&=\mathbb E[Y_1-Y_0\mid D=1]=\mathbb E[Y_1-Y_0\mid U\le p(Z)]\\&\overset{\text{outer }\mathbb E\text{ w.r.t. }U}{=}\mathbb E[\mathbb E[Y_1-Y_0\mid U\le p(Z),U=u]]\\&\overset{Z\perp(Y_0,Y_1)}{=}\mathbb E\Big[\mathbb E[(Y_1-Y_0)\mathbf 1\{U\le p(Z)\}\mid U=u]\tfrac1{\mathbb P(U\le p(Z))}\Big]\\&=\mathbb E\Big[\underbrace{\mathbb E[Y_1-Y_0\mid U=u]}_{\text{MTE}(u)}\mathbb E[\mathbf 1\{u\le p(Z)\}]\tfrac1{\mathbb P(D=1)}\Big]\\&=\mathbb E\Big[\text{MTE}(u)\mathbb P(p(Z)\ge u)\tfrac1{\mathbb P(D=1)}\Big]=\int_0^1\text{MTE}(u)\underbrace{\tfrac{\mathbb P(p(Z)\ge u)}{\mathbb P(D=1)}}_{\omega_{\text{ATT}}(u)}\,du\end{aligned}$$
+where \(p(Z)\) is the propensity score (Proposition 14.1), and \(\mathbb P(p(Z)\ge u)=\mathbb P(u\le\nu(Z))=\mathbb P(D=1\mid U=u)\). \(\blacksquare\)</p></div>
+<p>Intuition: \(\mathbb P(p(Z)\ge u)\) is the fraction of people with \(U=u\) taking treatment, and the denominator \(\mathbb P(D=1)\) normalizes it so the weights add up to 1. \(\omega_{\text{ATT}}(u)\) is the weight of treated people with \(U=u\) in the group of all treated people, and we're upweighting people with lower \(u\) (lower unwillingness to take treatment).</p>
+<ul>
+<li><strong>ATU</strong> (average treatment effect on the untreated) is also a weighted average of the MTE:
+$$\text{ATU}=\mathbb E[Y_1-Y_0\mid D=0]=\int_0^1\text{MTE}(u)\underbrace{\frac{\mathbb P(p(Z)<u)}{\mathbb P(D=0)}}_{\omega_{\text{ATU}}(u)}\,du$$
+(upweighting those with high values of \(u\), i.e. those least likely to take treatment.)</li>
+</ul>
+</div>
+<div class="lang zh">
+<ul>
+<li><strong>LATE</strong>（compliers 的局部平均处理效应）也是 MTE 的加权平均。回忆 §5.6 的 (5.42)，用此处记号即
+$$\text{LATE}=\frac{\mathbb E[Y\mid Z=z]-\mathbb E[Y\mid Z=z']}{\mathbb E[D\mid Z=z]-\mathbb E[D\mid Z=z']}\tag{14.5}$$</li>
+</ul>
+<div class="callout"><div class="callout-title">Note</div><p>- 推导（LATE 为 MTE 加权平均）
+先看 (14.5) 分子。对 \(\mathbb E[Y\mid Z=z]\)，
+$$\begin{aligned}\mathbb E[Y\mid Z=z]&=\mathbb E[Y_1D+Y_0(1-D)\mid Z=z]=\mathbb E[Y_1\mid Z=z,U\le p(z)]p(z)+\mathbb E[Y_0\mid Z=z,U>p(z)](1-p(z))\\&=\int_0^{p(z)}\mathbb E[Y_1\mid U=u]\,du+\int_{p(z)}^1\mathbb E[Y_0\mid U=u]\,du\end{aligned}$$
+同理 \(\mathbb E[Y\mid Z=z']=\int_0^{p(z')}\mathbb E[Y_1\mid U=u]\,du+\int_{p(z')}^1\mathbb E[Y_0\mid U=u]\,du\)。故分子为
+$$\mathbb E[Y\mid Z=z]-\mathbb E[Y\mid Z=z']=\int_{p(z')}^{p(z)}\underbrace{\mathbb E[Y_1-Y_0\mid U=u]}_{\text{MTE}(u)}\,du=\int_0^1\text{MTE}(u)\mathbf 1\{u\in[p(z'),p(z)]\}\,du$$
+分母：\(\mathbb E[D\mid Z=z]=\mathbb P(D=1\mid Z=z)=\mathbb P(U\le p(z)\mid Z=z)=p(z)\)，同理 \(\mathbb E[D\mid Z=z']=p(z')\)，故分母 \(=p(z)-p(z')\)。因此
+$$\text{LATE}=\frac{\mathbb E[Y\mid Z=z]-\mathbb E[Y\mid Z=z']}{\mathbb E[D\mid Z=z]-\mathbb E[D\mid Z=z']}=\int_0^1\text{MTE}(u)\underbrace{\frac{\mathbf 1\{u\in[p(z'),p(z)]\}}{p(z)-p(z')}}_{\equiv\omega_{\text{LATE}}(u)}\,du$$
+显然 \(\int_0^1\omega_{\text{LATE}}(u)\,du=1\)，LATE 是 compliers 的 ATE。\(\blacksquare\)</p>
+<p>[!tip] 注记 14.3（关于 ATE/ATT/ATU 的评论）
+1. ATE 有点虚构概念：当人们报告 ATE，实际是报告"把处理给所有人或随机给某人"的效应；但实务中不清楚"给所有人处理"在自由民主下何意。ATE 受很多关注，但对实际可行政策未必有帮助。
+2. ATT 回答什么政策问题？设 \(d\in\{0,1\}\) 是培训项目参加，该估计有何用？一例是政策评估：若 ATT 很接近零甚至为负，则关停项目可能合理。
+3. ATU 回答什么？告诉你若要求每个人参加会怎样。
+4. 更一般的问题是：若我改变激励，处理效应是什么？这正是改变激励时受决策影响那群人的效应——Heckman 称此为<strong>政策相关处理效应（PRTE）</strong>。</p></div>
+</div>
+<div class="lang en">
+<ul>
+<li><strong>LATE</strong> (local average treatment effect for the compliers) is also a weighted average of the MTE. Recall (5.42) in §5.6, which in the notation here is
+$$\text{LATE}=\frac{\mathbb E[Y\mid Z=z]-\mathbb E[Y\mid Z=z']}{\mathbb E[D\mid Z=z]-\mathbb E[D\mid Z=z']}\tag{14.5}$$</li>
+</ul>
+<div class="callout"><div class="callout-title">Note</div><p>- Derivation (LATE as a weighted average of the MTE)
+First the numerator of (14.5). For \(\mathbb E[Y\mid Z=z]\),
+$$\begin{aligned}\mathbb E[Y\mid Z=z]&=\mathbb E[Y_1D+Y_0(1-D)\mid Z=z]=\mathbb E[Y_1\mid Z=z,U\le p(z)]p(z)+\mathbb E[Y_0\mid Z=z,U>p(z)](1-p(z))\\&=\int_0^{p(z)}\mathbb E[Y_1\mid U=u]\,du+\int_{p(z)}^1\mathbb E[Y_0\mid U=u]\,du\end{aligned}$$
+Similarly \(\mathbb E[Y\mid Z=z']=\int_0^{p(z')}\mathbb E[Y_1\mid U=u]\,du+\int_{p(z')}^1\mathbb E[Y_0\mid U=u]\,du\). So the numerator is
+$$\mathbb E[Y\mid Z=z]-\mathbb E[Y\mid Z=z']=\int_{p(z')}^{p(z)}\underbrace{\mathbb E[Y_1-Y_0\mid U=u]}_{\text{MTE}(u)}\,du=\int_0^1\text{MTE}(u)\mathbf 1\{u\in[p(z'),p(z)]\}\,du$$
+Denominator: \(\mathbb E[D\mid Z=z]=\mathbb P(D=1\mid Z=z)=\mathbb P(U\le p(z)\mid Z=z)=p(z)\), similarly \(\mathbb E[D\mid Z=z']=p(z')\), so the denominator \(=p(z)-p(z')\). Therefore
+$$\text{LATE}=\frac{\mathbb E[Y\mid Z=z]-\mathbb E[Y\mid Z=z']}{\mathbb E[D\mid Z=z]-\mathbb E[D\mid Z=z']}=\int_0^1\text{MTE}(u)\underbrace{\frac{\mathbf 1\{u\in[p(z'),p(z)]\}}{p(z)-p(z')}}_{\equiv\omega_{\text{LATE}}(u)}\,du$$
+Clearly \(\int_0^1\omega_{\text{LATE}}(u)\,du=1\), and LATE is the ATE of all compliers. \(\blacksquare\)</p>
+<p>[!tip] Remark 14.3 (Comments on ATE, ATT, and ATU)
+1. ATE is kind of a fictitious concept: when someone reports ATE, they are actually reporting the effect of giving treatment to everyone or to someone randomly from the whole population; but in practice it's not clear what it means to give treatment to everyone — at least in a liberal democracy. The point is that ATE receives a lot of attention, but it's not always helpful for actually feasible policy.
+2. What policy question does ATT answer? Suppose that the estimate is for a trade-school program. If this number is very close to zero or even negative, then it could make sense to end the trade school.
+3. What policy question does ATU answer? It tells you what would happen if you made it a requirement.
+4. A more general question is what is the treatment effect if I change incentives. This is the effect among those whose decision changes when I change incentives — Heckman calls this the <strong>policy relevant treatment effects (PRTE)</strong>.</p></div>
+</div>
+<h3 id="14-3-3-policy-relevant-treatment-effects-prte">14.3.3 Policy Relevant Treatment Effects (PRTE)</h3>
+<div class="lang zh">
+<p>定义<strong>政策相关处理效应（PRTE）</strong>为政策引入对 \(Y\) 的<strong>每净人（per net person）</strong>总效应：
+$$\beta_{\text{PRTE}}\equiv\frac{\overbrace{\mathbb E[Y^\star]-\mathbb E[Y]}^{\text{mean effect}}}{\underbrace{\mathbb E[D^\star]-\mathbb E[D]}_{\text{per net person}}}\tag{14.6}$$
+\(Y,D\) 为政策前值，\(Y^\star,D^\star\) 为政策后值。换言之，政策先通过 \(\mathbb E[D^\star]-\mathbb E[D]\) 影响受处理人的比例（即影响受处理激励），那些新切换到受处理的人的比例乘以乘子 \(\beta_{\text{PRTE}}\)，给出政策对 \(\mathbb E[Y^\star]-\mathbb E[Y]\) 的总平均结果效应。</p>
+<p>\(\beta_{\text{PRTE}}\) 也可写成 MTE 的加权平均：
+$$\beta_{\text{PRTE}}=\int_0^1\text{MTE}(u)\omega_{\text{PRTE}}(u)\,du$$
+PRTE 是 compliers 群体的 ATE，是 LATE 的更一般版本——LATE 针对工具变量变化的 compliers，PRTE 针对政策变化的 compliers，或工具变量的变化。</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 推导（\(\beta_{\text{PRTE}}\) 与权重和为 1）
+先看 (14.6) 分子 \(\mathbb E[Y^\star]-\mathbb E[Y]\)。对 \(\mathbb E[Y]\)，
+$$\begin{aligned}\mathbb E[Y]&=\mathbb E[Y_1D+Y_0(1-D)]\overset{\text{LIE}}{=}\mathbb E[\mathbb E[Y_1D+Y_0(1-D)\mid U=u]]\\&=\mathbb E\big[\mathbb E[Y_1\mid U=u]\mathbb P(u\le p(Z))+\mathbb E[Y_0\mid U=u]\mathbb P(u>p(Z))\big]\\&=\int_0^1\big(\mathbb E[Y_1\mid U=u](1-F_p^-(u))+\mathbb E[Y_0\mid U=u]F_p^-(u)\big)\,du\end{aligned}$$
+\(F_p^-(u)=\lim_{p(Z)\to u^-}F_p(u)=\mathbb P(p(Z)<u)\) 为 \(p(Z)\) 在 \(u\) 处 CDF 的左极限。同理（政策后 \(\star\)，假设政策不影响均衡，\(Y_0,Y_1\) 不受政策影响）
+$$\mathbb E[Y^\star]=\int_0^1\big(\mathbb E[Y_1\mid U=u](1-F_{p^\star}^-(u))+\mathbb E[Y_0\mid U=u]F_{p^\star}^-(u)\big)\,du$$
+故分子
+$$\mathbb E[Y^\star]-\mathbb E[Y]=\int_0^1\big(F_p^-(u)-F_{p^\star}^-(u)\big)\underbrace{\big(\mathbb E[Y_1\mid U=u]-\mathbb E[Y_0\mid U=u]\big)}_{\text{MTE}(u)}\,du=\int_0^1\big(F_p^-(u)-F_{p^\star}^-(u)\big)\text{MTE}(u)\,du$$
+分母：\(\mathbb E[D]=\mathbb E[\mathbf 1\{U\le p(Z)\}]\overset{\text{LIE over }Z}{=}\mathbb E[\mathbb E[\mathbf 1\{U\le p(Z)\}\mid Z=z]]=\mathbb E[p(Z)]\)，同理 \(\mathbb E[D^\star]=\mathbb E[p^\star(Z^\star)]\)，故分母 \(=\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]\)。因此
+$$\beta_{\text{PRTE}}=\frac{\mathbb E[Y^\star]-\mathbb E[Y]}{\mathbb E[D^\star]-\mathbb E[D]}=\int_0^1\text{MTE}(u)\underbrace{\frac{F_p^-(u)-F_{p^\star}^-(u)}{\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]}}_{\equiv\omega_{\text{PRTE}}(u)}\,du$$
+用"分部积分"可证 \(\mathbb E[p(Z)]=\int_0^1 u[F_p^-(u)]'\,du=uF_p^-(u)\big|_0^1-\int_0^1 F_p^-(u)\,du\Rightarrow\int_0^1 F_p^-(u)\,du=1-\mathbb E[p(Z)]\)。于是
+$$\int_0^1\omega_{\text{PRTE}}(u)\,du=\frac{\int_0^1(F_p^-(u)-F_{p^\star}^-(u))\,du}{\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]}=\frac{(1-\mathbb E[p(Z)])-(1-\mathbb E[p^\star(Z^\star)])}{\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]}=\frac{\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]}{\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]}=1$$
+即权重和为 1。\(\blacksquare\)</p>
+<p>[!tip] 注记 14.4（随机对照试验）
+Banerjee、Imbens、Duflo 主张随机对照试验（RCT）是金标准；Heckman 与 Mogstad 不同意。RCT 的明显好处是：随机化实验下 \(D\) 被随机化、从而与潜在结果正交。明显缺点是它只能识别某些目标参数、不能识别全部——尤其不能学到 \(\text{MTE}(u)\)。</p></div>
+</div>
+<div class="lang en">
+<p>Define the <strong>Policy Relevant Treatment Effect (PRTE)</strong> as the aggregate effect on \(Y\) <strong>per net person</strong> of a change in the propensity score (or probability of taking treatment), both of which are caused by the introduction of a policy:
+$$\beta_{\text{PRTE}}\equiv\frac{\overbrace{\mathbb E[Y^\star]-\mathbb E[Y]}^{\text{mean effect}}}{\underbrace{\mathbb E[D^\star]-\mathbb E[D]}_{\text{per net person}}}\tag{14.6}$$
+where \(Y,D\) are pre-policy values and \(Y^\star,D^\star\) are post-policy values. In other words, the policy first affects the proportion of people who take treatment by \(\mathbb E[D^\star]-\mathbb E[D]\) (i.e. affecting the incentive to take treatment); then the fraction of those net new people who switch to get treatment, times the multiplier \(\beta_{\text{PRTE}}\), gives us the overall effect \(\mathbb E[Y^\star]-\mathbb E[Y]\) on the average outcome due to the policy.</p>
+<p>\(\beta_{\text{PRTE}}\) can also be expressed as a weighted average of the MTE:
+$$\beta_{\text{PRTE}}=\int_0^1\text{MTE}(u)\omega_{\text{PRTE}}(u)\,du$$
+PRTE is the ATE of the group of compliers to the policy change, which is a more general version of LATE. So \(\omega_{\text{PRTE}}(u)\) is the fraction (w.r.t. the whole group) of compliers to a policy at each \(U=u\) divided by fraction of compliers in the whole group.</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Derivation (\(\beta_{\text{PRTE}}\) and weights summing to 1)
+First the numerator \(\mathbb E[Y^\star]-\mathbb E[Y]\) of (14.6). For \(\mathbb E[Y]\),
+$$\begin{aligned}\mathbb E[Y]&=\mathbb E[Y_1D+Y_0(1-D)]\overset{\text{LIE}}{=}\mathbb E[\mathbb E[Y_1D+Y_0(1-D)\mid U=u]]\\&=\mathbb E\big[\mathbb E[Y_1\mid U=u]\mathbb P(u\le p(Z))+\mathbb E[Y_0\mid U=u]\mathbb P(u>p(Z))\big]\\&=\int_0^1\big(\mathbb E[Y_1\mid U=u](1-F_p^-(u))+\mathbb E[Y_0\mid U=u]F_p^-(u)\big)\,du\end{aligned}$$
+where \(F_p^-(u)=\lim_{p(Z)\to u^-}F_p(u)=\mathbb P(p(Z)<u)\) is the left limit of the CDF of \(p(Z)\) at \(p(Z)=u\). Similarly (post-policy \(\star\), assuming the policy does not affect the equilibrium so \(Y_0,Y_1\) are unaffected),
+$$\mathbb E[Y^\star]=\int_0^1\big(\mathbb E[Y_1\mid U=u](1-F_{p^\star}^-(u))+\mathbb E[Y_0\mid U=u]F_{p^\star}^-(u)\big)\,du$$
+So the numerator
+$$\mathbb E[Y^\star]-\mathbb E[Y]=\int_0^1\big(F_p^-(u)-F_{p^\star}^-(u)\big)\underbrace{\big(\mathbb E[Y_1\mid U=u]-\mathbb E[Y_0\mid U=u]\big)}_{\text{MTE}(u)}\,du=\int_0^1\big(F_p^-(u)-F_{p^\star}^-(u)\big)\text{MTE}(u)\,du$$
+Denominator: \(\mathbb E[D]=\mathbb E[\mathbf 1\{U\le p(Z)\}]\overset{\text{LIE over }Z}{=}\mathbb E[\mathbb E[\mathbf 1\{U\le p(Z)\}\mid Z=z]]=\mathbb E[p(Z)]\), similarly \(\mathbb E[D^\star]=\mathbb E[p^\star(Z^\star)]\), so the denominator \(=\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]\). Therefore
+$$\beta_{\text{PRTE}}=\frac{\mathbb E[Y^\star]-\mathbb E[Y]}{\mathbb E[D^\star]-\mathbb E[D]}=\int_0^1\text{MTE}(u)\underbrace{\frac{F_p^-(u)-F_{p^\star}^-(u)}{\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]}}_{\equiv\omega_{\text{PRTE}}(u)}\,du$$
+Using "integration by parts" one proves \(\mathbb E[p(Z)]=\int_0^1 u[F_p^-(u)]'\,du=uF_p^-(u)\big|_0^1-\int_0^1 F_p^-(u)\,du\Rightarrow\int_0^1 F_p^-(u)\,du=1-\mathbb E[p(Z)]\). Then
+$$\int_0^1\omega_{\text{PRTE}}(u)\,du=\frac{\int_0^1(F_p^-(u)-F_{p^\star}^-(u))\,du}{\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]}=\frac{(1-\mathbb E[p(Z)])-(1-\mathbb E[p^\star(Z^\star)])}{\mathbb E[p^\star(Z^\star)]-\mathbb E[p(Z)]}=1$$
+i.e. the weights add up to 1. \(\blacksquare\)</p>
+<p>[!tip] Remark 14.4 (Randomized Controlled Trials)
+Banerjee, Imbens, and Duflo claim that randomized controlled trials (RCTs) are the gold standard; Heckman and Mogstad disagree with this position. The clear benefit of RCTs is that with a randomized experiment we have that \(D\) is randomized so is orthogonal to the potential outcomes. The clear drawback of RCTs is that they identify some target parameters but not others. In particular, we can't learn about the \(\text{MTE}(u)\).</p></div>
+</div>
+<h2 id="14-4-theory-imposes-additional-restrictions-fr-chet-hoeffding-bounds-as-an-example">14.4 Theory Imposes Additional Restrictions: Fréchet–Hoeffding Bounds as an Example</h2>
+<div class="lang zh">
+<p>考虑如下列联表，\(E\) 表就业、\(U\) 表失业，处理为培训项目：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Untreated \(E\)</th>
+<th>Untreated \(N\)</th>
+<th>row total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Treated \(E\)</strong></td>
+<td>\(P_{EE}\)</td>
+<td>\(P_{EN}\)</td>
+<td>\(P_{E\bullet}\)</td>
+</tr>
+<tr>
+<td><strong>Treated \(N\)</strong></td>
+<td>\(P_{NE}\)</td>
+<td>\(P_{NN}\)</td>
+<td>\(P_{N\bullet}\)</td>
+</tr>
+<tr>
+<td><strong>col total</strong></td>
+<td>\(P_{\bullet E}\)</td>
+<td>\(P_{\bullet N}\)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>设我们相信 \(P_{E\bullet}=0.6\)、\(P_{\bullet E}=0.6\)，则 \(P_{EE}=0.2\) 可能，但 \(P_{EE}=0.1\) 不可能——因 \(P_{EE}=0.1\) 蕴含 \(P_{NE}=0.5\)、\(P_{EN}=0.5\)，则联合概率之和超过 1。此简单例说明：当理论只给我们边际分布（如 \(P_{E\bullet}=0.6\)、\(P_{\bullet E}=0.6\)）、不给联合分布时，仍可至少对某些联合概率施加界（如 \(0.2\le P_{EE}\le0.6\)）。这正是理论施加的、单凭实验或数据未蕴含的额外约束。又例：若培训项目无歧义地提高你找到工作的概率，则 \(P_{NE}\) 必为零。结论：理论能给我们实验或数据本身不蕴含的、对联合分布的额外约束。</p>
+</div>
+<div class="lang en">
+<p>Consider the following contingency table where \(E\) means employment, \(N\) means unemployment, and the treatment is a training program:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Untreated \(E\)</th>
+<th>Untreated \(N\)</th>
+<th>row total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Treated \(E\)</strong></td>
+<td>\(P_{EE}\)</td>
+<td>\(P_{EN}\)</td>
+<td>\(P_{E\bullet}\)</td>
+</tr>
+<tr>
+<td><strong>Treated \(N\)</strong></td>
+<td>\(P_{NE}\)</td>
+<td>\(P_{NN}\)</td>
+<td>\(P_{N\bullet}\)</td>
+</tr>
+<tr>
+<td><strong>col total</strong></td>
+<td>\(P_{\bullet E}\)</td>
+<td>\(P_{\bullet N}\)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Suppose we believe that \(P_{E\bullet}=0.6\) and \(P_{\bullet E}=0.6\); then \(P_{EE}=0.2\) is possible but \(P_{EE}=0.1\) is not possible, because \(P_{EE}=0.1\) implies \(P_{NE}=0.5\) and \(P_{EN}=0.5\), then the joint probabilities sum up to exceed 1. This simple example illustrates that when theory tells us only the marginal distribution (e.g. \(P_{E\bullet}=0.6\) and \(P_{\bullet E}=0.6\)) but not the joint distribution, we can at least put some bounds on some joint probabilities (e.g. \(0.2\le P_{EE}\le0.6\)). For another example, if a training program unambiguously increases your probability of getting a job, then \(P_{NE}\) must be zero. In conclusion, theory could give us additional restrictions on the joint distribution not implied by the experiment or data.</p>
+</div>
+<h2 id="14-5-experiment-create-your-own-data">14.5 Experiment: Create Your Own Data</h2>
+<div class="lang zh">
+<ul>
+<li>实验对<strong>机制分离（Mechanism Separation）</strong>研究有用。例：同伴效应有两条可能渠道（机制）影响人的行为（如金融投资决策）：</li>
+<li><strong>社会学习</strong>：从观察他人所做来更新信息。例：别人买这只股票，我认为他们的选择透露了一些告诉我这股票好的信息，故我也因这从观察收集的信息而买。</li>
+<li><strong>社会效用</strong>：对效用函数的直接影响。例：我买这股票只因所有人都买、我想和大家有共同话题。</li>
+<li>仅用自然收集的数据很难分离这些机制，需精心设计实验。</li>
+<li>始终考虑实验的<strong>内部有效性</strong>与<strong>外部有效性</strong>。</li>
+<li>先确保实验有内部有效性。有时你可能忘了为某观测加上替代解释，则审稿人与研讨会听众会借此压过你、甚至摧毁你故事（解释）的可信度。所以总尽量多想可能的替代解释，再在实验中控制它们、或讨论它们，并用不少于 8 页论证你已把这些因素纳入考虑、它们不破坏你的实验设计。</li>
+<li>也要小心对<strong>外部有效性</strong>下的结论：实验室实验通过更严格控制有更高内部有效性，但更不"真实"故外部有效性更低；田野实验有更多干扰故内部有效性更低，但可能外部有效性更高。把此权衡纳入考虑、相应选择实验方法。</li>
+<li>跑后续调查（follow-up surveys）是好主意，可能给你更多发现。但如今<strong>预注册（pre-registration）</strong>实验已成常态（有人做到极端）。别忘了提前设计这些调查并纳入预注册。</li>
+<li><strong>定性 vs 定量结论。</strong></li>
+<li>若打算的结果是定性（方向性）的，则少些控制、更"真实"或许是更好选择，外部有效性更重要些。</li>
+<li>若打算的结果是定量的（要求高精度），则更多控制是必要甚至不可避免、即便以更不真实为代价，内部有效性更重要些。</li>
+</ul>
+</div>
+<div class="lang en">
+<ul>
+<li>Experiment is useful for <strong>Mechanism Separation</strong> researches. For example, peer effect has two possible channels (mechanisms) to affect people's behavior (e.g. financial investment decision):</li>
+<li><strong>Social learning</strong>: information updating from observing what others do. E.g. others buy this stock, and I think their choices reveal some information telling me that the stock is good, so I also buy it because of the information collected through observation.</li>
+<li><strong>Social utility</strong>: direct effect on the utility function. E.g. I buy this stock because all others buy and I want to have topics in common with the group.</li>
+<li>It is very hard to separate such mechanisms using only naturally collected data without carefully designing experiments.</li>
+<li>Always think about the internal validity and external validity.</li>
+<li>First, make sure the experiment has internal validity. Sometimes you might forget to add in some alternative explanations for an observation, then the referee and seminar audience will outsmart you by challenging or even destroying the credibility of the story (explanation) in the paper. So, always think about as many possible alternative explanations as possible, and then either control them during your experiment or discuss them by yourself using no less than 8 pages to show that you have already taken those factors into consideration and they are not ruining your experiment design.</li>
+<li>Then, be careful to draw any conclusions about the external validity. A lab experiment has more internal validity through more rigorous control, but is less "real" so has less external validity. A field experiment has more interference so less internal validity, but possibly more external validity. So take this trade-off into consideration and choose your experiment method accordingly.</li>
+<li>It's a good idea to run follow-up surveys, which might potentially give you more findings out of the results. But nowadays it has become a norm to <strong>pre-register</strong> your experiment, and some people really take it to the extreme. So don't forget to design those surveys ahead of time and include them in the pre-registration.</li>
+<li><strong>Qualitative vs quantitative conclusion.</strong></li>
+<li>If the intended result is qualitative, or directional, then less controls and more real might be the right choice, and external validity is somewhat more important.</li>
+<li>If the intended result is quantitative, which means high accuracy, then more controls is necessary even inevitably at the cost of less real, and internal validity is somewhat more important.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#14-1-three-steps-as-an-organizing-principle">14.1 Three Steps as an Organizing Principle</a></li>
+        <li><a href="#14-2-different-models-could-use-different-notations-for-the-same-problem">14.2 Different Models Could Use Different Notations for the Same Problem</a></li>
+          <li><a href="#14-2-1-potential-outcome-model">14.2.1 Potential Outcome Model</a></li>
+          <li><a href="#14-2-2-latent-variable-models">14.2.2 Latent Variable Models</a></li>
+        <li><a href="#14-3-roy-model">14.3 Roy Model</a></li>
+          <li><a href="#14-3-1-combination-of-potential-outcome-notation-and-latent-variable-notation">14.3.1 Combination of Potential Outcome Notation and Latent Variable Notation</a></li>
+          <li><a href="#14-3-2-marginal-treatment-effect">14.3.2 Marginal Treatment Effect</a></li>
+          <li><a href="#14-3-3-policy-relevant-treatment-effects-prte">14.3.3 Policy Relevant Treatment Effects (PRTE)</a></li>
+        <li><a href="#14-4-theory-imposes-additional-restrictions-fr-chet-hoeffding-bounds-as-an-example">14.4 Theory Imposes Additional Restrictions: Fréchet–Hoeffding Bounds as an Example</a></li>
+        <li><a href="#14-5-experiment-create-your-own-data">14.5 Experiment: Create Your Own Data</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13. Generalized Method of Moments (GMM) Estimation – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>13. Generalized Method of Moments (GMM) Estimation</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">广义矩估计</span><span class="lang en">GMM</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">矩条件</span><span class="lang en">Moment Restrictions</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">选择矩阵</span><span class="lang en">Selection Matrix</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">有效性界</span><span class="lang en">Efficiency Bound</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">工具变量</span><span class="lang en">Instrumental Variables</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">假设检验</span><span class="lang en">Hypothesis Testing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：广义矩估计（GMM）。</strong> 似然方法要求<strong>完整设定</strong>模型与似然函数；GMM 的好处是只需<strong>部分设定</strong>——给出<strong>矩条件</strong>、再估参数去拟合这些条件。<strong>§13.1 设定</strong>：真参数 \(\beta\)（\(k\times1\)）、矩函数 \(F(\mathbf X,\mathbf b)\)（\(r\times1\)）、\(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\)（13.1）；<strong>选择矩阵</strong> \(\mathbf A\)（\(r\times k\)）把 \(r\) 个矩条件线性变换为 \(k\) 个方程，GMM 估计 \(\mathbf b_N\) 解 \(\frac1N\sum\mathbf A'F=\mathbf 0\)（13.4）；\(r\ge k\) 恰好/过度识别、\(r<k\) 欠识别。<strong>§13.2 矩条件例</strong>：矩匹配、工具变量、条件矩条件、含随机折现因子的 Euler 方程。<strong>§13.3 渐近</strong>：\(\sqrt N(\mathbf b_N-\beta)\xrightarrow{d}N(0,\operatorname{Cov}(\mathbf A))\)，\(\operatorname{Cov}(\mathbf A)=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A(\mathbf D'\mathbf A)^{-1}\)（13.14）。<strong>§13.4 有效性界</strong>：\(\operatorname{Cov}(\mathbf A)\ge\operatorname{Cov}(\mathbf A^\star)=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}\)，\(\mathbf A^\star=\mathbf V^{-1}\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}\)。<strong>§13.5 IV 扩展例</strong>：条件→无条件矩条件、恰好识别与预检验、刻画 \(\mathbf V,\mathbf D\)、i.i.d.+同方差下 TSLS 达到 GMM 有效性界。<strong>§13.6 假设检验</strong>：调整后 \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\) 的极限分布（13.22）；三种检验法（校准—验证、有效估计检验、同时估计与检验）；三种估 \(\mathbf V\) 法（两步、交互、连续更新）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: Generalized Method of Moments (GMM).</strong> Likelihood methods require <strong>fully specifying</strong> the model and likelihood function; GMM's benefit is that it works with only <strong>partially specified</strong> models — specify <strong>moment restrictions</strong>, then estimate parameters to fit them. <strong>§13.1 Set-up</strong>: true parameter \(\beta\) (\(k\times1\)), moment function \(F(\mathbf X,\mathbf b)\) (\(r\times1\)), \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) (13.1); the <strong>selection matrix</strong> \(\mathbf A\) (\(r\times k\)) linearly transforms the \(r\) moment restrictions into \(k\) equations, and the GMM estimator \(\mathbf b_N\) solves \(\frac1N\sum\mathbf A'F=\mathbf 0\) (13.4); \(r\ge k\) just/over-identification, \(r<k\) under-identification. <strong>§13.2 Moment restriction examples</strong>: moment matching, instrumental variables, conditional moment restrictions, the Euler equation with a stochastic discount factor. <strong>§13.3 Approximation</strong>: \(\sqrt N(\mathbf b_N-\beta)\xrightarrow{d}N(0,\operatorname{Cov}(\mathbf A))\), \(\operatorname{Cov}(\mathbf A)=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A(\mathbf D'\mathbf A)^{-1}\) (13.14). <strong>§13.4 Efficiency bound</strong>: \(\operatorname{Cov}(\mathbf A)\ge\operatorname{Cov}(\mathbf A^\star)=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}\), \(\mathbf A^\star=\mathbf V^{-1}\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}\). <strong>§13.5 IV extended example</strong>: conditional → unconditional moment restrictions, just-identification and pre-testing, characterizing \(\mathbf V,\mathbf D\), and TSLS attaining the GMM efficiency bound under i.i.d. + homoskedasticity. <strong>§13.6 Hypothesis testing</strong>: the limiting distribution of the adjusted \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\) (13.22); three ways of testing (calibration &amp; verification, testing with efficient estimation, simultaneous estimation &amp; testing); three ways of estimating \(\mathbf V\) (two-step, interactive, continuous updating).</p></div>
+</div>
+<div class="lang zh">
+<p>似然方法有个缺点："要做任何事，先得做所有事"——即要用似然方法，必须完整设定模型与似然函数。GMM 的好处是它能在<strong>仅部分设定</strong>的模型上工作：我们可以只设定一组矩条件，再估参数以拟合这些条件。</p>
+</div>
+<div class="lang en">
+<p>Likelihood methods have a shortcoming in that you "have to do everything to do something." That is, to use likelihood methods you need to fully specify your model and likelihood function. The benefit of GMM is that you can work with only partially specified models. This statement holds in the sense that for GMM we can specify moment restrictions and then estimate the parameters of our model in order to best fit these restrictions.</p>
+</div>
+<h2 id="13-1-set-up">13.1 Set-up</h2>
+<div class="lang zh">
+<ul>
+<li>\(\beta\) 是 \(k\times1\) 的真参数向量（未知）。</li>
+<li><strong>矩函数</strong> \(F(\mathbf x,\mathbf b)\)：像为 \(r\times1\) 向量的函数。\(\mathbf x\) 一般是某维度的向量（据数据），\(\mathbf b\) 是 \(k\times1\) 向量、对应待估参数 \(\beta\) 的维度。</li>
+<li>代入 \(\mathbf x=\mathbf X_t\)、\(\mathbf b=\beta\) 并取期望，应为零：
+$$\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\tag{13.1}$$</li>
+<li>期望（矩）是相对随机过程 \(\{\mathbf X_t\}\) 取的；这 \(r\) 个矩条件来自经济模型。</li>
+<li>一般地，若用条件于不变事件划分 \(\mathcal I\) 的期望，则 \(\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal I]=\mathbf 0\)；但若 \(\{\mathbf X_t\}\) 遍历（\(\mathbb P\) 对各不变事件赋 0 或 1），期望变无条件，即 (13.1)。</li>
+<li>称为<strong>矩条件</strong>，共 \(r\) 个，构成 \(r\) 个方程、\(k\) 个未知数的系统。</li>
+</ul>
+<p><strong>选择矩阵。</strong> \(\mathbf A^i\) 是 \(r\times1\) 列向量，
+$$\mathbf A=\begin{bmatrix}\mid&\mid&\cdots&\mid\\\mathbf A^1&\mathbf A^2&\cdots&\mathbf A^k\\\mid&\mid&\cdots&\mid\end{bmatrix}$$
+是 \(r\times k\) 矩阵，称<strong>选择矩阵</strong>（\(r=\) 矩条件数=要匹配的矩数，\(k=\) 待估参数数）。由 (13.1)，\(\mathbf A\) 自动满足
+$$\mathbf A'\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\quad\text{or}\quad\mathbb E[\mathbf A'F(\mathbf X_t,\beta)]=\mathbf 0$$
+等价地，对 \(\mathbf A\) 的每个列向量 \(\mathbf A^i\)（\(i=1,\dots,k\)），
+$$\mathbb E[\mathbf A^i\cdot F(\mathbf X_t,\beta)]=\mathbf 0,\quad i=1,\dots,k\tag{13.2}$$
+（\(\cdot\) 为两列向量的点乘，即 \(\mathbf A^i\cdot F=(\mathbf A^i)'F\)。）这是 \(k\) 个方程、\(k\) 个未知数的系统，假设其唯一解
+$$\mathbf A'\mathbb E[F(\mathbf X_t,\mathbf b)]=\mathbf 0\tag{13.3}$$
+是 \(\mathbf b=\beta\)。由 (13.1) 的 \(r\) 个方程出发，用选择矩阵 \(\mathbf A\) 线性变换为 \(k\) 个方程：\(r\ge k\) 时未知数不多于方程，称<strong>恰好识别</strong>或<strong>过度识别</strong>（可假设 (13.3) 唯一解 \(\mathbf b=\beta\)）；\(r<k\) 时未知数多于方程，称<strong>欠识别</strong>（(13.3) 可能多解）。</p>
+<p><strong>GMM 估计。</strong> \(\beta\) 的 GMM 估计 \(\mathbf b_N\) 用矩条件 (13.2) 的渐近类比求解：
+$$\frac1N\sum_{t=1}^N(\mathbf A^i)'F(\mathbf X_t,\mathbf b_N)=\mathbf 0,\quad i=1,2,\dots,k$$
+或堆叠版
+$$\frac1N\sum_{t=1}^N\mathbf A'F(\mathbf X_t,\mathbf b_N)=\mathbf 0\tag{13.4}$$</p>
+<p><strong>期间特定选择矩阵 \(\mathbf A_t\)。</strong> 有几种理由可用带下标 \(t\) 的选择矩阵：
+- 估计目的：可对某些期的某些矩条件加更高权重，
+$$\frac1N\sum_{t=1}^N\mathbf A_t'F(\mathbf X_t,\mathbf b_N)=\mathbf 0\tag{13.5}$$
+使我们能精确控制估计优先级。此时 \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) 仍成立（无需 \(\mathbf A_t\)）。
+- 模型可能告诉我们：基于 \(t\) 时刻揭示信息，不同期有不同矩条件——我们想激活全部可能矩条件 \(F(\mathbf X_t,\beta)\) 中的一部分、关掉另一些（见 §13.2.3 条件矩条件）。此时 \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) 未必成立（无 \(\mathbf A_t\)），矩条件变为 \(\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) 或 \(\mathbb E[\mathbf A_t'F(\mathbf X_t,\beta)]=\mathbf 0\)。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 13.1
+估计 \(\mathbf b_N\)（(13.5) 与 (13.4)）确实依赖 \(\mathbf A\)，尽管矩条件 \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) 不涉及 \(\mathbf A\)——因为 \(\frac1N\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\) 只在极限成立、未必对 \(N\) 个数据点成立。(13.5) 与 (13.4) 的差别在于选择矩阵 \(\mathbf A\) 是否随时间变；若时不变，则只需设定一个选择矩阵（而非 (13.5) 那样 \(t\) 个 \(\mathbf A_t\)）。故<strong>纯就估计目的而言，时不变 \(\mathbf A\) 是合理假设</strong>；但如 §13.2.3 所述，要让条件矩条件在 \(t\) 期成立，需要 \(\mathbf A_t\)。</p>
+<p>[!tip] 注记 13.2
+选择矩阵 \(\mathbf A\) 把 (13.1) 的 \(r\) 个方程系统变换为 (13.2) 的 \(k\) 个方程系统。渐近估计中不同 \(\mathbf A\) 可给出不同估计 \(\mathbf b_N\)，故 (13.4) 构成一族由 \(\mathbf A\) 索引的估计 \(\mathbf b_N\)。因此问"哪个 \(\mathbf A\) 是好的"是合理的。</p></div>
+</div>
+<div class="lang en">
+<ul>
+<li>\(\beta\) is a \(k\times1\) vector of the true parameters of interest, which is unknown.</li>
+<li><strong>Moment restrictions function</strong> \(F(\mathbf x,\mathbf b)\): a function whose image is a \(r\times1\) vector. \(\mathbf x\) is in general a vector of some dimension (according to our data), and \(\mathbf b\) is a \(k\times1\) vector corresponding to the dimension of our parameter \(\beta\) to be estimated.</li>
+<li>Plug in \(\mathbf x=\mathbf X_t\) and \(\mathbf b=\beta\), and take expectation; then it will be zero, i.e.
+$$\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\tag{13.1}$$</li>
+<li>The expectation (i.e. moments) is w.r.t. the stochastic process \(\{\mathbf X_t\}\); these \(r\) moment restrictions come from our economic model.</li>
+<li>In general, we could write the expectation as conditional on some partition \(\mathcal I\) of invariant events, i.e. \(\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal I]=\mathbf 0\); but if \(\{\mathbf X_t\}\) is ergodic (\(\mathbb P\) assigns 0 or 1 to each invariant event), the expectation becomes unconditional, which is (13.1).</li>
+<li>This is called <strong>moment restrictions</strong>, and we have \(r\) moment restrictions in total, forming a system of \(r\) equations with \(k\) unknowns.</li>
+</ul>
+<p><strong>Selection matrix.</strong> \(\mathbf A^i\) is a \(r\times1\) column vector, and
+$$\mathbf A=\begin{bmatrix}\mid&\mid&\cdots&\mid\\\mathbf A^1&\mathbf A^2&\cdots&\mathbf A^k\\\mid&\mid&\cdots&\mid\end{bmatrix}$$
+is a \(r\times k\) matrix called the <strong>selection matrix</strong> (\(r=\) number of moment restrictions $=$ number of moments to match, \(k=\) number of parameters to estimate). By (13.1), \(\mathbf A\) automatically satisfies
+$$\mathbf A'\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\quad\text{or}\quad\mathbb E[\mathbf A'F(\mathbf X_t,\beta)]=\mathbf 0$$
+Equivalently, for each column vector \(\mathbf A^i\) (\(i=1,\dots,k\)) of \(\mathbf A\),
+$$\mathbb E[\mathbf A^i\cdot F(\mathbf X_t,\beta)]=\mathbf 0,\quad i=1,\dots,k\tag{13.2}$$
+(where \(\cdot\) is the dot product of two column vectors, i.e. \(\mathbf A^i\cdot F=(\mathbf A^i)'F\).) This is a system of \(k\) equations with \(k\) unknowns. We assume the only solution to
+$$\mathbf A'\mathbb E[F(\mathbf X_t,\mathbf b)]=\mathbf 0\tag{13.3}$$
+is \(\mathbf b=\beta\). Starting from a system of \(r\) equations given by (13.1), and using the selection matrix \(\mathbf A\) to linearly transform those \(r\) equations into \(k\) equations: when \(r\ge k\), we have at least as many restrictions as unknowns, called <strong>just-identification</strong> or <strong>over-identification</strong> (we can assume a unique solution \(\mathbf b=\beta\) to (13.3)); when \(r<k\), we have fewer restrictions than unknowns, called <strong>under-identification</strong> (there might be multiple solutions to (13.3)).</p>
+<p><strong>GMM estimator.</strong> The GMM estimator \(\mathbf b_N\) of \(\beta\) is solved by the asymptotic analog of the moment restriction (13.2):
+$$\frac1N\sum_{t=1}^N(\mathbf A^i)'F(\mathbf X_t,\mathbf b_N)=\mathbf 0,\quad i=1,2,\dots,k$$
+or the stacked version
+$$\frac1N\sum_{t=1}^N\mathbf A'F(\mathbf X_t,\mathbf b_N)=\mathbf 0\tag{13.4}$$</p>
+<p><strong>Period-specific selection matrix \(\mathbf A_t\).</strong> There are several possible reasons to specify a selection matrix with subscript \(t\):
+- For estimation purposes, we may place higher weights on some restrictions in some periods,
+$$\frac1N\sum_{t=1}^N\mathbf A_t'F(\mathbf X_t,\mathbf b_N)=\mathbf 0\tag{13.5}$$
+allowing us to accurately control our estimation priorities. In this case \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) is still true without introducing \(\mathbf A_t\).
+- It could also be that our economic model tells us we have different moment restrictions in different periods based on the revealed information at that time; we want to put all possible restrictions in \(F(\mathbf X_t,\beta)\) and activate some of restrictions and shut down other restrictions for period \(t\) (see §13.2.3 on conditional moment restrictions). In this case \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) is not necessarily true without introducing \(\mathbf A_t\); instead the moment restrictions become \(\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) or \(\mathbb E[\mathbf A_t'F(\mathbf X_t,\beta)]=\mathbf 0\).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 13.1
+Our estimator \(\mathbf b_N\) in both (13.5) and (13.4) does depend on \(\mathbf A\) even though the moment restrictions \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) doesn't involve \(\mathbf A\), because \(\frac1N\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\) only holds in limit, not necessarily with \(N\) data points. The difference between (13.5) and (13.4) is whether the selection matrix \(\mathbf A\) is time invariant; if so, we only need to specify one selection matrix, as opposed to \(t\) selection matrices \(\mathbf A_t\) in (13.5). So, purely for estimation purposes, <strong>time-invariant \(\mathbf A\) is a reasonable assumption</strong>; but, as will be discussed in §13.2.3, we do need to specify \(\mathbf A_t\) where we need \(\mathbf A_t\) to make the conditional moment restrictions to hold in period \(t\).</p>
+<p>[!tip] Remark 13.2
+Basically, the selection matrix \(\mathbf A\) transforms the system of \(r\) equations in (13.1) to a system of \(k\) equations in (13.2). For asymptotic estimation, a different choice of \(\mathbf A\) may lead to a different estimator \(\mathbf b_N\) of \(\beta\). So, we can say that (13.4) consists of a family of estimators \(\mathbf b_N\) indexed by \(\mathbf A\). In this sense it's reasonable to ask what is a "good" choice of \(\mathbf A\).</p></div>
+</div>
+<h2 id="13-2-moment-restriction-examples">13.2 Moment Restriction Examples</h2>
+<h3 id="13-2-1-moment-matching">13.2.1 Moment Matching</h3>
+<div class="lang zh">
+<p>设 \(F\) 可分离，特别地
+$$F(\mathbf X_t,\mathbf b)=F_1(\mathbf X_t)-F_2(\mathbf b)$$
+则
+$$\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\ \Rightarrow\ \mathbb E[F_1(\mathbf X_t)]=F_2(\beta)$$
+此处 \(F_1\) 定义待匹配的矩，\(F_2(\beta)\) 基于经济模型给出作为真参数 \(\beta\) 函数的预测矩。</p>
+</div>
+<div class="lang en">
+<p>Suppose our function \(F\) is separable and, in particular, we can write
+$$F(\mathbf X_t,\mathbf b)=F_1(\mathbf X_t)-F_2(\mathbf b)$$
+then
+$$\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\ \Rightarrow\ \mathbb E[F_1(\mathbf X_t)]=F_2(\beta)$$
+In this formulation, \(F_1\) defines the moments to be matched, and \(F_2(\beta)\), based on the underlying economic model, gives the predicted moments as a function of the true parameter vector \(\beta\).</p>
+</div>
+<h3 id="13-2-2-instrument-variable">13.2.2 Instrument Variable</h3>
+<div class="lang zh">
+<p>考虑典型 IV 设定，
+$$\mathbb E[\mathbf X_t u_t]\ne\mathbf 0$$
+\(\mathbf X_t\) 含于 \(\mathbf Y_t\)（后者含因变量与回归用的部分自变量），即
+$$\mathbf Y_t=\begin{bmatrix}Y_t\\X_{1,t}\\X_{2,t}\\\vdots\\X_{k,t}\end{bmatrix}\quad\text{and}\quad Y_t=\alpha_1 X_{1,t}+\alpha_2 X_{2,t}+\dots+\alpha_k X_{k,t}+u_t$$
+\(u_t\) 为该回归的误差项。令
+$$\alpha=\begin{bmatrix}1\\-\alpha_1\\-\alpha_2\\\vdots\\-\alpha_k\end{bmatrix}\ \Rightarrow\ \mathbf Y_t'\alpha=u_t$$
+设另有工具变量 \(\mathbf Z_t\)（\(r\times1\) 向量）满足 \(\mathbb E[\mathbf Z_t u_t]=\mathbf 0\)，则
+$$\mathbb E[\mathbf Z_t u_t]=\mathbf 0\ \Leftrightarrow\ \mathbb E[\mathbf Z_t\mathbf Y_t'\alpha]=\mathbf 0$$
+此构造与一般 GMM 设定相似：\(\alpha\) 类比关心参数 \(\beta\)，\(\mathbb E[\mathbf Z_t\mathbf Y_t'\alpha]=\mathbf 0\) 像矩条件，矩函数 \(F(\mathbf Y_t,\alpha)=\mathbf Z_t\mathbf Y_t'\alpha\)，满足 \(\mathbb E[F(\mathbf Y_t,\alpha)]=\mathbb E[\mathbf Z_t\mathbf Y_t'\alpha]=\mathbf 0\)。</p>
+</div>
+<div class="lang en">
+<p>Consider a typical IV set-up where we have
+$$\mathbb E[\mathbf X_t u_t]\ne\mathbf 0$$
+where \(\mathbf X_t\) is contained in \(\mathbf Y_t\) which contains both the dependent variable and some independent variables for a regression, i.e.
+$$\mathbf Y_t=\begin{bmatrix}Y_t\\X_{1,t}\\X_{2,t}\\\vdots\\X_{k,t}\end{bmatrix}\quad\text{and}\quad Y_t=\alpha_1 X_{1,t}+\alpha_2 X_{2,t}+\dots+\alpha_k X_{k,t}+u_t$$
+with \(u_t\) the error term in that regression. Let
+$$\alpha=\begin{bmatrix}1\\-\alpha_1\\-\alpha_2\\\vdots\\-\alpha_k\end{bmatrix}\ \Rightarrow\ \mathbf Y_t'\alpha=u_t$$
+Suppose further we have some instrument variables \(\mathbf Z_t\) (an \(r\times1\) vector) that satisfy \(\mathbb E[\mathbf Z_t u_t]=\mathbf 0\); then
+$$\mathbb E[\mathbf Z_t u_t]=\mathbf 0\ \Leftrightarrow\ \mathbb E[\mathbf Z_t\mathbf Y_t'\alpha]=\mathbf 0$$
+This construction is similar to our general GMM set-up: \(\alpha\) is analogous to our parameters of interest \(\beta\), the term \(\mathbb E[\mathbf Z_t\mathbf Y_t'\alpha]=\mathbf 0\) is like a moment restriction, with moment restriction function \(F(\mathbf Y_t,\alpha)=\mathbf Z_t\mathbf Y_t'\alpha\), satisfying \(\mathbb E[F(\mathbf Y_t,\alpha)]=\mathbb E[\mathbf Z_t\mathbf Y_t'\alpha]=\mathbf 0\).</p>
+</div>
+<h3 id="13-2-3-conditional-moment-restrictions">13.2.3 Conditional Moment Restrictions</h3>
+<div class="lang zh">
+<p>也可考虑如下形式的<strong>条件矩条件</strong>：
+$$\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_t]=\mathbf 0\quad\text{or}\quad\mathbb E[\mathbf A_t'F(\mathbf X_t,\beta)\mid\mathcal F_t]=\mathbf 0$$
+此处选择矩阵 \(\mathbf A_t\) 按时间索引，\(\mathcal F_t\) 记 \(t\) 期信息集。由迭代期望律（LIE），条件矩条件蕴含无条件矩条件
+$$\mathbb E[\mathbf A_t'F(\mathbf X_t,\beta)]=\mathbb E[\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_t]]=\mathbf 0\quad\text{or}\quad\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 13.3
+无条件情形下，矩条件总在期望意义下成立、与 \(\mathbf A\) 选择无关，即总有 \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\)。但条件情形下，矩条件可能仅在带某些 \(\mathbf A_t\) 时才在期望意义下成立，即 \(\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_t]=\mathbf 0\) 未必成立，而 \(\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_t]=\mathbf 0\) 成立。</p></div>
+</div>
+<div class="lang en">
+<p>We can also consider conditional moment restrictions of the form
+$$\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_t]=\mathbf 0\quad\text{or}\quad\mathbb E[\mathbf A_t'F(\mathbf X_t,\beta)\mid\mathcal F_t]=\mathbf 0$$
+where we index the selection matrix \(\mathbf A_t\) by time and denote the information set at period \(t\) by \(\mathcal F_t\). Notice that by the law of iterated expectations, conditional moment restrictions imply unconditional moment restrictions as
+$$\mathbb E[\mathbf A_t'F(\mathbf X_t,\beta)]=\mathbb E[\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_t]]=\mathbf 0\quad\text{or}\quad\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 13.3
+For the unconditional case, moment restrictions always hold in expectation independent of the choice of \(\mathbf A\), i.e. we always have \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\). But for the conditional case, moment restrictions may hold in expectation only with certain \(\mathbf A_t\), i.e. \(\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_t]=\mathbf 0\) may not be true; instead \(\mathbf A_t'\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_t]=\mathbf 0\).</p></div>
+</div>
+<h3 id="13-2-4-a-specific-economic-model-example-euler-equation-with-stochastic-discount-factor">13.2.4 A Specific Economic Model Example: Euler Equation with Stochastic Discount Factor</h3>
+<div class="lang zh">
+<ul>
+<li>考虑随机消费过程 \(\{c_t\}_{t=0}^\infty\)。设 \((c_0,c_1,\dots,c_\tau,\dots)\) 在某无差异曲线上。</li>
+<li>令 \((c_0-P_0(r),c_1,\dots,c_\tau+r\xi_\tau,\dots)\) 与 \((c_0,c_1,\dots,c_\tau,\dots)\) 在同一无差异曲线上，其中：\(\xi_\tau\) 为某资产的随机收益（该资产在 0 期有价格、仅在 \(\tau\) 期支付）；\(r\) 为 0 期买入的该资产数量；\(P_0(r)\) 为 0 期买入 \(r\) 单位该资产的总成本。</li>
+<li>定义（\(r=0\) 处）
+$$\pi_0^\tau(\xi_\tau)=\frac{dP_0(r)}{dr}\Big|_{r=0}$$</li>
+<li>由 \((c_0-P_0(r),c_1,\dots,c_\tau+r\xi_\tau,\dots)\) 与 \((c_0,c_1,\dots,c_\tau,\dots)\) 同曲线，\(\pi_0^\tau(\xi_\tau)\) 是无差异条件下、消费者愿在 0 期放弃多少消费以换取 \(\tau\) 期 \(\xi_\tau\) 单位消费（当消费者本不持有该资产时）的单位数。</li>
+<li>故 \(\pi_0^\tau(\xi_\tau)\) 可解读为该资产在 0 期、以实际消费品计的<strong>影子价格</strong>。</li>
+<li>记 \(\tau\) 期的随机折现因子为 \(\frac{S_\tau}{S_0}\)，则
+$$\pi_0^\tau(\xi_\tau)=\mathbb E\Big[\frac{S_\tau}{S_0}\xi_\tau\mid\mathcal F_0\Big]\tag{13.6}$$</li>
+<li>折现 \(\frac{S_\tau}{S_0}\) 是从 0 期视角评估的，故期望基于 0 期信息集 \(\mathcal F_0\)。</li>
+<li>经典一阶条件分析给出消费者最优消费序列满足
+$$\frac{p_\tau^0}{p_0^0}=\frac{MU(c_\tau^0)}{MU(c_0^0)}$$
+其中 \(MU\) 为边际效用、\(c_\tau^0\) 为从 0 期视角的 \(\tau\) 期消费、\(c_0^0\) 为 0 期消费、\(p_\tau^0\) 为 \(\tau\) 期一单位消费在 0 期评估的现值价、\(p_0^0\) 同理 0 期。由折现因子构造 \(\frac{S_\tau}{S_0}=\frac{p_\tau^0}{p_0^0}\)，则 \(\frac{S_\tau}{S_0}=\frac{MU(c_\tau^0)}{MU(c_0^0)}\)。</li>
+</ul>
+</div>
+<div class="lang en">
+<ul>
+<li>Consider the stochastic consumption process \(\{c_t\}_{t=0}^\infty\). Suppose \((c_0,c_1,\dots,c_\tau,\dots)\) is on some indifference curve.</li>
+<li>Let \((c_0-P_0(r),c_1,\dots,c_\tau+r\xi_\tau,\dots)\) be on the same indifference curve as \((c_0,c_1,\dots,c_\tau,\dots)\), where: \(\xi_\tau\) is the stochastic payoff of an asset that has a price on date 0 and only has payoff on date \(\tau\); \(r\) is the amount of such asset bought on date 0; \(P_0(r)\) is the total cost of buying \(r\) units of that asset on date 0.</li>
+<li>Define (at \(r=0\))
+$$\pi_0^\tau(\xi_\tau)=\frac{dP_0(r)}{dr}\Big|_{r=0}$$</li>
+<li>Since \((c_0-P_0(r),c_1,\dots,c_\tau+r\xi_\tau,\dots)\) and \((c_0,c_1,\dots,c_\tau,\dots)\) are on the same indifference curve, \(\pi_0^\tau(\xi_\tau)\) is the units of consumption that the consumer would be indifferent to give up in exchange for \(\xi_\tau\) units of consumption at date \(\tau\) when the consumer doesn't own any such asset.</li>
+<li>So \(\pi_0^\tau(\xi_\tau)\) can be interpreted as the shadow price of such asset on date 0 in terms of real consumption good.</li>
+<li>Denote the stochastic discounting factor of date \(\tau\) by \(\frac{S_\tau}{S_0}\); then we have that
+$$\pi_0^\tau(\xi_\tau)=\mathbb E\Big[\frac{S_\tau}{S_0}\xi_\tau\mid\mathcal F_0\Big]\tag{13.6}$$</li>
+<li>Since the discounting \(\frac{S_\tau}{S_0}\) is evaluated in the perspective of date 0, the expectation is based on the information set \(\mathcal F_0\) at date 0.</li>
+<li>The classic f.o.c. analysis gives that the consumer would optimally choose the consumption sequence such that
+$$\frac{p_\tau^0}{p_0^0}=\frac{MU(c_\tau^0)}{MU(c_0^0)}$$
+where \(MU\) is the marginal utility, \(c_\tau^0\) is consumption at date \(\tau\) from the perspective of date 0, \(c_0^0\) is consumption at date 0, \(p_\tau^0\) is the present-value price of one unit of consumption at \(\tau\) evaluated at date 0, and \(p_0^0\) likewise for date 0. By construction of the discounting factor \(\frac{S_\tau}{S_0}=\frac{p_\tau^0}{p_0^0}\), then \(\frac{S_\tau}{S_0}=\frac{MU(c_\tau^0)}{MU(c_0^0)}\).</li>
+</ul>
+</div>
+<div class="lang zh">
+<p>设消费者有时间可加可分效用函数
+$$u(\{c_t\}_{t=0}^\infty)=\mathbb E\Big[\sum_{t=0}^\infty\exp(-\delta t)u(c_t)\mid\mathcal F_t\Big]$$
+则 \(MU(c_\tau^0)=\exp(-\delta\tau)u'(c_\tau)\)、\(MU(c_0^0)=u'(c_0)\)，故
+$$\frac{S_\tau}{S_0}=\exp(-\delta\tau)\frac{u'(c_\tau)}{u'(c_0)}$$
+由 (13.6)，
+$$\pi_0^\tau(\xi_\tau)=\mathbb E\Big[\exp(-\delta\tau)\frac{u'(c_\tau)}{u'(c_0)}\xi_\tau\mid\mathcal F_0\Big]\tag{13.7}$$
+其中 \(\pi_0^\tau(\xi_\tau)\) 为该资产观测到的价格、\(\delta\) 为消费者从 0 期视角的主观折现率。</p>
+<div class="callout"><div class="callout-title">Important</div><p>注记 13.4
+事实上 (13.7) 给了 GMM 的条件矩条件。这里关心参数 \(\beta\) 可包括主观折现率 \(\delta\) 及效用函数 \(u(\cdot)\) 的其他参数，随机过程 \(\mathbf X_t=(c_t,\xi_t)\)。矩函数为
+$$F(\mathbf X_t,\beta)=\exp(-\delta\tau)\frac{u'(c_\tau)}{u'(c_0)}\xi_\tau-\pi_0^\tau(\xi_\tau)$$
+条件矩条件 \(\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_0]=0\)，即 \(\pi_0^\tau(\xi_\tau)=\mathbb E[\exp(-\delta\tau)\frac{u'(c_\tau)}{u'(c_0)}\xi_\tau\mid\mathcal F_0]\)。</p></div>
+<p><strong>进一步假设以求解模型：</strong> 把观测价格归一化为 1，即 \(\pi_0^\tau(\xi_\tau)=1\)，则 \(\xi_\tau\) 为该资产的随机总收益。设 \((\xi_\tau,\frac{S_\tau}{S_0})\) 联合对数正态（由附录 21.2 的定义），可写
+$$\log\xi_\tau=\mu_0^\xi+\sigma^\xi\cdot\mathbf W_\tau$$
+$$\log S_\tau-\log S_0=\mu_0^S+\sigma^S\cdot\mathbf W_\tau$$
+\(\mathbf W_\tau\) 为 \(l\times1\) i.i.d. 冲击向量、\(\mathbf W_\tau\sim N(\mathbf 0,\mathbf I)\)，\(\sigma^\xi,\sigma^S\) 为 \(l\times1\) 暴露向量。</p>
+</div>
+<div class="lang en">
+<p>Suppose the consumer has the time-additively-separable utility function
+$$u(\{c_t\}_{t=0}^\infty)=\mathbb E\Big[\sum_{t=0}^\infty\exp(-\delta t)u(c_t)\mid\mathcal F_t\Big]$$
+Then \(MU(c_\tau^0)=\exp(-\delta\tau)u'(c_\tau)\), \(MU(c_0^0)=u'(c_0)\), so
+$$\frac{S_\tau}{S_0}=\exp(-\delta\tau)\frac{u'(c_\tau)}{u'(c_0)}$$
+By (13.6),
+$$\pi_0^\tau(\xi_\tau)=\mathbb E\Big[\exp(-\delta\tau)\frac{u'(c_\tau)}{u'(c_0)}\xi_\tau\mid\mathcal F_0\Big]\tag{13.7}$$
+where \(\pi_0^\tau(\xi_\tau)\) is the observed price of such asset and \(\delta\) is the consumer's subjective discount rate from the perspective of date 0.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Remark 13.4
+In fact, (13.7) gives us the conditional moment restrictions for GMM. Here the parameters \(\beta\) of interest may include the subjective discount rate \(\delta\) and other parameters in the consumer's utility function \(u(\cdot)\). The stochastic process is \(\mathbf X_t=(c_t,\xi_t)\). The moment restriction function is
+$$F(\mathbf X_t,\beta)=\exp(-\delta\tau)\frac{u'(c_\tau)}{u'(c_0)}\xi_\tau-\pi_0^\tau(\xi_\tau)$$
+and the conditional moment restriction is \(\mathbb E[F(\mathbf X_t,\beta)\mid\mathcal F_0]=0\), i.e. \(\pi_0^\tau(\xi_\tau)=\mathbb E[\exp(-\delta\tau)\frac{u'(c_\tau)}{u'(c_0)}\xi_\tau\mid\mathcal F_0]\).</p></div>
+<p><strong>Further assumptions to solve the model:</strong> normalize the observed price to be 1, i.e. \(\pi_0^\tau(\xi_\tau)=1\). Then \(\xi_\tau\) is the stochastic gross return of such asset. Suppose \((\xi_\tau,\frac{S_\tau}{S_0})\) is jointly log-normal (by Definition 21.2 in the appendix); we can write
+$$\log\xi_\tau=\mu_0^\xi+\sigma^\xi\cdot\mathbf W_\tau$$
+$$\log S_\tau-\log S_0=\mu_0^S+\sigma^S\cdot\mathbf W_\tau$$
+where \(\mathbf W_\tau\) is a \(l\times1\) i.i.d. shock vector that follows \(\mathbf W_\tau\sim N(\mathbf 0,\mathbf I)\), and \(\sigma^\xi,\sigma^S\) are the \(l\times1\) exposure vectors.</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>- 推导（由对数正态性质得 (13.8)）
+由对数正态分布性质，
+$$\begin{aligned}\log\mathbb E\Big[\frac{S_\tau}{S_0}\xi_\tau\mid\mathcal F_0\Big]&=\log\mathbb E\big[e^{\log(\frac{S_\tau}{S_0}\xi_\tau)}\mid\mathcal F_0\big]=\log\mathbb E\big[e^{\log(S_\tau)-\log S_0+\log\xi_\tau}\mid\mathcal F_0\big]\\&=\log\mathbb E\big[e^{\mu_0^\xi+\mu_0^S+(\sigma^\xi+\sigma^S)\cdot\mathbf W_\tau}\mid\mathcal F_0\big]\\&=\log\Big\{e^{\mu_0^\xi+\mu_0^S}\mathbb E\big[e^{\sum_{j=1}^l(\sigma_j^\xi+\sigma_j^S)W_{\tau,j}}\mid\mathcal F_0\big]\Big\}\\&\overset{\text{i.i.d.}}{=}\mu_0^\xi+\mu_0^S+\log\Big\{\prod_{j=1}^l\mathbb E\big[e^{(\sigma_j^\xi+\sigma_j^S)W_{\tau,j}}\mid\mathcal F_0\big]\Big\}\\&=\mu_0^\xi+\mu_0^S+\log\Big\{\prod_{j=1}^l e^{\frac{(\sigma_j^\xi+\sigma_j^S)^2}2}\Big\}=\mu_0^\xi+\mu_0^S+\sum_{j=1}^l\frac{(\sigma_j^\xi+\sigma_j^S)^2}2=\mu_0^\xi+\mu_0^S+\frac{|\sigma^\xi+\sigma^S|^2}2\end{aligned}$$
+其中 \(|\cdot|\) 为向量模长。于是由 \(0=\log\pi_0^\tau(\xi_\tau)=\log\mathbb E[\frac{S_\tau}{S_0}\xi_\tau\mid\mathcal F_0]\)，
+$$0=\mu_0^\xi+\mu_0^S+\frac{|\sigma^\xi+\sigma^S|^2}2=\Big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\Big)+\Big(\mu_0^S+\frac{|\sigma^S|^2}2\Big)+\sigma^\xi\cdot\sigma^S$$
+$$\Rightarrow\Big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\Big)+\Big(\mu_0^S+\frac{|\sigma^S|^2}2\Big)=-\sigma^\xi\cdot\sigma^S\tag{13.8}$$
+\(\blacksquare\)</p></div>
+<p>由于 \(\big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\big)=\log\mathbb E[\xi_\tau\mid\mathcal F_0]\)，可把它解读为该资产的期望（对数）收益。若令 \(\sigma^\xi=\mathbf 0\)，该资产对风险无暴露——是无风险资产，此时 (13.8) 仍成立：\(\big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\big)+\big(\mu_0^S+\frac{|\sigma^S|^2}2\big)=0\Rightarrow\big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\big)=-\big(\mu_0^S+\frac{|\sigma^S|^2}2\big)\)，故 \(-\big(\mu_0^S+\frac{|\sigma^S|^2}2\big)\) 为无风险资产的期望（对数）收益。因此 \(\big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\big)+\big(\mu_0^S+\frac{|\sigma^S|^2}2\big)\)（即 (13.8) 左端）是关心资产的<strong>期望风险溢价</strong>，其右端为
+$$\sum_{j=1}^l\sigma_j^\xi(-\sigma_j^S)$$
+由于 \(\sigma_j^\xi\) 是资产对 \(W_{j,\tau}\) 的风险暴露，故向量 \(-\sigma^S\) 是<strong>风险补偿</strong>。此时资产溢价是风险暴露的线性载荷。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>- Derivation (of (13.8) via the log-normal property)
+By the property of the log-normal distribution,
+$$\begin{aligned}\log\mathbb E\Big[\frac{S_\tau}{S_0}\xi_\tau\mid\mathcal F_0\Big]&=\log\mathbb E\big[e^{\log(\frac{S_\tau}{S_0}\xi_\tau)}\mid\mathcal F_0\big]=\log\mathbb E\big[e^{\log(S_\tau)-\log S_0+\log\xi_\tau}\mid\mathcal F_0\big]\\&=\log\mathbb E\big[e^{\mu_0^\xi+\mu_0^S+(\sigma^\xi+\sigma^S)\cdot\mathbf W_\tau}\mid\mathcal F_0\big]\\&=\log\Big\{e^{\mu_0^\xi+\mu_0^S}\mathbb E\big[e^{\sum_{j=1}^l(\sigma_j^\xi+\sigma_j^S)W_{\tau,j}}\mid\mathcal F_0\big]\Big\}\\&\overset{\text{i.i.d.}}{=}\mu_0^\xi+\mu_0^S+\log\Big\{\prod_{j=1}^l\mathbb E\big[e^{(\sigma_j^\xi+\sigma_j^S)W_{\tau,j}}\mid\mathcal F_0\big]\Big\}\\&=\mu_0^\xi+\mu_0^S+\log\Big\{\prod_{j=1}^l e^{\frac{(\sigma_j^\xi+\sigma_j^S)^2}2}\Big\}=\mu_0^\xi+\mu_0^S+\sum_{j=1}^l\frac{(\sigma_j^\xi+\sigma_j^S)^2}2=\mu_0^\xi+\mu_0^S+\frac{|\sigma^\xi+\sigma^S|^2}2\end{aligned}$$
+where \(|\cdot|\) is the norm of a vector. Then since \(0=\log\pi_0^\tau(\xi_\tau)=\log\mathbb E[\frac{S_\tau}{S_0}\xi_\tau\mid\mathcal F_0]\),
+$$0=\mu_0^\xi+\mu_0^S+\frac{|\sigma^\xi+\sigma^S|^2}2=\Big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\Big)+\Big(\mu_0^S+\frac{|\sigma^S|^2}2\Big)+\sigma^\xi\cdot\sigma^S$$
+$$\Rightarrow\Big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\Big)+\Big(\mu_0^S+\frac{|\sigma^S|^2}2\Big)=-\sigma^\xi\cdot\sigma^S\tag{13.8}$$
+\(\blacksquare\)</p></div>
+<p>Since \(\big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\big)=\log\mathbb E[\xi_\tau\mid\mathcal F_0]\), we can interpret it as the expected (log) return of such asset. If we let \(\sigma^\xi=\mathbf 0\), then such asset has no exposure to risk at all, which makes it a risk-free asset. In that case (13.8) still holds, i.e. \(\big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\big)+\big(\mu_0^S+\frac{|\sigma^S|^2}2\big)=0\Rightarrow\big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\big)=-\big(\mu_0^S+\frac{|\sigma^S|^2}2\big)\), so \(-\big(\mu_0^S+\frac{|\sigma^S|^2}2\big)\) is the expected (log) return of the risk-free asset. Therefore \(\big(\mu_0^\xi+\frac{|\sigma^\xi|^2}2\big)+\big(\mu_0^S+\frac{|\sigma^S|^2}2\big)\) (the LHS of (13.8)) is the expected risk premium of our asset of interest, while the RHS of (13.8) is
+$$\sum_{j=1}^l\sigma_j^\xi(-\sigma_j^S)$$
+Since \(\sigma_j^\xi\) is the risk exposure of the asset to \(W_{j,\tau}\), we can say that the vector \(-\sigma^S\) is the risk compensation. In this case the asset has premium with linear loading of risk exposures.</p>
+</div>
+<h2 id="13-3-approximation">13.3 Approximation</h2>
+<div class="lang zh">
+<p>假设 CLT 成立：
+$$\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf V)\tag{13.9}$$
+且 LLN 成立：
+$$\frac1N\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\mathbb E[F(\mathbf X_t,\mathbf b_N)]=\mathbf 0\ \Rightarrow\ \mathbf b_N\xrightarrow{p}\beta$$
+对选择矩阵 \(\mathbf A\) 的第 \(j\) 列 \(\mathbf A^j\)，用中值定理：
+$$\begin{aligned}\frac1{\sqrt N}\mathbf A^j\cdot\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)&=\frac1{\sqrt N}\mathbf A^j\cdot\sum_{t=1}^N F(\mathbf X_t,\beta)+\frac1{\sqrt N}\mathbf A^j\cdot\sum_{t=1}^N\frac{\partial F(\mathbf X_t,\overline{\mathbf b}_N)}{\partial\beta'}(\mathbf b_N-\beta)\\&=\frac1{\sqrt N}\mathbf A^j\cdot\sum_{t=1}^N F(\mathbf X_t,\beta)+\frac1N\mathbf A^j\cdot\sum_{t=1}^N\frac{\partial F(\mathbf X_t,\overline{\mathbf b}_N)}{\partial\beta'}\sqrt N(\mathbf b_N-\beta)\end{aligned}\tag{13.10}$$
+\(\overline{\mathbf b}_N\) 每个第 \(j\) 元位于 \(\mathbf b_N\) 与 \(\beta\) 第 \(j\) 元之间的线段上。由 \(\mathbf b_N\to\beta\) 得 \(\overline{\mathbf b}_N\to\beta\)，再由 LLN，
+$$\frac1N\sum_{t=1}^N\frac{\partial F(\mathbf X_t,\overline{\mathbf b}_N)}{\partial\beta'}\xrightarrow{p}\underbrace{\mathbb E\Big[\frac{\partial F(\mathbf X_t,\beta)}{\partial\beta'}\Big]}_{\equiv\mathbf D}\tag{13.11}$$
+堆叠 \(\mathbf A^j\) 用 (13.10)、(13.11)：
+$$\frac1{\sqrt N}\mathbf A'\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\frac1{\sqrt N}\mathbf A'\sum_{t=1}^N F(\mathbf X_t,\beta)+\mathbf A'\mathbf D\sqrt N(\mathbf b_N-\beta)$$
+由构造 \(\frac1{\sqrt N}\mathbf A'\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\)，故
+$$\frac1{\sqrt N}\mathbf A'\sum_{t=1}^N F(\mathbf X_t,\beta)+\mathbf A'\mathbf D\sqrt N(\mathbf b_N-\beta)\xrightarrow{p}\mathbf 0$$
+即
+$$\mathbf A'\mathbf D\sqrt N(\mathbf b_N-\beta)\xrightarrow{p}-\Big(\frac1{\sqrt N}\mathbf A'\sum_{t=1}^N F(\mathbf X_t,\beta)\Big)\tag{13.12}$$
+由 (13.9)，\(\frac1{\sqrt N}\mathbf A'\sum F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf A'\mathbf V\mathbf A)\)，故
+$$\mathbf A'\mathbf D\sqrt N(\mathbf b_N-\beta)\xrightarrow{d}-N(\mathbf 0,\mathbf A'\mathbf V\mathbf A)\overset{d}{=}N(\mathbf 0,\mathbf A'\mathbf V\mathbf A)$$
+$$\Rightarrow\sqrt N(\mathbf b_N-\beta)\xrightarrow{d}N(\mathbf 0,\operatorname{Cov}(\mathbf A))\tag{13.13}$$
+其中
+$$\operatorname{Cov}(\mathbf A)=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A\big((\mathbf A'\mathbf D)^{-1}\big)'=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A(\mathbf D'\mathbf A)^{-1}\tag{13.14}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 13.5
+由 (13.13)、(13.14)，GMM 估计 \(\mathbf b_N\) 的渐近方差—协方差矩阵确实依赖选择矩阵 \(\mathbf A\)，故选择矩阵很重要。由此自然要找使 \(\operatorname{Cov}(\mathbf A)\) 最小（某种意义下）的 \(\mathbf A\)。</p></div>
+</div>
+<div class="lang en">
+<p>Assume we have the CLT hold such that
+$$\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf V)\tag{13.9}$$
+and LLN hold such that
+$$\frac1N\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\mathbb E[F(\mathbf X_t,\mathbf b_N)]=\mathbf 0\ \Rightarrow\ \mathbf b_N\xrightarrow{p}\beta$$
+Then, for the \(j\)-th column \(\mathbf A^j\) of the selection matrix \(\mathbf A\), we can use the Mean Value Theorem:
+$$\begin{aligned}\frac1{\sqrt N}\mathbf A^j\cdot\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)&=\frac1{\sqrt N}\mathbf A^j\cdot\sum_{t=1}^N F(\mathbf X_t,\beta)+\frac1{\sqrt N}\mathbf A^j\cdot\sum_{t=1}^N\frac{\partial F(\mathbf X_t,\overline{\mathbf b}_N)}{\partial\beta'}(\mathbf b_N-\beta)\\&=\frac1{\sqrt N}\mathbf A^j\cdot\sum_{t=1}^N F(\mathbf X_t,\beta)+\frac1N\mathbf A^j\cdot\sum_{t=1}^N\frac{\partial F(\mathbf X_t,\overline{\mathbf b}_N)}{\partial\beta'}\sqrt N(\mathbf b_N-\beta)\end{aligned}\tag{13.10}$$
+where each \(j\)-th element in \(\overline{\mathbf b}_N\) lies somewhere on the line segment between the \(j\)-th element in \(\mathbf b_N\) and the \(j\)-th element in \(\beta\). Since \(\mathbf b_N\to\beta\), we also have \(\overline{\mathbf b}_N\to\beta\). Again, by LLN,
+$$\frac1N\sum_{t=1}^N\frac{\partial F(\mathbf X_t,\overline{\mathbf b}_N)}{\partial\beta'}\xrightarrow{p}\underbrace{\mathbb E\Big[\frac{\partial F(\mathbf X_t,\beta)}{\partial\beta'}\Big]}_{\equiv\mathbf D}\tag{13.11}$$
+Stacking \(\mathbf A^j\)'s and using (13.10), (13.11):
+$$\frac1{\sqrt N}\mathbf A'\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\frac1{\sqrt N}\mathbf A'\sum_{t=1}^N F(\mathbf X_t,\beta)+\mathbf A'\mathbf D\sqrt N(\mathbf b_N-\beta)$$
+By construction \(\frac1{\sqrt N}\mathbf A'\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\), so
+$$\frac1{\sqrt N}\mathbf A'\sum_{t=1}^N F(\mathbf X_t,\beta)+\mathbf A'\mathbf D\sqrt N(\mathbf b_N-\beta)\xrightarrow{p}\mathbf 0$$
+i.e.
+$$\mathbf A'\mathbf D\sqrt N(\mathbf b_N-\beta)\xrightarrow{p}-\Big(\frac1{\sqrt N}\mathbf A'\sum_{t=1}^N F(\mathbf X_t,\beta)\Big)\tag{13.12}$$
+By (13.9), \(\frac1{\sqrt N}\mathbf A'\sum F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf A'\mathbf V\mathbf A)\), so
+$$\mathbf A'\mathbf D\sqrt N(\mathbf b_N-\beta)\xrightarrow{d}-N(\mathbf 0,\mathbf A'\mathbf V\mathbf A)\overset{d}{=}N(\mathbf 0,\mathbf A'\mathbf V\mathbf A)$$
+$$\Rightarrow\sqrt N(\mathbf b_N-\beta)\xrightarrow{d}N(\mathbf 0,\operatorname{Cov}(\mathbf A))\tag{13.13}$$
+where
+$$\operatorname{Cov}(\mathbf A)=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A\big((\mathbf A'\mathbf D)^{-1}\big)'=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A(\mathbf D'\mathbf A)^{-1}\tag{13.14}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 13.5
+From (13.13) and (13.14) we can see that the asymptotic variance-covariance matrix of the GMM estimator \(\mathbf b_N\) does depend on our choice of selection matrix \(\mathbf A\), so this illustrates the important idea that the selection matrix matters. From here we may say that we want to specify \(\mathbf A\) such that it minimizes \(\operatorname{Cov}(\mathbf A)\) in some sense.</p></div>
+</div>
+<h2 id="13-4-gmm-efficiency-bound">13.4 GMM Efficiency Bound</h2>
+<div class="lang zh">
+<p>由前部分，\(\sqrt N(\mathbf b_N-\beta)\xrightarrow{d}N(\mathbf 0,\operatorname{Cov}(\mathbf A))\)，\(\operatorname{Cov}(\mathbf A)=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A(\mathbf D'\mathbf A)^{-1}\)。我们要在 \(\mathbf A'\mathbf D\) 非奇异的 \(\mathbf A\) 中，找 \(\operatorname{Cov}(\mathbf A)\) 的<strong>最大下界</strong>。（注意若 \(\mathbf D'\mathbf A\) 奇异，则 \(\operatorname{Cov}(\mathbf A)\) 无定义。）分以下步骤。</p>
+<p><strong>1. 不失一般性设 \(\mathbf D'\mathbf A=\mathbf I\)。</strong> 为何无损？
+- (a) 对非奇异 \(k\times k\) 矩阵 \(\mathbf F\)，\(\operatorname{Cov}(\mathbf A)=\operatorname{Cov}(\mathbf{AF})\)：
+$$\begin{aligned}\operatorname{Cov}(\mathbf{AF})&=\big((\mathbf{AF})'\mathbf D\big)^{-1}(\mathbf{AF})'\mathbf V(\mathbf{AF})\big(\mathbf D'(\mathbf{AF})\big)^{-1}\\&=(\mathbf F'\mathbf A'\mathbf D)^{-1}\mathbf F'\mathbf A'\mathbf V\mathbf A\mathbf F\big((\mathbf D'\mathbf A)\mathbf F\big)^{-1}\\&=(\mathbf A'\mathbf D)^{-1}(\mathbf F')^{-1}\mathbf F'\mathbf A'\mathbf V\mathbf A\mathbf F\mathbf F^{-1}(\mathbf D'\mathbf A)^{-1}\\&=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A(\mathbf D'\mathbf A)^{-1}=\operatorname{Cov}(\mathbf A)\end{aligned}$$
+- (b) 设 \(\mathbf D'\mathbf A\ne\mathbf I\)，把 \(\mathbf A\) 右乘 \((\mathbf D'\mathbf A)^{-1}\)，记 \(\tilde{\mathbf A}=\mathbf A(\mathbf D'\mathbf A)^{-1}\)，则 \(\mathbf D'\tilde{\mathbf A}=\mathbf D'\mathbf A(\mathbf D'\mathbf A)^{-1}=\mathbf I\)。由 (a)（取 \(\mathbf F=(\mathbf D'\mathbf A)^{-1}\)）得
+$$\operatorname{Cov}(\mathbf A)=\operatorname{Cov}(\tilde{\mathbf A})\tag{13.16}$$
+- (c) 又 \(\mathbf A'\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\Rightarrow(\mathbf A(\mathbf D'\mathbf A)^{-1})'\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\Rightarrow\tilde{\mathbf A}'\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\)（13.17）。
+- (d) 由 \(\mathbf b_N\) 唯一解，\(\mathbf A\) 与 \(\tilde{\mathbf A}\) 给出相同 GMM 估计、相同极限分布，故等价。\(\tilde{\mathbf A}\) 有 \(\mathbf D'\tilde{\mathbf A}=\mathbf I\)，故不失一般性设 \(\mathbf A\) 满足 \(\mathbf D'\mathbf A=\mathbf I\)。</p>
+<p><strong>2. 求 \(\tilde{\mathbf A}\) 使 \(\mathbf A'\mathbf V\tilde{\mathbf A}=\mathbf A'\mathbf D\) 对所有 \(\mathbf A\) 成立：</strong>
+$$\tilde{\mathbf A}=\mathbf V^{-1}\mathbf D\tag{13.18}$$</p>
+<p><strong>3. 定义</strong>
+$$\mathbf A^\star=\tilde{\mathbf A}(\mathbf D'\tilde{\mathbf A})^{-1}=\mathbf V^{-1}\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}$$</p>
+<p><strong>4. 证 \(\operatorname{Cov}(\mathbf A)\ge\operatorname{Cov}(\mathbf A^\star)=\operatorname{Cov}(\tilde{\mathbf A})\)。</strong>
+- (a) 由步骤 1，\(\operatorname{Cov}(\mathbf A^\star)=\operatorname{Cov}(\tilde{\mathbf A}(\mathbf D'\tilde{\mathbf A})^{-1})=\operatorname{Cov}(\tilde{\mathbf A})\)。
+- (b) 注意（在 \(\mathbf A'\mathbf D=\mathbf I\) 即 \(\mathbf A^\star{}'\mathbf D=\mathbf I\) 下）
+$$\mathbf A'\mathbf V\mathbf A^\star=\mathbf A'\mathbf V\mathbf V^{-1}\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}=\mathbf A'\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}$$
+同理 \((\mathbf A^\star)'\mathbf V\mathbf A=\mathbf A'\mathbf V\mathbf A^\star\)，且 \((\mathbf A^\star)'\mathbf V\mathbf A^\star=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}=\mathbf A'\mathbf V\mathbf A^\star\)。
+- (c) 于是
+$$\begin{aligned}\underbrace{(\mathbf A-\mathbf A^\star)'\mathbf V(\mathbf A-\mathbf A^\star)}_{\text{PSD}}&=\mathbf A'\mathbf V\mathbf A\underbrace{-(\mathbf A^\star)'\mathbf V\mathbf A-\mathbf A'\mathbf V\mathbf A^\star+(\mathbf A^\star)'\mathbf V\mathbf A^\star}_{\text{3 equal terms}}\\&=\mathbf A'\mathbf V\mathbf A-(\mathbf A^\star)'\mathbf V\mathbf A=\operatorname{Cov}(\mathbf A)-\operatorname{Cov}(\tilde{\mathbf A})\end{aligned}$$
+其中左端是半正定矩阵（PSD），3 equal terms故抵消两项。这表明
+$$\operatorname{Cov}(\mathbf A)\ge\operatorname{Cov}(\tilde{\mathbf A})=\operatorname{Cov}(\mathbf A^\star)$$
+即 \(\operatorname{Cov}(\mathbf A^\star)\) 给出任意 \(\mathbf A\) 选择下最小的渐近方差——<strong>有效性界</strong>为
+$$\operatorname{Cov}(\mathbf A^\star)=\operatorname{Cov}(\tilde{\mathbf A})=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 13.6
+上式是矩阵的<strong>偏序</strong>：称 \(\mathbf A\) 小于 \(\mathbf B\) 即 \(\mathbf B-\mathbf A\) 半正定。存在某些 \(\mathbf C,\mathbf D\) 使其差既非半正定也非半负定——此意义下我们只有偏序。</p>
+<p>[!tip] 注记 13.7
+此处最大下界意为它是可被达到的下界，达到时取 \(\mathbf A=\tilde{\mathbf A}\) 或 \(\mathbf A=\mathbf A^\star\)。</p></div>
+</div>
+<div class="lang en">
+<p>From the previous part, \(\sqrt N(\mathbf b_N-\beta)\xrightarrow{d}N(\mathbf 0,\operatorname{Cov}(\mathbf A))\), \(\operatorname{Cov}(\mathbf A)=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A(\mathbf D'\mathbf A)^{-1}\). We want to find a greatest lower bound for \(\operatorname{Cov}(\mathbf A)\) provided there exists \(\mathbf A\) s.t. \(\mathbf A'\mathbf D\) is non-singular. (Notice that if \(\mathbf D'\mathbf A\) is singular, then \(\operatorname{Cov}(\mathbf A)\) is not well-defined.) The following steps.</p>
+<p><strong>1. WLOG impose \(\mathbf D'\mathbf A=\mathbf I\).</strong> Why is this without loss of generality?
+- (a) For a non-singular \(k\times k\) matrix \(\mathbf F\), \(\operatorname{Cov}(\mathbf A)=\operatorname{Cov}(\mathbf{AF})\):
+$$\begin{aligned}\operatorname{Cov}(\mathbf{AF})&=\big((\mathbf{AF})'\mathbf D\big)^{-1}(\mathbf{AF})'\mathbf V(\mathbf{AF})\big(\mathbf D'(\mathbf{AF})\big)^{-1}\\&=(\mathbf F'\mathbf A'\mathbf D)^{-1}\mathbf F'\mathbf A'\mathbf V\mathbf A\mathbf F\big((\mathbf D'\mathbf A)\mathbf F\big)^{-1}\\&=(\mathbf A'\mathbf D)^{-1}(\mathbf F')^{-1}\mathbf F'\mathbf A'\mathbf V\mathbf A\mathbf F\mathbf F^{-1}(\mathbf D'\mathbf A)^{-1}\\&=(\mathbf A'\mathbf D)^{-1}\mathbf A'\mathbf V\mathbf A(\mathbf D'\mathbf A)^{-1}=\operatorname{Cov}(\mathbf A)\end{aligned}$$
+- (b) Suppose \(\mathbf D'\mathbf A\ne\mathbf I\); post-multiply \(\mathbf A\) by \((\mathbf D'\mathbf A)^{-1}\), and denote \(\tilde{\mathbf A}=\mathbf A(\mathbf D'\mathbf A)^{-1}\). Then \(\mathbf D'\tilde{\mathbf A}=\mathbf D'\mathbf A(\mathbf D'\mathbf A)^{-1}=\mathbf I\). By (a) (with \(\mathbf F=(\mathbf D'\mathbf A)^{-1}\)),
+$$\operatorname{Cov}(\mathbf A)=\operatorname{Cov}(\tilde{\mathbf A})\tag{13.16}$$
+- (c) Also \(\mathbf A'\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\Rightarrow(\mathbf A(\mathbf D'\mathbf A)^{-1})'\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\Rightarrow\tilde{\mathbf A}'\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\) (13.17).
+- (d) Since \(\mathbf b_N\) is uniquely solved, \(\mathbf A\) and \(\tilde{\mathbf A}\) give the same GMM estimator and the same limiting distribution, so they are equivalent. \(\tilde{\mathbf A}\) has the property \(\mathbf D'\tilde{\mathbf A}=\mathbf I\), so WLOG we say \(\mathbf A\) has the property \(\mathbf D'\mathbf A=\mathbf I\).</p>
+<p><strong>2. Find \(\tilde{\mathbf A}\) s.t. \(\mathbf A'\mathbf V\tilde{\mathbf A}=\mathbf A'\mathbf D\) for all \(\mathbf A\):</strong>
+$$\tilde{\mathbf A}=\mathbf V^{-1}\mathbf D\tag{13.18}$$</p>
+<p><strong>3. Define</strong>
+$$\mathbf A^\star=\tilde{\mathbf A}(\mathbf D'\tilde{\mathbf A})^{-1}=\mathbf V^{-1}\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}$$</p>
+<p><strong>4. Show \(\operatorname{Cov}(\mathbf A)\ge\operatorname{Cov}(\mathbf A^\star)=\operatorname{Cov}(\tilde{\mathbf A})\).</strong>
+- (a) By Step 1, \(\operatorname{Cov}(\mathbf A^\star)=\operatorname{Cov}(\tilde{\mathbf A}(\mathbf D'\tilde{\mathbf A})^{-1})=\operatorname{Cov}(\tilde{\mathbf A})\).
+- (b) Notice that (under \(\mathbf A'\mathbf D=\mathbf I\), i.e. \((\mathbf A^\star)'\mathbf D=\mathbf I\))
+$$\mathbf A'\mathbf V\mathbf A^\star=\mathbf A'\mathbf V\mathbf V^{-1}\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}=\mathbf A'\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}$$
+similarly \((\mathbf A^\star)'\mathbf V\mathbf A=\mathbf A'\mathbf V\mathbf A^\star\), and \((\mathbf A^\star)'\mathbf V\mathbf A^\star=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}=\mathbf A'\mathbf V\mathbf A^\star\).
+- (c) Then
+$$\begin{aligned}\underbrace{(\mathbf A-\mathbf A^\star)'\mathbf V(\mathbf A-\mathbf A^\star)}_{\text{PSD}}&=\mathbf A'\mathbf V\mathbf A\underbrace{-(\mathbf A^\star)'\mathbf V\mathbf A-\mathbf A'\mathbf V\mathbf A^\star+(\mathbf A^\star)'\mathbf V\mathbf A^\star}_{\text{three equal terms}}\\&=\mathbf A'\mathbf V\mathbf A-(\mathbf A^\star)'\mathbf V\mathbf A=\operatorname{Cov}(\mathbf A)-\operatorname{Cov}(\tilde{\mathbf A})\end{aligned}$$
+where the LHS is positive semi-definite (PSD), and the three terms are equal so two cancel. This implies
+$$\operatorname{Cov}(\mathbf A)\ge\operatorname{Cov}(\tilde{\mathbf A})=\operatorname{Cov}(\mathbf A^\star)$$
+i.e. \(\operatorname{Cov}(\mathbf A^\star)\) gives the smallest possible asymptotic variance of any choice of \(\mathbf A\) — the <strong>efficiency bound</strong> is
+$$\operatorname{Cov}(\mathbf A^\star)=\operatorname{Cov}(\tilde{\mathbf A})=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 13.6
+The above is a <strong>partial ordering</strong> of matrices: we say matrix \(\mathbf A\) is smaller than \(\mathbf B\) if \(\mathbf B-\mathbf A\) is positive semi-definite. There are some matrices \(\mathbf C,\mathbf D\) for which the difference is neither positive nor negative semi-definite — this is the sense in which we only have a partial ordering.</p>
+<p>[!tip] Remark 13.7
+Here the greatest lower bound means it is a lower bound that could be attained when choosing \(\mathbf A=\tilde{\mathbf A}\) or \(\mathbf A=\mathbf A^\star\).</p></div>
+</div>
+<h2 id="13-5-instrumental-variables-extended-example">13.5 Instrumental Variables Extended Example</h2>
+<h3 id="13-5-1-conditional-and-unconditional-moment-restriction">13.5.1 Conditional and Unconditional Moment Restriction</h3>
+<div class="lang zh">
+<p>考虑模型
+$$\alpha'\mathbb E[\mathbf Y_t\mid\mathcal F_{t-l}]=0\tag{13.19}$$
+\(l\ge1\)，\(\mathbf z_{t-l}\in\mathcal F_{t-l}\)；\(\alpha\) 为 \(k\times1\)，\(\mathbb E[\mathbf Y_t\mid\mathcal F_{t-l}]\) 为 \(k\times1\)，\(\mathbf z_{t-l}\) 为 \(r\times1\)。该条件矩条件 (13.19) 蕴含无条件矩条件 (13.20)：
+$$\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\alpha=\mathbf 0\tag{13.20}$$
+因为（由 LIE）
+$$\begin{aligned}\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\alpha&=\mathbb E[\mathbb E[\mathbf z_{t-l}\mathbf Y_t'\mid\mathcal F_{t-l}]]\alpha=\mathbb E[\mathbf z_{t-l}\mathbb E[\mathbf Y_t'\mid\mathcal F_{t-l}]\alpha]\\&=\mathbb E[\mathbf z_{t-l}(\alpha'\mathbb E[\mathbf Y_t\mid\mathcal F_{t-l}])']=\mathbb E[\mathbf z_{t-l}\cdot0]=\mathbf 0\end{aligned}$$
+其中关心参数 \(\beta\) 即 \(\alpha\)，矩函数为 \(F(\mathbf Y_t,\alpha)=\mathbf z_{t-l}\mathbf Y_t'\alpha\)，又无条件矩条件 \(\mathbb E[F(\mathbf Y_t,\alpha)]=\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\alpha=\mathbf 0\)。（如何与通常 IV 回归一致理解这些记号，见 §13.2.2。）</p>
+</div>
+<div class="lang en">
+<p>Consider the following model
+$$\alpha'\mathbb E[\mathbf Y_t\mid\mathcal F_{t-l}]=0\tag{13.19}$$
+with \(l\ge1\) and \(\mathbf z_{t-l}\in\mathcal F_{t-l}\). Note \(\alpha\) is \(k\times1\), \(\mathbb E[\mathbf Y_t\mid\mathcal F_{t-l}]\) is \(k\times1\), and \(\mathbf z_{t-l}\) is \(r\times1\). This conditional moment restriction (13.19) implies the unconditional moment restriction (13.20):
+$$\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\alpha=\mathbf 0\tag{13.20}$$
+because (by LIE)
+$$\begin{aligned}\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\alpha&=\mathbb E[\mathbb E[\mathbf z_{t-l}\mathbf Y_t'\mid\mathcal F_{t-l}]]\alpha=\mathbb E[\mathbf z_{t-l}\mathbb E[\mathbf Y_t'\mid\mathcal F_{t-l}]\alpha]\\&=\mathbb E[\mathbf z_{t-l}(\alpha'\mathbb E[\mathbf Y_t\mid\mathcal F_{t-l}])']=\mathbb E[\mathbf z_{t-l}\cdot0]=\mathbf 0\end{aligned}$$
+where the parameter of interest \(\beta\) is \(\alpha\), the moment restriction function is \(F(\mathbf Y_t,\alpha)=\mathbf z_{t-l}\mathbf Y_t'\alpha\), and again the unconditional moment restriction is \(\mathbb E[F(\mathbf Y_t,\alpha)]=\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\alpha=\mathbf 0\). (See §13.2.2 for how to understand these notations in a consistent way with our usual set-up for IV regression.)</p>
+</div>
+<h3 id="13-5-2-just-identification-and-pre-testing">13.5.2 Just-identification and Pre-testing</h3>
+<div class="lang zh">
+<p>设 \(\mathbf Y_t\) 与 \(\alpha\) 都为 \(2\times1\) 以更简单地说明基本想法。则 \(\mathbb E[F(\mathbf Y_t,\alpha)]\) 为 \(r\times1\)、\(\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\) 为 \(r\times2\)、\(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])\le2\)。
+- 若 \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])=0\)，模型<strong>欠识别</strong>，\(\alpha\) 可取任意值。
+- 若 \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])=2\)，模型<strong>过度识别</strong>，\(\alpha\) 只能取 \(\begin{bmatrix}0\\0\end{bmatrix}\)。
+- 若 \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])=1\)，模型<strong>恰好识别</strong>（一般 \(\mathbf Y_t\) 为 \(k\) 维时恰好识别即 \(\operatorname{rank}=k-1\)），\(\alpha\) 可识别到一个标量倍，即
+$$\alpha=\begin{bmatrix}\beta\\1\end{bmatrix}\quad\text{or}\quad\alpha=\begin{bmatrix}1\\\beta\end{bmatrix}$$
+取决于把 \(2\times1\) 向量哪个元归一化。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记
+之所以把 \(\alpha\) 一个元归一化为 1，是因为若某 \(\hat\alpha\) 落在 \(\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\) 的零空间，则任意标量 \(c\in\mathbb R\) 的 \(c\hat\alpha\) 也落在，这解释了"识别到一个标量倍"的含义。故为估 \(\alpha\)，需施加额外限制——把 \(\alpha\) 一个元归一化为常数 1。</p></div>
+<p><strong>预检验。</strong> 设 \(\mathbf Y_t=\begin{bmatrix}Y_t^1\\Y_t^2\end{bmatrix}\)，把 \(Y_t^1\) 对 \(\mathbf z_{t-l}\)、\(Y_t^2\) 对 \(\mathbf z_{t-l}\) 分别回归。若两组回归系数都不显著，则无法识别 \(\alpha\)，即 \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])=0\)，此时 \(\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\alpha=\mathbf 0\) 对任意 \(\alpha\) 成立。此类先回归检验工具相关性的做法称<strong>预检验（pre-testing）</strong>。</p>
+</div>
+<div class="lang en">
+<p>Suppose that \(\mathbf Y_t\) and \(\alpha\) are both \(2\times1\) to illustrate the basic idea in a simpler way. Then \(\mathbb E[F(\mathbf Y_t,\alpha)]\) is \(r\times1\), \(\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\) is \(r\times2\), and \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])\le2\).
+- If \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])=0\), the model is <strong>under-identified</strong> and \(\alpha\) can take any value.
+- If \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])=2\), the model is <strong>over-identified</strong> and \(\alpha\) can only be \(\begin{bmatrix}0\\0\end{bmatrix}\).
+- If \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])=1\), the model is <strong>just-identified</strong> (in general where \(\mathbf Y_t\) is \(k\)-dimensional, just-identification means \(\operatorname{rank}=k-1\)), and \(\alpha\) can be identified up to a scalar, i.e.
+$$\alpha=\begin{bmatrix}\beta\\1\end{bmatrix}\quad\text{or}\quad\alpha=\begin{bmatrix}1\\\beta\end{bmatrix}$$
+depending on which element of the \(2\times1\) vector we choose to normalize.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark
+We are normalizing one element in \(\alpha\) to be 1 because if some \(\hat\alpha\) lies in the null space of \(\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\), then \(c\hat\alpha\) for any scalar \(c\in\mathbb R\) also lies in it, which explains what it means by "identified up to a scalar". Therefore, to estimate \(\alpha\), we need to impose additional restrictions and, in particular, normalize one of the elements in the vector \(\alpha\) to be a constant 1.</p></div>
+<p><strong>Pre-testing.</strong> Suppose \(\mathbf Y_t=\begin{bmatrix}Y_t^1\\Y_t^2\end{bmatrix}\), and then we can regress \(Y_t^1\) on \(\mathbf z_{t-l}\) and \(Y_t^2\) on \(\mathbf z_{t-l}\). If both of these regression coefficients are not significant, then we won't be able to identify \(\alpha\), i.e. \(\operatorname{rank}(\mathbb E[\mathbf z_{t-l}\mathbf Y_t'])=0\), in which case \(\mathbb E[\mathbf z_{t-l}\mathbf Y_t']\alpha=\mathbf 0\) holds for any \(\alpha\). Such a procedure of regressing \(Y_t^1\) on \(\mathbf z_{t-l}\) and \(Y_t^2\) on \(\mathbf z_{t-l}\) to test instrument relevance is called <strong>pre-testing</strong>.</p>
+</div>
+<h3 id="13-5-3-characterize-v">13.5.3 Characterize V</h3>
+<div class="lang zh">
+<p>回忆 (13.9) 中定义 \(\mathbf V\) 为 \(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf V)\)。此处
+$$\mathbf V=\lim_{N\to\infty}\mathbb E\Big[\Big(\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf Y_t,\alpha)\Big)\Big(\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf Y_t,\alpha)\Big)'\Big]=\lim_{N\to\infty}\mathbb E\Big[\Big(\frac1{\sqrt N}\sum_{t=1}^N\mathbf z_{t-l}\mathbf Y_t'\alpha\Big)\Big(\frac1{\sqrt N}\sum_{t=1}^N\mathbf z_{t-l}\mathbf Y_t'\alpha\Big)'\Big]$$
+令 \(r\times1\) 向量 \(\mathbf G_t=F(\mathbf Y_t,\alpha)=\mathbf z_{t-l}\underbrace{\mathbf Y_t'\alpha}_{\equiv u_t}=\mathbf z_{t-l}u_t\)。由 LIE，当 \(j\ge2\) 时 \(\mathbf G_{t-j}=\mathbf z_{t-l-j}u_{t-j}\in\mathcal F_{t-l}\)，
+$$\begin{aligned}\mathbb E[\mathbf G_t\mathbf G_{t-j}']&=\mathbb E[\mathbb E[\mathbf G_t\mathbf G_{t-j}'\mid\mathcal F_{t-l}]]=\mathbb E[\mathbb E[\mathbf G_t\mid\mathcal F_{t-l}]\mathbf G_{t-j}']\\&=\mathbb E[\mathbb E[\mathbf z_{t-l}u_t\mid\mathcal F_{t-l}]\mathbf G_{t-j}']=\mathbb E[\mathbf z_{t-l}\underbrace{\mathbb E[\mathbf Y_t'\alpha\mid\mathcal F_{t-l}]}_{=0}\mathbf G_{t-j}']=\mathbf 0\end{aligned}\tag{13.21}$$
+由此结果加 \(\mathbf z_{t-l}\)、\(\mathbf Y_t\) 平稳，得
+$$\mathbf V=\mathbb E[\mathbf G_t\mathbf G_t']+\mathbb E[\mathbf G_t\mathbf G_{t-1}']+\mathbb E[\mathbf G_t\mathbf G_{t+1}']$$
+（交叉项 \(j\ge2\) 因 (13.21) 消去。）</p>
+</div>
+<div class="lang en">
+<p>Recall that previously in (13.9) we defined matrix \(\mathbf V\) by \(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf V)\). Here in this case,
+$$\mathbf V=\lim_{N\to\infty}\mathbb E\Big[\Big(\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf Y_t,\alpha)\Big)\Big(\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf Y_t,\alpha)\Big)'\Big]=\lim_{N\to\infty}\mathbb E\Big[\Big(\frac1{\sqrt N}\sum_{t=1}^N\mathbf z_{t-l}\mathbf Y_t'\alpha\Big)\Big(\frac1{\sqrt N}\sum_{t=1}^N\mathbf z_{t-l}\mathbf Y_t'\alpha\Big)'\Big]$$
+Now define the \(r\times1\) vector \(\mathbf G_t=F(\mathbf Y_t,\alpha)=\mathbf z_{t-l}\underbrace{\mathbf Y_t'\alpha}_{\equiv u_t}=\mathbf z_{t-l}u_t\). By the law of iterated expectations, when \(j\ge2\) we have \(\mathbf G_{t-j}=\mathbf z_{t-l-j}u_{t-j}\in\mathcal F_{t-l}\), and then
+$$\begin{aligned}\mathbb E[\mathbf G_t\mathbf G_{t-j}']&=\mathbb E[\mathbb E[\mathbf G_t\mathbf G_{t-j}'\mid\mathcal F_{t-l}]]=\mathbb E[\mathbb E[\mathbf G_t\mid\mathcal F_{t-l}]\mathbf G_{t-j}']\\&=\mathbb E[\mathbb E[\mathbf z_{t-l}u_t\mid\mathcal F_{t-l}]\mathbf G_{t-j}']=\mathbb E[\mathbf z_{t-l}\underbrace{\mathbb E[\mathbf Y_t'\alpha\mid\mathcal F_{t-l}]}_{=0}\mathbf G_{t-j}']=\mathbf 0\end{aligned}\tag{13.21}$$
+From this result plus the stationarity assumption of \(\mathbf z_{t-l}\) and \(\mathbf Y_t\), we have that
+$$\mathbf V=\mathbb E[\mathbf G_t\mathbf G_t']+\mathbb E[\mathbf G_t\mathbf G_{t-1}']+\mathbb E[\mathbf G_t\mathbf G_{t+1}']$$
+(the cross-product terms for \(j\ge2\) drop out because of (13.21).)</p>
+</div>
+<h3 id="13-5-4-characterize-d">13.5.4 Characterize D</h3>
+<div class="lang zh">
+<p>回忆定义 \(r\times k\) 矩阵 \(\mathbf D=\mathbb E\big[\frac{\partial F(\mathbf X_t,\beta)}{\partial\beta'}\big]\)。注意 \(\mathbf D\) 的表达式依赖归一化哪个元。若 \(\alpha=\begin{bmatrix}\beta\\1\end{bmatrix}\)，则第二元由构造已知、唯一关心参数为 \(\beta\)，于是
+$$\mathbf D=\mathbb E\Big[\frac{\partial F(\mathbf Y_t,\beta)}{\partial\beta}\Big]=\mathbb E\Big[\frac{\partial(\mathbf z_{t-l}\mathbf Y_t'\alpha)}{\partial\beta}\Big]=\mathbb E\Big[\frac{\partial[\mathbf z_{t-l}(Y_t^1\beta+Y_t^2)]}{\partial\beta}\Big]=\mathbb E[\mathbf z_{t-l}Y_t^1]$$
+为 \(r\times1\) 向量。若起初归一化 \(\alpha=\begin{bmatrix}1\\\beta\end{bmatrix}\)，则同理 \(\mathbf D=\mathbb E[\mathbf z_{t-l}Y_t^2]\)，也是 \(r\times1\) 向量。故 \(\mathbf D\) 依赖归一化选择。</p>
+</div>
+<div class="lang en">
+<p>Recall we defined the \(r\times k\) matrix \(\mathbf D=\mathbb E\big[\frac{\partial F(\mathbf X_t,\beta)}{\partial\beta'}\big]\). Notice that our expression for \(\mathbf D\) depends on which element of the vector \(\alpha\) we normalized. If \(\alpha\) takes the form \(\alpha=\begin{bmatrix}\beta\\1\end{bmatrix}\), then since the second element is known by construction, there is only one parameter of interest \(\beta\), and then
+$$\mathbf D=\mathbb E\Big[\frac{\partial F(\mathbf Y_t,\beta)}{\partial\beta}\Big]=\mathbb E\Big[\frac{\partial(\mathbf z_{t-l}\mathbf Y_t'\alpha)}{\partial\beta}\Big]=\mathbb E\Big[\frac{\partial[\mathbf z_{t-l}(Y_t^1\beta+Y_t^2)]}{\partial\beta}\Big]=\mathbb E[\mathbf z_{t-l}Y_t^1]$$
+which is a \(r\times1\) vector. If instead we start by imposing \(\alpha=\begin{bmatrix}1\\\beta\end{bmatrix}\), then similarly \(\mathbf D=\mathbb E[\mathbf z_{t-l}Y_t^2]\), also a \(r\times1\) vector. So our \(\mathbf D\) matrix depends on our choice of normalization.</p>
+</div>
+<h3 id="13-5-5-efficiency-bound">13.5.5 Efficiency Bound</h3>
+<div class="lang zh">
+<p>由一般情形已证 \(\tilde{\mathbf A}=\mathbf V^{-1}\mathbf D\) 时有效性界 \(\operatorname{Cov}(\tilde{\mathbf A})=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}\)。在本例（\(\alpha=\begin{bmatrix}\beta\\1\end{bmatrix}\)，\(\mathbf D=\mathbb E[\mathbf z_{t-l}Y_t^1]\)，\(l=2\)）下，有效性界为
+$$\operatorname{Cov}(\tilde{\mathbf A})=\Big(\big(\mathbb E[\mathbf z_{t-l}Y_t^1]\big)'\big(\mathbb E[\mathbf G_t\mathbf G_t']+\mathbb E[\mathbf G_t\mathbf G_{t-1}']+\mathbb E[\mathbf G_t\mathbf G_{t+1}']\big)^{-1}\mathbb E[\mathbf z_{t-l}Y_t^1]\Big)^{-1}$$</p>
+</div>
+<div class="lang en">
+<p>In the general case we established that with \(\tilde{\mathbf A}=\mathbf V^{-1}\mathbf D\), the efficiency bound is \(\operatorname{Cov}(\tilde{\mathbf A})=(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}\). In our example (with \(\alpha=\begin{bmatrix}\beta\\1\end{bmatrix}\), \(\mathbf D=\mathbb E[\mathbf z_{t-l}Y_t^1]\), \(l=2\)), the efficiency bound is
+$$\operatorname{Cov}(\tilde{\mathbf A})=\Big(\big(\mathbb E[\mathbf z_{t-l}Y_t^1]\big)'\big(\mathbb E[\mathbf G_t\mathbf G_t']+\mathbb E[\mathbf G_t\mathbf G_{t-1}']+\mathbb E[\mathbf G_t\mathbf G_{t+1}']\big)^{-1}\mathbb E[\mathbf z_{t-l}Y_t^1]\Big)^{-1}$$</p>
+</div>
+<h3 id="13-5-6-conditions-for-the-tsls-estimator-to-attain-the-gmm-efficiency-bound">13.5.6 Conditions for the TSLS Estimator to Attain the GMM Efficiency Bound</h3>
+<div class="lang zh">
+<p>要使 TSLS 估计达到 GMM 有效性界，需再加两个假设：
+1. \(\mathbf G_t\) i.i.d.，从而 \(l=1\)。
+2. 同方差，即 \(\mathbb E[u_t^2\mid\mathcal F_{t-l}]=\sigma^2\)。</p>
+<p>则在这些假设下，TSLS 估计达到 GMM 有效性界。</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 证明
+起初归一化 \(\alpha=\begin{bmatrix}1\\\beta\end{bmatrix}\)，则 \(\mathbf D=\mathbb E[\mathbf z_{t-l}Y_t^2]\)。由 (13.21) 在 \(j\ge1\) 成立（因 \(\mathbf G_t\) i.i.d.），再由同方差，
+$$\mathbf V^{-1}=\big(\mathbb E[\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}'u_t^2\mid\mathcal F_{t-l}]]\big)^{-1}=\big(\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}'\mathbb E[u_t^2\mid\mathcal F_{t-l}]]\big)^{-1}=\big(\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}'\sigma^2]\big)^{-1}=\frac{\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']^{-1}}{\sigma^2}$$
+此设定下，\(\mathbf Y_t=\begin{bmatrix}Y_t^1\\Y_t^2\end{bmatrix}\)、\(Y_t^1=-\beta Y_t^2+u_t\)。考虑 TSLS 模型把 \(Y_t^2\) 对 \(\mathbf z_{t-l}\) 回归：
+$$Y_t^2=\Pi'\mathbf z_{t-l}+v_t,\qquad\Pi=\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']^{-1}\mathbb E[\mathbf z_{t-l}Y_t^2]$$
+取选择矩阵 \(\tilde{\mathbf A}=\mathbf V^{-1}\mathbf D=\frac{\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']^{-1}}{\sigma^2}\mathbb E[\mathbf z_{t-l}Y_t^2]\)。由前已证用 \(\tilde{\mathbf A}\) 或任意 \(\tilde{\tilde{\mathbf A}}=\tilde{\mathbf A}\mathbf H\)（达到有效性界）等价，这里用
+$$\tilde{\tilde{\mathbf A}}=\tilde{\mathbf A}\sigma^2=\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']^{-1}\mathbb E[\mathbf z_{t-l}Y_t^2]=\Pi$$
+由 \(\hat\Pi=\big(\frac1N\sum\mathbf z_{t-l}\mathbf z_{t-l}'\big)^{-1}\big(\frac1N\sum\mathbf z_{t-l}Y_t^2\big)\) 估计。GMM 估计由
+$$\begin{aligned}&\tilde{\tilde{\mathbf A}}'\frac1N\sum_{t=1}^N F(\mathbf Y_t,\alpha)=0\Rightarrow\hat\Pi'\frac1N\sum_{t=1}^N\mathbf z_{t-l}u_t=0\Rightarrow\hat\Pi'\frac1N\sum_{t=1}^N\mathbf z_{t-l}(Y_t^1+\hat\beta Y_t^2)=0\\&\Rightarrow\Big(\hat\Pi'\frac1N\sum_{t=1}^N\mathbf z_{t-l}Y_t^2\Big)(-\hat\beta)=\hat\Pi'\frac1N\sum_{t=1}^N\mathbf z_{t-l}Y_t^1\\&\Rightarrow(-\hat\beta)\to(\Pi'\mathbb E[\mathbf z_{t-l}Y_t^2])^{-1}\Pi'\mathbb E[\mathbf z_{t-l}Y_t^1]=(\Pi'\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']\Pi)^{-1}\Pi'\mathbb E[\mathbf z_{t-l}Y_t^1]\end{aligned}$$
+这表明达到有效性界的 GMM 估计 \((-\hat\beta)\) 基本上就是 TSLS 估计。\(\blacksquare\)</p></div>
+<p>换言之，在 i.i.d. 与同方差假设下，TSLS 估计达到 GMM 有效性界。</p>
+</div>
+<div class="lang en">
+<p>For the TSLS estimator to attain the GMM efficiency bound, we need to impose two more assumptions:
+1. \(\mathbf G_t\) is i.i.d. and so \(l=1\).
+2. Homoskedasticity, i.e. \(\mathbb E[u_t^2\mid\mathcal F_{t-l}]=\sigma^2\).</p>
+<p>Then under these additional assumptions, the TSLS estimator attains the GMM efficiency bound.</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Proof
+Start by imposing \(\alpha=\begin{bmatrix}1\\\beta\end{bmatrix}\); then \(\mathbf D=\mathbb E[\mathbf z_{t-l}Y_t^2]\). Since (13.21) holds for \(j\ge1\) (\(\mathbf G_t\) i.i.d.), and by homoskedasticity,
+$$\mathbf V^{-1}=\big(\mathbb E[\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}'u_t^2\mid\mathcal F_{t-l}]]\big)^{-1}=\big(\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}'\mathbb E[u_t^2\mid\mathcal F_{t-l}]]\big)^{-1}=\big(\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}'\sigma^2]\big)^{-1}=\frac{\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']^{-1}}{\sigma^2}$$
+In this set-up, \(\mathbf Y_t=\begin{bmatrix}Y_t^1\\Y_t^2\end{bmatrix}\), \(Y_t^1=-\beta Y_t^2+u_t\). Consider the TSLS model where we regress \(Y_t^2\) on \(\mathbf z_{t-l}\):
+$$Y_t^2=\Pi'\mathbf z_{t-l}+v_t,\qquad\Pi=\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']^{-1}\mathbb E[\mathbf z_{t-l}Y_t^2]$$
+Take the selection matrix \(\tilde{\mathbf A}=\mathbf V^{-1}\mathbf D=\frac{\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']^{-1}}{\sigma^2}\mathbb E[\mathbf z_{t-l}Y_t^2]\). Since we showed the GMM estimator attained by \(\tilde{\mathbf A}\) or any \(\tilde{\tilde{\mathbf A}}=\tilde{\mathbf A}\mathbf H\) attains the efficiency bound, here we use
+$$\tilde{\tilde{\mathbf A}}=\tilde{\mathbf A}\sigma^2=\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']^{-1}\mathbb E[\mathbf z_{t-l}Y_t^2]=\Pi$$
+estimated by \(\hat\Pi=\big(\frac1N\sum\mathbf z_{t-l}\mathbf z_{t-l}'\big)^{-1}\big(\frac1N\sum\mathbf z_{t-l}Y_t^2\big)\). The GMM estimation is carried out by
+$$\begin{aligned}&\tilde{\tilde{\mathbf A}}'\frac1N\sum_{t=1}^N F(\mathbf Y_t,\alpha)=0\Rightarrow\hat\Pi'\frac1N\sum_{t=1}^N\mathbf z_{t-l}u_t=0\Rightarrow\hat\Pi'\frac1N\sum_{t=1}^N\mathbf z_{t-l}(Y_t^1+\hat\beta Y_t^2)=0\\&\Rightarrow\Big(\hat\Pi'\frac1N\sum_{t=1}^N\mathbf z_{t-l}Y_t^2\Big)(-\hat\beta)=\hat\Pi'\frac1N\sum_{t=1}^N\mathbf z_{t-l}Y_t^1\\&\Rightarrow(-\hat\beta)\to(\Pi'\mathbb E[\mathbf z_{t-l}Y_t^2])^{-1}\Pi'\mathbb E[\mathbf z_{t-l}Y_t^1]=(\Pi'\mathbb E[\mathbf z_{t-l}\mathbf z_{t-l}']\Pi)^{-1}\Pi'\mathbb E[\mathbf z_{t-l}Y_t^1]\end{aligned}$$
+which shows that the GMM estimator \((-\hat\beta)\) that attains the efficiency bound is basically a TSLS estimator. \(\blacksquare\)</p></div>
+<p>In other words, under i.i.d. and homoskedasticity assumptions, the TSLS estimator attains the GMM efficiency bound.</p>
+</div>
+<h2 id="13-6-hypothesis-testing">13.6 Hypothesis Testing</h2>
+<h3 id="13-6-1-limiting-distribution">13.6.1 Limiting Distribution</h3>
+<div class="lang zh">
+<p>由大数定律，\(\frac1N\sum F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\mathbb E[F(\mathbf X_t,\mathbf b_N)]\)；由中心极限定理，\(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf V)\)。但为基于 \(\mathbf b_N\) 对 \(\beta\) 作检验，我们需要 \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\)（而非 \(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\)）的极限分布；二者不同，因 \(\mathbf b_N\) 是 \(\beta\) 的估计、其估计带来抽样分布。调整结果为
+$$\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\Big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\Big]\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\beta)\tag{13.22}$$
+注意 \(\mathbf A'\big(\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big)=\mathbf 0\)，这合理，因我们正是用 \(\mathbf A'\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\) 解 \(\mathbf b_N\)；若 (13.22) 成立，必有 \(\mathbf A'\big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big]\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)=\mathbf 0\)（概率 1）。</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 证明（13.22）
+由 (13.12)，\(\sqrt N(\mathbf b_N-\beta)\xrightarrow{p}-(\mathbf A'\mathbf D)^{-1}\mathbf A'\big(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\big)\)。再由 Delta 方法（中值定理），
+$$\begin{aligned}\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)-\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\beta)&=\sqrt N\Big[\frac1N\sum F(\mathbf X_t,\mathbf b_N)-\frac1N\sum F(\mathbf X_t,\beta)\Big]\\&\xrightarrow{d}\underbrace{\frac1N\sum\frac{\partial F(\mathbf X_t,\beta)}{\partial\beta'}}_{\to\mathbf D}\Big[-(\mathbf A'\mathbf D)^{-1}\mathbf A'\Big(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\Big)\Big]\end{aligned}$$
+即 \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big]\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\)。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<p>From the Law of Large Numbers we know \(\frac1N\sum F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\mathbb E[F(\mathbf X_t,\mathbf b_N)]\); from the Central Limit Theorem we know \(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf V)\). But in order to carry out a test for \(\beta\) based on \(\mathbf b_N\), we need the limiting distribution of \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\) instead of \(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\). Their limiting distributions are different because \(\mathbf b_N\) is an estimation of \(\beta\) and the estimation has some distribution incurred by the sampling distribution. The adjustment result is
+$$\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\Big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\Big]\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\beta)\tag{13.22}$$
+Notice \(\mathbf A'\big(\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big)=\mathbf 0\). This makes sense because we solved \(\mathbf b_N\) by \(\mathbf A'\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)=\mathbf 0\); so if (13.22) is true, it must be that \(\mathbf A'\big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big]\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)=\mathbf 0\) with probability 1.</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Proof (13.22)
+Since by (13.12), \(\sqrt N(\mathbf b_N-\beta)\xrightarrow{p}-(\mathbf A'\mathbf D)^{-1}\mathbf A'\big(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\big)\). And by the Delta method (Mean Value Theorem),
+$$\begin{aligned}\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b_N)-\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\beta)&=\sqrt N\Big[\frac1N\sum F(\mathbf X_t,\mathbf b_N)-\frac1N\sum F(\mathbf X_t,\beta)\Big]\\&\xrightarrow{d}\underbrace{\frac1N\sum\frac{\partial F(\mathbf X_t,\beta)}{\partial\beta'}}_{\to\mathbf D}\Big[-(\mathbf A'\mathbf D)^{-1}\mathbf A'\Big(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\Big)\Big]\end{aligned}$$
+i.e. \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big]\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\). \(\blacksquare\)</p></div>
+</div>
+<h3 id="13-6-2-the-test-hypotheses">13.6.2 The Test Hypotheses</h3>
+<div class="lang zh">
+<p>由 \(\mathbf A'\big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big]=\mathbf 0\)，\(r\times r\) 矩阵 \(\big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big]\) 的秩严格小于 \(r\)，故 \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\) 的方差—协方差矩阵奇异（不可逆）。因此不能直接构造卡方统计量（需可逆性），而须用方差—协方差矩阵的可逆部分来检验
+$$H_0:\ \mathbb E[F(\mathbf X_t,\mathbf b_N)]=\mathbf 0\ (\text{or }\mathbf b_N=\beta)$$
+$$H_1:\ \mathbb E[F(\mathbf X_t,\mathbf b_N)]\ne\mathbf 0\ (\text{or }\mathbf b_N\ne\beta)$$</p>
+</div>
+<div class="lang en">
+<p>Since \(\mathbf A'\big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big]=\mathbf 0\), the \(r\times r\) matrix \(\big[\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big]\) has rank strictly less than \(r\), and thus the variance-covariance matrix of \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\) is singular (non-invertible). So we cannot directly construct a chi-square estimator (which requires invertibility of the variance-covariance matrix); instead we will be using the invertible part of that variance-covariance matrix to carry out the test
+$$H_0:\ \mathbb E[F(\mathbf X_t,\mathbf b_N)]=\mathbf 0\ (\text{or }\mathbf b_N=\beta)$$
+$$H_1:\ \mathbb E[F(\mathbf X_t,\mathbf b_N)]\ne\mathbf 0\ (\text{or }\mathbf b_N\ne\beta)$$</p>
+</div>
+<h3 id="13-6-3-three-ways-of-carrying-out-the-test">13.6.3 Three Ways of Carrying out the Test</h3>
+<div class="lang zh">
+<p><strong>方法 1：校准与验证（Calibration and Verification）。</strong> 仅用 \(F\) 的 \(k\) 个坐标校准（估计）模型，再验证其余 \(r-k\) 个约束。把 \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) 分为前 \(k\) 行 \(\mathbb E[F_1(\mathbf X_t,\beta)]_{r\times1}=\mathbf 0\) 与后 \(r-k\) 行 \(\mathbb E[F_2(\mathbf X_t,\beta)]_{r\times1}=\mathbf 0\)。
+1. 选前 \(k\) 行（不失一般性），\(\mathbf A'=[\mathbf I_{k\times k}\ \mathbf 0_{k\times(r-k)}]\)（或更有效地 \(\mathbf A'=[(\mathbf V_1^{-1}\mathbf D_1)'\ \mathbf 0_{k\times(r-k)}]\)，\(\mathbf V_1^{-1}\) 为 \(\mathbf V\) 左上 \(k\times k\) 子阵、\(\mathbf D_1\) 为 \(\mathbf D\) 前 \(k\) 行）。\(F_1(\mathbf X_t,\beta)\) 有 \(r\) 项，前 \(k\) 项同 \(F(\mathbf X_t,\beta)\)、后 \(r-k\) 项置 0；\(F_2(\mathbf X_t,\beta)\) 前 \(k\) 项置 0、后 \(r-k\) 项同 \(F(\mathbf X_t,\beta)\)。
+2. 用 \(\mathbb E[F_1(\mathbf X_t,\beta)]_{r\times1}=\mathbf 0\) 与 \(\mathbf A'=[\mathbf I_{k\times k}\ \mathbf 0]\) 估 \(\mathbf b_N^{F_1}\)，解 \(\frac1N\sum F_1(\mathbf X_t,\mathbf b_N^{F_1})=\mathbf 0\) 或 \(\frac1N\sum\mathbf A'F(\mathbf X_t,\mathbf b_N^{F_1})=\mathbf 0\)。
+3. 用 \(\mathbb E[F_2(\mathbf X_t,\beta)]_{r\times1}=\mathbf 0\) 与 \(\mathbf A=[\mathbf I_{k\times k}\ \mathbf 0_{k\times(r-k)}]'\) 检验 \(H_0\)：
+   - (a) 用事实 \(\big[\frac1{\sqrt N}\sum F_2(\mathbf X_t,\mathbf b_N^{F_1})\big]_{r\times1}\xrightarrow{p}\mathbf B\big(\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big)\big(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\big)\)（13.23），\(\mathbf B=[\mathbf 0_{r\times k}\ \mathbf I_{r\times(r-k)}]\)，分块 \(\mathbf D=\begin{bmatrix}(\mathbf D_1)_{k\times k}\\(\mathbf D_2)_{(r-k)\times k}\end{bmatrix}\)。
+   - (b) 重写 (13.23)：\(\big[\frac1{\sqrt N}\sum F_2(\mathbf X_t,\mathbf b_N^{F_1})\big]\xrightarrow{p}\big[-(\mathbf D_2(\mathbf D_1)^{-1})\ \mathbf I_{r\times(r-k)}\big]\big(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\big)\)。
+   - (c) \(\big[\frac1{\sqrt N}\sum F_2(\mathbf X_t,\mathbf b_N^{F_1})\big]\xrightarrow{d}N(\mathbf 0,\Gamma)\)（13.24），\(\Gamma=\big[-(\mathbf D_2(\mathbf D_1)^{-1})\ \mathbf I_{r\times(r-k)}\big]\mathbf V\begin{bmatrix}-((\mathbf D_1')^{-1}\mathbf D_2')\\\mathbf I_{(r-k)\times r}\end{bmatrix}\)。
+   - (d) 构造 Wald 检验统计量
+$$\Big[\frac1{\sqrt N}\sum_{t=1}^N F_2(\mathbf X_t,\mathbf b_N^{F_1})\Big]'\Gamma^{-1}\Big[\frac1{\sqrt N}\sum_{t=1}^N F_2(\mathbf X_t,\mathbf b_N^{F_1})\Big]\xrightarrow{d}\chi^2_{r-k}$$
+（用 GMM 有效选择矩阵 \(\mathbf A_1'=(\mathbf V_1^{-1}\mathbf D_1)'\) 解 \(\mathbf b_{e,N}^{F_1}\) 时，类似得极限 \(N(\mathbf 0,\Omega)\)（13.25），Wald 统计量同样 \(\xrightarrow{d}\chi^2_{r-k}\)。）</p>
+</div>
+<div class="lang en">
+<p><strong>Way 1: Calibration and Verification.</strong> Calibrate (estimate) the model using only \(k\) coordinates of \(F\), and verify the remaining \(r-k\) restrictions. Partition \(\mathbb E[F(\mathbf X_t,\beta)]=\mathbf 0\) into the first \(k\) rows \(\mathbb E[F_1(\mathbf X_t,\beta)]_{r\times1}=\mathbf 0\) and the last \(r-k\) rows \(\mathbb E[F_2(\mathbf X_t,\beta)]_{r\times1}=\mathbf 0\).
+1. WLOG select the first \(k\) rows, \(\mathbf A'=[\mathbf I_{k\times k}\ \mathbf 0_{k\times(r-k)}]\) (or, more efficiently, \(\mathbf A'=[(\mathbf V_1^{-1}\mathbf D_1)'\ \mathbf 0_{k\times(r-k)}]\), where \(\mathbf V_1^{-1}\) is the upper-left \(k\times k\) submatrix of \(\mathbf V\) and \(\mathbf D_1\) is the first \(k\) rows of \(\mathbf D\)). \(F_1(\mathbf X_t,\beta)\) has \(r\) entries, the first \(k\) the same as \(F(\mathbf X_t,\beta)\) and the last \(r-k\) set to 0; \(F_2(\mathbf X_t,\beta)\) has the first \(k\) set to 0 and the last \(r-k\) the same as \(F(\mathbf X_t,\beta)\).
+2. Estimate \(\mathbf b_N^{F_1}\) using \(\mathbb E[F_1(\mathbf X_t,\beta)]_{r\times1}=\mathbf 0\) with \(\mathbf A'=[\mathbf I_{k\times k}\ \mathbf 0]\), solving \(\frac1N\sum F_1(\mathbf X_t,\mathbf b_N^{F_1})=\mathbf 0\) or \(\frac1N\sum\mathbf A'F(\mathbf X_t,\mathbf b_N^{F_1})=\mathbf 0\).
+3. Test \(H_0\) using \(\mathbb E[F_2(\mathbf X_t,\beta)]_{r\times1}=\mathbf 0\) with \(\mathbf A=[\mathbf I_{k\times k}\ \mathbf 0_{k\times(r-k)}]'\):
+   - (a) Use the fact that \(\big[\frac1{\sqrt N}\sum F_2(\mathbf X_t,\mathbf b_N^{F_1})\big]_{r\times1}\xrightarrow{p}\mathbf B\big(\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A'\big)\big(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\big)\) (13.23), \(\mathbf B=[\mathbf 0_{r\times k}\ \mathbf I_{r\times(r-k)}]\), partition \(\mathbf D=\begin{bmatrix}(\mathbf D_1)_{k\times k}\\(\mathbf D_2)_{(r-k)\times k}\end{bmatrix}\).
+   - (b) Rewrite (13.23): \(\big[\frac1{\sqrt N}\sum F_2(\mathbf X_t,\mathbf b_N^{F_1})\big]\xrightarrow{p}\big[-(\mathbf D_2(\mathbf D_1)^{-1})\ \mathbf I_{r\times(r-k)}\big]\big(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\big)\).
+   - (c) \(\big[\frac1{\sqrt N}\sum F_2(\mathbf X_t,\mathbf b_N^{F_1})\big]\xrightarrow{d}N(\mathbf 0,\Gamma)\) (13.24), \(\Gamma=\big[-(\mathbf D_2(\mathbf D_1)^{-1})\ \mathbf I_{r\times(r-k)}\big]\mathbf V\begin{bmatrix}-((\mathbf D_1')^{-1}\mathbf D_2')\\\mathbf I_{(r-k)\times r}\end{bmatrix}\).
+   - (d) Construct a Wald test statistic
+$$\Big[\frac1{\sqrt N}\sum_{t=1}^N F_2(\mathbf X_t,\mathbf b_N^{F_1})\Big]'\Gamma^{-1}\Big[\frac1{\sqrt N}\sum_{t=1}^N F_2(\mathbf X_t,\mathbf b_N^{F_1})\Big]\xrightarrow{d}\chi^2_{r-k}$$
+(Using the GMM-efficient selection matrix \(\mathbf A_1'=(\mathbf V_1^{-1}\mathbf D_1)'\) to solve \(\mathbf b_{e,N}^{F_1}\), one similarly gets the limit \(N(\mathbf 0,\Omega)\) (13.25), and the Wald statistic again \(\xrightarrow{d}\chi^2_{r-k}\).)</p>
+</div>
+<div class="lang zh">
+<p><strong>方法 2：有效估计下检验（Testing with Efficient Estimation）。</strong> 由 \(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf V)\)，令 \(\mathbf V^{-1}=\Lambda'\Lambda\)（\(\Lambda\) 可逆），则 \(\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\Lambda\mathbf V\Lambda')=N(\mathbf 0,\mathbf I)\)（13.26）。回忆 \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}(\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A')\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\)（13.27）。取有效 \(\mathbf A=\mathbf V^{-1}\mathbf D\)（\(\mathbf A'=\mathbf D'\mathbf V^{-1}\)），(13.27) 两边左乘 \(\Lambda\)，
+$$\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\Lambda\big(\mathbf I-\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}\mathbf D'\mathbf V^{-1}\big)\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\tag{13.28}$$
+定义 \(\Delta_{r\times r}=\Lambda\mathbf D(\mathbf D'\Lambda'\Lambda\mathbf D)^{-1}\mathbf D'\Lambda'\)，则 \(\Delta\) 与 \(\mathbf I-\Delta\) 都幂等（\(\Delta\Delta=\Delta\)、\((\mathbf I-\Delta)(\mathbf I-\Delta)=\mathbf I-\Delta\)），\(\Delta\) 秩 \(k\)、\((\mathbf I-\Delta)\) 秩 \(r-k\)、互补。重写 (13.28)：\(\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}(\mathbf I-\Delta)\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\)（13.29），\(\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\mathbf b_N)\xrightarrow{d}N(\mathbf 0,\Phi)\)（13.30），\(\Phi=(\mathbf I-\Delta)\)。三个卡方：
+$$\Big[\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]'\Big[\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]\xrightarrow{d}\chi^2_r\tag{13.31}$$
+$$\Big[(\mathbf I-\Delta)\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]'\Big[(\mathbf I-\Delta)\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]\xrightarrow{d}\chi^2_{r-k}\tag{13.32}$$
+$$\Big[\Delta\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]'\Big[\Delta\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]\xrightarrow{d}\chi^2_k\tag{13.33}$$
+<strong>两个二次型：</strong>
+- 形式 1：由 (13.32) 与 (13.29)，
+$$\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]'\mathbf V^{-1}\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]\xrightarrow{d}\chi^2_{r-k}\tag{13.34}$$
+- 形式 2：由 \(\big[\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\big]'\mathbf V^{-1}\big[\cdots\big]\xrightarrow{d}\chi^2_r\) 与 (13.34)，
+$$\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\Big]'\mathbf V^{-1}\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\Big]-\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]'\mathbf V^{-1}\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]\xrightarrow{d}\chi^2_k\tag{13.35}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 13.8–13.9
+(13.35) 由 (13.34) "免费"得到。用形式 (13.31)/(13.34) 构造检验统计量时，先估 \(\mathbf b_N\) 代入 (13.34) 左端算 LHS——\(H_0\) 正确则不应太大；用形式 (13.35) 时，可把 \(H_0\) 的 \(\beta\) 与估计的 \(\mathbf b_N\) 代入，算 LHS——\(H_0\) 正确则不应太大。</p></div>
+</div>
+<div class="lang en">
+<p><strong>Way 2: Testing with Efficient Estimation.</strong> From \(\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\mathbf V)\), let \(\mathbf V^{-1}=\Lambda'\Lambda\) (\(\Lambda\) invertible); then \(\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\xrightarrow{d}N(\mathbf 0,\Lambda\mathbf V\Lambda')=N(\mathbf 0,\mathbf I)\) (13.26). Recall \(\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}(\mathbf I-\mathbf D(\mathbf A'\mathbf D)^{-1}\mathbf A')\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\) (13.27). Take the efficient \(\mathbf A=\mathbf V^{-1}\mathbf D\) (\(\mathbf A'=\mathbf D'\mathbf V^{-1}\)); pre-multiply both sides of (13.27) by \(\Lambda\):
+$$\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}\Lambda\big(\mathbf I-\mathbf D(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1}\mathbf D'\mathbf V^{-1}\big)\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\tag{13.28}$$
+Define \(\Delta_{r\times r}=\Lambda\mathbf D(\mathbf D'\Lambda'\Lambda\mathbf D)^{-1}\mathbf D'\Lambda'\); then both \(\Delta\) and \(\mathbf I-\Delta\) are idempotent (\(\Delta\Delta=\Delta\), \((\mathbf I-\Delta)(\mathbf I-\Delta)=\mathbf I-\Delta\)), with \(\Delta\) of rank \(k\), \((\mathbf I-\Delta)\) of rank \(r-k\), complementary. Rewrite (13.28): \(\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\mathbf b_N)\xrightarrow{p}(\mathbf I-\Delta)\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\) (13.29), \(\frac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\mathbf b_N)\xrightarrow{d}N(\mathbf 0,\Phi)\) (13.30), \(\Phi=(\mathbf I-\Delta)\). Three chi-squares:
+$$\Big[\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]'\Big[\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]\xrightarrow{d}\chi^2_r\tag{13.31}$$
+$$\Big[(\mathbf I-\Delta)\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]'\Big[(\mathbf I-\Delta)\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]\xrightarrow{d}\chi^2_{r-k}\tag{13.32}$$
+$$\Big[\Delta\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]'\Big[\Delta\tfrac1{\sqrt N}\sum\Lambda F(\mathbf X_t,\beta)\Big]\xrightarrow{d}\chi^2_k\tag{13.33}$$
+<strong>Two quadratic forms:</strong>
+- Form 1: by (13.32) and (13.29),
+$$\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]'\mathbf V^{-1}\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]\xrightarrow{d}\chi^2_{r-k}\tag{13.34}$$
+- Form 2: from \(\big[\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\big]'\mathbf V^{-1}\big[\cdots\big]\xrightarrow{d}\chi^2_r\) and (13.34),
+$$\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\Big]'\mathbf V^{-1}\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\beta)\Big]-\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]'\mathbf V^{-1}\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]\xrightarrow{d}\chi^2_k\tag{13.35}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remarks 13.8–13.9
+(13.35) comes for free from (13.34). When using the forms (13.31)/(13.34) to construct a testing statistic, we first estimate \(\mathbf b_N\), then plug it into (13.34) to compute the LHS as a test statistic, which should not be too big if \(H_0\) is correct. When using form (13.35), we can plug in \(\beta\) from \(H_0\) and \(\mathbf b_N\) from estimation, then compute the LHS as a test statistic, which should not be too big if \(H_0\) is correct.</p></div>
+</div>
+<div class="lang zh">
+<p><strong>方法 3：同时估计与检验（Simultaneous Estimation and Testing）。</strong> 估 \(\beta\) 的同时检验 \(H_0\)。考虑
+$$\min_{\mathbf b}\Big[\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b)\Big]'\mathbf V^{-1}\Big[\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b)\Big]\tag{13.36}$$
+若 \(H_0\) 真（\(\mathbf b=\beta\)），目标函数不应太大；实则我们在通过找使检验统计量最小的 \(\mathbf b\) 来估 \(\beta\)。
+- 若此时仍要拒绝 \(H_0\)（本不该拒），则需考虑也许是矩条件本身错了。
+- 多数情形会得到使 \(H_0\) 不被拒的解 \(\mathbf b\)（由构造），使 \(\mathbf b\) 成为 \(\beta\) 的合理估计。</p>
+<p>(13.36) 的一阶条件：记目标函数 \(\mathcal L=\mathbf F'\mathbf V^{-1}\mathbf F\)（\(\mathbf F=\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b)\)），
+$$\begin{aligned}\mathbf 0=\frac{\partial\mathcal L}{\partial\mathbf b_N'}&=\frac{\partial\mathcal L}{\partial\mathbf F'}\frac{\partial\mathbf F}{\partial\mathbf b_N'}=2\mathbf F'\mathbf V^{-1}\frac{\partial\mathbf F}{\partial\mathbf b_N'}=2\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]'\mathbf V^{-1}\underbrace{\frac1N\sum\frac{\partial F(\mathbf X_t,\mathbf b_N)}{\partial\mathbf b_N'}}_{\equiv\mathbf D_N}\\&\Rightarrow\underbrace{\mathbf D_N'\mathbf V^{-1}}_{\equiv\mathbf A_N'}\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]=\mathbf 0\end{aligned}$$
+故 \(\mathbf A_N'=\mathbf D_N'\mathbf V^{-1}=\tilde{\mathbf A}_N'\)，即此法解出的 GMM 估计达到有效性界。</p>
+</div>
+<div class="lang en">
+<p><strong>Way 3: Simultaneous Estimation and Testing.</strong> Estimate \(\beta\) and simultaneously test \(H_0\). Consider
+$$\min_{\mathbf b}\Big[\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b)\Big]'\mathbf V^{-1}\Big[\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b)\Big]\tag{13.36}$$
+If \(H_0\) is true (\(\mathbf b=\beta\)), the objective function should not be too big; we are actually estimating \(\beta\) by finding the \(\mathbf b\) s.t. the test statistic reaches its minimum.
+- If in this case we still have to reject \(H_0\) (which is not supposed to happen), we need to consider maybe the moment restrictions themselves are wrong.
+- In most cases, we would reach a solution \(\mathbf b\) such that \(H_0\) is not rejected (by construction of \(\mathbf b\)), which makes \(\mathbf b\) a reasonable estimator for \(\beta\).</p>
+<p>The f.o.c. for (13.36): denote the objective function \(\mathcal L=\mathbf F'\mathbf V^{-1}\mathbf F\) (\(\mathbf F=\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b)\)); then
+$$\begin{aligned}\mathbf 0=\frac{\partial\mathcal L}{\partial\mathbf b_N'}&=\frac{\partial\mathcal L}{\partial\mathbf F'}\frac{\partial\mathbf F}{\partial\mathbf b_N'}=2\mathbf F'\mathbf V^{-1}\frac{\partial\mathbf F}{\partial\mathbf b_N'}=2\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]'\mathbf V^{-1}\underbrace{\frac1N\sum\frac{\partial F(\mathbf X_t,\mathbf b_N)}{\partial\mathbf b_N'}}_{\equiv\mathbf D_N}\\&\Rightarrow\underbrace{\mathbf D_N'\mathbf V^{-1}}_{\equiv\mathbf A_N'}\Big[\frac1{\sqrt N}\sum F(\mathbf X_t,\mathbf b_N)\Big]=\mathbf 0\end{aligned}$$
+and thus \(\mathbf A_N'=\mathbf D_N'\mathbf V^{-1}=\tilde{\mathbf A}_N'\), i.e. the GMM estimator solved in this way attains its efficiency bound.</p>
+</div>
+<h3 id="13-6-4-three-ways-to-estimate-v">13.6.4 Three Ways to Estimate V</h3>
+<div class="lang zh">
+<p>至今我们假装已知 \(\mathbf V\)，这不真。故需估 \(\mathbf V\) 才能做上述检验。三种估法：
+1. <strong>两步法：</strong> (a) 先基于选择矩阵 \(\mathbf A\)（一般不是 \(\mathbf V^{-1}\mathbf D\)，因不知 \(\mathbf V\)）估 \(\beta\)；此步估计可能未达有效性界；此步 \(\mathbf A\) 可任取，因不知 \(\mathbf V\)，典型取 \(\mathbf A=\mathbf D\)（即把 \(\mathbf V^{-1}\) 换成单位阵 \(\mathbf I\)）。(b) 再用估得的 \(\hat\beta\) 按 \(\mathbf V\) 定义的样本类比估 \(\mathbf V\)。
+2. <strong>交互法：</strong> 继续做两步法、希望收敛到不动点（未必总收敛）。
+3. <strong>连续更新：</strong> 解
+$$\min_{\mathbf b}\Big[\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b)\Big]'(\mathbf V(\mathbf b))^{-1}\Big[\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b)\Big]\tag{13.37}$$
+\(\mathbf V\) 在每个 \(\mathbf b\) 处估计。(13.37) 比 (13.36) 更灵活（允许 \(\mathbf V\) 随 \(\mathbf b\) 变），用此可达目标函数真正的最小值（也即 \(\mathbf V(\mathbf b)\) 在各 \(\mathbf b\) 处与 \(\mathbf b\) 一致的卡方检验统计量）。此法实务中更常用。</p>
+</div>
+<div class="lang en">
+<p>Till now we pretended that we know \(\mathbf V\), which is not true. So we have to estimate it in order to carry out all the tests discussed above. Three ways of estimating \(\mathbf V\):
+1. <strong>Two-step method:</strong> (a) First, estimate \(\beta\) based on a selection matrix \(\mathbf A\), which in general is not \(\mathbf V^{-1}\mathbf D\) since we don't know \(\mathbf V\); at this step the estimator might not attain its efficiency bound; the selection matrix \(\mathbf A\) here can be anything since we have no idea what \(\mathbf V\) is, and typically we set \(\mathbf A=\mathbf D\) (i.e. replace \(\mathbf V^{-1}\) with the identity matrix \(\mathbf I\)). (b) Second, use the estimated \(\hat\beta\) to estimate \(\mathbf V\) by the sample analog of the definition of \(\mathbf V\).
+2. <strong>Interactive:</strong> Continue to do the two-step method and hope it would converge to a fixed point (which is not necessarily always the case).
+3. <strong>Continuous updating:</strong> Solve
+$$\min_{\mathbf b}\Big[\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b)\Big]'(\mathbf V(\mathbf b))^{-1}\Big[\frac1{\sqrt N}\sum_{t=1}^N F(\mathbf X_t,\mathbf b)\Big]\tag{13.37}$$
+where \(\mathbf V\) is estimated at each \(\mathbf b\). This construction in (13.37) gives more flexibility than (13.36) by allowing \(\mathbf V\) to move with different choices of \(\mathbf b\). So, using this method, we are achieving the real minimized value of the objective function (which is also the chi-square test statistic where \(\mathbf V(\mathbf b)\) agrees with \(\mathbf b\) at each point of \(\mathbf b\)). This method is used more often in practice.</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#13-1-set-up">13.1 Set-up</a></li>
+        <li><a href="#13-2-moment-restriction-examples">13.2 Moment Restriction Examples</a></li>
+          <li><a href="#13-2-1-moment-matching">13.2.1 Moment Matching</a></li>
+          <li><a href="#13-2-2-instrument-variable">13.2.2 Instrument Variable</a></li>
+          <li><a href="#13-2-3-conditional-moment-restrictions">13.2.3 Conditional Moment Restrictions</a></li>
+          <li><a href="#13-2-4-a-specific-economic-model-example-euler-equation-with-stochastic-discount-factor">13.2.4 A Specific Economic Model Example: Euler Equation with Stochastic Discount Factor</a></li>
+        <li><a href="#13-3-approximation">13.3 Approximation</a></li>
+        <li><a href="#13-4-gmm-efficiency-bound">13.4 GMM Efficiency Bound</a></li>
+        <li><a href="#13-5-instrumental-variables-extended-example">13.5 Instrumental Variables Extended Example</a></li>
+          <li><a href="#13-5-1-conditional-and-unconditional-moment-restriction">13.5.1 Conditional and Unconditional Moment Restriction</a></li>
+          <li><a href="#13-5-2-just-identification-and-pre-testing">13.5.2 Just-identification and Pre-testing</a></li>
+          <li><a href="#13-5-3-characterize-v">13.5.3 Characterize V</a></li>
+          <li><a href="#13-5-4-characterize-d">13.5.4 Characterize D</a></li>
+          <li><a href="#13-5-5-efficiency-bound">13.5.5 Efficiency Bound</a></li>
+          <li><a href="#13-5-6-conditions-for-the-tsls-estimator-to-attain-the-gmm-efficiency-bound">13.5.6 Conditions for the TSLS Estimator to Attain the GMM Efficiency Bound</a></li>
+        <li><a href="#13-6-hypothesis-testing">13.6 Hypothesis Testing</a></li>
+          <li><a href="#13-6-1-limiting-distribution">13.6.1 Limiting Distribution</a></li>
+          <li><a href="#13-6-2-the-test-hypotheses">13.6.2 The Test Hypotheses</a></li>
+          <li><a href="#13-6-3-three-ways-of-carrying-out-the-test">13.6.3 Three Ways of Carrying out the Test</a></li>
+          <li><a href="#13-6-4-three-ways-to-estimate-v">13.6.4 Three Ways to Estimate V</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

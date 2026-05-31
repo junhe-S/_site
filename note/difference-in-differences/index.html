@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>18. Difference-in-Differences – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>18. Difference-in-Differences</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">因果推断</span><span class="lang en">Causal Inference</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">双重差分</span><span class="lang en">Difference-in-Differences</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">共同趋势</span><span class="lang en">Common Trend</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">面板数据</span><span class="lang en">Panel Data</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">事件研究</span><span class="lang en">Event Study</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">合成控制</span><span class="lang en">Synthetic Control</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：双重差分（DiD）。</strong> 利用处理组与控制组在干预前后的两次"差分"识别处理效应。<strong>§18.1 定义</strong>：横截面 vs 面板、平衡面板。<strong>§18.2 设定</strong>：两期两组、切换回归记号、观测结果 \(Y_{it}=D_{it}(Y_{it}^1-Y_{it}^0)+Y_{it}^0\)。<strong>§18.3 估计量</strong>：一次差分（处理组前后差）、二次差分（控制组前后差），\(\text{DiD}=\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]-\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=0]\)；<strong>共同趋势假设</strong>（定义 18.2）下 <strong>命题 18.1</strong> DiD 识别 ATT。<strong>§18.4 DiD vs 一次差分</strong>：一次差分需"无时间趋势"，DiD 允许非零共同时间趋势。<strong>§18.5 回归形式</strong>：\(Y_{it}=\beta_0+\beta_1\text{treat}_i+\beta_2\text{after}_t+\beta_3\,\text{treat}_i\times\text{after}_t+\epsilon_{it}\)，\(\beta_3=\) DiD；一般化为单位/时间固定效应回归 \(Y_{gt}=\beta D_{gt}+\alpha_g+\lambda_t+\varepsilon_{gt}\)。<strong>§18.6 推断</strong>：组内残差相关 → 聚类稳健 SE、块自助法。<strong>§18.7 非线性 DiD</strong>：分位数 DiD 与 changes-in-changes（CiC）放松"全分布共同趋势"为"逐分位/逐结果值共同趋势"。<strong>§18.8 批评</strong>：共同趋势失败（Ashenfelter dip）、函数形式依赖（水平 vs 对数）、组成变化。<strong>§18.9 扩展</strong>：时变协变量/组别时间趋势、三重差分（DDD）、带 IV 的 DiD、合成控制。<strong>§18.10 事件研究</strong>：吸收性处理、事件时间 \(E_i\)、共同趋势 + 无预期假设下识别 \(\text{ATE}_t(e)\)；回归 \(Y_{it}=\mu_i+\beta D_{it}+\lambda_t+\varepsilon_{it}\)（\(\beta\) 为 \(\text{ATE}_t(e)\) 的加权和，权可负）；加 leads/lags 的动态设定，\(\ell<0\) 的系数用于检验无预期。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: difference-in-differences (DiD).</strong> Identify the treatment effect using two "differences" of treated and control groups before and after an intervention. <strong>§18.1 Definitions</strong>: cross-section vs panel, balanced panel. <strong>§18.2 Setup</strong>: two periods two groups, switching-regression notation, observed outcome \(Y_{it}=D_{it}(Y_{it}^1-Y_{it}^0)+Y_{it}^0\). <strong>§18.3 Estimand</strong>: first difference (before-after for treated), second difference (before-after for control), \(\text{DiD}=\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]-\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=0]\); under the <strong>common trend assumption</strong> (Definition 18.2), <strong>Proposition 18.1</strong> says DiD identifies ATT. <strong>§18.4 DiD vs first difference</strong>: first difference needs "no time trend," DiD allows a non-zero common time trend. <strong>§18.5 Regression form</strong>: \(Y_{it}=\beta_0+\beta_1\text{treat}_i+\beta_2\text{after}_t+\beta_3\,\text{treat}_i\times\text{after}_t+\epsilon_{it}\), \(\beta_3=\) DiD; generalized to a unit/time fixed-effects regression \(Y_{gt}=\beta D_{gt}+\alpha_g+\lambda_t+\varepsilon_{gt}\). <strong>§18.6 Inference</strong>: within-group residual correlation → cluster-robust SE, block bootstrap. <strong>§18.7 Nonlinear DiD</strong>: quantile DiD and changes-in-changes (CiC) relax "common trend in the whole distribution" to "common trend at each quantile / each outcome value." <strong>§18.8 Critiques</strong>: failure of common trend (Ashenfelter dip), functional-form dependence (levels vs logs), composition changes. <strong>§18.9 Extensions</strong>: time-varying covariates / group-specific time trends, triple differences (DDD), DiD with IV, synthetic control. <strong>§18.10 Event study</strong>: absorbing treatment, event time \(E_i\), identification of \(\text{ATE}_t(e)\) under common-trend + no-anticipation; regression \(Y_{it}=\mu_i+\beta D_{it}+\lambda_t+\varepsilon_{it}\) (\(\beta\) is a weighted sum of \(\text{ATE}_t(e)\), weights can be negative); the dynamic specification with leads/lags, where coefficients at \(\ell<0\) test for no anticipation.</p></div>
+</div>
+<div class="lang zh">
+<p>双重差分（difference-in-differences, DiD）通过比较处理组与控制组在干预<strong>前后</strong>两个时点的变化，从面板（或重复横截面）数据中识别处理效应。其核心思想：控制组前后的变化是处理组"若未受处理"将经历的变化的良好估计。</p>
+</div>
+<div class="lang en">
+<p>Difference-in-differences (DiD) identifies a treatment effect from panel (or repeated cross-section) data by comparing the change between <strong>before</strong> and <strong>after</strong> an intervention across a treatment group and a control group. The core idea: the change in the control group over time is a good estimate of the change the treatment group would have experienced had it not been treated.</p>
+</div>
+<h2 id="18-1-definitions">18.1 Definitions</h2>
+<div class="lang zh">
+<p>讨论 DiD 前先引入一些基本术语。</p>
+<p><strong>18.1.1 横截面数据与面板数据的关系</strong>
+- <strong>横截面（cross-section）</strong> 数据只有一个维度：单位 \(i\)。
+- <strong>面板（panel）</strong> 数据同时有单位 \(i\) 维度与时间 \(t\) 维度。
+- 面板是<strong>重复横截面（repeated cross-section）</strong>，但反之不真：重复横截面未必是面板。
+- 面板要求在多个时点<strong>观测到同一批单位</strong>；重复横截面一般不满足。
+- 有时这一区分是语义性的。重复横截面有时（尤其在按组聚合的场景）可视作面板。例如：按州聚合数据的重复横截面，可看作各州随时间变化的面板。</p>
+</div>
+<div class="lang en">
+<p>Before discussing the DiD method, let's first introduce some basic terminology.</p>
+<p><strong>18.1.1 Relationship between cross-section and panel data</strong>
+- A <strong>cross-section</strong> of data has one dimension, the unit \(i\).
+- <strong>Panel</strong> data has both a unit \(i\) dimension and a time period \(t\) dimension.
+- A panel is a repeated cross-section, but the converse is not true, i.e. a repeated cross-section is not a panel.
+- In a panel we need that the same units are observed multiple times, which is not true in general for a repeated cross-section.
+- Sometimes this distinction is semantic. The repeated cross-section can be viewed as a panel, particularly in settings where data is observed or aggregated in groups. E.g., a setting of repeated cross-sections where data is aggregated by state could be viewed as a panel of states over time.</p>
+</div>
+<div class="lang zh">
+<p><strong>18.1.2 平衡面板</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 18.1（平衡面板 Balanced panel）
+若每个单位 \(i\) 在所有时点 \(t\) 都被观测到，则该面板是<strong>平衡的</strong>。</p>
+<p>[!tip] 注记 18.1
+平衡在理论讨论中常见，但实际数据中往往不成立。平衡面板的一种常见做法是丢弃不平衡的观测，但这样分析就以"平衡"为条件，是一个不吸引人的特征。</p></div>
+</div>
+<div class="lang en">
+<p><strong>18.1.2 Balanced panel</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 18.1 (Balanced panel)
+A panel is balanced if every unit \(i\) is observed in all time periods \(t\).</p>
+<p>[!tip] Remark 18.1
+Balance is common in theoretical discussions, but not in actual data. A common way to balance a panel is to throw away data (of unbalanced units). But then the analysis is conditional on balance, which is an unattractive feature.</p></div>
+</div>
+<h2 id="18-2-simple-did-set-up">18.2 Simple DiD Set-up</h2>
+<div class="lang zh">
+<p><strong>18.2.1 两期两组</strong>
+- 两期：\(t\in\{1,2\}\)。
+  - 干预前：\(t=1\)。
+  - 干预后：\(t=2\)。
+- \(N\) 个个体：\(i\in\{1,2,\dots,N\}\)。
+  - 干预前：两组都未受处理，即对任意个体 \(i\)，\(D_{i1}=0\)。
+  - 干预后：
+    - 处理组被干预处理，即处理组中任意个体 \(D_{i2}=1\)；
+    - 控制组不受干预影响，即控制组中任意个体 \(D_{i2}=0\)。</p>
+<p><strong>18.2.2 切换回归记号</strong></p>
+<p>潜在结果：
+$$\text{period 1: }Y_{i1}^0,\qquad\text{period 2: }Y_{i2}=\begin{cases}Y_{i2}^1&\text{if }D_{i2}=1\\[2pt]Y_{i2}^0&\text{if }D_{i2}=0\end{cases}$$</p>
+<p>（第 1 期人人未处理，故只有 \(Y_{i1}^0\)。）等价地，观测结果写成切换回归形式：
+$$Y_{it}=D_{it}Y_{it}^1+(1-D_{it})Y_{it}^0=D_{it}\left(Y_{it}^1-Y_{it}^0\right)+Y_{it}^0\tag{Table 2}$$</p>
+</div>
+<div class="lang en">
+<p><strong>18.2.1 Two periods and two groups</strong>
+- Two periods: \(t\in\{1,2\}\).
+  - Before the intervention: \(t=1\).
+  - After the intervention: \(t=2\).
+- \(N\) individuals: \(i\in\{1,2,\dots,N\}\).
+  - Before the intervention: neither group is treated, i.e. \(D_{i1}=0\) for any individual \(i\) in both groups.
+  - After the intervention:
+    - the treatment group is treated by the intervention, i.e. \(D_{i2}=1\) for any individual \(i\) in the treatment group;
+    - the control group is unaffected by the intervention, \(D_{i2}=0\) for any individual \(i\) in the control group.</p>
+<p><strong>18.2.2 Switching regression notation</strong></p>
+<p>Potential outcomes:
+$$\text{period 1: }Y_{i1}^0,\qquad\text{period 2: }Y_{i2}=\begin{cases}Y_{i2}^1&\text{if }D_{i2}=1\\[2pt]Y_{i2}^0&\text{if }D_{i2}=0\end{cases}$$</p>
+<p>(Everyone is untreated in period 1, so only \(Y_{i1}^0\).) Equivalently, the observed outcome in switching-regression form is:
+$$Y_{it}=D_{it}Y_{it}^1+(1-D_{it})Y_{it}^0=D_{it}\left(Y_{it}^1-Y_{it}^0\right)+Y_{it}^0\tag{Table 2}$$</p>
+</div>
+<div class="lang zh">
+<p>该切换回归与之前相同，但现在多了时间结构。个体 \(i\) 观测结果随时间的变化为：
+$$Y_{i2}-Y_{i1}=D_{i2}\left(Y_{i2}^1-Y_{i2}^0\right)+Y_{i2}^0-Y_{i1}^0$$</p>
+<p>这一步用到 \(Y_{i1}=Y_{i1}^0\)。已实现结果：
+- 处理组：\(Y_{i1}=Y_{i1}^0\) 且 \(Y_{i2}=Y_{i2}^1\)。
+- 控制组：\(Y_{i1}=Y_{i1}^0\) 且 \(Y_{i2}=Y_{i2}^0\)。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>处理组</th>
+<th>控制组</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>干预前</td>
+<td>\(Y_{i1}^0\)</td>
+<td>\(Y_{i1}^0\)</td>
+</tr>
+<tr>
+<td>干预后</td>
+<td>\(Y_{i2}^1\)</td>
+<td>\(Y_{i2}^0\)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="lang en">
+<p>This switching-regression format is identical to before, but now we have the additional time structure. The change in individual \(i\)'s observed outcome over time is:
+$$Y_{i2}-Y_{i1}=D_{i2}\left(Y_{i2}^1-Y_{i2}^0\right)+Y_{i2}^0-Y_{i1}^0$$</p>
+<p>which uses \(Y_{i1}=Y_{i1}^0\). Realized outcomes:
+- For the treatment group: \(Y_{i1}=Y_{i1}^0\) and \(Y_{i2}=Y_{i2}^1\).
+- For the control group: \(Y_{i1}=Y_{i1}^0\) and \(Y_{i2}=Y_{i2}^0\).</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Treatment Group</th>
+<th>Control Group</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Before Intervention</td>
+<td>\(Y_{i1}^0\)</td>
+<td>\(Y_{i1}^0\)</td>
+</tr>
+<tr>
+<td>After Intervention</td>
+<td>\(Y_{i2}^1\)</td>
+<td>\(Y_{i2}^0\)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="18-3-did-estimand">18.3 DiD Estimand</h2>
+<div class="lang zh">
+<p><strong>18.3.1 两次差分与 DiD</strong></p>
+<p><strong>第一次差分（first difference）</strong>：处理组的前后差
+$$\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]+\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]$$</p>
+<p><strong>第二次差分（second difference）</strong>：控制组的前后差
+$$\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=0]=\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]$$</p>
+<p><strong>双重差分（DiD）</strong> 即两次差分之差：
+$$\text{DiD}=\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]-\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=0]$$</p>
+<p>要进一步刻画 DiD，需引入<strong>共同趋势假设</strong>。</p>
+</div>
+<div class="lang en">
+<p><strong>18.3.1 The two differences and DiD</strong></p>
+<p><strong>First difference</strong>: the after-before difference for the treatment group
+$$\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]+\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]$$</p>
+<p><strong>Second difference</strong>: the after-before difference for the control group
+$$\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=0]=\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]$$</p>
+<p><strong>Difference-in-Differences (DiD)</strong> is given by the difference in the two differences:
+$$\text{DiD}=\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]-\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=0]$$</p>
+<p>To further characterize DiD, we need to make the <strong>common trend assumption</strong>.</p>
+</div>
+<div class="lang zh">
+<p><strong>18.3.2 共同趋势假设</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 18.2（共同趋势假设 Common trend assumption）
+假设处理与"未处理结果水平的变化"之间没有选择。更正式地：
+$$\underbrace{\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]}_{\text{change in untreated outcome, treated}}=\underbrace{\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]}_{\text{change in untreated outcome, untreated}}$$
+即：在<strong>无处理</strong>情形下，处理组与控制组的结果随时间的变化相同。</p>
+<p>[!important] 命题 18.1
+若共同趋势假设成立，则 DiD 识别<strong>处理组的平均处理效应（ATT）</strong>。</p>
+<p>[!note]- 证明
+由 DiD 的定义，
+$$\begin{aligned}\text{DiD}&=\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]-\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=0]\\&=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]+\underbrace{\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]-\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]}_{=\,0\text{ by common trend assumption}}\\&=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]\\&=\text{ATT}\end{aligned}$$
+\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<p><strong>18.3.2 Common trend assumption</strong></p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 18.2 (Common trend assumption)
+We assume that there is no selection on the change in non-treatment outcome level. More formally:
+$$\underbrace{\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]}_{\text{change in untreated outcome, treated}}=\underbrace{\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]}_{\text{change in untreated outcome, untreated}}$$
+That is: in the absence of treatment, the outcome of the treatment group and the control group change by the same amount over time.</p>
+<p>[!important] Proposition 18.1
+If we have the common trend assumption, then DiD identifies the average treatment effect on the treated (ATT).</p>
+<p>[!note]- Proof
+By the definition of DiD,
+$$\begin{aligned}\text{DiD}&=\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]-\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=0]\\&=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]+\underbrace{\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]-\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]}_{=\,0\text{ by common trend assumption}}\\&=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]\\&=\text{ATT}\end{aligned}$$
+\(\blacksquare\)</p></div>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p>注记 18.2
+核心思想：控制组随时间的变化，是处理组在<strong>无处理</strong>情形下随时间变化的良好估计。若如此，则"第一次差分（处理组第 2 期与第 1 期之差）减去第二次差分（两组第 2 期与第 1 期之差）"剔除了随时间的共同趋势，剩下的唯一影响便是处理对处理组的效应。然而，共同趋势假设是<strong>不可检验的</strong>，即便我们可以做一些非正式的检查。</p>
+<p>[!tip] 注记 18.3
+共同趋势假设<strong>允许在非处理水平上选择</strong>：
+$$\mathbb E\!\left[Y_{it}^0\mid D_{i2}=1\right]\ne\mathbb E\!\left[Y_{it}^0\mid D_{i2}=0\right],\quad t=1,2$$
+以及在增益上选择：
+$$\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]\ne\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=0\right]$$</p></div>
+<p><strong>18.3.3 图示</strong></p>
+<p><strong>图示（Figure 3，已转述）：</strong> 横轴时间（\(t=1,2\)），纵轴结果。处理组从 \(Y^{\text{treatment,before}}\) 升到 \(Y^{\text{treatment,after}}\)；控制组从 \(Y^{\text{control,before}}\) 升到 \(Y^{\text{control,after}}\)。共同趋势假设：处理组"若未处理"的反事实轨迹与控制组实际轨迹<strong>平行</strong>。DiD 估计量 = 处理组前后差 − 控制组前后差，即处理组实际终点与其平行反事实终点的竖直差距。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 18.2
+The key idea is that the change in the control group over time is a good estimate of the change in the treatment group over time in the absence of treatment. If this is true, then the first difference (the difference between the outcome in period 2 and period 1 of the treatment group) minus the second difference (the difference between the outcome in period 2 and period 1 of both groups) takes out the common trend over time, and thus the only effect left would be the treatment effect on the treated. However, the common trend assumption is untestable, even if we can do some informal checks.</p>
+<p>[!tip] Remark 18.3
+The common trend assumption <strong>allows for selection on non-treatment levels</strong>:
+$$\mathbb E\!\left[Y_{it}^0\mid D_{i2}=1\right]\ne\mathbb E\!\left[Y_{it}^0\mid D_{i2}=0\right],\quad t=1,2$$
+and selection on gains:
+$$\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]\ne\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=0\right]$$</p></div>
+<p><strong>18.3.3 Graphical representation</strong></p>
+<p><strong>Figure 3 (paraphrased):</strong> the horizontal axis is time (\(t=1,2\)), the vertical axis is the outcome. The treatment group rises from \(Y^{\text{treatment,before}}\) to \(Y^{\text{treatment,after}}\); the control group rises from \(Y^{\text{control,before}}\) to \(Y^{\text{control,after}}\). The common trend assumption: the treated group's counterfactual "if untreated" trajectory is <strong>parallel</strong> to the control group's actual trajectory. The DiD estimate = (treated after-before) − (control after-before), i.e. the vertical gap between the treated group's actual endpoint and its parallel counterfactual endpoint.</p>
+</div>
+<h2 id="18-4-did-vs-first-difference">18.4 DiD vs First Difference</h2>
+<div class="lang zh">
+<p>我们既可用 DiD，也可用第一次差分 \(\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]\) 来识别 ATT \(\mathbb E[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1]\)，但两种方法所需假设不同。</p>
+<ul>
+<li>用 <strong>DiD</strong> 识别 ATT，相当于假设<strong>共同趋势</strong>：
+$$\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]$$</li>
+<li>用<strong>第一次差分</strong>识别 ATT，相当于假设：
+$$\begin{aligned}&\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]\\\Leftrightarrow{}&\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]+\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]\\\Leftrightarrow{}&\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=0\end{aligned}$$
+即两期之间<strong>无时间趋势</strong>。</li>
+</ul>
+<p>即便共同趋势在一般情形下可能不成立，DiD 方法仍优于第一次差分方法，因为 DiD 允许存在<strong>非零的共同时间趋势</strong>。</p>
+</div>
+<div class="lang en">
+<p>We could use both DiD and the first difference \(\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]\) to identify the ATT \(\mathbb E[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1]\), but we are making different assumptions for those two methods.</p>
+<ul>
+<li>If we are using <strong>DiD</strong> to identify the ATT, then we are assuming the <strong>common trend</strong>, i.e.
+$$\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]$$</li>
+<li>If we are using the <strong>first difference</strong> to identify the ATT, then we are assuming:
+$$\begin{aligned}&\mathbb E[Y_{i2}-Y_{i1}\mid D_{i2}=1]=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]\\\Leftrightarrow{}&\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]+\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=\mathbb E\!\left[Y_{i2}^1-Y_{i2}^0\mid D_{i2}=1\right]\\\Leftrightarrow{}&\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=0\end{aligned}$$
+i.e. <strong>no time trend</strong> between the two periods.</li>
+</ul>
+<p>Even though the common trend assumption may not hold in general, the DiD method is still better than the first difference method in the sense that the DiD method allows for the existence of a <strong>non-zero common time trend</strong>.</p>
+</div>
+<h2 id="18-5-did-as-regression">18.5 DiD as Regression</h2>
+<div class="lang zh">
+<p>定义两个虚拟变量：
+$$\text{treat}_i=\begin{cases}1&\text{if }i\text{ is in treatment group}\\0&\text{if }i\text{ is in control group}\end{cases}\qquad\text{after}_t=\begin{cases}1&\text{if the observation is in }t=2\\0&\text{if the observation is in }t=1\end{cases}$$</p>
+<p>则如下回归设定
+$$Y_{it}=\beta_0+\beta_1\text{treat}_i+\beta_2\text{after}_t+\beta_3\,\text{treat}_i\times\text{after}_t+\epsilon_{it}$$
+给出 DiD 估计。显然 \(\beta_3\) 即 DiD 估计量。各系数含义见下表。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>处理组</th>
+<th>控制组</th>
+<th>差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>干预前</td>
+<td>\(\beta_0+\beta_1\)</td>
+<td>\(\beta_0\)</td>
+<td>\(\beta_1\)</td>
+</tr>
+<tr>
+<td>干预后</td>
+<td>\(\beta_0+\beta_1+\beta_2+\beta_3\)</td>
+<td>\(\beta_0+\beta_2\)</td>
+<td>\(\beta_1+\beta_3\)</td>
+</tr>
+<tr>
+<td>差</td>
+<td>\(\beta_2+\beta_3\)</td>
+<td>\(\beta_2\)</td>
+<td>\(\beta_3\)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="lang en">
+<p>Define two dummy variables:
+$$\text{treat}_i=\begin{cases}1&\text{if }i\text{ is in treatment group}\\0&\text{if }i\text{ is in control group}\end{cases}\qquad\text{after}_t=\begin{cases}1&\text{if the observation is in }t=2\\0&\text{if the observation is in }t=1\end{cases}$$</p>
+<p>Then the following regression specification
+$$Y_{it}=\beta_0+\beta_1\text{treat}_i+\beta_2\text{after}_t+\beta_3\,\text{treat}_i\times\text{after}_t+\epsilon_{it}$$
+delivers the DiD estimate. Clearly \(\beta_3\) is the DiD estimator. The meaning of each coefficient is in the table below.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Treatment Group</th>
+<th>Control Group</th>
+<th>Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Before Intervention</td>
+<td>\(\beta_0+\beta_1\)</td>
+<td>\(\beta_0\)</td>
+<td>\(\beta_1\)</td>
+</tr>
+<tr>
+<td>After Intervention</td>
+<td>\(\beta_0+\beta_1+\beta_2+\beta_3\)</td>
+<td>\(\beta_0+\beta_2\)</td>
+<td>\(\beta_1+\beta_3\)</td>
+</tr>
+<tr>
+<td>Difference</td>
+<td>\(\beta_2+\beta_3\)</td>
+<td>\(\beta_2\)</td>
+<td>\(\beta_3\)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="lang zh">
+<p>DiD 可用非参数方法估计，但用回归模型估计有两大优势：
+- 回归是获取估计标准误的便捷途径。非参数方法只能得到 DiD 的点估计，标准误需用非参数自助法。
+- 容易在回归中加入协变量，从而帮助为共同趋势假设提供依据（即对所有个体共同的 \(\beta_2\)），并能降低残差方差、提高 DiD \(\beta_3\) 的精度。
+  - 注意：加协变量后，我们假设 DiD（即 \(\beta_3\)，ATT）在协变量 \(X=x\) 指定的所有单元上相同。</p>
+<p>可将简单的两期两组模型推广到<strong>多组多期</strong>，考虑一般回归：
+$$Y_{gt}=\beta\cdot D_{gt}+\alpha_g+\lambda_t+\varepsilon_{gt}$$
+其中 \(g\in\{1,2,\dots,G\}\) 是组别指标，\(\alpha_g\) 为组别虚拟（固定效应），\(\lambda_t\) 为时间虚拟。\(D_{gt}=1\) 当组 \(g\) 在第 \(t\) 期受处理、否则 \(0\)。
+- 该一般设定下，处理 \(D_{gt}\) 可以是<strong>连续</strong>的，只要假设处理效应为常数，\(\beta\) 仍能识别 ATT。
+- 处理 \(D_{gt}\) 可在<strong>不同组、不同时点</strong>实施，只要假设处理效应为常数，\(\beta\) 仍识别 ATT。
+- 注意我们仍假设共同趋势，即 \(\lambda_t\) 对所有组相同。</p>
+</div>
+<div class="lang en">
+<p>DiD can be estimated using non-parametric methods. However, here we discussed that DiD can also be estimated using regression models. There are two major advantages for doing regression to estimate DiD:
+- Doing regression is a convenient way to obtain standard errors in the estimation. However, in a non-parametric method, we can only obtain a point estimate of the DiD, and the standard error can only be obtained by non-parametric bootstrapping.
+- It is easy to add covariates to the regression, which can help justify the common trend assumption (i.e. common \(\beta_2\) for all individuals), and can potentially reduce the residual variance and increase the precision of the DiD \(\beta_3\).
+  - Note that by adding covariates, we are assuming that the DiD \(\beta_3\) (i.e. ATT) are the same across all cells \(X=x\) specified by covariates \(X\).</p>
+<p>It is possible to extend the simple 2-periods-2-groups model to multiple groups and multiple periods, i.e. consider the general regression:
+$$Y_{gt}=\beta\cdot D_{gt}+\alpha_g+\lambda_t+\varepsilon_{gt}$$
+where \(g\in\{1,2,\dots,G\}\) is the index of groups, \(\alpha_g\) is the group dummy (fixed effect) and \(\lambda_t\) is the time period dummy. And \(D_{gt}=1\) if group \(g\) receives treatment in period \(t\) and \(0\) if not.
+- In this general regression setting, treatment \(D_{gt}\) can be continuous, and \(\beta\) could still identify ATT if we assume the treatment effect is constant.
+- Treatment \(D_{gt}\) can be implemented at different groups at different times, and \(\beta\) could still identify ATT if we assume the treatment effect is constant.
+- Note that we are still assuming the common trend, i.e. \(\lambda_t\) is the same across all groups.</p>
+</div>
+<h2 id="18-6-did-inference-standard-errors">18.6 DiD Inference: Standard Errors</h2>
+<div class="lang zh">
+<p><strong>18.6.1 问题：组内残差相关</strong></p>
+<p>设用如下（参数）回归模型估计 DiD：
+$$Y_{gt}=\beta\cdot D_{gt}+\alpha_g+\lambda_t+\varepsilon_{gt}$$</p>
+<p>估计要一致，需 \(\mathbb E[\varepsilon_{igt}\varepsilon_{jgt}]=0\)（\(i\ne j\)）。然而，每组 \(g\) 每期 \(t\) 内的观测很可能因模型未纳入的不可观测因素而相关，即可能有
+$$\mathbb E[\varepsilon_{igt}\varepsilon_{jgt}]\ne0\quad(i\ne j)$$</p>
+<p><strong>18.6.2 可能的解决办法</strong>
+- <strong>施加参数假设</strong>：假设 \(\varepsilon_{igt}=\upsilon_{gt}+\epsilon_{igt}\)，其中 \(\epsilon\) 为 i.i.d. 个体冲击，\(\upsilon_{gt}\) 为组 \(g\) 的共同冲击。
+- 使用<strong>聚类稳健标准误（cluster-robust SE）</strong>，对任意相关结构与异方差稳健。
+- <strong>块自助法（block bootstrapping）</strong>：对<strong>组</strong>（而非个体观测）做有放回重抽样，并跑回归
+$$\overline Y_{gt}=\beta\cdot D_{gt}+\alpha_g+\lambda_t+\overline\varepsilon_{gt}$$
+其中 \(\overline Y_{gt}\) 与 \(\overline\varepsilon_{gt}\) 为每组 \(g\) 内的组均值。</p>
+</div>
+<div class="lang en">
+<p><strong>18.6.1 The problem: correlation between residuals within group</strong></p>
+<p>Suppose we use the following regression (parametric) model to estimate DiD:
+$$Y_{gt}=\beta\cdot D_{gt}+\alpha_g+\lambda_t+\varepsilon_{gt}$$</p>
+<p>For the estimate to be consistent, we need that \(\mathbb E[\varepsilon_{igt}\varepsilon_{jgt}]=0\) for \(i\ne j\). However, observations in each group \(g\) of each period \(t\) are likely to be correlated due to the existence of unobservables that are not included in the model, i.e. we might have
+$$\mathbb E[\varepsilon_{igt}\varepsilon_{jgt}]\ne0\quad(i\ne j)$$</p>
+<p><strong>18.6.2 Possible solutions</strong>
+- <strong>Imposing a parametric assumption</strong>: assume \(\varepsilon_{igt}=\upsilon_{gt}+\epsilon_{igt}\) where \(\epsilon\)'s are i.i.d. individual shocks and \(\upsilon_{gt}\) is the common shock to group \(g\).
+- Using <strong>cluster-robust standard errors</strong> which are robust to any correlation structure and heteroskedasticity.
+- <strong>Block bootstrapping</strong>, i.e. resampling with replacement for <strong>groups</strong> instead of individual observations and run the regression
+$$\overline Y_{gt}=\beta\cdot D_{gt}+\alpha_g+\lambda_t+\overline\varepsilon_{gt}$$
+where \(\overline Y_{gt}\) and \(\overline\varepsilon_{gt}\) are the averages within each group \(g\).</p>
+</div>
+<h2 id="18-7-nonlinear-did-quantile-did-and-changes-in-changes-cic">18.7 Nonlinear DiD: Quantile DiD and Changes-in-Changes (CiC)</h2>
+<div class="lang zh">
+<p>标准 DiD 假设结果变量 \(Y_{it}\) 的<strong>整个分布</strong>上随时间存在相同的共同趋势。也有一些模型仅在<strong>分布的每个分位/每个结果值</strong>上假设共同趋势，如<strong>分位数 DiD（quantile DiD）</strong> 与 <strong>changes-in-changes（CiC）</strong>。</p>
+<p>这两种模型都基于"分位共同趋势"的思想，但在施加假设的方式上不同：
+- <strong>分位数 DiD</strong> 假设在<strong>给定分位</strong>处结果的共同趋势。
+- <strong>CiC</strong> 假设在<strong>给定结果值</strong>处结果的共同趋势。</p>
+<p>回顾标准 DiD 假设
+$$\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]$$
+并识别 \(\mathbb E[Y_{i2}^0\mid D_{i2}=1]\)（即处理组在无处理时的反事实期望结果）：
+$$\underbrace{\mathbb E\!\left[Y_{i2}^0\mid D_{i2}=1\right]}_{\text{counterfactual}}=\underbrace{\mathbb E\!\left[Y_{i1}^0\mid D_{i2}=1\right]}_{\text{observed data}}+\underbrace{\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]}_{\text{observed data}}$$</p>
+<p>分位数 DiD 与 CiC 基于相似的思想。对 \(t=1,2\)，令
+- \(F_t(Y)\) 为处理组中结果 \(Y\) 的分布；
+- \(G_t(Y)\) 为控制组中结果 \(Y\) 的分布。</p>
+</div>
+<div class="lang en">
+<p>The standard DiD model assumes the same common trend throughout all groups in the <strong>whole distribution</strong> of the outcome variable \(Y_{it}\). There are also models in which a common trend is assumed only at each quantile / each value of the distribution, such as <strong>quantile DiD</strong> and <strong>changes-in-changes (CiC)</strong>.</p>
+<p>The two models have the same idea of a quantile common trend but differ in the way of imposing that assumption:
+- <strong>Quantile DiD</strong> assumes a common trend in the outcome at a given quantile.
+- <strong>CiC</strong> assumes a common trend in the outcome at a given value of outcome.</p>
+<p>Recall that the standard DiD assumes
+$$\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]$$
+and identifies \(\mathbb E[Y_{i2}^0\mid D_{i2}=1]\) (the counterfactual expected outcome for the treated had they not been treated):
+$$\underbrace{\mathbb E\!\left[Y_{i2}^0\mid D_{i2}=1\right]}_{\text{counterfactual}}=\underbrace{\mathbb E\!\left[Y_{i1}^0\mid D_{i2}=1\right]}_{\text{observed data}}+\underbrace{\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]}_{\text{observed data}}$$</p>
+<p>Quantile DiD and CiC rely on a similar idea. For \(t=1,2\), let
+- \(F_t(Y)\) be the distribution of outcome \(Y\) in the treatment group;
+- \(G_t(Y)\) be the distribution of outcome \(Y\) in the control group.</p>
+</div>
+<div class="lang zh">
+<p><strong>18.7.1 分位数 DiD</strong></p>
+<p>对任意分位 \(\tau\in[0,1]\)，用 \(k^{\text{QDiD}}(\tau)\) 记处理组在无处理时分位 \(\tau\) 上的反事实结果，则分位数 DiD 假设
+$$k^{\text{QDiD}}(\tau)-F_1^{-1}(\tau)=G_2^{-1}(\tau)-G_1^{-1}(\tau)$$
+并通过估计反事实结果 \(k^{\text{QDiD}}(\tau)\) 识别处理组的<strong>分位处理效应（QTE）</strong>：
+$$\underbrace{k^{\text{QDiD}}(\tau)}_{\text{counterfactual}}=\underbrace{F_1^{-1}(\tau)}_{\text{observed data}}+\underbrace{G_2^{-1}(\tau)-G_1^{-1}(\tau)}_{\text{observed data}}$$</p>
+<p>三步总结：
+1. 取处理组干预前结果分布的某一水平 \(Y\)，即 \(F_1(Y)=\tau\)。
+2. 处理组在分位 \(\tau\) 上无处理的反事实干预后结果 \(k^{\text{QDiD}}(\tau)\) 估计为
+$$\underbrace{k^{\text{QDiD}}(\tau)}_{\text{counterfactual}}=\underbrace{F_1^{-1}(\tau)}_{\text{observed data}}+\underbrace{G_2^{-1}(\tau)-G_1^{-1}(\tau)}_{\text{observed data}}$$
+3. 分位 \(\tau\) 上的 QTE 估计为
+$$F_2^{-1}(\tau)-k^{\text{QDiD}}(\tau)$$</p>
+<p><strong>图示（Figure 4，已转述）：</strong> 横轴 \(y\)、纵轴累积分布 \(F(y)\)。处理组分布 \(F_t(y)\)、控制组分布 \(G_t(y)\) 各自前后移动。在固定累积概率水平上读出横向距离：\(\text{DF}\) 为处理组分位的横向移动、\(\text{DG}\) 为控制组分位的横向移动。图中
+$$k^{\text{QDiD}}(\tau)-F_1^{-1}(\tau)=G_2^{-1}(\tau)-G_1^{-1}(\tau)=DG$$
+而
+$$DF-DG=F_2^{-1}(\tau)-k^{\text{QDiD}}(\tau)$$
+即处理组实际分位移动 \(\text{DF}\) 减去反事实（共同趋势）移动 \(\text{DG}\)，得到该分位的 QTE。</p>
+</div>
+<div class="lang en">
+<p><strong>18.7.1 Quantile DiD</strong></p>
+<p>For any quantile \(\tau\in[0,1]\), denote the counterfactual outcome of the treated without treatment at quantile \(\tau\) by \(k^{\text{QDiD}}(\tau)\), then quantile DiD assumes
+$$k^{\text{QDiD}}(\tau)-F_1^{-1}(\tau)=G_2^{-1}(\tau)-G_1^{-1}(\tau)$$
+and identifies the <strong>quantile treatment effect for the treated (QTE)</strong> by estimating the counterfactual outcome \(k^{\text{QDiD}}(\tau)\) without treatment at quantile \(\tau\) in the treatment group through
+$$\underbrace{k^{\text{QDiD}}(\tau)}_{\text{counterfactual}}=\underbrace{F_1^{-1}(\tau)}_{\text{observed data}}+\underbrace{G_2^{-1}(\tau)-G_1^{-1}(\tau)}_{\text{observed data}}$$</p>
+<p>Summarized in three steps:
+1. Fix a quantile of \(Y\) in the pre-intervention outcome distribution of the treatment group, i.e. \(F_1(Y)=\tau\).
+2. The counterfactual post-intervention outcome \(k^{\text{QDiD}}(\tau)\) without treatment at quantile \(\tau\) in the treatment group is estimated by
+$$\underbrace{k^{\text{QDiD}}(\tau)}_{\text{counterfactual}}=\underbrace{F_1^{-1}(\tau)}_{\text{observed data}}+\underbrace{G_2^{-1}(\tau)-G_1^{-1}(\tau)}_{\text{observed data}}$$
+3. The QTE estimate at quantile \(\tau\) is
+$$F_2^{-1}(\tau)-k^{\text{QDiD}}(\tau)$$</p>
+<p><strong>Figure 4 (paraphrased):</strong> the horizontal axis is \(y\), the vertical axis the cumulative distribution \(F(y)\). The treatment distribution \(F_t(y)\) and control distribution \(G_t(y)\) each shift over time. At a fixed cumulative-probability level, read off the horizontal distances: \(\text{DF}\) is the horizontal shift of the treated quantile, \(\text{DG}\) that of the control quantile. In the graph
+$$k^{\text{QDiD}}(\tau)-F_1^{-1}(\tau)=G_2^{-1}(\tau)-G_1^{-1}(\tau)=DG$$
+and
+$$DF-DG=F_2^{-1}(\tau)-k^{\text{QDiD}}(\tau)$$
+i.e. the treated quantile's actual shift \(\text{DF}\) minus the counterfactual (common-trend) shift \(\text{DG}\) gives the QTE at that quantile.</p>
+</div>
+<div class="lang zh">
+<p><strong>18.7.2 CiC</strong></p>
+<p>CiC 模型是对结果变量本身（而非分位）做固定。对任意结果 \(y\) 及其对应分位 \(G_1(y)\)、\(F_1(y)\)，用 \(k^{\text{CiC}}(y)\) 记处理组在分位 \(F_1(y)\) 上无处理的反事实结果，则 CiC 假设
+$$k^{\text{CiC}}(y)-y=G_2^{-1}\!\left(G_1(y)\right)-y$$
+并通过估计反事实结果识别水平 \(Y=y\) 处的处理效应：
+$$\begin{aligned}\underbrace{k^{\text{CiC}}(y)}_{\text{counterfactual}}&=\underbrace{y}_{\text{observed}}+\underbrace{G_2^{-1}\!\left(G_1(y)\right)-y}_{\text{observed}}\\&=\underbrace{G_2^{-1}\!\left(G_1(y)\right)}_{\text{observed}}\end{aligned}$$</p>
+<p>三步总结：
+1. 取结果的某一水平 \(Y=y\)。
+2. 处理组在分位 \(F_1(y)\) 上无处理的反事实干预后结果 \(k^{\text{CiC}}(y)\) 估计为
+$$\underbrace{k^{\text{CiC}}(y)}_{\text{counterfactual}}=\underbrace{y}_{\text{observed}}+\underbrace{G_2^{-1}\!\left(G_1(y)\right)-y}_{\text{observed}}=\underbrace{G_2^{-1}\!\left(G_1(y)\right)}_{\text{observed}}$$
+3. 水平 \(y\) 处的 CiC 估计为
+$$F_2^{-1}\!\left(F_1(y)\right)-k^{\text{CiC}}(y)$$</p>
+<p><strong>图示（Figure 5，已转述）：</strong> 与 Figure 4 类似，横轴 \(y\)、纵轴 \(F(y)\)，但固定的是结果值 \(y\) 而非分位。\(\text{DF}\)、\(\text{DG}\) 分别为处理组、控制组在该结果值处的移动。图中
+$$k^{\text{CiC}}(y)-y=G_2^{-1}\!\left(G_1(y)\right)-y=DG$$
+且
+$$DF-DG=F_2^{-1}\!\left(F_1(y)\right)-k^{\text{CiC}}(y)$$</p>
+</div>
+<div class="lang en">
+<p><strong>18.7.2 CiC</strong></p>
+<p>The CiC model is fixing the outcome variable instead of the quantile. For any outcome \(y\) and corresponding quantiles \(G_1(y)\) and \(F_1(y)\), denote the counterfactual outcome of the treated without treatment at quantile \(F_1(y)\) by \(k^{\text{CiC}}(y)\), then the CiC assumes
+$$k^{\text{CiC}}(y)-y=G_2^{-1}\!\left(G_1(y)\right)-y$$
+and identifies the treatment effect at level \(Y=y\) by estimating the counterfactual outcome:
+$$\begin{aligned}\underbrace{k^{\text{CiC}}(y)}_{\text{counterfactual}}&=\underbrace{y}_{\text{observed}}+\underbrace{G_2^{-1}\!\left(G_1(y)\right)-y}_{\text{observed}}\\&=\underbrace{G_2^{-1}\!\left(G_1(y)\right)}_{\text{observed}}\end{aligned}$$</p>
+<p>Summarized in three steps:
+1. Fix a level of outcome \(Y=y\).
+2. The counterfactual post-intervention outcome \(k^{\text{CiC}}(y)\) without treatment at quantile \(F_1(y)\) in the treatment group is estimated by
+$$\underbrace{k^{\text{CiC}}(y)}_{\text{counterfactual}}=\underbrace{y}_{\text{observed}}+\underbrace{G_2^{-1}\!\left(G_1(y)\right)-y}_{\text{observed}}=\underbrace{G_2^{-1}\!\left(G_1(y)\right)}_{\text{observed}}$$
+3. The CiC estimate at level \(y\) is
+$$F_2^{-1}\!\left(F_1(y)\right)-k^{\text{CiC}}(y)$$</p>
+<p><strong>Figure 5 (paraphrased):</strong> similar to Figure 4, horizontal axis \(y\) and vertical axis \(F(y)\), but now the outcome value \(y\) is fixed rather than the quantile. \(\text{DF}\) and \(\text{DG}\) are the shifts of the treatment and control groups at that outcome value. In the graph
+$$k^{\text{CiC}}(y)-y=G_2^{-1}\!\left(G_1(y)\right)-y=DG$$
+and
+$$DF-DG=F_2^{-1}\!\left(F_1(y)\right)-k^{\text{CiC}}(y)$$</p>
+</div>
+<h2 id="18-8-some-critiques-of-the-common-trend-assumption-and-did-method">18.8 Some Critiques of the Common Trend Assumption and DiD Method</h2>
+<div class="lang zh">
+<p><strong>18.8.1 共同趋势假设的失败</strong></p>
+<p>至此我们已确立：共同趋势假设对 DiD 识别 ATT 至关重要。遗憾的是，共同趋势在某些情形下可能不成立。</p>
+<p>例如，对共同趋势假设的一个著名违反是 <strong>Ashenfelter's Dip</strong>。Ashenfelter (1978) 指出：若在培训项目开始前恰好出现收入的暂时性下降，则参加培训更有可能发生。于是处理组中的个体（即参加培训者）即便没有培训项目，也更可能"赶上"其收入（即收入增长更快，因为下降是暂时的）——这破坏了共同趋势假设，从而 DiD 估计将<strong>高估</strong>培训项目的影响。</p>
+<p><strong>18.8.2 函数形式依赖</strong></p>
+<p>注意共同趋势假设
+$$\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]$$
+依赖于 \(Y_{it}^0\) 的函数形式。例如，若共同趋势对 \(Y_{it}^0=\) 工资成立，则对 \(Y_{it}^0=\log\) 工资不成立。故对结果的非线性变换可能毁掉共同趋势假设从而导致识别失败。而且常常难以在"水平上的共同趋势"与"对数上的共同趋势"之间抉择，因为它们讲述非常不同的故事。</p>
+<p><strong>18.8.3 组成变化（composition changes）</strong></p>
+<p>处理的发生可能影响处理组与控制组的<strong>组成</strong>。若如此，则 DiD 无法识别 ATT，因为处理组与控制组在处理前后已不相同。该问题的一个解决办法是重新定义各组，使所有组的组成在处理后不变。</p>
+</div>
+<div class="lang en">
+<p><strong>18.8.1 Failure of common trend assumption</strong></p>
+<p>So far, we have established that the common trend assumption is crucial for the DiD to identify ATT. Unfortunately, the common trend assumption may not hold in some cases.</p>
+<p>For example, a well known violation of the common trend assumption is <strong>Ashenfelter's Dip</strong>. Ashenfelter (1978) notes that enrollment in a training program is more likely to happen if a temporary dip in earnings occurs just before the start of the program. So the individuals in the treatment group (i.e. participating in the training program) are more likely to catch up in their earnings (i.e. income grows faster) even without the training program since the dip is just temporary, which breaks the common trend assumption and thus the DiD estimator will overstate the impact of the training program.</p>
+<p><strong>18.8.2 Functional form dependence</strong></p>
+<p>Note that the common trend assumption
+$$\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=1\right]=\mathbb E\!\left[Y_{i2}^0-Y_{i1}^0\mid D_{i2}=0\right]$$
+depends on the functional form of \(Y_{it}^0\). For example, if the common trend assumption holds for \(Y_{it}^0=\) wages, then it won't hold for \(Y_{it}^0=\log\) wages. So, non-linear transformation of outcome variable may ruin the common trend assumption and thus fail the identification. And it is often hard to decide between common trend in levels and common trend in logs, because they mean very different stories.</p>
+<p><strong>18.8.3 Composition changes</strong></p>
+<p>The occurrence of treatment may affect the composition of the treatment and the control groups. If this happens, then the DiD fails to identify ATT because the treatment and control groups are different before and after the treatment. The solution to this problem is redefining the groups such that the composition of all groups doesn't change after the treatment.</p>
+</div>
+<h2 id="18-9-extensions-of-did-when-the-common-trend-assumption-does-not-hold">18.9 Extensions of DiD when the Common Trend Assumption Does Not Hold</h2>
+<div class="lang zh">
+<p>当共同趋势假设不成立时，以下扩展或许能给出合理的估计。</p>
+<p><strong>18.9.1 时变协变量和/或组别特定时间趋势</strong></p>
+<p>设处理对结果的效应（\(\beta\)）在所有组上相同。则可通过加入<strong>时变协变量</strong> \(X_{gt}\) 和/或<strong>组别特定的线性时间趋势</strong> \(\mu_g\cdot t\) 来放松共同趋势假设，即考虑回归
+$$Y_{gt}=\beta\cdot D_{gt}+X_{gt}\cdot\pi+\mu_g\cdot t+\alpha_g+\lambda_t+\varepsilon_{gt}$$</p>
+<p>注意至少需要<strong>三期</strong>才能估计组别特定时间趋势 \(\mu_g\)。Besley and Burgess (2004) 研究印度各邦劳动市场管制对制造业绩效的影响即为一例。</p>
+</div>
+<div class="lang en">
+<p>When the common trend assumption does not hold, the following extensions could probably give us some reasonable estimate.</p>
+<p><strong>18.9.1 Time varying covariates and/or group specific time trends</strong></p>
+<p>Assume that the treatment effect on outcome (\(\beta\)) is the same across all groups. Then, the common trend assumption can be relaxed by including <strong>time varying covariates</strong> (\(X_{gt}\)) and/or <strong>group specific linear time trends</strong> (\(\mu_g\cdot t\)), i.e. consider the regression
+$$Y_{gt}=\beta\cdot D_{gt}+X_{gt}\cdot\pi+\mu_g\cdot t+\alpha_g+\lambda_t+\varepsilon_{gt}$$</p>
+<p>Note that we need at least three periods to estimate the group specific time trends \(\mu_g\)'s. See Besley and Burgess (2004) for an example that studies the effect of labor market regulation on manufacturing performance in Indian states.</p>
+</div>
+<div class="lang zh">
+<p><strong>18.9.2 三重差分（Difference-in-differences-in-differences, DDD）</strong></p>
+<p>当我们怀疑共同趋势被违反时，有时<strong>第三个差分</strong>会有帮助。</p>
+<p>例如，某州对年龄 \(\ge 65\) 的人群实施医保政策变化。则 \(age\ge65\) 为处理组、\(age<65\) 为控制组。记 \(T\) 为处理州、\(C\) 为控制州。</p>
+<ul>
+<li><strong>可能的 \(\text{DiD}_1\)</strong>：仅用处理州、政策变化前后、\(age\ge65\) 与 \(age<65\) 两群的数据，即
+$$\begin{aligned}\text{ATT}=\text{DiD}_1&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\end{aligned}\tag{18.1}$$</li>
+<li>
+<p>该 ATT 的识别依赖于处理州内老年与年轻人群之间的共同趋势，即
+$$\begin{aligned}&\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\\=\,&\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\end{aligned}$$
+  这一假设不太可能合乎常理。</p>
+</li>
+<li>
+<p><strong>可能的 \(\text{DiD}_2\)</strong>：用处理州与邻近州（控制组）、政策变化前后、\(age\ge65\) 人群的数据，即
+$$\begin{aligned}\text{ATT}=\text{DiD}_2&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\end{aligned}\tag{18.2}$$</p>
+</li>
+<li>该 ATT 的识别依赖于两州之间老年人群的共同趋势，即
+$$\begin{aligned}&\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\\=\,&\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\end{aligned}$$
+  这一假设也因两州可能存在差异而不太可能成立。</li>
+</ul>
+</div>
+<div class="lang en">
+<p><strong>18.9.2 Difference-in-differences-in-differences (DDD)</strong></p>
+<p>Sometimes a third difference might work when we suspect violation of the common trend assumption.</p>
+<p>For example, a state implements change in health care policy for people with age \(\ge65\). Then, \(age\ge65\) is the treatment group and \(age<65\) is the control group. Denote \(T\) as the treatment state and \(C\) as the control state.</p>
+<ul>
+<li><strong>Possible \(\text{DiD}_1\)</strong>: data on health in treatment state before and after the policy change, for people with age \(\ge65\) and $&lt;65$, i.e.
+$$\begin{aligned}\text{ATT}=\text{DiD}_1&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\end{aligned}\tag{18.1}$$</li>
+<li>
+<p>This identification of ATT depends on the common trend in health between the old and the young, i.e.
+$$\begin{aligned}&\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\\=\,&\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\end{aligned}$$
+  which is unlikely to hold under common sense.</p>
+</li>
+<li>
+<p><strong>Possible \(\text{DiD}_2\)</strong>: data on health in treatment state before and after the policy change, for people with age \(\ge65\) in treatment state and neighbor state (control group), i.e.
+$$\begin{aligned}\text{ATT}=\text{DiD}_2&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\end{aligned}\tag{18.2}$$</p>
+</li>
+<li>This identification of ATT depends on the common trend in health between the two states, i.e.
+$$\begin{aligned}&\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\\=\,&\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\end{aligned}$$
+  which is unlikely to hold due to the possible differences in the two states.</li>
+</ul>
+</div>
+<div class="lang zh">
+<p>但我们可以合理假设：老年（无处理）与年轻人之间的健康趋势之差，在处理州与控制州之间是共同的，即
+$$\begin{aligned}&\left(\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\\=\,&\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\end{aligned}$$</p>
+<p>于是反事实 \(\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,\text{treatment state}]\) 可由下式估计：
+$$\begin{aligned}&\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]\\=\,&\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\\&+\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\\&+\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&-\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\end{aligned}$$</p>
+</div>
+<div class="lang en">
+<p>But we can reasonably assume that the difference in health trend between the old (without treatment) and the young is common between treatment state and control state, i.e.
+$$\begin{aligned}&\left(\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\\=\,&\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\end{aligned}$$</p>
+<p>Then, the counterfactual \(\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,\text{treatment state}]\) can be estimated by
+$$\begin{aligned}&\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]\\=\,&\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\\&+\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\\&+\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&-\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\end{aligned}$$</p>
+</div>
+<div class="lang zh">
+<p>于是 ATT 由下式识别：
+$$\begin{aligned}\text{ATT}&=\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]\\&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&\quad+\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\end{aligned}\tag{18.3}$$</p>
+<p>考虑如下两个不同于 (18.1) 的 \(\text{DiD}_1\) 与 (18.2) 的 \(\text{DiD}_2\)：
+- 定义 \(\text{DiD}_a\) 为处理州内老年与年轻人之间的健康趋势之差：
+$$\begin{aligned}\text{DiD}_a&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\end{aligned}$$
+- 定义 \(\text{DiD}_b\) 为控制州内老年与年轻人之间的健康趋势之差：
+$$\begin{aligned}\text{DiD}_b&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\end{aligned}$$</p>
+</div>
+<div class="lang en">
+<p>And thus the ATT is identified by
+$$\begin{aligned}\text{ATT}&=\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{after but no treatment},age\ge65,T]\\&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&\quad+\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\end{aligned}\tag{18.3}$$</p>
+<p>Consider the following two DiD's, which are different from the \(\text{DiD}_1\) in (18.1) and \(\text{DiD}_2\) in (18.2):
+- Define \(\text{DiD}_a\) as the difference in health trend between the old and the young in the treatment state, i.e.
+$$\begin{aligned}\text{DiD}_a&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\end{aligned}$$
+- Define \(\text{DiD}_b\) as the difference in health trend between the old and the young in the control state, i.e.
+$$\begin{aligned}\text{DiD}_b&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\end{aligned}$$</p>
+</div>
+<div class="lang zh">
+<p>定义<strong>三重差分（DiDiD）</strong> 为
+$$\begin{aligned}\text{DiDiD}&=\text{DiD}_a-\text{DiD}_b\\&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&\quad+\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\\&=\text{ATT}\end{aligned}$$
+其中最后一行由 (18.3) 得到。故 DiDiD 在"两州间老年—年轻对比相同"的假设下识别 ATT。</p>
+<p><strong>18.9.3 带工具变量的双重差分</strong></p>
+<p>设共同趋势假设失败、且趋势是组别特定的。则在误设的回归
+$$Y_{gt}=\beta\cdot D_{gt}+\alpha_g+\lambda_t+\varepsilon_{gt}$$
+中，误差项 \(\varepsilon_{gt}\) 将包含组别特定趋势。</p>
+<p>若处理 \(D_{gt}\) 与组别特定趋势相关，则 \(D_{gt}\) 成为内生变量。为解决该内生性问题，可构造一个<strong>工具变量</strong>：它影响处理，但可论证与组别特定趋势无关。则 TSLS 估计在"处理效应对所有组相同"的假设下给出一致的 \(\beta\) 估计，于是处理效应被识别和估计。Haan et al. (2018) 研究学校供给对学生考试成绩的影响即为一例。</p>
+</div>
+<div class="lang en">
+<p>Define the difference-in-differences-in-differences (DiDiD) by
+$$\begin{aligned}\text{DiDiD}&=\text{DiD}_a-\text{DiD}_b\\&=\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,T]-\mathbb E[\text{Health}\mid\text{before},age\ge65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age<65,T]-\mathbb E[\text{Health}\mid\text{before},age<65,T]\right)\\&\quad-\left(\mathbb E[\text{Health}\mid\text{after},age\ge65,C]-\mathbb E[\text{Health}\mid\text{before},age\ge65,C]\right)\\&\quad+\left(\mathbb E[\text{Health}\mid\text{after},age<65,C]-\mathbb E[\text{Health}\mid\text{before},age<65,C]\right)\\&=\text{ATT}\end{aligned}$$
+where the last line is true by (18.3). So, the DiDiD identifies the ATT under the assumption of the same old-young contrast between the two states.</p>
+<p><strong>18.9.3 Difference-in-differences with instrument variables</strong></p>
+<p>Suppose the common trend assumption fails and the trends are group specific. Then, in the mis-specified regression
+$$Y_{gt}=\beta\cdot D_{gt}+\alpha_g+\lambda_t+\varepsilon_{gt}$$
+the error term \(\varepsilon_{gt}\) will contain the group specific trend.</p>
+<p>If the treatment \(D_{gt}\) is related to the group specific trend, then \(D_{gt}\) becomes an endogenous variable. To solve this endogeneity problem, we can construct an instrument variable that affects treatment but is arguably unrelated to group specific trends. Then, the IV estimate or TSLS estimate will give us a consistent estimate of \(\beta\). Given the assumption that the treatment effect is the same across all groups, the \(\beta\) is thus identified and estimated. See Haan et al. (2018) for example that study the effect of supply of schools on pupils' test scores.</p>
+</div>
+<div class="lang zh">
+<p><strong>18.9.4 合成控制（Synthetic controls）</strong></p>
+<ul>
+<li>面板数据给我们一个处理组的多期数据，以及许多未处理组。</li>
+<li>设没有任何一个未处理组与处理组共享共同趋势。</li>
+<li>则可构造<strong>所有未处理组的加权平均</strong>，使其在处理前的时期与处理组很好地匹配。</li>
+<li>这一未处理组的加权平均称为<strong>合成控制组（synthetic control group）</strong>。</li>
+<li>处理组与合成控制组之间的 DiD 识别处理效应。</li>
+<li>然而，对该方法的有效性存在越来越多的担忧，因为在处理前期的匹配并不能对处理后期做任何保证。</li>
+</ul>
+</div>
+<div class="lang en">
+<p><strong>18.9.4 Synthetic controls</strong></p>
+<ul>
+<li>Panel data gives us multi-periods of one treated group and many untreated groups.</li>
+<li>Suppose that none of the untreated groups has the common trend with the treated group.</li>
+<li>Then, we can construct a weighted average of all the untreated groups that well matches the treated group prior to treatment period.</li>
+<li>And that weighted average of untreated groups is called synthetic control group.</li>
+<li>The DiD between the treatment group and the synthetic control group identifies the treatment effect.</li>
+<li>However, there are increasing concerns on the validity of this method, since the matching on pre-periods need not say anything about the post-periods.</li>
+</ul>
+</div>
+<h2 id="18-10-event-study">18.10 Event Study</h2>
+<div class="lang zh">
+<p><strong>18.10.1 记号</strong>
+- 时间 \(t=0,1,\dots,T\)，处理 \(D_{it}\in\{0,1\}\)。
+- \(E_i\) 记个体 \(i\) 的首次处理（事件）日期。
+  - 可能 \(E_i=\infty\)，意味事件对个体 \(i\) 永不发生。
+  - 本设定中处理是<strong>吸收性（absorbing）</strong> 的，即 \(D_{it}=1\) 当且仅当 \(t\ge E_i\)。
+  - \(E_i\) 完全决定序列 \(D_i\equiv(D_{i0},\dots,D_{iT})\)：
+$$E_i=e\quad\Leftrightarrow\quad D_i=\Big(0,\dots,0,\overset{t=e}{1},1,\dots,1\Big)$$
+$$E_i=\infty\quad\Leftrightarrow\quad D_i=(0,\dots,0)$$
+- \(Y_{it}(e)\) 为个体 \(i\) 在期 \(t\)、反事实事件日期为 \(e\) 时的潜在结果。
+  - 我们只能观测到 \(Y_{it}=Y_{it}(E_i)\)（\(t=0,1,\dots,T\)）。</p>
+</div>
+<div class="lang en">
+<p><strong>18.10.1 Notation</strong>
+- Time runs from \(t=0,1,\dots,T\), and treatment is \(D_{it}\in\{0,1\}\).
+- \(E_i\) denotes individual \(i\)'s first treatment (event) date.
+  - It is possible that \(E_i=\infty\), which means that the event never happens to individual \(i\).
+  - In this set-up, treatment is absorbing, i.e. \(D_{it}=1\) if and only if \(t\ge E_i\).
+  - \(E_i\) fully determines the sequence \(D_i\equiv(D_{i0},\dots,D_{iT})\) by
+$$E_i=e\quad\Leftrightarrow\quad D_i=\Big(0,\dots,0,\overset{t=e}{1},1,\dots,1\Big)$$
+$$E_i=\infty\quad\Leftrightarrow\quad D_i=(0,\dots,0)$$
+- \(Y_{it}(e)\) is the potential outcomes of individual \(i\) in period \(t\) with the counterfactual event date \(e\).
+  - We can only observe \(Y_{it}=Y_{it}(E_i)\) for \(t=0,1,\dots,T\).</p>
+</div>
+<div class="lang zh">
+<p><strong>18.10.2 事件研究的基础假设</strong></p>
+<ul>
+<li><strong>共同趋势假设</strong>：对任意 \(s<e\le t\)，假设
+$$\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=e\right]=\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=\infty\right]$$</li>
+<li><strong>无预期假设（no anticipation）</strong>：对所有未处理期 \(s<e\)，假设
+$$Y_{is}(e)=Y_{is}(\infty)$$</li>
+</ul>
+<p><strong>18.10.3 两假设下的识别</strong></p>
+<p>在共同趋势假设与无预期假设下，对任意 \(s<e\le t\)，有
+$$\begin{aligned}\underbrace{\mathbb E\!\left[Y_{it}(\infty)\mid E_i=e\right]}_{\text{desired counterfactual}}&=\underbrace{\mathbb E\!\left[Y_{is}(\infty)\mid E_i=e\right]}_{\text{not directly observable}}+\underbrace{\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=\infty\right]}_{\text{observed data}}\\&=\underbrace{\mathbb E\!\left[Y_{is}(e)\mid E_i=e\right]}_{\text{observed data}}+\underbrace{\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=\infty\right]}_{\text{observed data}}\end{aligned}$$</p>
+<p>故所求反事实 \(\mathbb E[Y_{it}(\infty)\mid E_i=e]\) 被识别。第二个等号用到无预期 \(Y_{is}(e)=Y_{is}(\infty)\)。</p>
+</div>
+<div class="lang en">
+<p><strong>18.10.2 Baseline assumptions for an event study</strong></p>
+<ul>
+<li><strong>Common trends assumption</strong>: for any \(s<e\le t\), we assume
+$$\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=e\right]=\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=\infty\right]$$</li>
+<li><strong>No anticipation assumption</strong>: for all untreated periods \(s<e\), we assume
+$$Y_{is}(e)=Y_{is}(\infty)$$</li>
+</ul>
+<p><strong>18.10.3 Identification under the two assumptions</strong></p>
+<p>With the common trends assumption and the no anticipation assumption, we have that for any \(s<e\le t\),
+$$\begin{aligned}\underbrace{\mathbb E\!\left[Y_{it}(\infty)\mid E_i=e\right]}_{\text{desired counterfactual}}&=\underbrace{\mathbb E\!\left[Y_{is}(\infty)\mid E_i=e\right]}_{\text{not directly observable}}+\underbrace{\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=\infty\right]}_{\text{observed data}}\\&=\underbrace{\mathbb E\!\left[Y_{is}(e)\mid E_i=e\right]}_{\text{observed data}}+\underbrace{\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=\infty\right]}_{\text{observed data}}\end{aligned}$$</p>
+<p>so the desired counterfactual \(\mathbb E[Y_{it}(\infty)\mid E_i=e]\) is identified. The second equality uses no anticipation \(Y_{is}(e)=Y_{is}(\infty)\).</p>
+</div>
+<div class="lang zh">
+<p>因此，对 \(t\ge e\)，\(Y_{it}\) 在 \(e\) 时被处理的平均处理效应（记 \(\text{ATE}_t(e)\)）可识别为：
+$$\begin{aligned}\text{ATE}_t(e)&=\mathbb E\!\left[Y_{it}(e)-Y_{it}(\infty)\mid E_i=e\right]\\&=\mathbb E\!\left[Y_{it}(e)\mid E_i=e\right]-\mathbb E\!\left[Y_{it}(\infty)\mid E_i=e\right]\\&=\mathbb E\!\left[Y_{it}(e)\mid E_i=e\right]-\mathbb E\!\left[Y_{is}(e)\mid E_i=e\right]-\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=\infty\right]\\&=\mathbb E\!\left[Y_{it}\mid E_i=e\right]-\mathbb E\!\left[Y_{is}\mid E_i=e\right]-\mathbb E\!\left[Y_{it}-Y_{is}\mid E_i=\infty\right]\end{aligned}$$
+其中 \(s<e\le t\)。</p>
+<p>注意非参数估计 \(\text{ATE}_t(e)\) 有多种方式，因为我们可任选 \(s<e\)。也可用所有 \(s<e\) 然后取平均。</p>
+<p><strong>18.10.4 事件研究作为回归</strong></p>
+<p>也可用参数方法估计事件效应。沿用 DiD 中的设定，可将 \(Y_{it}\) 对单位虚拟 \(\mu_i\)、时间虚拟 \(\lambda_t\)、处理 \(D_{it}=\mathbf 1\{t\ge E_i\}\) 做回归，即
+$$Y_{it}=\mu_i+\beta\cdot D_{it}+\lambda_t+\varepsilon_{it}$$</p>
+<p>Abraham and Sun (2018) 证明
+$$\beta=\sum_{e=0}^{T}\sum_{t=e}^{T}\omega_t(e)\,\text{ATE}_t(e)$$
+其中权重 \(\omega_t(e)\) 可识别、加总为 1，但若不同 \(e\) 上的因果效应异质，则权重<strong>可能为负</strong>。</p>
+</div>
+<div class="lang en">
+<p>Therefore, for \(t\ge e\), the average treatment effect on \(Y_{it}\) of being treated at time \(e\), denoted by \(\text{ATE}_t(e)\), can be identified as:
+$$\begin{aligned}\text{ATE}_t(e)&=\mathbb E\!\left[Y_{it}(e)-Y_{it}(\infty)\mid E_i=e\right]\\&=\mathbb E\!\left[Y_{it}(e)\mid E_i=e\right]-\mathbb E\!\left[Y_{it}(\infty)\mid E_i=e\right]\\&=\mathbb E\!\left[Y_{it}(e)\mid E_i=e\right]-\mathbb E\!\left[Y_{is}(e)\mid E_i=e\right]-\mathbb E\!\left[Y_{it}(\infty)-Y_{is}(\infty)\mid E_i=\infty\right]\\&=\mathbb E\!\left[Y_{it}\mid E_i=e\right]-\mathbb E\!\left[Y_{is}\mid E_i=e\right]-\mathbb E\!\left[Y_{it}-Y_{is}\mid E_i=\infty\right]\end{aligned}$$
+where \(s<e\le t\).</p>
+<p>Note that there are multiple ways to non-parametrically estimate \(\text{ATE}_t(e)\) since we can choose any \(s<e\). We can also use all \(s<e\) and then take the average.</p>
+<p><strong>18.10.4 Event study as regression</strong></p>
+<p>We can also estimate the event effect by parametric methods. Following the same specification as in DiD, we can regress \(Y_{it}\) on unit dummies \(\mu_i\), period dummies \(\lambda_t\), and treatment \(D_{it}=\mathbf 1\{t\ge E_i\}\), i.e.
+$$Y_{it}=\mu_i+\beta\cdot D_{it}+\lambda_t+\varepsilon_{it}$$</p>
+<p>Abraham and Sun (2018) shows that
+$$\beta=\sum_{e=0}^{T}\sum_{t=e}^{T}\omega_t(e)\,\text{ATE}_t(e)$$
+where the weights \(\omega_t(e)\) are identified, sum up to 1, but can be negative if causal effects are heterogeneous at different \(e\)'s.</p>
+</div>
+<div class="lang zh">
+<p><strong>18.10.5 在事件日期上加 leads 与 lags：动态设定</strong></p>
+<ul>
+<li>也可将 \(Y_{it}\) 对单位虚拟 \(\mu_i\)、时间虚拟 \(\lambda_t\)、以及 leads 和 lags \(\{R_{it}^\ell\}_{\ell\in\mathcal L}\) 做回归。</li>
+<li>\(R_{it}^\ell\equiv\mathbf 1\{\ell=t-E_i\}\) 为"事件 \(E_i\) 已发生 \(\ell\) 期"的示性变量。</li>
+<li>注意 \(R_{it}^\ell\) 在 \(\ell<0\) 时表示 leads、\(\ell\ge0\) 时表示 lags。</li>
+<li>\(\{R_{it}^\ell\}_{\ell\in\mathcal L}\) 上的系数即关注对象：</li>
+<li>对 \(\ell>0\)，\(R_{it}^\ell\) 上的系数是<strong>动态处理效应</strong>。</li>
+<li>对 \(\ell<0\)，\(R_{it}^\ell\) 上的系数可用于检验设定的有效性，即<strong>无预期假设</strong>。</li>
+</ul>
+</div>
+<div class="lang en">
+<p><strong>18.10.5 Adding leads and lags to the event date: dynamic specification</strong></p>
+<ul>
+<li>We can instead regress \(Y_{it}\) on unit dummies \(\mu_i\), period dummies \(\lambda_t\), and leads and lags \(\{R_{it}^\ell\}_{\ell\in\mathcal L}\).</li>
+<li>\(R_{it}^\ell\equiv\mathbf 1\{\ell=t-E_i\}\) is the indicator for \(\ell\) periods since the event in \(E_i\).</li>
+<li>Note that \(R_{it}^\ell\) stands for leads when \(\ell<0\) and for lags when \(\ell\ge0\).</li>
+<li>Coefficients on \(\{R_{it}^\ell\}_{\ell\in\mathcal L}\) are the objects of interest:</li>
+<li>For \(\ell>0\), the coefficient on \(R_{it}^\ell\) is the dynamic treatment effects.</li>
+<li>For \(\ell<0\), the coefficient on \(R_{it}^\ell\) can be used to check for the validity of the design, i.e. the no anticipation assumption.</li>
+</ul>
+</div>
+<p></content>
+</invoke></p>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#18-1-definitions">18.1 Definitions</a></li>
+        <li><a href="#18-2-simple-did-set-up">18.2 Simple DiD Set-up</a></li>
+        <li><a href="#18-3-did-estimand">18.3 DiD Estimand</a></li>
+        <li><a href="#18-4-did-vs-first-difference">18.4 DiD vs First Difference</a></li>
+        <li><a href="#18-5-did-as-regression">18.5 DiD as Regression</a></li>
+        <li><a href="#18-6-did-inference-standard-errors">18.6 DiD Inference: Standard Errors</a></li>
+        <li><a href="#18-7-nonlinear-did-quantile-did-and-changes-in-changes-cic">18.7 Nonlinear DiD: Quantile DiD and Changes-in-Changes (CiC)</a></li>
+        <li><a href="#18-8-some-critiques-of-the-common-trend-assumption-and-did-method">18.8 Some Critiques of the Common Trend Assumption and DiD Method</a></li>
+        <li><a href="#18-9-extensions-of-did-when-the-common-trend-assumption-does-not-hold">18.9 Extensions of DiD when the Common Trend Assumption Does Not Hold</a></li>
+        <li><a href="#18-10-event-study">18.10 Event Study</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

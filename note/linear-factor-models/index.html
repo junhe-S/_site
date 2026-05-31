@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6. Linear Factor Models – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>6. Linear Factor Models</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 30, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">线性因子模型</span><span class="lang en">Linear Factor Models</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">套利定价理论</span><span class="lang en">APT</span></span>
+        
+        
+        
+        
+        <span class="tag">CAPM</span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">跨期资本资产定价</span><span class="lang en">ICAPM</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章把 SDF 限定为<strong>因子的线性函数</strong> \(m=a+\mathbf b'\tilde{\mathbf f}\)，它等价于收益的 <strong>Beta 定价表示</strong> \(\mathbb E[R^i]=R^f+\boldsymbol\beta_i'\boldsymbol\lambda\)。三条主线：(i) <strong>套利定价理论 (APT, Ross 1976)</strong>——纯粹由无套利（加因子结构）推出近似线性定价，是<strong>经验性</strong>表示而非经济模型；在精确因子定价下 SDF 严格线性，并给出风险溢价向量 \(\boldsymbol\lambda=-R^f\mathbf p(\tilde{\mathbf f})\)。(ii) <strong>CAPM 作为单因子模型</strong>——二次效用、CARA+正态、对数效用三种偏好都把问题化为均值方差，从而市场组合是唯一定价因子。(iii) <strong>跨期 CAPM (ICAPM, Merton 1973)</strong>——连续时间动态最优化中，最优组合 = 均值方差（短视）需求 + <strong>对冲需求 (hedging demand)</strong>；当投资机会集随状态变量变动时，除市场 beta 外还出现<strong>对冲组合 beta</strong>，得到多因子的 ICAPM 定价式。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter restricts the SDF to a <strong>linear function of factors</strong> \(m=a+\mathbf b'\tilde{\mathbf f}\), equivalent to the <strong>Beta pricing representation</strong> of returns \(\mathbb E[R^i]=R^f+\boldsymbol\beta_i'\boldsymbol\lambda\). Three threads: (i) <strong>Arbitrage Pricing Theory (APT, Ross 1976)</strong> — approximate linear pricing derived from no-arbitrage plus a factor structure; an <strong>empirical</strong> representation, not an economic model. Under exact factor pricing the SDF is exactly linear, with risk-premium vector \(\boldsymbol\lambda=-R^f\mathbf p(\tilde{\mathbf f})\). (ii) <strong>CAPM as a single-factor model</strong> — quadratic utility, CARA with normal growth, and log utility each reduce the problem to mean-variance, so the market portfolio is the unique pricing factor. (iii) <strong>Intertemporal CAPM (ICAPM, Merton 1973)</strong> — in continuous-time dynamic optimization the optimal portfolio = mean-variance (myopic) demand + <strong>hedging demand</strong>; when the investment opportunity set moves with a state variable, a <strong>hedging-portfolio beta</strong> joins the market beta, giving a multi-factor ICAPM pricing equation.</p></div>
+</div>
+<div class="lang zh">
+<p>若 SDF 是因子向量 \(\tilde{\mathbf f}\) 的线性函数 \(m=a+\mathbf b'\tilde{\mathbf f}\)（\(a,b\in\mathbb R\)），我们就称之为<strong>线性因子模型</strong>。它与下式等价：</p>
+</div>
+<div class="lang en">
+<p>If the SDF is a linear function of the factor vector \(\tilde{\mathbf f}\), \(m=a+\mathbf b'\tilde{\mathbf f}\) (with \(a,b\in\mathbb R\)), we call it a <strong>linear factor model</strong>. It is equivalent to</p>
+</div>
+<p>$$m=a+\mathbf b'\tilde{\mathbf f}\quad\Leftrightarrow\quad R^i=\mathbb E[R^i]+\boldsymbol\beta_i'\tilde{\mathbf f}.$$</p>
+<h2 id="6-1-arbitrage-pricing-theory">6.1 Arbitrage Pricing Theory</h2>
+<div class="lang zh">
+<p>套利定价理论 (APT) 由 Ross (1976) 提出。实证上，把股票按规模、价值等<strong>特征 (characteristics)</strong> 分组，组内股票往往同涨同跌；但单只股票仍有自身的<strong>特质 (idiosyncratic)</strong> 成分。APT 正是由这些经验事实出发。</p>
+</div>
+<div class="lang en">
+<p>Arbitrage Pricing Theory (APT) is due to Ross (1976). Empirically, stocks sorted by <strong>characteristics</strong> such as size and value tend to move together within a group, yet each stock keeps its own <strong>idiosyncratic</strong> component. APT is motivated by these empirical facts.</p>
+</div>
+<h3 id="6-1-1-the-theorem">6.1.1 The Theorem</h3>
+<div class="lang zh">
+<p><strong>定理 6.1（APT）。</strong> 设 \(\mathcal X_R\) 是一组资产总收益，\(\tilde{\mathbf f}\) 是 \(N\) 个<strong>去均值因子 (de-meaned factors)</strong> 的集合，\(\boldsymbol\beta_i\) 是收益 \(R^i\) 的因子载荷向量。若每个 \(R^i\in\mathcal X_R\) 都由线性因子模型生成，</p>
+</div>
+<div class="lang en">
+<p><strong>Theorem 6.1 (APT).</strong> Let \(\mathcal X_R\) be a collection of asset gross returns, \(\tilde{\mathbf f}\) a collection of \(N\) <strong>de-meaned factors</strong>, and \(\boldsymbol\beta_i\) the vector of factor loadings for return \(R^i\). If every \(R^i\in\mathcal X_R\) is generated by a linear factor model,</p>
+</div>
+<p>$$R^i=\mathbb E[R^i]+\boldsymbol\beta_i'\tilde{\mathbf f}+\varepsilon^i,\qquad \mathbb E[\varepsilon^i]=\mathbb E[\varepsilon^i\tilde f_j]=0\ \ \forall i,j,$$</p>
+<div class="lang zh">
+<p>则在一定假设下，存在一个<strong>线性于因子</strong>的贴现因子 \(m=a+\mathbf b'\tilde{\mathbf f}\) 为所有 \(R^i\in\mathcal X_R\) 定价。</p>
+</div>
+<div class="lang en">
+<p>then under certain assumptions there is a discount factor \(m=a+\mathbf b'\tilde{\mathbf f}\), <strong>linear in the factors</strong>, that prices all \(R^i\in\mathcal X_R\).</p>
+</div>
+<h3 id="6-1-2-exact-factor-pricing">6.1.2 Exact Factor Pricing</h3>
+<div class="lang zh">
+<p>先看<strong>无特质风险</strong>的理想世界，即每个总收益没有误差项：</p>
+</div>
+<div class="lang en">
+<p>Start with the ideal world of <strong>no idiosyncratic risk</strong>, i.e. no error term in each gross return:</p>
+</div>
+<p>$$R^i=\mathbb E[R^i]+\boldsymbol\beta_i'\tilde{\mathbf f}.\tag{6.1}$$</p>
+<div class="lang zh">
+<p>由 (6.1) 直接解出载荷 \(\boldsymbol\beta_i\)——正是把 \(R^i\) 对因子做 <strong>OLS 回归</strong>的系数：</p>
+</div>
+<div class="lang en">
+<p>From (6.1) the loading \(\boldsymbol\beta_i\) solves directly — it is exactly the <strong>OLS regression</strong> coefficient of \(R^i\) on the factors:</p>
+</div>
+<p>$$\boldsymbol\beta_i=\Big(\mathrm{Var}\big(\tilde{\mathbf f}\big)\Big)^{-1}\mathrm{Cov}\big(R^i,\tilde{\mathbf f}\big).\tag{6.2}$$</p>
+<div class="lang zh">
+<p>把常数并入因子，记增广因子 \(\bar{\mathbf f}=(1,\tilde{\mathbf f})'\)，价格向量 \(\mathbf p(\tilde{\mathbf f})\)。</p>
+<p><strong>命题 6.1。</strong> 设 \(f^*\) 为支付空间 \(\mathcal X\) 内的 SDF，则 \(f^*\) 线性于 \(\bar{\mathbf f}\)，给定 (6.3)。</p>
+</div>
+<div class="lang en">
+<p>Fold the constant into the factors: let the augmented factor be \(\bar{\mathbf f}=(1,\tilde{\mathbf f})'\) with price vector \(\mathbf p(\tilde{\mathbf f})\).</p>
+<p><strong>Proposition 6.1.</strong> Let \(f^*\) be the SDF in \(\mathcal X\). Then \(f^*\) is linear in \(\bar{\mathbf f}\), given by (6.3).</p>
+</div>
+<details class="proof">
+<summary>证明 / Proof：\(f^*=\mathbb E[\hat{\mathbf f}\hat{\mathbf f}']^{-1}\mathbf p(\hat{\mathbf f})'\hat{\mathbf f}=a+\mathbf b'\tilde{\mathbf f}\)</summary>
+<div class="lang zh">
+<p>要 \(f^*=\mathbf c^{*\prime}\hat{\mathbf f}\) 为因子 \(\hat{\mathbf f}\) 定价：\(\mathbf p(\hat{\mathbf f})=\mathbb E[f^*\hat{\mathbf f}]=\mathbb E[\hat{\mathbf f}\hat{\mathbf f}']\mathbf c^*\)，于是</p>
+</div>
+<div class="lang en">
+<p>Require \(f^*=\mathbf c^{*\prime}\hat{\mathbf f}\) to price the factors \(\hat{\mathbf f}\): \(\mathbf p(\hat{\mathbf f})=\mathbb E[f^*\hat{\mathbf f}]=\mathbb E[\hat{\mathbf f}\hat{\mathbf f}']\mathbf c^*\), hence</p>
+</div>
+<p>$$\mathbf c^*=\mathbb E\big[\hat{\mathbf f}\hat{\mathbf f}'\big]^{-1}\mathbf p\big(\hat{\mathbf f}\big),\qquad f^*=\mathbb E\big[\hat{\mathbf f}\hat{\mathbf f}'\big]^{-1}\mathbf p\big(\hat{\mathbf f}\big)'\hat{\mathbf f}.\tag{6.3}$$</p>
+<div class="lang zh">
+<p>这显式给出 \(f^*\) 的存在，且它线性于 \(\tilde{\mathbf f}\)：</p>
+</div>
+<div class="lang en">
+<p>This gives the existence of \(f^*\) explicitly, and it is linear in \(\tilde{\mathbf f}\):</p>
+</div>
+<p>$$f^*=\underbrace{\mathbb E\big[\hat{\mathbf f}\hat{\mathbf f}'\big]^{-1}\mathbf p\big(\hat{\mathbf f}\big)'\hat{\mathbf f}}_{\equiv(a,\mathbf b')}=a+\mathbf b'\tilde{\mathbf f}.\quad\blacksquare\tag{6.4}$$</p>
+</details>
+<div class="lang zh">
+<p>接着由<strong>一价定律</strong>为任意 \(R^i\in\mathcal X_R\subset\mathcal X\) 定价。从 (6.1) 出发 (6.5)–(6.9)：</p>
+</div>
+<div class="lang en">
+<p>Then price any \(R^i\in\mathcal X_R\subset\mathcal X\) by the <strong>Law of One Price</strong>. Starting from (6.1), (6.5)–(6.9):</p>
+</div>
+<p>$$p(R^i)=\mathbb E[R^i]\,\underbrace{p(1)}_{=1/R^f}+\boldsymbol\beta_i'\mathbf p(\tilde{\mathbf f})\ \Rightarrow\ 1=\mathbb E[R^i]\frac{1}{R^f}+\boldsymbol\beta_i'\mathbf p(\tilde{\mathbf f}).\tag{6.5–6.6}$$</p>
+<p>$$\mathbb E[R^i]=R^f+\boldsymbol\beta_i'\underbrace{\Big(-R^f\,\mathbf p(\tilde{\mathbf f})\Big)}_{\equiv\boldsymbol\lambda}=R^f+\boldsymbol\beta_i'\boldsymbol\lambda.\tag{6.7–6.9}$$</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{lf1}{\mathbb E[R^i]} = \cssId{lf2}{R^f} + \cssId{lf3}{\boldsymbol\beta_i'}\,\cssId{lf4}{\boldsymbol\lambda}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="lf1"><span class="mathanno-num">1</span><span class="lang zh">资产 i 的期望（总）收益</span><span class="lang en">Expected (gross) return of asset i</span></div><div class="mathanno-card" data-target="lf2"><span class="mathanno-num">2</span><span class="lang zh">无风险总收益</span><span class="lang en">Risk-free gross return</span></div><div class="mathanno-card" data-target="lf3"><span class="mathanno-num">3</span><span class="lang zh">资产 i 对各因子的载荷（OLS beta）</span><span class="lang en">Asset i's loadings on the factors (OLS betas)</span></div><div class="mathanno-card" data-target="lf4"><span class="mathanno-num">4</span><span class="lang zh">因子风险溢价向量 \(\boldsymbol\lambda=-R^f\mathbf p(\tilde{\mathbf f})\)</span><span class="lang en">Vector of factor risk premia \(\boldsymbol\lambda=-R^f\mathbf p(\tilde{\mathbf f})\)</span></div></aside><svg class="mathanno-lines"></svg></div>
+
+<div class="lang zh">
+<p>风险溢价向量 \(\boldsymbol\lambda=-R^f\mathbf p(\tilde{\mathbf f})\) (6.10)。由于 \(\tilde{\mathbf f}\) 去均值，\(p(\tilde f_j)\) 只反映方差风险（若因子均值非零，\(\mathbb E[\tilde f_j]=0\)）。</p>
+<p><strong>命题 6.2。</strong> (6.4)、(6.1)、(6.9) 等价，即</p>
+</div>
+<div class="lang en">
+<p>The risk-premium vector is \(\boldsymbol\lambda=-R^f\mathbf p(\tilde{\mathbf f})\) (6.10). Since \(\tilde{\mathbf f}\) is de-meaned, \(p(\tilde f_j)\) only reflects variance risk (the factors have mean zero, \(\mathbb E[\tilde f_j]=0\)).</p>
+<p><strong>Proposition 6.2.</strong> (6.4), (6.1) and (6.9) are equivalent, i.e.</p>
+</div>
+<p>$$f^*=a+\mathbf b'\tilde{\mathbf f}\quad\Leftrightarrow\quad R^i=\mathbb E[R^i]+\boldsymbol\beta_i'\tilde{\mathbf f}\quad\Leftrightarrow\quad \mathbb E[R^i]=R^f+\boldsymbol\beta_i'\boldsymbol\lambda.\tag{6.11}$$</p>
+<details class="proof">
+<summary>证明 / Proof：\(f^*=a+\mathbf b'\tilde{\mathbf f}\ \Rightarrow\ R^i=\mathbb E[R^i]+\boldsymbol\beta_i'\tilde{\mathbf f}+\varepsilon^i\)</summary>
+<div class="lang zh">
+<p>一个方向由命题 6.1 立得。另一方向：\(f^*\in\mathcal X\)，由定理 5.2 三分解 \(R^i=R^*+\omega^i R^{e*}+\eta^i\)，其中 \(R^*=f^*/\mathbb E[(f^*)^2]\) (5.32)。代入整理 (6.12)，并验证残差 \(\mathbb E[\varepsilon^i]=0\)、\(\mathbb E[\eta^i]=0\) (6.13)：</p>
+</div>
+<div class="lang en">
+<p>One direction is Proposition 6.1. For the other: \(f^*\in\mathcal X\), so by the Theorem 5.2 decomposition \(R^i=R^*+\omega^i R^{e*}+\eta^i\) with \(R^*=f^*/\mathbb E[(f^*)^2]\) (5.32). Substituting and simplifying (6.12), and checking \(\mathbb E[\varepsilon^i]=0\), \(\mathbb E[\eta^i]=0\) (6.13):</p>
+</div>
+<p>$$R^i=\mathbb E[R^i]+\mathbf k_i'\tilde{\mathbf f}+\varepsilon^i,\qquad \mathbf k_i=\frac{1}{\mathbb E[(f^*)^2]}\mathbf b.\tag{6.13}$$</p>
+<div class="lang zh">
+<p>但 \(\mathbf k_i'\tilde{\mathbf f}\) 中的因子与残差 \(\varepsilon^i\) 可能相关 \(\mathrm{Cov}(\tilde f_k,\varepsilon^i)=\mathbb E[\tilde f_k(R^i-R^*)]\neq0\)。调整残差使其与 \(\tilde{\mathbf f}\) 不相关：</p>
+</div>
+<div class="lang en">
+<p>But the factors in \(\mathbf k_i'\tilde{\mathbf f}\) may correlate with the residual \(\varepsilon^i\), \(\mathrm{Cov}(\tilde f_k,\varepsilon^i)=\mathbb E[\tilde f_k(R^i-R^*)]\neq0\). Adjust the residual to be uncorrelated with \(\tilde{\mathbf f}\):</p>
+</div>
+<p>$$\varepsilon^i=\epsilon^i-\big(\mathrm{Cov}(\epsilon^i,\tilde{\mathbf f})\big)'\mathbb E[\tilde{\mathbf f}\tilde{\mathbf f}']^{-1}\tilde{\mathbf f},$$</p>
+<div class="lang zh">
+<p>则 \(\mathbb E[\varepsilon^i]=0\) 且 \(\mathrm{Cov}(\varepsilon^i,\tilde{\mathbf f})=\mathbf 0\)，把调整项并入载荷得 \(\boldsymbol\beta_i\)，于是 \(R^i=\mathbb E[R^i]+\boldsymbol\beta_i'\tilde{\mathbf f}+\varepsilon^i\)，\(\varepsilon^i\) 为特质波动。精确因子定价下 \(\varepsilon^i=0\)。\(\blacksquare\)</p>
+</div>
+<div class="lang en">
+<p>Then \(\mathbb E[\varepsilon^i]=0\) and \(\mathrm{Cov}(\varepsilon^i,\tilde{\mathbf f})=\mathbf 0\); folding the adjustment into the loading gives \(\boldsymbol\beta_i\), so \(R^i=\mathbb E[R^i]+\boldsymbol\beta_i'\tilde{\mathbf f}+\varepsilon^i\) with \(\varepsilon^i\) the idiosyncratic variation. Under exact factor pricing \(\varepsilon^i=0\). \(\blacksquare\)</p>
+</div>
+</details>
+<div class="lang zh">
+<p>关于命题 6.2 的几点观察：</p>
+<ul>
+<li>(6.1) 与 (6.9) 给出 \(R^i=R^f+\boldsymbol\beta_i'(\boldsymbol\lambda+\tilde{\mathbf f})\) (6.14)。</li>
+<li>(6.14) 说明 \(\boldsymbol\lambda+\tilde{\mathbf f}\) 的每个分量都落在 (5.33) 定义的超额收益空间 \(\mathcal Z\) 中：\(p(\lambda_j+\tilde f_j)=0\)。</li>
+<li>估计上分两步：先<strong>时序回归</strong>用风险 \(\boldsymbol\beta_i\)，再<strong>截面回归</strong> \(\mathbb E[R^i]\) 对 \(\boldsymbol\beta_i\) 估计 \(\boldsymbol\lambda\)。</li>
+</ul>
+</div>
+<div class="lang en">
+<p>A few observations on Proposition 6.2:</p>
+<ul>
+<li>(6.1) and (6.9) give \(R^i=R^f+\boldsymbol\beta_i'(\boldsymbol\lambda+\tilde{\mathbf f})\) (6.14).</li>
+<li>(6.14) implies each component of \(\boldsymbol\lambda+\tilde{\mathbf f}\) lies in the excess-return space \(\mathcal Z\) of (5.33): \(p(\lambda_j+\tilde f_j)=0\).</li>
+<li>Estimation is two-step: first a <strong>time-series regression</strong> for the risk loadings \(\boldsymbol\beta_i\), then a <strong>cross-sectional regression</strong> of \(\mathbb E[R^i]\) on \(\boldsymbol\beta_i\) to estimate \(\boldsymbol\lambda\).</li>
+</ul>
+</div>
+<h3 id="6-1-3-approximate-apt">6.1.3 Approximate APT</h3>
+<div class="lang zh">
+<p>现实中存在特质风险。APT 的力量在于：<strong>充分分散 (well-diversified)</strong> 的组合会把特质风险消掉。</p>
+<p><strong>命题 6.3（充分分散）。</strong> 设 \(R^p\) 是 \(N\) 个资产的等权组合，特质风险互不相关 \(\mathbb E[\varepsilon^i\varepsilon^j]=0\ (i\neq j)\)，则当 \(N\to\infty\) 时 \(\varepsilon^p\to0\)。</p>
+</div>
+<div class="lang en">
+<p>In reality idiosyncratic risk is present. The power of APT: a <strong>well-diversified</strong> portfolio diversifies idiosyncratic risk away.</p>
+<p><strong>Proposition 6.3 (well-diversification).</strong> Let \(R^p\) be the equally weighted portfolio of \(N\) assets with uncorrelated idiosyncratic risks \(\mathbb E[\varepsilon^i\varepsilon^j]=0\ (i\neq j)\). Then \(\varepsilon^p\to0\) as \(N\to\infty\).</p>
+</div>
+<details class="proof">
+<summary>证明 / Proof：\(\lim_{N\to\infty}\mathrm{Var}(\varepsilon^p)=0\)</summary>
+<div class="lang zh">
+<p>设各特质方差有界 \(\mathrm{Var}(\varepsilon^i)\le M^2\)。等权组合的特质项 \(\varepsilon^p=\frac1N\sum_{i=1}^N\varepsilon^i\)：</p>
+</div>
+<div class="lang en">
+<p>Assume each idiosyncratic variance is bounded, \(\mathrm{Var}(\varepsilon^i)\le M^2\). The portfolio's idiosyncratic term is \(\varepsilon^p=\frac1N\sum_{i=1}^N\varepsilon^i\):</p>
+</div>
+<p>$$\mathrm{Var}(\varepsilon^p)=\frac{1}{N^2}\sum_{i=1}^N\mathrm{Var}(\varepsilon^i)\le\frac{1}{N^2}NM^2=\frac{M^2}{N}\ \xrightarrow{N\to\infty}\ 0.\quad\blacksquare$$</p>
+</details>
+<div class="lang zh">
+<p>当组合的特质冲击消失时，称该组合<strong>充分分散</strong>。再由一价定律，\(p(R^i)=\mathbb E[R^i]p(1)+\boldsymbol\beta_i'\mathbf p(\tilde{\mathbf f})+p(\varepsilon^i)\)。</p>
+<p><strong>命题 6.4。</strong> 当 \(\varepsilon^i\to0\) 时 \(p(\varepsilon^i)\to0\)。</p>
+<p>故对充分分散的组合，APT 定价近似成立，特质风险定价约等于零。</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 6.1。</strong> APT 是一个<strong>经验性表示</strong>而非经济上自洽的模型：因子由数据驱动、缺乏经济基础。它告诉我们若组合充分分散则可由 SDF 定价，但不解释因子为何存在、风险溢价从何而来。</p></div>
+</div>
+<div class="lang en">
+<p>When the portfolio's idiosyncratic shock vanishes, the portfolio is <strong>well-diversified</strong>. By the Law of One Price, \(p(R^i)=\mathbb E[R^i]p(1)+\boldsymbol\beta_i'\mathbf p(\tilde{\mathbf f})+p(\varepsilon^i)\).</p>
+<p><strong>Proposition 6.4.</strong> As \(\varepsilon^i\to0\), \(p(\varepsilon^i)\to0\).</p>
+<p>So APT pricing holds approximately for well-diversified portfolios, with idiosyncratic risk priced near zero.</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 6.1.</strong> APT is an <strong>empirical representation</strong>, not an economically grounded model: the factors are data-driven and lack economic foundations. It says a well-diversified portfolio can be priced by an SDF, but does not explain why the factors exist or where the risk premia come from.</p></div>
+</div>
+<h2 id="6-2-capm-as-a-linear-factor-model">6.2 CAPM as a Linear Factor Model</h2>
+<div class="lang zh">
+<p>CAPM 可写成以<strong>市场组合</strong>为唯一因子的单因子模型。其经济基础是：在若干偏好假设下，投资者的问题退化为<strong>均值方差</strong>最优化，于是市场（财富）组合就是定价因子。设市场（总财富）组合总收益为 \(R^m\)，则消费 \(c_t=R^m(w-c_0)\) (6.15)，SDF 与 \(R^m\) 线性相关 \(R^*=\alpha+\beta R^m\)。</p>
+</div>
+<div class="lang en">
+<p>CAPM can be written as a one-factor model with the <strong>market portfolio</strong> as the sole factor. Its economic basis: under several preference assumptions the investor's problem reduces to <strong>mean-variance</strong> optimization, so the market (wealth) portfolio is the pricing factor. With market (total-wealth) gross return \(R^m\), consumption is \(c_t=R^m(w-c_0)\) (6.15), and the SDF is linear in \(R^m\), \(R^*=\alpha+\beta R^m\).</p>
+</div>
+<h3 id="6-2-1-quadratic-utility">6.2.1 Quadratic Utility</h3>
+<div class="lang zh">
+<p>设两期、\(t=0,1\)，投资者用二次效用 \(u(c)=c-\frac b2 c^2\ (b>0)\)，求解</p>
+</div>
+<div class="lang en">
+<p>Two periods \(t=0,1\); investor with quadratic utility \(u(c)=c-\frac b2 c^2\ (b>0)\) solves</p>
+</div>
+<p>$$\max_{c_0,c_1}\ u(c_0)+\beta\,\mathbb E[u(c_1)]\tag{6.16}$$</p>
+<div class="lang zh">
+<p>约束条件 (subject to)：</p>
+</div>
+<div class="lang en">
+<p>subject to:</p>
+</div>
+<p>$$c_0\le e_0-m,\tag{6.17}\qquad$$</p>
+<p>$$c_1\le c_2+m\tilde R,\tag{6.18}$$</p>
+<div class="lang zh">
+<p>其中 \(m\) 是投入风险组合的金额，\(\tilde R\) 是其随机总收益。目标函数 (6.19) 关于 \(\mathbb E[\tilde R]\) 递增、关于 \(\mathrm{Var}(\tilde R)\) 递减——投资者只关心均值与方差，故 CAPM 成立。</p>
+<div class="callout"><div class="callout-title">Warning</div><p><span class="lang zh">二次效用有<strong>饱和点</strong>：当 \(c>1/b\) 时边际效用变负。它只在 \(\tilde R\) 取合理值时才有意义，且隐含的绝对风险厌恶<strong>随财富上升</strong>（不合现实），但作为推出均值方差的最简设定仍很有用。</span></p></div>
+</div>
+<div class="lang en">
+<p>where \(m\) is the amount invested in the risky portfolio and \(\tilde R\) its random gross return. The objective (6.19) increases in \(\mathbb E[\tilde R]\) and decreases in \(\mathrm{Var}(\tilde R)\) — the investor cares only about mean and variance, so CAPM holds.</p>
+<div class="callout"><div class="callout-title">Warning</div><p><span class="lang en">Quadratic utility has a <strong>bliss point</strong>: marginal utility turns negative for \(c>1/b\). It is meaningful only for reasonable values of \(\tilde R\), and implies absolute risk aversion <strong>rising in wealth</strong> (unrealistic) — but as the simplest setup delivering mean-variance it is still useful.</span></p></div>
+</div>
+<h3 id="6-2-2-cara-utility-with-normal-consumption-growth">6.2.2 CARA Utility with Normal Consumption Growth</h3>
+<div class="lang zh">
+<p>设 CARA 效用 \(u(c)=\frac{1-e^{-ac}}{a}\)，且消费增长服从正态 \(\frac{c_2}{c_0}\sim\mathcal N(\mu,\sigma^2)\)。投资者求解</p>
+</div>
+<div class="lang en">
+<p>With CARA utility \(u(c)=\frac{1-e^{-ac}}{a}\) and normal consumption growth \(\frac{c_2}{c_0}\sim\mathcal N(\mu,\sigma^2)\), the investor solves</p>
+</div>
+<p>$$\max_{c_0}\ \frac{1-e^{-ac_0}}{a}+\beta\,\mathbb E\!\left[\frac{1-e^{-ac_1}}{a}\right].$$</p>
+<div class="lang zh">
+<p>正态下 \(\mathbb E[e^{-ac_1}]\) 化为 \(e^{-\mu a+\frac12 a^2\sigma^2}\)，目标 (6.20) 关于 \(\mu\) 递增、关于 \(\sigma^2\) 递减——同样退化为均值方差，CAPM 成立。</p>
+</div>
+<div class="lang en">
+<p>Under normality \(\mathbb E[e^{-ac_1}]\) becomes \(e^{-\mu a+\frac12 a^2\sigma^2}\), so the objective (6.20) increases in \(\mu\) and decreases in \(\sigma^2\) — again reducing to mean-variance, so CAPM holds.</p>
+</div>
+<h3 id="6-2-3-log-utility">6.2.3 Log Utility</h3>
+<div class="lang zh">
+<p>设对数效用在无穷期可加可分 \(u(\{c_t\}_{t=0}^\infty)=\sum_{j=0}^\infty\beta^j\ln c_j\)。投资者求解 \(\max u\) s.t. \(\sum_{j=0}^\infty\beta^j p_j c_j\le w\)。Lagrangian \(\mathcal L=\sum\beta^j\ln c_j+\sum\lambda_j(w-\sum\beta^j p_j c_j)\)，一阶条件 (6.21)、(6.22)：</p>
+</div>
+<div class="lang en">
+<p>Log utility, additively separable over infinite periods, \(u(\{c_t\}_{t=0}^\infty)=\sum_{j=0}^\infty\beta^j\ln c_j\). The investor solves \(\max u\) s.t. \(\sum_{j=0}^\infty\beta^j p_j c_j\le w\). With Lagrangian \(\mathcal L=\sum\beta^j\ln c_j+\sum\lambda_j(w-\sum\beta^j p_j c_j)\), the FOCs (6.21), (6.22):</p>
+</div>
+<p>$$\frac{1}{c_j}=\lambda_j p_j,\tag{6.21}$$</p>
+<p>$$\frac{1}{c_{j+1}}=\lambda_{j+1}p_{j+1}.\tag{6.22}$$</p>
+<div class="lang zh">
+<p>由 (1.7)，\(m=\dfrac{\beta u'(c_{t+1})}{u'(c_t)}=\beta\dfrac{c_j}{c_{j+1}}\)。定义财富组合总收益 \(R^w=\dfrac{c_{j+1}}{c_j}\)（合理，因总量上 \(c_t=D_t\)，总消费等于总红利）。市场出清下红利全被消费，故 SDF 线性于 \(R^w\)：</p>
+</div>
+<div class="lang en">
+<p>By (1.7), \(m=\dfrac{\beta u'(c_{t+1})}{u'(c_t)}=\beta\dfrac{c_j}{c_{j+1}}\). Define the wealth-portfolio gross return \(R^w=\dfrac{c_{j+1}}{c_j}\) (sensible since at the aggregate level \(c_t=D_t\), aggregate consumption equals aggregate dividends). Market clearing has all dividends consumed, so the SDF is linear in \(R^w\):</p>
+</div>
+<p>$$m=\beta\frac{1}{R^w}=\beta\cdot 1-\frac{1}{1^2}(R^w-1)+o(R^w-1)\approx 1+\beta-R^w.$$</p>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p><span class="lang zh"><strong>对数效用的短视性 (myopia)。</strong> 对数投资者把财富的固定比例投入风险资产，与预期收益无关——故消费/储蓄决策与投资决策可分离，市场组合即定价因子。</span></p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p><span class="lang en"><strong>Myopia of log utility.</strong> A log investor puts a fixed fraction of wealth into risky assets regardless of expected returns — so the consumption/saving decision separates from the investment decision, and the market portfolio is the pricing factor.</span></p></div>
+</div>
+<h2 id="6-3-intertemporal-capm-icapm-merton-1973">6.3 Intertemporal CAPM (ICAPM): Merton (1973)</h2>
+<div class="lang zh">
+<p>Merton (1973) 用连续时间动态规划研究 SDF。核心新意：引入<strong>状态变量 (state variable)</strong> \(x(t)\) 刻画投资机会集的变动，得到比静态 CAPM 更丰富的结构——除均值方差需求外还出现<strong>对冲需求</strong>。SDF 形如 \(\frac{dZ_x}{}\)：\(m=\mu dt+s\,dZ_x(t)\)。</p>
+</div>
+<div class="lang en">
+<p>Merton (1973) studies the SDF in continuous-time dynamic programming. The key novelty: a <strong>state variable</strong> \(x(t)\) captures shifts in the investment opportunity set, yielding a richer structure than the static CAPM — a <strong>hedging demand</strong> appears alongside the mean-variance demand. The SDF takes the form \(m=\mu\,dt+s\,dZ_x(t)\).</p>
+</div>
+<h3 id="6-3-1-the-general-maximization-problem">6.3.1 The General Maximization Problem</h3>
+<div class="lang zh">
+<p>投资者最大化生命期效用加遗赠：</p>
+</div>
+<div class="lang en">
+<p>The investor maximizes lifetime utility plus a bequest:</p>
+</div>
+<p>$$\max\ \mathbb E_0\!\left[\int_0^T e^{-\rho t}u\big(c(t)\big)\,dt+e^{-\rho T}B\big(W(T)\big)\right]\tag{6.23}$$</p>
+<div class="lang zh">
+<p>其中 \(u'>0,u''<0\)，\(T\) 为终止时刻，\(B\) 为遗赠函数。设状态向量 \(\mathbf x(t)\)、\(n+1\) 个资产，价值函数 \(J(W(t),\mathbf x(t),t)\) (6.24)。资产价格服从</p>
+</div>
+<div class="lang en">
+<p>with \(u'>0,u''<0\), termination \(T\), bequest \(B\). With state vector \(\mathbf x(t)\), \(n+1\) assets, and value function \(J(W(t),\mathbf x(t),t)\) (6.24), asset prices follow</p>
+</div>
+<p>$$\frac{dP_i(t)}{P_i(t)}=\alpha_i\,dt+\sigma_i\,dZ_i(t),\qquad i=0,1,\dots,n.\tag{6.25}$$</p>
+<div class="lang zh">
+<p>\(\mathrm{Cov}(dP_i/P_i,dP_j/P_j)=\rho_{ij}\sigma_i\sigma_j dt\)。取标量状态 \(x(t)\)：\(dx=\mu\,dt+s\,dZ_x\)，\(\mathrm{Cov}(dP_i/P_i,dx)=\rho_{ix}\sigma_i s\,dt=\sigma_{ix}dt\)。财富演化 (6.26) 由预算约束得到。代入 Bellman 方程并用 Itô 引理展开 (6.27)，得目标 (6.28)，组合权重满足 \(\sum_{i=0}^n\omega_i=1\) (6.29)。一阶条件：</p>
+</div>
+<div class="lang en">
+<p>\(\mathrm{Cov}(dP_i/P_i,dP_j/P_j)=\rho_{ij}\sigma_i\sigma_j dt\). For a scalar state \(x(t)\): \(dx=\mu\,dt+s\,dZ_x\), \(\mathrm{Cov}(dP_i/P_i,dx)=\rho_{ix}\sigma_i s\,dt=\sigma_{ix}dt\). Wealth evolution (6.26) follows from the budget constraint. Plugging into the Bellman equation and expanding by Itô's lemma (6.27) gives the objective (6.28), with portfolio weights \(\sum_{i=0}^n\omega_i=1\) (6.29). The FOCs:</p>
+</div>
+<p>$$e^{-\rho t}u'\big(c(t)\big)=J_W,\tag{6.31}$$</p>
+<p>$$(\alpha_i-r)J_W W(t)+J_{WW}W^2(t)\sum_{j=1}^n\omega_j(t)\sigma_{ij}+J_{Wx}W(t)\sigma_{ix}=0.\tag{6.32}$$</p>
+<div class="lang zh">
+<p>把 (6.32) 对 \(i=1,\dots,n\) 合并为矩阵形式并解出最优权重：</p>
+</div>
+<div class="lang en">
+<p>Combining (6.32) for \(i=1,\dots,n\) into matrix form and solving for the optimal weights:</p>
+</div>
+<p>$$\boldsymbol\omega^*=-\Sigma^{-1}(\boldsymbol\alpha-r\mathbf 1)\,\frac{J_W}{J_{WW}W(t)}-\Sigma^{-1}\boldsymbol\sigma_x\,\frac{J_{Wx}}{J_{WW}W(t)}.\tag{6.33}$$</p>
+<p>$$\omega_i^*=-\sum_{j=1}^n\nu_{ij}(\alpha_j-r)\frac{J_W}{J_{WW}W(t)}-\sum_{j=1}^n\nu_{ij}\sigma_{jx}\frac{J_{Wx}}{J_{WW}W(t)}.\tag{6.34}$$</p>
+<div class="lang zh">
+<p>(6.33) 的两项分别是<strong>均值方差（短视）需求</strong>与<strong>对冲需求</strong>。</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 6.2。</strong> \(u''<0\)（风险厌恶）保证第一项方向正确（\(-J_W/J_{WW}W>0\)）。若 \(u''=0\)（风险中性）投资者只看期望，需求退化。</p></div>
+</div>
+<div class="lang en">
+<p>The two terms of (6.33) are the <strong>mean-variance (myopic) demand</strong> and the <strong>hedging demand</strong>.</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 6.2.</strong> \(u''<0\) (risk aversion) makes the first term well-signed (\(-J_W/J_{WW}W>0\)). If \(u''=0\) (risk neutrality) the investor cares only about means and the demand degenerates.</p></div>
+</div>
+<h3 id="6-3-2-special-case-constant-investment-opportunity-set">6.3.2 Special Case: Constant Investment Opportunity Set</h3>
+<div class="lang zh">
+<p>当投资机会集<strong>恒定</strong>（\(x(t)\) 与收益无关）时无对冲需求，CAPM 作为线性因子表示成立。设单一风险资产 \(\frac{dP}{P}=\alpha\,dt+\sigma\,dZ\)，CRRA 效用，<strong>猜测</strong>价值函数</p>
+</div>
+<div class="lang en">
+<p>When the investment opportunity set is <strong>constant</strong> (\(x(t)\) independent of returns) there is no hedging demand, and CAPM holds as a linear factor representation. With a single risky asset \(\frac{dP}{P}=\alpha\,dt+\sigma\,dZ\), CRRA utility, <strong>guess</strong> the value function</p>
+</div>
+<p>$$J(W(t),t)=h^{-\gamma}e^{-\rho t}\frac{W(t)^{1-\gamma}}{1-\gamma},\qquad \omega^*(t)=\frac{\alpha-r}{\gamma\sigma^2},\quad c^*(t)=hW(t),\tag{6.36}$$</p>
+<p>$$h=\frac{\rho}{\gamma}-\frac{1-\gamma}{\gamma}\left[r+\frac12\frac{(\alpha-r)^2}{\gamma\sigma^2}\right].$$</p>
+<div class="lang zh">
+<p>代入一阶条件 (6.37) \(e^{-\rho t}u'(c)=J_W\) 与 (6.38) \((\alpha-r)J_W W+J_{WW}W^2\omega\sigma^2=0\) 验证，均<strong>平凡成立</strong>——猜测正确。最优风险权重 \(\omega^*=\frac{\alpha-r}{\gamma\sigma^2}\) 不含对冲项。</p>
+</div>
+<div class="lang en">
+<p>Substituting into the FOCs (6.37) \(e^{-\rho t}u'(c)=J_W\) and (6.38) \((\alpha-r)J_W W+J_{WW}W^2\omega\sigma^2=0\) verifies them — both hold <strong>trivially</strong>, so the guess is correct. The optimal risky weight \(\omega^*=\frac{\alpha-r}{\gamma\sigma^2}\) has no hedging term.</p>
+</div>
+<h3 id="6-3-3-general-case-stochastic-investment-opportunity-set">6.3.3 General Case: Stochastic Investment Opportunity Set</h3>
+<div class="lang zh">
+<p>当投资机会集随 \(x(t)\) 变动时，出现<strong>两基金分离</strong>：最优组合是均值方差组合与对冲组合的组合。由 (6.33)，</p>
+</div>
+<div class="lang en">
+<p>When the opportunity set moves with \(x(t)\), a <strong>two-fund separation</strong> appears: the optimal portfolio combines a mean-variance fund and a hedging fund. From (6.33),</p>
+</div>
+<p>$$\boldsymbol\omega^*=-\Sigma^{-1}(\boldsymbol\alpha-r\mathbf 1)\frac{J_W}{J_{WW}W(t)}-\Sigma^{-1}\boldsymbol\sigma_x\frac{J_{Wx}}{J_{WW}W(t)}.\tag{6.39}$$</p>
+<div class="lang zh">
+<p>重写为切点组合 \(\boldsymbol\omega_m\) 与对冲组合 \(\boldsymbol\omega_x\) 的加权 (6.42)：</p>
+</div>
+<div class="lang en">
+<p>Rewrite as a weighting of the tangency fund \(\boldsymbol\omega_m\) and the hedging fund \(\boldsymbol\omega_x\) (6.42):</p>
+</div>
+<p>$$\boldsymbol\omega_m=\frac{\Sigma^{-1}(\boldsymbol\alpha-r\mathbf 1)}{\mathbf 1'\Sigma^{-1}(\boldsymbol\alpha-r\mathbf 1)},\qquad \boldsymbol\omega_x=\frac{\Sigma^{-1}\boldsymbol\sigma_x}{\mathbf 1'\Sigma^{-1}\boldsymbol\sigma_x}.\tag{6.42}$$</p>
+<div class="lang zh">
+<ul>
+<li>\(\boldsymbol\omega_m\) 是<strong>切点组合</strong>（静态均值方差），与 (2.19) 一致。</li>
+<li>\(\boldsymbol\omega_x\) 是模拟状态变量 \(x(t)\) 的<strong>对冲组合</strong>——它通过最大化与 \(x(t)\) 的相关性构造 (6.43)：</li>
+</ul>
+</div>
+<div class="lang en">
+<ul>
+<li>\(\boldsymbol\omega_m\) is the <strong>tangency portfolio</strong> (static mean-variance), consistent with (2.19).</li>
+<li>\(\boldsymbol\omega_x\) is the <strong>hedging portfolio</strong> mimicking the state variable \(x(t)\) — constructed by maximizing its correlation with \(x(t)\) (6.43):</li>
+</ul>
+</div>
+<p>$$\max_{\{\omega_i\}_{i=1}^n}\ \frac{\big(\boldsymbol\omega'\boldsymbol\sigma_x\big)^2}{\boldsymbol\omega'\Sigma\boldsymbol\omega}\ \Rightarrow\ \boldsymbol\omega=\frac{\Sigma^{-1}\boldsymbol\sigma_x}{\mathbf 1'\Sigma^{-1}\boldsymbol\sigma_x}=\boldsymbol\omega_x.\tag{6.43}$$</p>
+<div class="lang zh">
+<p>(6.42) 的直觉：\(\boldsymbol\omega^*=\boldsymbol\omega_m n_m+\boldsymbol\omega_x n_x\)，无风险资产持有 \(1-\mathbf 1'\boldsymbol\omega^*=1-n_m-n_x\)。</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 6.3。</strong> 称 \(\boldsymbol\omega_x\) 为对冲组合，因投资者总想消除 \(x(t)\) 带来的不确定。</p>
+<p><strong>Remark 6.4。</strong> 对冲组合的存在意味着投资者<strong>不再</strong>纯粹做均值方差有效——他愿意牺牲一点均值方差效率去对冲状态变量风险。</p></div>
+</div>
+<div class="lang en">
+<p>Intuition for (6.42): \(\boldsymbol\omega^*=\boldsymbol\omega_m n_m+\boldsymbol\omega_x n_x\), with risk-free holding \(1-\mathbf 1'\boldsymbol\omega^*=1-n_m-n_x\).</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 6.3.</strong> \(\boldsymbol\omega_x\) is called the hedging portfolio because the investor always wants to remove the uncertainty brought by \(x(t)\).</p>
+<p><strong>Remark 6.4.</strong> The presence of the hedging portfolio means the investor is <strong>no longer</strong> purely mean-variance efficient — he sacrifices some mean-variance efficiency to hedge state-variable risk.</p></div>
+</div>
+<h3 id="6-3-4-icapm">6.3.4 ICAPM</h3>
+<div class="lang zh">
+<p>以<strong>代表性投资者 (representative agent)</strong> 加总，记市场组合权重 \(\omega_j^M\) (6.44)–(6.45)，市场 beta \(\beta_{iM}\) (6.46) 与对冲组合 beta \(\beta_{ix}\) (6.47)：</p>
+</div>
+<div class="lang en">
+<p>Aggregating with a <strong>representative agent</strong>, denote market weights \(\omega_j^M\) (6.44)–(6.45), market beta \(\beta_{iM}\) (6.46), and hedging-portfolio beta \(\beta_{ix}\) (6.47):</p>
+</div>
+<p>$$\beta_{iM}=\frac{\mathrm{Cov}\big(\frac{dP_i}{P_i},\frac{dP^M}{P^M}\big)}{\mathrm{Var}\big(\frac{dP^M}{P^M}\big)},\tag{6.46}$$</p>
+<p>$$\beta_{ix}=\frac{\mathrm{Cov}\big(\frac{dP_i}{P_i},dx\big)}{\mathrm{Var}(dx)}=\frac{\sigma_{ix}}{s^2}.\tag{6.47}$$</p>
+<div class="lang zh">
+<p>把 (6.46)、(6.47) 代入 (6.45)，得<strong>连续时间的 ICAPM Beta 表示</strong>：</p>
+</div>
+<div class="lang en">
+<p>Plugging (6.46), (6.47) into (6.45) gives the <strong>continuous-time ICAPM beta representation</strong>:</p>
+</div>
+<p>$$\alpha_i-r=\lambda_M\beta_{iM}+\lambda_x\beta_{ix},\qquad \lambda_M=\frac{-J_{WW}^R W^R}{J_W^R}\sigma_M^2,\quad \lambda_x=\frac{-J_{Wx}^R}{J_W^R}s^2.\tag{6.48}$$</p>
+<div class="lang zh">
+<p>\(\lambda_M,\lambda_x\) 不依赖具体资产 \(i\)，故 (6.48) 是一个 CAPM 式的超额收益 beta 表示。<strong>当 \(\beta_{Mx}=0\)（市场与状态变量正交）时</strong>，\(\lambda_M\) 恰是市场风险溢价——即 ICAPM 退化为 CAPM。</p>
+<p><strong>无代表性投资者时。</strong> (6.38) 的一阶条件对每个投资者 \(h\)（共 \(N\) 个）成立 (6.49)。用各投资者在总投资中的权重 \(q_h\)（\(\sum_h q_h=1,\ q_h\ge0\)）与 \(d_h\equiv q_h/(-J_{WW}^h W^h/J_W^h)\)、\(d\equiv\sum_h d_h\) 加总 (6.50)，得市场层面的市场 beta (6.51) 与对冲 beta (6.52)，最终</p>
+</div>
+<div class="lang en">
+<p>\(\lambda_M,\lambda_x\) do not depend on the specific asset \(i\), so (6.48) is a CAPM-like beta representation of excess return. <strong>When \(\beta_{Mx}=0\) (market orthogonal to the state variable)</strong>, \(\lambda_M\) is exactly the market risk premium — ICAPM collapses to CAPM.</p>
+<p><strong>Without a representative agent.</strong> The FOC (6.38) holds for every investor \(h\) (out of \(N\)) (6.49). Aggregating with each investor's weight \(q_h\) in total investment (\(\sum_h q_h=1,\ q_h\ge0\)), \(d_h\equiv q_h/(-J_{WW}^h W^h/J_W^h)\) and \(d\equiv\sum_h d_h\) (6.50), one obtains the market-level market beta (6.51) and hedging beta (6.52), and finally</p>
+</div>
+<p>$$\alpha_i-r=\lambda_M\beta_{iM}+\lambda_x\beta_{ix},\tag{6.53}$$</p>
+<div class="lang zh">
+<p>与代表性投资者情形同形：当 \(\beta_{Mx}=0\) 时 \(\lambda_M\) 即市场风险溢价。</p>
+<div class="callout"><div class="callout-title">Tip</div><p><span class="lang zh"><strong>ICAPM 的核心讯息。</strong> 投资者不仅关心财富的瞬时波动（市场风险），还关心<strong>未来投资机会会不会变差</strong>（状态变量风险）。能对冲"机会变差"的资产更受青睐、要求更低收益，于是出现第二个定价因子。这为多因子模型（如 Fama–French）提供了理论动机：因子应代表状态变量。</span></p></div>
+</div>
+<div class="lang en">
+<p>Same form as the representative-agent case: when \(\beta_{Mx}=0\), \(\lambda_M\) is the market risk premium.</p>
+<div class="callout"><div class="callout-title">Tip</div><p><span class="lang en"><strong>The key message of ICAPM.</strong> Investors care not only about the instantaneous volatility of wealth (market risk) but also about <strong>whether future investment opportunities deteriorate</strong> (state-variable risk). An asset that hedges "worsening opportunities" is more desirable and demands a lower return, producing a second pricing factor. This gives a theoretical motivation for multi-factor models (e.g. Fama–French): the factors should proxy for state variables.</span></p></div>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Cochrane, J. H. (2005). <em>Asset Pricing</em> (Revised Edition). Princeton University Press.</li>
+<li>Merton, R. C. (1973). An Intertemporal Capital Asset Pricing Model. <em>Econometrica</em> 41(5), 867–887.</li>
+<li>Ross, S. A. (1976). The Arbitrage Theory of Capital Asset Pricing. <em>Journal of Economic Theory</em> 13(3), 341–360.</li>
+<li>Fama, E. F. and K. R. French (1993). Common Risk Factors in the Returns on Stocks and Bonds. <em>Journal of Financial Economics</em> 33(1), 3–56.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#6-1-arbitrage-pricing-theory">6.1 Arbitrage Pricing Theory</a></li>
+          <li><a href="#6-1-1-the-theorem">6.1.1 The Theorem</a></li>
+          <li><a href="#6-1-2-exact-factor-pricing">6.1.2 Exact Factor Pricing</a></li>
+          <li><a href="#6-1-3-approximate-apt">6.1.3 Approximate APT</a></li>
+        <li><a href="#6-2-capm-as-a-linear-factor-model">6.2 CAPM as a Linear Factor Model</a></li>
+          <li><a href="#6-2-1-quadratic-utility">6.2.1 Quadratic Utility</a></li>
+          <li><a href="#6-2-2-cara-utility-with-normal-consumption-growth">6.2.2 CARA Utility with Normal Consumption Growth</a></li>
+          <li><a href="#6-2-3-log-utility">6.2.3 Log Utility</a></li>
+        <li><a href="#6-3-intertemporal-capm-icapm-merton-1973">6.3 Intertemporal CAPM (ICAPM): Merton (1973)</a></li>
+          <li><a href="#6-3-1-the-general-maximization-problem">6.3.1 The General Maximization Problem</a></li>
+          <li><a href="#6-3-2-special-case-constant-investment-opportunity-set">6.3.2 Special Case: Constant Investment Opportunity Set</a></li>
+          <li><a href="#6-3-3-general-case-stochastic-investment-opportunity-set">6.3.3 General Case: Stochastic Investment Opportunity Set</a></li>
+          <li><a href="#6-3-4-icapm">6.3.4 ICAPM</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

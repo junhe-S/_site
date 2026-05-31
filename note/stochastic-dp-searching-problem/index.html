@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13. Stochastic Dynamic Programming: Searching Problem – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>13. Stochastic Dynamic Programming: Searching Problem</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">宏观经济学</span><span class="lang en">Macroeconomics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">随机动态规划</span><span class="lang en">Stochastic Dynamic Programming</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">搜寻问题</span><span class="lang en">Searching Problem</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">保留工资</span><span class="lang en">Reservation Wage</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">比较静态</span><span class="lang en">Comparative Statics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">一阶随机占优</span><span class="lang en">FOSD</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：随机动态规划的搜寻问题。</strong> 求职市场搜寻问题。<strong>§13.1 设定</strong>：agent 初始失业、活无限期；每期从分布 \(F(w)\)（\(w\in[0,B]\)，i.i.d.）抽工资 offer；贴现 \(\beta\)；无分离（匹配后永不离职）⟹ 被匹配价值 \(\frac{w}{1-\beta}\)；失业每期得 \(c\)。<strong>§13.2 值函数</strong>：\(V(w)=\max\{\frac{w}{1-\beta},\,c+\beta\int_0^B V(w')dF(w')\}\)；<strong>保留工资 \(\bar w\)</strong> 满足 \(\frac{\bar w}{1-\beta}=c+\beta\int_0^B V dF\)，化简得 \(\bar w-c=\frac{\beta}{1-\beta}\int_{\bar w}^B(w'-\bar w)dF(w')\equiv h(\bar w)\)。<strong>§13.3 比较静态</strong>：\(h'(\bar w)=-\frac{\beta}{1-\beta}(1-F(\bar w))<0\)、\(h''(\bar w)=\frac{\beta}{1-\beta}f(\bar w)>0\)；失业补偿 \(c\uparrow\) ⟹ \(\bar w\uparrow\)；更好的抽取分布（\(F_1\) 一阶随机占优 \(F_2\)，<strong>定义 13.1</strong>）⟹ \(h_1\ge h_2\) ⟹ \(\bar w_1\ge\bar w_2\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: the searching problem of stochastic dynamic programming.</strong> A job-market searching problem. <strong>§13.1 Set-up</strong>: the agent starts unemployed and lives infinite periods; each period draws a wage offer from \(F(w)\) (\(w\in[0,B]\), i.i.d.); discount \(\beta\); no separation (never resigns after matching) ⟹ value of being matched is \(\frac{w}{1-\beta}\); unemployment pays \(c\) per period. <strong>§13.2 Value function</strong>: \(V(w)=\max\{\frac{w}{1-\beta},\,c+\beta\int_0^B V(w')dF(w')\}\); the <strong>reservation wage \(\bar w\)</strong> satisfies \(\frac{\bar w}{1-\beta}=c+\beta\int_0^B V dF\), simplifying to \(\bar w-c=\frac{\beta}{1-\beta}\int_{\bar w}^B(w'-\bar w)dF(w')\equiv h(\bar w)\). <strong>§13.3 Comparative statics</strong>: \(h'(\bar w)=-\frac{\beta}{1-\beta}(1-F(\bar w))<0\), \(h''(\bar w)=\frac{\beta}{1-\beta}f(\bar w)>0\); higher unemployment compensation \(c\uparrow\) ⟹ \(\bar w\uparrow\); a better draw distribution (\(F_1\) first-order stochastically dominates \(F_2\), <strong>Definition 13.1</strong>) ⟹ \(h_1\ge h_2\) ⟹ \(\bar w_1\ge\bar w_2\).</p></div>
+</div>
+<div class="lang zh">
+<p>本章用随机动态规划方法讨论一个具体的求职市场搜寻问题。</p>
+<h2 id="13-1-set-up">13.1 Set-up</h2>
+<ul>
+<li>agent 起始时失业，可活无限期。</li>
+<li>每期 agent 可从分布 \(F(w)\)（\(w\in[0,B]\)）抽取一个工资 offer。每期的抽取是 i.i.d. 的。</li>
+<li>各取值的贴现因子为 \(\beta\in(0,1)\)。</li>
+<li>为简便，匹配后不允许分离。这意味着收到 offer 后，agent 永不辞职或换工作；他必在所有剩余期工作以领取不变的 \(w\)。</li>
+<li>故被匹配的价值为 \(\dfrac{w}{1-\beta}\)。</li>
+<li>失业每期得 \(c\)。</li>
+</ul>
+<h2 id="13-2-value-function">13.2 Value Function</h2>
+<p>值函数可写为
+$$V(w)=\max\left\{\frac{1}{1-\beta}c+\beta\int_0^B V(w')dF(w')\right\}$$</p>
+<p>事实上更精确地，
+$$V(w)=\max\left\{\frac{w}{1-\beta},\ c+\beta\int_0^B V(w')dF(w')\right\}$$</p>
+<p><strong>图示（值函数图，已转述）：</strong> 横轴当前 offer \(w\)。一条直线 \(\dfrac{w}{1-\beta}\)（接受 offer 的价值）；一条水平线 \(c+\beta\int_0^B V(w')dF(w')\)（拒绝、继续搜寻的价值）。\(V(w)\) 取二者之大：在小 \(w\) 处为水平段、在大 \(w\) 处沿 \(\dfrac{w}{1-\beta}\) 上升；两者相交于<strong>保留工资 \(\bar w\)</strong>。</p>
+<p>由保留工资 \(\bar w\) 的定义：
+$$\begin{aligned}\frac{\bar w}{1-\beta}&=c+\beta\int_0^B V(w')dF(w')\\\Rightarrow\frac{\bar w}{1-\beta}-\frac{\beta\bar w}{1-\beta}&=c+\beta\int_0^B V(w')dF(w')-\frac{\beta\bar w}{1-\beta}\\\Rightarrow\bar w-c&=\beta\int_0^B V(w')dF(w')-\frac{\beta\bar w}{1-\beta}\\\Rightarrow\bar w-c&=\beta\int_0^{\bar w}\frac{\bar w}{1-\beta}dF(w')+\beta\int_{\bar w}^B\frac{w'}{1-\beta}dF(w')-\frac{\beta\bar w}{1-\beta}\\\Rightarrow\bar w-c&=\beta\frac{\bar w}{1-\beta}F(\bar w)+\beta\int_{\bar w}^B\frac{w'}{1-\beta}dF(w')-\frac{\beta\bar w}{1-\beta}\\\Rightarrow\bar w-c&=\beta\frac{\bar w}{1-\beta}(F(\bar w)-1)+\frac{\beta}{1-\beta}\int_{\bar w}^B w'dF(w')\\\Rightarrow\bar w-c&=\underbrace{\frac{\beta}{1-\beta}\int_{\bar w}^B(w'-\bar w)dF(w')}_{\equiv h(\bar w)}\end{aligned}$$
+其中用到 \(V(w')=\dfrac{\bar w}{1-\beta}\)（\(w'<\bar w\)）、\(V(w')=\dfrac{w'}{1-\beta}\)（\(w'\ge\bar w\)）。</p>
+</div>
+<div class="lang en">
+<p>In this part, we will use the stochastic Dynamic Programming method to discuss a specific job market searching problem.</p>
+<h2 id="13-1-set-up">13.1 Set-up</h2>
+<ul>
+<li>The agent starts with being unemployed. He can live for infinite periods.</li>
+<li>Each period, the agent can draw a wage offer from the distribution \(F(w)\) for \(w\in[0,B]\). Draws in each period are i.i.d..</li>
+<li>Discounting factor for values is \(\beta\in(0,1)\).</li>
+<li>For simplicity, no separation after matching is allowed. This means that after receiving the offer, the agent can never resign or switch jobs. Instead, he must be working in all the remaining periods to receive the unchanging \(w\).</li>
+<li>So, the value of being matched is \(\dfrac{w}{1-\beta}\).</li>
+<li>Unemployment for each period is \(c\).</li>
+</ul>
+<h2 id="13-2-value-function">13.2 Value Function</h2>
+<p>The value function can be written as
+$$V(w)=\max\left\{\frac{1}{1-\beta}c+\beta\int_0^B V(w')dF(w')\right\}$$</p>
+<p>More precisely,
+$$V(w)=\max\left\{\frac{w}{1-\beta},\ c+\beta\int_0^B V(w')dF(w')\right\}$$</p>
+<p><strong>Figure (the value function graph, paraphrased):</strong> the horizontal axis is the current offer \(w\). There is a line \(\dfrac{w}{1-\beta}\) (the value of accepting the offer) and a horizontal line \(c+\beta\int_0^B V(w')dF(w')\) (the value of rejecting and keeping searching). \(V(w)\) takes the larger of the two: a flat segment for small \(w\) and then rising along \(\dfrac{w}{1-\beta}\) for large \(w\); the two cross at the <strong>reservation wage \(\bar w\)</strong>.</p>
+<p>By the definition of the reservation wage \(\bar w\):
+$$\begin{aligned}\frac{\bar w}{1-\beta}&=c+\beta\int_0^B V(w')dF(w')\\\Rightarrow\frac{\bar w}{1-\beta}-\frac{\beta\bar w}{1-\beta}&=c+\beta\int_0^B V(w')dF(w')-\frac{\beta\bar w}{1-\beta}\\\Rightarrow\bar w-c&=\beta\int_0^B V(w')dF(w')-\frac{\beta\bar w}{1-\beta}\\\Rightarrow\bar w-c&=\beta\int_0^{\bar w}\frac{\bar w}{1-\beta}dF(w')+\beta\int_{\bar w}^B\frac{w'}{1-\beta}dF(w')-\frac{\beta\bar w}{1-\beta}\\\Rightarrow\bar w-c&=\beta\frac{\bar w}{1-\beta}F(\bar w)+\beta\int_{\bar w}^B\frac{w'}{1-\beta}dF(w')-\frac{\beta\bar w}{1-\beta}\\\Rightarrow\bar w-c&=\beta\frac{\bar w}{1-\beta}(F(\bar w)-1)+\frac{\beta}{1-\beta}\int_{\bar w}^B w'dF(w')\\\Rightarrow\bar w-c&=\underbrace{\frac{\beta}{1-\beta}\int_{\bar w}^B(w'-\bar w)dF(w')}_{\equiv h(\bar w)}\end{aligned}$$
+where we used \(V(w')=\dfrac{\bar w}{1-\beta}\) (for \(w'<\bar w\)) and \(V(w')=\dfrac{w'}{1-\beta}\) (for \(w'\ge\bar w\)).</p>
+</div>
+<h2 id="13-3-comparative-statics">13.3 Comparative Statics</h2>
+<div class="lang zh">
+<p><strong>13.3.1 \(h(\bar w)\) 的性质</strong></p>
+<p>为做比较静态，先考虑 \(h(\bar w)\) 的性质：
+$$h'(\bar w)=\frac{-\beta}{1-\beta}\int_{\bar w}^B dF(w')=\frac{-\beta}{1-\beta}(1-F(\bar w))<0$$
+$$h''(\bar w)=\frac{\beta}{1-\beta}f(\bar w)>0$$
+其中 \(f\) 是 \(F\) 的密度函数。</p>
+<p><strong>13.3.2 比较静态：失业补偿增加</strong></p>
+<p>设 \(c_1<c_2\)，则 \(\bar w-c_1>\bar w-c_2\)。<strong>图示（已转述）：</strong> \(h(\bar w)\) 为递减曲线，直线 \(\bar w-c_1\)（更高）与 \(\bar w-c_2\) 分别与 \(h\) 交于 \(\bar w_1\)、\(\bar w_2\)。从图可见
+$$c_1<c_2\Rightarrow\bar w_1<\bar w_2$$
+这意味着 \(\bar w\) 随 \(c\) 递增。这一结果合理：失业补偿更高意味着等待另一个 offer 的代价更小，故接受当前 offer 的保留价格应上升。</p>
+<p><strong>13.3.3 比较静态：更好的抽取</strong></p>
+<p>设工资抽取的分布从 \(F_2(w)\) 改善到 \(F_1(w)\)，意为 \(F_1(w)\) <strong>一阶随机占优</strong> \(F_2(w)\)。则
+$$\begin{aligned}h(\bar w)&=\frac{\beta}{1-\beta}\int_{\bar w}^B(w'-\bar w)dF(w')\\[\text{integral by parts}]&=\frac{\beta}{1-\beta}\left([(w'-\bar w)F(w')]_{\bar w}^B-\int_{\bar w}^B F(w')dw'\right)\\&=\frac{\beta}{1-\beta}\left(B-\bar w-\int_{\bar w}^B F(w')dw'\right)\\&=\frac{\beta}{1-\beta}\left(\int_{\bar w}^B(1-F(w'))dw'\right)\end{aligned}$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 13.1（一阶随机占优 first order stochastic dominance）
+称 \(F_1\) <strong>一阶随机占优（FOSD）</strong> \(F_2\)，若 \(F_1(x)\le F_2(x)\) 对 \(\forall x\)。</p></div>
+<p>由 \(F_1(w)\) FOSD \(F_2(w)\)：
+$$\begin{aligned}F_1(w')&\le F_2(w')\ \text{for }\forall w'\\\Rightarrow1-F_1(w')&\ge1-F_2(w')\ \text{for }\forall w'\\\Rightarrow\frac{\beta}{1-\beta}\int_{\bar w}^B(1-F_1(w'))dw'&\ge\frac{\beta}{1-\beta}\int_{\bar w}^B(1-F_2(w'))dw'\\\Rightarrow h_1(\bar w)&\ge h_2(\bar w)\end{aligned}$$
+<strong>图示（已转述）：</strong> \(h_1(\bar w)\) 整体位于 \(h_2(\bar w)\) 之上，与同一条 \(\bar w-c\) 线的交点满足 \(\bar w_1\ge\bar w_2\)。由此 \(h_1(\bar w)\ge h_2(\bar w)\Rightarrow\bar w_1\ge\bar w_2\)，即 \(\bar w\) 随抽取分布的改善而递增。这一结果合理：更好的工资抽取分布意味着等待会有更好的机会，故接受当前 offer 的保留价格应上升。</p>
+</div>
+<div class="lang en">
+<p><strong>13.3.1 Properties of \(h(\bar w)\)</strong></p>
+<p>In order to do some comparative statics, let's first consider the property of \(h(\bar w)\):
+$$h'(\bar w)=\frac{-\beta}{1-\beta}\int_{\bar w}^B dF(w')=\frac{-\beta}{1-\beta}(1-F(\bar w))<0$$
+$$h''(\bar w)=\frac{\beta}{1-\beta}f(\bar w)>0$$
+where \(f\) is the density function of \(F\).</p>
+<p><strong>13.3.2 Comparative statics: increased unemployment compensation</strong></p>
+<p>Suppose \(c_1<c_2\), then \(\bar w-c_1>\bar w-c_2\). <strong>Figure (paraphrased):</strong> \(h(\bar w)\) is a decreasing curve, and the lines \(\bar w-c_1\) (higher) and \(\bar w-c_2\) intersect \(h\) at \(\bar w_1\) and \(\bar w_2\) respectively. From the figure, we can see that
+$$c_1<c_2\Rightarrow\bar w_1<\bar w_2$$
+which implies that \(\bar w\) is increasing in \(c\). This result makes sense because higher compensation for unemployment means that waiting for another offer is less costly, therefore the reservation price for accepting the current offer should go up.</p>
+<p><strong>13.3.3 Comparative statics: better draw</strong></p>
+<p>Suppose the distribution of wage draws improves from \(F_2(w)\) to \(F_1(w)\) in the sense that \(F_1(w)\) <strong>first order stochastic dominates</strong> \(F_2(w)\). Then,
+$$\begin{aligned}h(\bar w)&=\frac{\beta}{1-\beta}\int_{\bar w}^B(w'-\bar w)dF(w')\\[\text{integral by parts}]&=\frac{\beta}{1-\beta}\left([(w'-\bar w)F(w')]_{\bar w}^B-\int_{\bar w}^B F(w')dw'\right)\\&=\frac{\beta}{1-\beta}\left(B-\bar w-\int_{\bar w}^B F(w')dw'\right)\\&=\frac{\beta}{1-\beta}\left(\int_{\bar w}^B(1-F(w'))dw'\right)\end{aligned}$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 13.1 (first order stochastic dominance)
+We say \(F_1\) <strong>first order stochastic dominance (FOSD)</strong> \(F_2\) if \(F_1(x)\le F_2(x)\) for \(\forall x\).</p></div>
+<p>Since \(F_1(w)\) FOSD \(F_2(w)\):
+$$\begin{aligned}F_1(w')&\le F_2(w')\ \text{for }\forall w'\\\Rightarrow1-F_1(w')&\ge1-F_2(w')\ \text{for }\forall w'\\\Rightarrow\frac{\beta}{1-\beta}\int_{\bar w}^B(1-F_1(w'))dw'&\ge\frac{\beta}{1-\beta}\int_{\bar w}^B(1-F_2(w'))dw'\\\Rightarrow h_1(\bar w)&\ge h_2(\bar w)\end{aligned}$$
+<strong>Figure (paraphrased):</strong> \(h_1(\bar w)\) lies above \(h_2(\bar w)\) everywhere, so their intersections with the same \(\bar w-c\) line satisfy \(\bar w_1\ge\bar w_2\). Hence \(h_1(\bar w)\ge h_2(\bar w)\Rightarrow\bar w_1\ge\bar w_2\), i.e. \(\bar w\) is increasing in the improvement of the draw distribution. This result makes sense because a better distribution of wage draws means better chances for waiting, so the reservation price for accepting the current offer should increase.</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#13-1-set-up">13.1 Set-up</a></li>
+        <li><a href="#13-2-value-function">13.2 Value Function</a></li>
+        <li><a href="#13-1-set-up">13.1 Set-up</a></li>
+        <li><a href="#13-2-value-function">13.2 Value Function</a></li>
+        <li><a href="#13-3-comparative-statics">13.3 Comparative Statics</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

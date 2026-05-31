@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9. Univariate Time Series – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>9. Univariate Time Series</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">时间序列</span><span class="lang en">Time Series</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">滞后算子</span><span class="lang en">Lag Operator</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Wold 分解</span><span class="lang en">Wold Decomposition</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">脉冲响应</span><span class="lang en">Impulse Response</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">谱分析</span><span class="lang en">Spectral Analysis</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">单位根</span><span class="lang en">Unit Root</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：单变量时间序列。</strong> <strong>§9.1 滞后算子演算</strong>：鞅差序列（MDS）假设 \(E_{t-1}[\varepsilon_t]=0\)；用滞后算子 \(L\) 写 AR(\(m\)) 为 \((1-\rho(L))y_t=\varepsilon_t\)、MA(\(n\)) 为 \(y_t=\theta(L)\varepsilon_t\)、ARMA、VAR(1) 堆叠；定义自协方差 \(\Gamma_k\)、协方差平稳；用 Yule–Walker 关系算 AR/MA 的自协方差。<strong>§9.2 特征多项式</strong>：\(p(\lambda)=\lambda^m(1-\rho(\lambda^{-1}))\)，其根等于堆叠矩阵 \(B\) 的特征值；AR(\(m\)) 协方差平稳 \(\iff\) 所有 \(|\lambda_i|<1\)；可逆滞后多项式把 AR 写成 MA(\(\infty\))。<strong>§9.3 Wold 分解</strong>：任何协方差平稳序列 \(y_t=\mu_t+\sum c_j u_{t-j}\)（\(c_0=1\)，\(u_t\) 为一步预测误差）。<strong>§9.4 预测与脉冲响应</strong>：\(P(y_{t+k}\mid \mathcal F_t)\)、脉冲响应 \(=c_j\)、AR(\(m\)) 两种算法。<strong>§9.5 谱分析</strong>：Fourier 变换、欧拉公式、谱密度 \(s_x(\omega)=\frac1{2\pi}\sum\gamma_j e^{-i\omega j}\)、滞后算子与谱 \(s_y=|h(e^{-i\omega})|^2 s_x\)、Blaschke 因子与翻根、MA(\(n\)) 基本表示。<strong>§9.6 单位根</strong>：单位根、\(r\) 阶单整 \(I(r)\)、差分算子 \(\Delta=1-L\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: univariate time series.</strong> <strong>§9.1 Lag-operator calculus</strong>: the martingale-difference-sequence (MDS) assumption \(E_{t-1}[\varepsilon_t]=0\); with the lag operator \(L\) write AR(\(m\)) as \((1-\rho(L))y_t=\varepsilon_t\), MA(\(n\)) as \(y_t=\theta(L)\varepsilon_t\), ARMA, and the VAR(1) stacking; define autocovariances \(\Gamma_k\), covariance stationarity; compute AR/MA autocovariances via Yule–Walker. <strong>§9.2 Characteristic polynomial</strong>: \(p(\lambda)=\lambda^m(1-\rho(\lambda^{-1}))\), whose roots equal the eigenvalues of the stacked matrix \(B\); an AR(\(m\)) is covariance stationary \(\iff\) all \(|\lambda_i|<1\); inverting lag polynomials rewrites AR as MA(\(\infty\)). <strong>§9.3 Wold decomposition</strong>: any covariance-stationary series \(y_t=\mu_t+\sum c_j u_{t-j}\) (\(c_0=1\), \(u_t\) the one-step forecast errors). <strong>§9.4 Forecasting and impulse responses</strong>: \(P(y_{t+k}\mid \mathcal F_t)\), impulse response \(=c_j\), two methods for AR(\(m\)). <strong>§9.5 Spectral theory</strong>: Fourier transforms, Euler's formula, the spectral density \(s_x(\omega)=\frac1{2\pi}\sum\gamma_j e^{-i\omega j}\), lag operator and spectrum \(s_y=|h(e^{-i\omega})|^2 s_x\), the Blaschke factor and root flipping, the fundamental representation of MA(\(n\)). <strong>§9.6 Unit roots</strong>: unit roots, integration of order \(r\) (\(I(r)\)), the difference operator \(\Delta=1-L\).</p></div>
+</div>
+<h2 id="9-1-lag-operator-calculus">9.1 Lag Operator Calculus</h2>
+<div class="lang zh">
+<p>时间序列建模通常从一个<strong>白噪声驱动项</strong> \(\varepsilon_t\) 出发。我们假设它是<strong>鞅差序列</strong>：在 \(t-1\) 时刻看，\(\varepsilon_t\) 的条件均值为零、条件方差为常数，</p>
+<p>$$E_{t-1}[\varepsilon_t]=0,\qquad E_{t-1}[\varepsilon_t^2]=\sigma^2$$</p>
+<p>其中 \(E_{t-1}[\cdot]\equiv E[\cdot\mid \mathcal F_{t-1}]\) 表示对 \(t-1\) 时刻及之前所有信息的条件期望。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.1（鞅差序列）
+序列 \(\{\varepsilon_t\}\) 称为<strong>鞅差序列（MDS）</strong>，若 \(E_{t-1}[\varepsilon_t]=0\)。</p>
+<p>[!important] 定义 9.2（鞅）
+序列 \(\{x_t\}\) 称为<strong>鞅</strong>，若 \(E_{t-1}[x_t]=x_{t-1}\)。</p>
+<p>[!tip] 注记
+若 \(\{\varepsilon_t\}\) 是 MDS，则 \(x_t=\sum_{s\le t}\varepsilon_s\) 是鞅。MDS 比 i.i.d. 弱（允许条件异方差以外的相依），但比"不相关"强（要求条件均值为零）。</p></div>
+</div>
+<div class="lang en">
+<p>Time-series models usually start from a <strong>white-noise driving term</strong> \(\varepsilon_t\). We assume it is a <strong>martingale difference sequence</strong>: seen from date \(t-1\), its conditional mean is zero and its conditional variance is constant,</p>
+<p>$$E_{t-1}[\varepsilon_t]=0,\qquad E_{t-1}[\varepsilon_t^2]=\sigma^2$$</p>
+<p>where \(E_{t-1}[\cdot]\equiv E[\cdot\mid \mathcal F_{t-1}]\) denotes the expectation conditional on all information up to and including date \(t-1\).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.1 (Martingale difference sequence)
+A sequence \(\{\varepsilon_t\}\) is a <strong>martingale difference sequence (MDS)</strong> if \(E_{t-1}[\varepsilon_t]=0\).</p>
+<p>[!important] Definition 9.2 (Martingale)
+A sequence \(\{x_t\}\) is a <strong>martingale</strong> if \(E_{t-1}[x_t]=x_{t-1}\).</p>
+<p>[!tip] Remark
+If \(\{\varepsilon_t\}\) is an MDS then \(x_t=\sum_{s\le t}\varepsilon_s\) is a martingale. The MDS is weaker than i.i.d. (it allows certain dependence beyond conditional heteroskedasticity) but stronger than "uncorrelated" (it requires the conditional mean to vanish).</p></div>
+</div>
+<div class="lang zh">
+<p><strong>滞后算子。</strong> 定义滞后算子 \(L\) 满足 \(Ly_t=y_{t-1}\)，从而 \(L^j y_t=y_{t-j}\)。</p>
+<ul>
+<li><strong>AR(1)：</strong> \(y_t=\rho y_{t-1}+\varepsilon_t\)。</li>
+<li><strong>AR(\(m\))：</strong> \(y_t=\rho_1 y_{t-1}+\dots+\rho_m y_{t-m}+\varepsilon_t\)，写成
+$$(1-\rho(L))y_t=\varepsilon_t,\qquad \rho(L)=\sum_{j=1}^m\rho_j L^j \tag{9.1}$$</li>
+<li><strong>MA(1)：</strong> \(y_t=\varepsilon_t+\theta_1\varepsilon_{t-1}\)；<strong>MA(\(n\))：</strong> \(y_t=\theta(L)\varepsilon_t\)，\(\theta(L)=\sum_{j=0}^n\theta_j L^j\)（取 \(\theta_0=1\)）。</li>
+<li><strong>ARMA(\(m,n\))：</strong> \((1-\rho(L))y_t=\theta(L)\varepsilon_t\)。</li>
+</ul>
+<p><strong>VAR(1) 堆叠。</strong> 把 AR(\(m\)) 堆叠为一阶向量自回归。令 \(x_t=(y_t,y_{t-1},\dots,y_{t-m+1})'\)，则
+$$x_t=Bx_{t-1}+e_t,\qquad B=\begin{bmatrix}\rho_1&\rho_2&\cdots&\rho_m\\1&0&\cdots&0\\&\ddots&&\vdots\\0&\cdots&1&0\end{bmatrix},\quad e_t=A\varepsilon_t$$
+其中 \(A=(1,0,\dots,0)'\)。这把高阶标量动态化为一阶向量动态，便于分析。</p>
+</div>
+<div class="lang en">
+<p><strong>The lag operator.</strong> Define the lag operator \(L\) by \(Ly_t=y_{t-1}\), so \(L^j y_t=y_{t-j}\).</p>
+<ul>
+<li><strong>AR(1):</strong> \(y_t=\rho y_{t-1}+\varepsilon_t\).</li>
+<li><strong>AR(\(m\)):</strong> \(y_t=\rho_1 y_{t-1}+\dots+\rho_m y_{t-m}+\varepsilon_t\), written as
+$$(1-\rho(L))y_t=\varepsilon_t,\qquad \rho(L)=\sum_{j=1}^m\rho_j L^j \tag{9.1}$$</li>
+<li><strong>MA(1):</strong> \(y_t=\varepsilon_t+\theta_1\varepsilon_{t-1}\); <strong>MA(\(n\)):</strong> \(y_t=\theta(L)\varepsilon_t\), \(\theta(L)=\sum_{j=0}^n\theta_j L^j\) (with \(\theta_0=1\)).</li>
+<li><strong>ARMA(\(m,n\)):</strong> \((1-\rho(L))y_t=\theta(L)\varepsilon_t\).</li>
+</ul>
+<p><strong>The VAR(1) stacking.</strong> Stack an AR(\(m\)) into a first-order vector autoregression. Let \(x_t=(y_t,y_{t-1},\dots,y_{t-m+1})'\); then
+$$x_t=Bx_{t-1}+e_t,\qquad B=\begin{bmatrix}\rho_1&\rho_2&\cdots&\rho_m\\1&0&\cdots&0\\&\ddots&&\vdots\\0&\cdots&1&0\end{bmatrix},\quad e_t=A\varepsilon_t$$
+with \(A=(1,0,\dots,0)'\). This turns higher-order scalar dynamics into first-order vector dynamics, which is convenient for analysis.</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.3（\(k\) 阶自协方差）
+对（去均值的）序列 \(y_t\)，第 \(k\) 阶自协方差为
+$$\Gamma_k=E[y_t y_{t-k}']$$
+标量情形记 \(\gamma_k\)，自相关为 \(\rho_k=\gamma_k/\gamma_0\)。</p>
+<p>[!important] 定义 9.4（协方差平稳）
+\(y_t\) 称为<strong>协方差平稳</strong>（弱平稳），若 \(E[y_t]\) 与所有 \(\Gamma_k\) 都不依赖 \(t\)。</p>
+<p>[!important] 定义 9.5（向量化与 Kronecker 积）
+\(\operatorname{vec}(\cdot)\) 把矩阵按列堆叠成向量。Kronecker 积满足
+$$\operatorname{vec}(AXB)=(B'\otimes A)\operatorname{vec}(X)$$</p>
+<p>[!note]- 证明（向量化恒等式）
+设 \(B\) 的第 \(j\) 列为 \(b_j\)。\(AXB\) 的第 \(j\) 列是 \(AXb_j=A\big(\sum_k X_{\cdot k}b_{kj}\big)=\sum_k b_{kj}\,(A X_{\cdot k})\)，其中 \(X_{\cdot k}\) 为 \(X\) 的第 \(k\) 列。按列堆叠并整理系数即得 \((B'\otimes A)\operatorname{vec}(X)\)。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.3 (\(k\)-th autocovariance)
+For a (demeaned) series \(y_t\), the \(k\)-th autocovariance is
+$$\Gamma_k=E[y_t y_{t-k}']$$
+In the scalar case write \(\gamma_k\), and the autocorrelation is \(\rho_k=\gamma_k/\gamma_0\).</p>
+<p>[!important] Definition 9.4 (Covariance stationary)
+\(y_t\) is <strong>covariance stationary</strong> (weakly stationary) if \(E[y_t]\) and all \(\Gamma_k\) do not depend on \(t\).</p>
+<p>[!important] Definition 9.5 (Vectorization and Kronecker product)
+\(\operatorname{vec}(\cdot)\) stacks the columns of a matrix into a vector. The Kronecker product satisfies
+$$\operatorname{vec}(AXB)=(B'\otimes A)\operatorname{vec}(X)$$</p>
+<p>[!note]- Proof (vectorization identity)
+Let \(b_j\) be the \(j\)-th column of \(B\). The \(j\)-th column of \(AXB\) is \(AXb_j=A\big(\sum_k X_{\cdot k}b_{kj}\big)=\sum_k b_{kj}\,(A X_{\cdot k})\), where \(X_{\cdot k}\) is the \(k\)-th column of \(X\). Stacking the columns and collecting coefficients yields \((B'\otimes A)\operatorname{vec}(X)\). \(\blacksquare\)</p></div>
+</div>
+<div class="lang zh">
+<p><strong>AR(1) 的自协方差。</strong> 设 \(y_t=\rho y_{t-1}+\varepsilon_t\)。两边乘 \(y_t\) 取期望，
+$$\gamma_0=\frac{\sigma^2}{1-\rho^2}\quad(|\rho|<1),\qquad \gamma_k=\rho^k\gamma_0,\qquad \rho_k=\rho^k$$
+当 \(|\rho|=1\) 时分母为零——这是<strong>单位根</strong>情形，序列非平稳（见 §9.6）。</p>
+<p><strong>AR(\(m\)) 的 Yule–Walker 关系。</strong> 用 VAR(1) 堆叠 \(x_t=Bx_{t-1}+e_t\)，\(\Omega=E[e_te_t']=A\sigma^2A'\)。则
+$$\Gamma_k=B\Gamma_{k-1}\ (k\ge1),\qquad \operatorname{vec}(\Gamma_0)=(I-B\otimes B)^{-1}\operatorname{vec}(\Omega)$$
+（第二式来自 \(\Gamma_0=B\Gamma_0B'+\Omega\) 取 \(\operatorname{vec}\) 并用定义 9.5。）</p>
+<p><strong>MA(\(n\)) 的自协方差。</strong> 设 \(y_t=\sum_{j=0}^n\theta_j\varepsilon_{t-j}\)（\(\theta_0=I\)），则
+$$\Gamma_k=\sum_{j}\theta_j\Omega\,\theta_{j-k}'$$
+（求和取使下标合法者；\(k>n\) 时 \(\Gamma_k=0\)——MA(\(n\)) 只有 \(n\) 阶记忆。）</p>
+</div>
+<div class="lang en">
+<p><strong>Autocovariances of AR(1).</strong> Let \(y_t=\rho y_{t-1}+\varepsilon_t\). Multiplying by \(y_t\) and taking expectations,
+$$\gamma_0=\frac{\sigma^2}{1-\rho^2}\quad(|\rho|<1),\qquad \gamma_k=\rho^k\gamma_0,\qquad \rho_k=\rho^k$$
+When \(|\rho|=1\) the denominator vanishes — this is the <strong>unit-root</strong> case, and the series is nonstationary (see §9.6).</p>
+<p><strong>Yule–Walker for AR(\(m\)).</strong> Using the VAR(1) stacking \(x_t=Bx_{t-1}+e_t\) with \(\Omega=E[e_te_t']=A\sigma^2A'\),
+$$\Gamma_k=B\Gamma_{k-1}\ (k\ge1),\qquad \operatorname{vec}(\Gamma_0)=(I-B\otimes B)^{-1}\operatorname{vec}(\Omega)$$
+(the second comes from \(\Gamma_0=B\Gamma_0B'+\Omega\), applying \(\operatorname{vec}\) and Definition 9.5.)</p>
+<p><strong>Autocovariances of MA(\(n\)).</strong> Let \(y_t=\sum_{j=0}^n\theta_j\varepsilon_{t-j}\) (\(\theta_0=I\)); then
+$$\Gamma_k=\sum_{j}\theta_j\Omega\,\theta_{j-k}'$$
+(the sum runs over admissible indices; for \(k>n\) we get \(\Gamma_k=0\) — an MA(\(n\)) has only \(n\) periods of memory.)</p>
+</div>
+<h2 id="9-2-the-characteristic-polynomial">9.2 The Characteristic Polynomial</h2>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.6（特征多项式）
+对 AR(\(m\))（9.1），特征多项式为
+$$p(\lambda)=\lambda^m\big(1-\rho(\lambda^{-1})\big)=\lambda^m-\rho_1\lambda^{m-1}-\dots-\rho_m$$</p>
+<p>[!important] 引理 9.1
+\(p(\lambda)\) 的根恰为堆叠矩阵 \(B\) 的特征值。</p>
+<p>[!important] 定理 9.1（代数基本定理）
+任意 \(m\) 次多项式在复数域上恰有 \(m\) 个根（计重数）。</p>
+<p>[!important] 推论 9.1（滞后多项式的因式分解）
+设 \(p(\lambda)\) 的根为 \(\lambda_1,\dots,\lambda_m\)，则
+$$1-\rho(L)=(1-\lambda_1 L)(1-\lambda_2 L)\cdots(1-\lambda_m L)$$</p>
+<p>[!important] 命题 9.1（平稳性判据）
+AR(\(m\)) 协方差平稳 \(\iff\) 所有特征根 \(|\lambda_i|<1\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.6 (Characteristic polynomial)
+For the AR(\(m\)) of (9.1), the characteristic polynomial is
+$$p(\lambda)=\lambda^m\big(1-\rho(\lambda^{-1})\big)=\lambda^m-\rho_1\lambda^{m-1}-\dots-\rho_m$$</p>
+<p>[!important] Lemma 9.1
+The roots of \(p(\lambda)\) are exactly the eigenvalues of the stacked matrix \(B\).</p>
+<p>[!important] Theorem 9.1 (Fundamental theorem of algebra)
+Every degree-\(m\) polynomial has exactly \(m\) roots over the complex field (counting multiplicity).</p>
+<p>[!important] Corollary 9.1 (Factoring the lag polynomial)
+If the roots of \(p(\lambda)\) are \(\lambda_1,\dots,\lambda_m\), then
+$$1-\rho(L)=(1-\lambda_1 L)(1-\lambda_2 L)\cdots(1-\lambda_m L)$$</p>
+<p>[!important] Proposition 9.1 (Stationarity criterion)
+An AR(\(m\)) is covariance stationary \(\iff\) all characteristic roots satisfy \(|\lambda_i|<1\).</p></div>
+</div>
+<h3 id="9-2-1-inverting-lag-polynomials">9.2.1 Inverting Lag Polynomials</h3>
+<div class="lang zh">
+<p>当 \(|\rho|<1\) 时，\(\frac1{1-\rho L}=\sum_{j\ge0}\rho^j L^j\)，于是 AR(1) 可转写为 MA(\(\infty\))：
+$$y_t=\frac1{1-\rho L}\varepsilon_t=\sum_{j=0}^\infty\rho^j\varepsilon_{t-j}$$
+对 VAR(1)，\(x_t=(I-BL)^{-1}A\varepsilon_t=\sum_{j\ge0}B^jA\varepsilon_{t-j}\)（当 \(B\) 的谱半径小于 1 时收敛）。一般 AR(\(m\)) 用推论 9.1 逐因子求逆即可化为 MA(\(\infty\))。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 9.5–9.6
+求逆的收敛性正是平稳性条件 \(|\lambda_i|<1\) 的另一种表述：根落在单位圆内 \(\iff\) 无穷阶 MA 权重指数衰减 \(\iff\) 序列协方差平稳。</p></div>
+</div>
+<div class="lang en">
+<p>When \(|\rho|<1\), \(\frac1{1-\rho L}=\sum_{j\ge0}\rho^j L^j\), so an AR(1) can be rewritten as an MA(\(\infty\)):
+$$y_t=\frac1{1-\rho L}\varepsilon_t=\sum_{j=0}^\infty\rho^j\varepsilon_{t-j}$$
+For the VAR(1), \(x_t=(I-BL)^{-1}A\varepsilon_t=\sum_{j\ge0}B^jA\varepsilon_{t-j}\) (convergent when the spectral radius of \(B\) is below 1). A general AR(\(m\)) is turned into an MA(\(\infty\)) by inverting factor by factor via Corollary 9.1.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remarks 9.5–9.6
+Convergence of the inversion is just a restatement of the stationarity condition \(|\lambda_i|<1\): roots inside the unit circle \(\iff\) exponentially decaying infinite-order MA weights \(\iff\) a covariance-stationary series.</p></div>
+</div>
+<h2 id="9-3-the-wold-decomposition">9.3 The Wold Decomposition</h2>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定理 9.2（Wold 分解）
+任意（零均值）协方差平稳序列 \(y_t\) 可唯一分解为
+$$y_t=\mu_t+\sum_{j=0}^\infty c_j u_{t-j},\qquad c_0=1$$
+其中 \(\mu_t\) 是可由 \(y\) 的无穷过去线性预测的<strong>确定性成分</strong>，\(u_t=y_t-P(y_t\mid y_{t-1},y_{t-2},\dots)\) 是<strong>一步预测误差</strong>（互不相关的白噪声），\(\sum c_j^2<\infty\)。</p>
+<p>[!important] 命题 9.2（AR(\(m\)) 的 Wold 分解）
+对协方差平稳 AR(\(m\))，Wold 分解即把 \((1-\rho(L))^{-1}\) 展开得到的 MA(\(\infty\)) 表示，\(u_t=\varepsilon_t\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Theorem 9.2 (Wold decomposition)
+Any (zero-mean) covariance-stationary series \(y_t\) admits a unique decomposition
+$$y_t=\mu_t+\sum_{j=0}^\infty c_j u_{t-j},\qquad c_0=1$$
+where \(\mu_t\) is the <strong>deterministic component</strong> linearly predictable from the infinite past of \(y\), \(u_t=y_t-P(y_t\mid y_{t-1},y_{t-2},\dots)\) are the <strong>one-step forecast errors</strong> (mutually uncorrelated white noise), and \(\sum c_j^2<\infty\).</p>
+<p>[!important] Proposition 9.2 (Wold for AR(\(m\)))
+For a covariance-stationary AR(\(m\)), the Wold decomposition is exactly the MA(\(\infty\)) representation obtained by expanding \((1-\rho(L))^{-1}\), with \(u_t=\varepsilon_t\).</p></div>
+</div>
+<div class="lang zh">
+<p><strong>例：两个 MA(1) 有相同的 Wold 分解。</strong> 自协方差只确定到一组<strong>等价</strong>的 MA 表示。考虑两个 MA(1)：\(y_t=\varepsilon_t+\tfrac12\varepsilon_{t-1}\)（\(\sigma^2=4\)）与 \(y_t=\varepsilon_t+2\varepsilon_{t-1}\)（\(\sigma^2=1\)）。它们的自协方差完全相同：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>\(\gamma_0\)</th>
+<th>\(\gamma_1\)</th>
+<th>\(\gamma_k\ (k\ge2)\)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>\(\theta_1=\tfrac12,\ \sigma^2=4\)</td>
+<td>\(4(1+\tfrac14)=5\)</td>
+<td>\(4\cdot\tfrac12=2\)</td>
+<td>\(0\)</td>
+</tr>
+<tr>
+<td>\(\theta_1=2,\ \sigma^2=1\)</td>
+<td>\(1\cdot(1+4)=5\)</td>
+<td>\(1\cdot2=2\)</td>
+<td>\(0\)</td>
+</tr>
+</tbody>
+</table>
+<p>由于二者自协方差结构一致，它们有<strong>相同的 Wold 分解</strong>。其中根落在单位圆外的那个（\(\theta_1=2\)）可通过"翻根"化为单位圆内的可逆表示（见 §9.5.7）。</p>
+</div>
+<div class="lang en">
+<p><strong>Example: two MA(1)'s share one Wold decomposition.</strong> Autocovariances pin the process down only up to a class of <strong>equivalent</strong> MA representations. Consider two MA(1)'s: \(y_t=\varepsilon_t+\tfrac12\varepsilon_{t-1}\) (\(\sigma^2=4\)) and \(y_t=\varepsilon_t+2\varepsilon_{t-1}\) (\(\sigma^2=1\)). Their autocovariances are identical:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>\(\gamma_0\)</th>
+<th>\(\gamma_1\)</th>
+<th>\(\gamma_k\ (k\ge2)\)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>\(\theta_1=\tfrac12,\ \sigma^2=4\)</td>
+<td>\(4(1+\tfrac14)=5\)</td>
+<td>\(4\cdot\tfrac12=2\)</td>
+<td>\(0\)</td>
+</tr>
+<tr>
+<td>\(\theta_1=2,\ \sigma^2=1\)</td>
+<td>\(1\cdot(1+4)=5\)</td>
+<td>\(1\cdot2=2\)</td>
+<td>\(0\)</td>
+</tr>
+</tbody>
+</table>
+<p>Because they share the same autocovariance structure, they have the <strong>same Wold decomposition</strong>. The one whose root lies outside the unit circle (\(\theta_1=2\)) can be converted into an invertible inside-the-circle representation by "flipping the root" (see §9.5.7).</p>
+</div>
+<h2 id="9-4-forecasting-and-impulse-responses">9.4 Forecasting and Impulse Responses</h2>
+<div class="lang zh">
+<p><strong>预测。</strong> 给定 Wold 分解，\(k\) 步线性预测为
+$$P(y_{t+k}\mid y_t,y_{t-1},\dots)=\mu_{t+k}+\sum_{j\ge k}c_j u_{t+k-j} \tag{9.4}$$
+即把未来未实现的冲击（\(j<k\) 项）置零。预测误差为 \(\sum_{j=0}^{k-1}c_j u_{t+k-j}\)，方差随 \(k\) 单调上升。</p>
+<p><strong>未知 Wold 分解时的预测。</strong> 实务中先估计 ARMA 参数，再用估得的 \(\hat c_j\) 代入（9.4）。</p>
+<p><strong>脉冲响应。</strong> 一单位冲击 \(u_t=1\) 对 \(j\) 期后的影响为
+$$P(y_{t+j}\mid u_t=1)=c_j$$
+即 Wold 系数本身就是脉冲响应函数（IRF）。</p>
+</div>
+<div class="lang en">
+<p><strong>Forecasting.</strong> Given the Wold decomposition, the \(k\)-step linear forecast is
+$$P(y_{t+k}\mid y_t,y_{t-1},\dots)=\mu_{t+k}+\sum_{j\ge k}c_j u_{t+k-j} \tag{9.4}$$
+i.e. set the not-yet-realized future shocks (terms with \(j<k\)) to zero. The forecast error is \(\sum_{j=0}^{k-1}c_j u_{t+k-j}\), whose variance rises monotonically in \(k\).</p>
+<p><strong>Forecasting with an unknown Wold decomposition.</strong> In practice one estimates ARMA parameters first, then plugs the estimated \(\hat c_j\) into (9.4).</p>
+<p><strong>Impulse responses.</strong> The effect of a unit shock \(u_t=1\) on \(y\) at horizon \(j\) is
+$$P(y_{t+j}\mid u_t=1)=c_j$$
+so the Wold coefficients are themselves the impulse-response function (IRF).</p>
+</div>
+<div class="lang zh">
+<p><strong>AR(\(m\)) 脉冲响应的两种算法。</strong></p>
+<p><strong>方法 1（堆叠/VAR）：</strong> 用 \(x_t=Bx_{t-1}+A\varepsilon_t\)，则 \(j\) 期脉冲响应为 \(A'B^jA\)（取出第一坐标）。直接迭代矩阵幂 \(B^j\) 即可。</p>
+<p><strong>方法 2（因式分解）：</strong> 对 AR(2)，设特征根为 \(\lambda_1,\lambda_2\)，则
+$$c_j=\frac{\lambda_1^{\,j+1}-\lambda_2^{\,j+1}}{\lambda_1-\lambda_2}$$
+即便 \(\lambda_1,\lambda_2\) 是共轭复根，\(c_j\) 仍是实数（共轭对的虚部相消），此时 IRF 表现为<strong>衰减的正弦振荡</strong>。</p>
+</div>
+<div class="lang en">
+<p><strong>Two methods for AR(\(m\)) impulse responses.</strong></p>
+<p><strong>Method 1 (stacking/VAR):</strong> With \(x_t=Bx_{t-1}+A\varepsilon_t\), the \(j\)-horizon impulse response is \(A'B^jA\) (picking out the first coordinate). Just iterate the matrix power \(B^j\).</p>
+<p><strong>Method 2 (factoring):</strong> For an AR(2) with characteristic roots \(\lambda_1,\lambda_2\),
+$$c_j=\frac{\lambda_1^{\,j+1}-\lambda_2^{\,j+1}}{\lambda_1-\lambda_2}$$
+Even when \(\lambda_1,\lambda_2\) are complex conjugates, \(c_j\) remains real (the imaginary parts of the conjugate pair cancel); the IRF then shows <strong>damped sinusoidal oscillations</strong>.</p>
+</div>
+<h2 id="9-5-spectral-theory">9.5 Spectral Theory</h2>
+<div class="lang zh">
+<p>谱分析把时间序列从<strong>时域</strong>转换到<strong>频域</strong>：一个序列在时域里是各期取值，在频域里则被表示为一连串不同频率的余弦波的叠加。本节先建立 Fourier 变换工具，再定义谱密度，并把滞后算子运算搬到频域。</p>
+</div>
+<div class="lang en">
+<p>Spectral analysis transforms a time series from the <strong>time domain</strong> to the <strong>frequency domain</strong>: a series is a set of period-by-period values in the time domain, but in the frequency domain it is represented as a superposition of cosine waves at different frequencies. This section first builds the Fourier-transform tools, then defines the spectral density, and finally carries lag-operator algebra into the frequency domain.</p>
+</div>
+<h3 id="9-5-2-euler-s-formula">9.5.2 Euler's Formula</h3>
+<div class="lang zh">
+<p>复指数与三角函数的桥梁是<strong>欧拉公式</strong>：
+$$e^{i\omega}=\cos(\omega)+i\sin(\omega)$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 证明（Taylor 展开）
+将 \(e^{i\omega}=\sum_{k\ge0}\frac{(i\omega)^k}{k!}\) 按 \(k\) 的奇偶分组：偶次项 \(i^{2n}=(-1)^n\) 给出 \(\sum(-1)^n\omega^{2n}/(2n)!=\cos\omega\)；奇次项 \(i^{2n+1}=i(-1)^n\) 给出 \(i\sum(-1)^n\omega^{2n+1}/(2n+1)!=i\sin\omega\)。相加即得。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<p>The bridge between complex exponentials and trigonometric functions is <strong>Euler's formula</strong>:
+$$e^{i\omega}=\cos(\omega)+i\sin(\omega)$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Proof (Taylor expansion)
+Group \(e^{i\omega}=\sum_{k\ge0}\frac{(i\omega)^k}{k!}\) by parity of \(k\): the even terms with \(i^{2n}=(-1)^n\) give \(\sum(-1)^n\omega^{2n}/(2n)!=\cos\omega\); the odd terms with \(i^{2n+1}=i(-1)^n\) give \(i\sum(-1)^n\omega^{2n+1}/(2n+1)!=i\sin\omega\). Summing yields the result. \(\blacksquare\)</p></div>
+</div>
+<h3 id="9-5-3-fourier-transforms">9.5.3 Fourier Transforms</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>Fourier 变换与逆变换
+给定绝对可和的（非随机）序列 \(\{x_j\}\)（\(\sum_j|x_j|<\infty\)），定义
+$$\tilde x(\omega)\equiv\frac1{2\pi}\sum_{j=-\infty}^\infty x_j e^{-i\omega j}$$
+逆变换为
+$$x_j=\int_{-\pi}^{\pi}\tilde x(\omega)\,e^{i\omega j}\,d\omega$$</p></div>
+<p><strong>复平面上沿实线的积分。</strong> 对 \(z=x+yi\)，若 \(f(z)=u(x,y)+v(x,y)i\) 沿曲线 \(C\) 连续，则
+$$\int_C f(z)\,dz=\int_C u\,dx-v\,dy+i\int_C v\,dx+u\,dy \tag{9.7}$$
+本章我们总是沿实轴对 \(\omega\) 积分（\(dy=0\)），故 (9.7) 简化为
+$$\int_C f(z)\,dz=\int_{-\pi}^{\pi}u(x,y)\,d\omega+i\int_{-\pi}^{\pi}v(x,y)\,d\omega$$
+（详细推导见附录 24。）</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Fourier transform and its inverse
+Given an absolutely summable (non-stochastic) sequence \(\{x_j\}\) (\(\sum_j|x_j|<\infty\)), define
+$$\tilde x(\omega)\equiv\frac1{2\pi}\sum_{j=-\infty}^\infty x_j e^{-i\omega j}$$
+The inverse transform is
+$$x_j=\int_{-\pi}^{\pi}\tilde x(\omega)\,e^{i\omega j}\,d\omega$$</p></div>
+<p><strong>Integration along the real line in the complex plane.</strong> For \(z=x+yi\), if \(f(z)=u(x,y)+v(x,y)i\) is continuous along a curve \(C\), then
+$$\int_C f(z)\,dz=\int_C u\,dx-v\,dy+i\int_C v\,dx+u\,dy \tag{9.7}$$
+Throughout this chapter we always integrate over \(\omega\) along the real axis (\(dy=0\)), so (9.7) simplifies to
+$$\int_C f(z)\,dz=\int_{-\pi}^{\pi}u(x,y)\,d\omega+i\int_{-\pi}^{\pi}v(x,y)\,d\omega$$
+(See Appendix 24 for the full derivation.)</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>- 证明（逆变换）
+关键引理：对 \(\forall k\in\mathbb Z\)、\(k\ne0\)，
+$$\int_{-\pi}^{\pi}e^{i\omega k}\,d\omega=\Big[\tfrac1k\sin(k\omega)\Big]_{-\pi}^{\pi}-i\Big[\tfrac1k\cos(k\omega)\Big]_{-\pi}^{\pi}=\tfrac2k\sin(k\pi)+0=0$$
+（\(k=0\) 时积分为 \(2\pi\)。）于是
+$$\int_{-\pi}^{\pi}\tilde x(\omega)e^{i\omega j}\,d\omega=\int_{-\pi}^{\pi}\frac1{2\pi}\Big(\sum_m x_m e^{-i\omega m}\Big)e^{i\omega j}\,d\omega=\frac1{2\pi}\int_{-\pi}^{\pi}x_j\,d\omega+\underbrace{\frac1{2\pi}\int_{-\pi}^{\pi}\sum_{m\ne j}x_m e^{i\omega(j-m)}\,d\omega}_{=0}=x_j$$
+\(\blacksquare\)</p></div>
+<p><strong>直观。</strong> 在本节开头我们说"时域序列被表示为一连串余弦波"。有了 \(\tilde x(\omega)\) 的定义，可以更清楚地理解这个变换。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>- Proof (inverse transform)
+Key lemma: for all \(k\in\mathbb Z\), \(k\ne0\),
+$$\int_{-\pi}^{\pi}e^{i\omega k}\,d\omega=\Big[\tfrac1k\sin(k\omega)\Big]_{-\pi}^{\pi}-i\Big[\tfrac1k\cos(k\omega)\Big]_{-\pi}^{\pi}=\tfrac2k\sin(k\pi)+0=0$$
+(for \(k=0\) the integral equals \(2\pi\).) Hence
+$$\int_{-\pi}^{\pi}\tilde x(\omega)e^{i\omega j}\,d\omega=\int_{-\pi}^{\pi}\frac1{2\pi}\Big(\sum_m x_m e^{-i\omega m}\Big)e^{i\omega j}\,d\omega=\frac1{2\pi}\int_{-\pi}^{\pi}x_j\,d\omega+\underbrace{\frac1{2\pi}\int_{-\pi}^{\pi}\sum_{m\ne j}x_m e^{i\omega(j-m)}\,d\omega}_{=0}=x_j$$
+\(\blacksquare\)</p></div>
+<p><strong>Intuition.</strong> At the start of this section we said the time-domain series is "represented as a continuum of cosine lines." With \(\tilde x(\omega)\) in hand we can understand this transform better.</p>
+</div>
+<div class="lang zh">
+<p>把每个时点 \(t\) 起初想象成一条<strong>标准余弦线</strong> \(y^c_{0,t}=1\cdot\cos(\omega t+0)\)，\(\omega\in[-\pi,\pi]\)。我们要调整每条线的振幅与初相，使得在每个 \(t\) 上对所有频率积分恰好等于实际高度：
+$$\int_{-\pi}^{\pi}y^c_t\,d\omega=y_t,\quad \forall t=1,\dots,T$$
+\(\tilde x(\omega)\) 正是完成这个目标的（复值）系数。把 \(\tilde x(\omega)=A^\omega\cos(\phi^\omega)+iA^\omega\sin(\phi^\omega)\) 与标准余弦线 \(e^{i\omega t}=\cos(\omega t)+i\sin(\omega t)\) 相乘，实部为 \(A^\omega\cos(\omega t+\phi^\omega)\)——即振幅 \(A^\omega\)、初相 \(\phi^\omega\) 调整后的余弦波；虚部在 \([-\pi,\pi]\) 上积分相消。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 9.12–9.13
+使用复值是为了方便地同时调整每条余弦线的振幅与初相，而虚部在积分时全部相消。\(A^\omega=|\tilde x(\omega)|\) 度量每个频率（初始）余弦线的高度（权重），故 \(|\tilde x(\omega)|\) 是每个频率所含信息的权重。</p></div>
+</div>
+<div class="lang en">
+<p>Imagine each date \(t\) as starting from a <strong>standard cosine line</strong> \(y^c_{0,t}=1\cdot\cos(\omega t+0)\), \(\omega\in[-\pi,\pi]\). We want to adjust the amplitude and initial phase of each so that, at every \(t\), integrating over all frequencies returns the actual height:
+$$\int_{-\pi}^{\pi}y^c_t\,d\omega=y_t,\quad \forall t=1,\dots,T$$
+\(\tilde x(\omega)\) is precisely the (complex) coefficient that achieves this. Multiplying \(\tilde x(\omega)=A^\omega\cos(\phi^\omega)+iA^\omega\sin(\phi^\omega)\) by the standard cosine line \(e^{i\omega t}=\cos(\omega t)+i\sin(\omega t)\), the real part is \(A^\omega\cos(\omega t+\phi^\omega)\) — a cosine wave with adjusted amplitude \(A^\omega\) and phase \(\phi^\omega\); the imaginary part integrates to zero over \([-\pi,\pi]\).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remarks 9.12–9.13
+Complex values are used to conveniently adjust both amplitude and initial phase of each cosine line at once, while the imaginary part cancels out under integration. \(A^\omega=|\tilde x(\omega)|\) measures the height (weight) of each frequency's (initial) cosine line, so \(|\tilde x(\omega)|\) is the weight of the information carried by each frequency.</p></div>
+</div>
+<h3 id="9-5-4-lag-operator-calculus-and-fourier-transforms">9.5.4 Lag-Operator Calculus and Fourier Transforms</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>滞后算子的 Fourier 变换
+设 \(y_t=h(L)x_t=\sum_{j=-\infty}^\infty h_j x_{t-j}\)，\(h(L)=\sum_j h_j L^j\)。则
+$$\tilde y(\omega)=h\big(e^{-i\omega}\big)\tilde x(\omega)=2\pi\tilde h(\omega)\tilde x(\omega) \tag{9.8}$$
+其中 \(\tilde h(\omega)=\frac1{2\pi}\sum_j h_j e^{-i\omega j}\)。<strong>滤波在时域是卷积，在频域是逐点相乘。</strong></p>
+<p>[!note]- 证明（滞后算子的 Fourier 变换）
+$$\begin{aligned}h(e^{-i\omega})\tilde x(\omega)&=\Big(\sum_j h_j e^{-i\omega j}\Big)\Big(\frac1{2\pi}\sum_t x_t e^{-i\omega t}\Big)\\&=\frac1{2\pi}\sum_t\sum_j h_j x_{t-j}\,e^{-i\omega t}\quad(\text{change of index})\\&=\frac1{2\pi}\sum_t\Big(\sum_j h_j x_{t-j}\Big)e^{-i\omega t}=\frac1{2\pi}\sum_t y_t e^{-i\omega t}=\tilde y(\omega)\end{aligned}$$
+并注意 \(h(e^{-i\omega})=\sum_j h_j e^{-i\omega j}=2\pi\tilde h(\omega)\)。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Fourier transform of a lag operator
+Let \(y_t=h(L)x_t=\sum_{j=-\infty}^\infty h_j x_{t-j}\), \(h(L)=\sum_j h_j L^j\). Then
+$$\tilde y(\omega)=h\big(e^{-i\omega}\big)\tilde x(\omega)=2\pi\tilde h(\omega)\tilde x(\omega) \tag{9.8}$$
+where \(\tilde h(\omega)=\frac1{2\pi}\sum_j h_j e^{-i\omega j}\). <strong>Filtering is convolution in the time domain and pointwise multiplication in the frequency domain.</strong></p>
+<p>[!note]- Proof (Fourier transform of a lag operator)
+$$\begin{aligned}h(e^{-i\omega})\tilde x(\omega)&=\Big(\sum_j h_j e^{-i\omega j}\Big)\Big(\frac1{2\pi}\sum_t x_t e^{-i\omega t}\Big)\\&=\frac1{2\pi}\sum_t\sum_j h_j x_{t-j}\,e^{-i\omega t}\quad(\text{change of index})\\&=\frac1{2\pi}\sum_t\Big(\sum_j h_j x_{t-j}\Big)e^{-i\omega t}=\frac1{2\pi}\sum_t y_t e^{-i\omega t}=\tilde y(\omega)\end{aligned}$$
+and note \(h(e^{-i\omega})=\sum_j h_j e^{-i\omega j}=2\pi\tilde h(\omega)\). \(\blacksquare\)</p></div>
+<p><strong>Examples.</strong> For AR(\(m\)) \((1-\rho(L))y_t=\epsilon_t\), by (9.8) \(\big(1-\rho(e^{-i\omega})\big)\tilde y(\omega)=\tilde\epsilon(\omega)\). For MA(\(n\)) \(y_t=\theta(L)\epsilon_t\), \(\tilde y(\omega)=\theta(e^{-i\omega})\tilde\epsilon(\omega)\).</p>
+</div>
+<h3 id="9-5-5-the-spectrum">9.5.5 The Spectrum</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.7（总体谱）
+设 \(x_t\) 是零均值协方差平稳序列，\(\gamma_j=E[x_t x_{t-j}]=\gamma_{-j}\)。<strong>总体谱</strong>为自协方差的 Fourier 变换：
+$$s_x(\omega)\equiv\tilde\gamma(\omega)=\frac1{2\pi}\sum_{j=-\infty}^\infty\gamma_j e^{-i\omega j}$$</p></div>
+<p>谱与期望模长成比例：\(s_x(\omega)\) 不严格等于 \(E[\tilde x(\omega)\overline{\tilde x(\omega)}]=E[|\tilde x(\omega)|^2]\)，而是它乘上一个常数。为看清这点，截断 \(\tilde x_T(\omega)=\frac1{\sqrt{2T}}\frac1{2\pi}\sum_{j=-T}^T x_j e^{-i\omega j}\)，可证
+$$s_x(\omega)=2\pi\lim_{T\to\infty}E\big[\tilde x_T(\omega)\overline{\tilde x_T(\omega)}\big]$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 证明（谱即极限期望模长）
+$$\begin{aligned}E\big[\tilde x_T(\omega)\overline{\tilde x_T(\omega)}\big]&=\frac1{2T}\frac1{2\pi}E\Big[\sum_{k=-T}^T\sum_{i=-T}^T x_i x_k e^{-i\omega(i-k)}\Big]\\&=\frac1{2T}\frac1{2\pi}\sum_{j=-2T}^{2T}\gamma_j\,(2T+1-|j|)\,e^{-i\omega j}\\&=\frac1{2\pi}\Big(\frac1{2\pi}\sum_{j=-2T}^{2T}\gamma_j\,\frac{2T+1-|j|}{2T}\,e^{-i\omega j}\Big)\end{aligned}$$
+令 \(T\to\infty\)，权重 \(\frac{2T+1-|j|}{2T}\to1\)，故 \(\lim_T E[\tilde x_T\overline{\tilde x_T}]=\frac1{2\pi}s_x(\omega)\)，即 \(s_x(\omega)=2\pi\lim_T E[\tilde x_T(\omega)\overline{\tilde x_T(\omega)}]\)。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.7 (Population spectrum)
+Let \(x_t\) be a zero-mean covariance-stationary series with \(\gamma_j=E[x_t x_{t-j}]=\gamma_{-j}\). The <strong>population spectrum</strong> is the Fourier transform of the autocovariances:
+$$s_x(\omega)\equiv\tilde\gamma(\omega)=\frac1{2\pi}\sum_{j=-\infty}^\infty\gamma_j e^{-i\omega j}$$</p></div>
+<p>The spectrum is proportional to an expected squared modulus: \(s_x(\omega)\) is not exactly \(E[\tilde x(\omega)\overline{\tilde x(\omega)}]=E[|\tilde x(\omega)|^2]\), but a constant multiple of it. To see this, truncate \(\tilde x_T(\omega)=\frac1{\sqrt{2T}}\frac1{2\pi}\sum_{j=-T}^T x_j e^{-i\omega j}\); one can show
+$$s_x(\omega)=2\pi\lim_{T\to\infty}E\big[\tilde x_T(\omega)\overline{\tilde x_T(\omega)}\big]$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Proof (spectrum as a limiting expected modulus)
+$$\begin{aligned}E\big[\tilde x_T(\omega)\overline{\tilde x_T(\omega)}\big]&=\frac1{2T}\frac1{2\pi}E\Big[\sum_{k=-T}^T\sum_{i=-T}^T x_i x_k e^{-i\omega(i-k)}\Big]\\&=\frac1{2T}\frac1{2\pi}\sum_{j=-2T}^{2T}\gamma_j\,(2T+1-|j|)\,e^{-i\omega j}\\&=\frac1{2\pi}\Big(\frac1{2\pi}\sum_{j=-2T}^{2T}\gamma_j\,\frac{2T+1-|j|}{2T}\,e^{-i\omega j}\Big)\end{aligned}$$
+As \(T\to\infty\) the weight \(\frac{2T+1-|j|}{2T}\to1\), so \(\lim_T E[\tilde x_T\overline{\tilde x_T}]=\frac1{2\pi}s_x(\omega)\), i.e. \(s_x(\omega)=2\pi\lim_T E[\tilde x_T(\omega)\overline{\tilde x_T(\omega)}]\). \(\blacksquare\)</p></div>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p>注记 9.14–9.17
+- \(s_x(\omega)\) 是<strong>实值</strong>的，因为 \(\gamma_j=\gamma_{-j}\)。
+- \(s_x(\omega)\propto E[|\tilde x(\omega)|^2]\)，是每个频率 \(\omega\) 上（期望）信息权重的良好度量；这里取期望是因为 \(|\tilde x(\omega)|^2\) 随机（\(x_t\) 随机）。
+- \(\tilde x(\omega)\) 把随机序列 \(x_t\) 分解到不同频率成分，\(s_x(\omega)\) 度量每个成分的期望权重。
+- 由 \(\gamma_0=\int_{-\pi}^{\pi}s_x(\omega)\,d\omega\)，谱把方差分解到各频率：\(s_x(\omega)\) 是频率 \(\omega\) 成分对总方差的贡献。</p>
+<p>[!important] 定义 9.8（白噪声）
+序列 \(\epsilon_t\) 称为<strong>白噪声</strong>，若它是常方差 \(\sigma^2\) 的鞅差序列。</p></div>
+<p>对白噪声，\(\gamma_j=0\ (\forall j\ne0)\)，故谱为常数：
+$$s_\epsilon(\omega)=\tilde\gamma(\omega)=\frac1{2\pi}\sum_j\gamma_j e^{-i\omega j}=\frac{\sigma^2}{2\pi}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 9.18
+谱度量各频率成分的期望权重；白噪声的谱为常数 \(\frac{\sigma^2}{2\pi}\)，意味着白噪声把等权重放在每个频率上——不同频率被等量混合，正如不同颜色的光等量混合得到白光，故名"白"噪声。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p>Remarks 9.14–9.17
+- \(s_x(\omega)\) is <strong>real-valued</strong>, since \(\gamma_j=\gamma_{-j}\).
+- \(s_x(\omega)\propto E[|\tilde x(\omega)|^2]\) is a good measure of the (expected) information weight at each frequency \(\omega\); the expectation is taken because \(|\tilde x(\omega)|^2\) is random (\(x_t\) is random).
+- \(\tilde x(\omega)\) decomposes the random sequence \(x_t\) into frequency components, and \(s_x(\omega)\) measures the expected weight of each component.
+- From \(\gamma_0=\int_{-\pi}^{\pi}s_x(\omega)\,d\omega\), the spectrum decomposes the variance across frequencies: \(s_x(\omega)\) is the contribution of the frequency-\(\omega\) component to total variance.</p>
+<p>[!important] Definition 9.8 (White noise)
+A sequence \(\epsilon_t\) is <strong>white noise</strong> if it is a martingale difference sequence with constant variance \(\sigma^2\).</p></div>
+<p>For white noise, \(\gamma_j=0\ (\forall j\ne0)\), so the spectrum is constant:
+$$s_\epsilon(\omega)=\tilde\gamma(\omega)=\frac1{2\pi}\sum_j\gamma_j e^{-i\omega j}=\frac{\sigma^2}{2\pi}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 9.18
+The spectrum measures the expected weight of each frequency component; white noise's spectrum is the constant \(\frac{\sigma^2}{2\pi}\), meaning white noise puts equal weight on every frequency — frequencies are equally mixed, just as equally mixing different colors of light gives white light, hence "white" noise.</p></div>
+</div>
+<h3 id="9-5-6-lag-operator-calculus-and-the-spectrum">9.5.6 Lag-Operator Calculus and the Spectrum</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>命题（滤波后的谱）
+设 \(y_t=h(L)x_t=\sum_{j}h_j x_{t-j}\)，\(h(L)=\sum_j h_j L^j\)。则
+$$s_y(\omega)=h\big(e^{-i\omega}\big)h\big(e^{i\omega}\big)s_x(\omega)=\big|h(e^{-i\omega})\big|^2 s_x(\omega) \tag{9.9}$$</p>
+<p>[!note]- 证明（重排自协方差）
+$$\begin{aligned}s_y(\omega)&=\frac1{2\pi}\sum_j\gamma^y_j e^{-i\omega j}=\frac1{2\pi}\sum_j\sum_t\sum_k h_t h_{t-k}\gamma^x_{j+k}e^{-i\omega j}\\&=\frac1{2\pi}\sum_t\sum_k h_t h_{t-k}\Big(\sum_j\gamma^x_{j}e^{-i\omega(j-k)}\Big)\\&=\frac1{2\pi}\Big(\sum_t h_t e^{-i\omega t}\Big)\Big(\sum_k h_{t-k}\,\cdots\Big)\Big(\sum_j\gamma^x_j e^{-i\omega j}\Big)\\&=h(e^{-i\omega})h(e^{i\omega})s_x(\omega)\end{aligned}$$
+整理求和顺序，分离出两个滤波因子 \(\sum h_j e^{-i\omega j}=h(e^{-i\omega})\)、\(\sum h_j e^{i\omega j}=h(e^{i\omega})\) 与谱 \(s_x(\omega)\)。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Proposition (spectrum after filtering)
+Let \(y_t=h(L)x_t=\sum_{j}h_j x_{t-j}\), \(h(L)=\sum_j h_j L^j\). Then
+$$s_y(\omega)=h\big(e^{-i\omega}\big)h\big(e^{i\omega}\big)s_x(\omega)=\big|h(e^{-i\omega})\big|^2 s_x(\omega) \tag{9.9}$$</p>
+<p>[!note]- Proof (rearranging autocovariances)
+$$\begin{aligned}s_y(\omega)&=\frac1{2\pi}\sum_j\gamma^y_j e^{-i\omega j}=\frac1{2\pi}\sum_j\sum_t\sum_k h_t h_{t-k}\gamma^x_{j+k}e^{-i\omega j}\\&=\frac1{2\pi}\sum_t\sum_k h_t h_{t-k}\Big(\sum_j\gamma^x_{j}e^{-i\omega(j-k)}\Big)\\&=\frac1{2\pi}\Big(\sum_t h_t e^{-i\omega t}\Big)\Big(\sum_k h_{t-k}\cdots\Big)\Big(\sum_j\gamma^x_j e^{-i\omega j}\Big)\\&=h(e^{-i\omega})h(e^{i\omega})s_x(\omega)\end{aligned}$$
+Rearranging the order of summation separates out the two filter factors \(\sum h_j e^{-i\omega j}=h(e^{-i\omega})\), \(\sum h_j e^{i\omega j}=h(e^{i\omega})\) and the spectrum \(s_x(\omega)\). \(\blacksquare\)</p></div>
+</div>
+<div class="lang zh">
+<p><strong>例 9.3（AR(1) 的谱）。</strong> \((1-\rho L)y_t=\epsilon_t\)。由 (9.9)，\(\big(1-\rho e^{-i\omega}\big)\big(1-\rho e^{i\omega}\big)s_y(\omega)=s_\epsilon(\omega)=\frac{\sigma^2}{2\pi}\)，故
+$$s_y(\omega)=\frac1{(1-\rho e^{-i\omega})(1-\rho e^{i\omega})}\frac{\sigma^2}{2\pi}=\frac1{1-2\rho\cos(\omega)+\rho^2}\frac{\sigma^2}{2\pi}$$
+\(\rho>0\) 时低频（\(\omega\approx0\)）谱值大，序列以低频/持续性成分为主。</p>
+<p><strong>例 9.4（AR(\(m\)) 的谱）。</strong> 设 \((1-\rho(L))y_t=\epsilon_t\)，因式分解 \((1-\lambda_1 L)\cdots(1-\lambda_m L)y_t=\epsilon_t\)。若所有根 \(\lambda_j\) 为实，
+$$s_y(\omega)=\frac{\sigma^2}{2\pi}\prod_{j=1}^m\frac1{(1-\lambda_j e^{-i\omega})(1-\lambda_j e^{i\omega})}=\frac{\sigma^2}{2\pi}\prod_{j=1}^m\frac1{1-2\lambda_j\cos(\omega)+\lambda_j^2}$$
+若 \(\lambda_j\) 为复，则共轭成对（\(\lambda_j\) 与 \(\bar\lambda_j\)），把每对的两项重组后仍得实数；最终
+$$s_y(\omega)=\frac{\sigma^2}{2\pi}\prod_{j=1}^m\frac1{(1-\lambda_j e^{-i\omega})(1-\bar\lambda_j e^{i\omega})}=\frac{\sigma^2}{2\pi}\prod_{j=1}^m\Big|\frac1{1-2\lambda_j\cos(\omega)+\lambda_j^2}\Big|$$</p>
+<p><strong>例 9.5–9.6（MA 的谱）。</strong> MA(\(n\)) \(y_t=\theta(L)\epsilon_t\) 的谱为 \(s_y(\omega)=\frac{\sigma^2}{2\pi}\theta(e^{-i\omega})\theta(e^{i\omega})\)。特别地 MA(1) \(y_t=(\theta_0+\theta_1 L)\epsilon_t\)：
+$$s_y(\omega)=\frac{\sigma^2}{2\pi}(\theta_0+\theta_1 e^{-i\omega})(\theta_0+\theta_1 e^{i\omega})=\frac{\sigma^2}{2\pi}\big(\theta_0^2+2\theta_0\theta_1\cos(\omega)+\theta_1^2\big)$$</p>
+</div>
+<div class="lang en">
+<p><strong>Example 9.3 (spectrum of AR(1)).</strong> \((1-\rho L)y_t=\epsilon_t\). By (9.9), \(\big(1-\rho e^{-i\omega}\big)\big(1-\rho e^{i\omega}\big)s_y(\omega)=s_\epsilon(\omega)=\frac{\sigma^2}{2\pi}\), so
+$$s_y(\omega)=\frac1{(1-\rho e^{-i\omega})(1-\rho e^{i\omega})}\frac{\sigma^2}{2\pi}=\frac1{1-2\rho\cos(\omega)+\rho^2}\frac{\sigma^2}{2\pi}$$
+For \(\rho>0\) the spectrum is large at low frequencies (\(\omega\approx0\)): the series is dominated by low-frequency/persistent components.</p>
+<p><strong>Example 9.4 (spectrum of AR(\(m\))).</strong> Let \((1-\rho(L))y_t=\epsilon_t\), factored as \((1-\lambda_1 L)\cdots(1-\lambda_m L)y_t=\epsilon_t\). If all roots \(\lambda_j\) are real,
+$$s_y(\omega)=\frac{\sigma^2}{2\pi}\prod_{j=1}^m\frac1{(1-\lambda_j e^{-i\omega})(1-\lambda_j e^{i\omega})}=\frac{\sigma^2}{2\pi}\prod_{j=1}^m\frac1{1-2\lambda_j\cos(\omega)+\lambda_j^2}$$
+If the \(\lambda_j\) are complex they come in conjugate pairs (\(\lambda_j\) and \(\bar\lambda_j\)); recombining the two terms of each pair still yields a real number, and finally
+$$s_y(\omega)=\frac{\sigma^2}{2\pi}\prod_{j=1}^m\frac1{(1-\lambda_j e^{-i\omega})(1-\bar\lambda_j e^{i\omega})}=\frac{\sigma^2}{2\pi}\prod_{j=1}^m\Big|\frac1{1-2\lambda_j\cos(\omega)+\lambda_j^2}\Big|$$</p>
+<p><strong>Examples 9.5–9.6 (spectrum of MA).</strong> The spectrum of MA(\(n\)) \(y_t=\theta(L)\epsilon_t\) is \(s_y(\omega)=\frac{\sigma^2}{2\pi}\theta(e^{-i\omega})\theta(e^{i\omega})\). In particular for MA(1) \(y_t=(\theta_0+\theta_1 L)\epsilon_t\):
+$$s_y(\omega)=\frac{\sigma^2}{2\pi}(\theta_0+\theta_1 e^{-i\omega})(\theta_0+\theta_1 e^{i\omega})=\frac{\sigma^2}{2\pi}\big(\theta_0^2+2\theta_0\theta_1\cos(\omega)+\theta_1^2\big)$$</p>
+</div>
+<h3 id="9-5-7-the-blaschke-factor-and-root-flipping">9.5.7 The Blaschke Factor and Root Flipping</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.9（Blaschke 因子）
+Blaschke 因子 \(B_\lambda(z)\) 定义为
+$$B_\lambda(z)=\frac{z-\lambda}{1-\lambda z}=-\lambda\frac{1-\lambda^{-1}z}{1-\lambda z}$$
+对应的滞后算子形式为
+$$B_\lambda(L)=-\lambda\frac{1-\lambda^{-1}L}{1-\lambda L}$$
+它把根 \(\lambda\) <strong>翻转</strong>为 \(\lambda^{-1}\)（单位圆内外互换）。</p></div>
+<p>Blaschke 因子在单位圆上模长为 1：
+$$B_\lambda\big(e^{-i\omega}\big)=\frac{e^{-i\omega}-\lambda}{1-\lambda e^{-i\omega}}=\frac{1-\lambda e^{i\omega}}{e^{i\omega}-\lambda}=\big(B_\lambda(e^{i\omega})\big)^{-1}$$
+故 \(|B_\lambda(e^{-i\omega})|=1\)——它改变相位但不改变谱（模长），从而不改变自协方差。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.9 (Blaschke factor)
+The Blaschke factor \(B_\lambda(z)\) is defined by
+$$B_\lambda(z)=\frac{z-\lambda}{1-\lambda z}=-\lambda\frac{1-\lambda^{-1}z}{1-\lambda z}$$
+with lag-operator form
+$$B_\lambda(L)=-\lambda\frac{1-\lambda^{-1}L}{1-\lambda L}$$
+It <strong>flips</strong> the root \(\lambda\) to \(\lambda^{-1}\) (swapping inside and outside of the unit circle).</p></div>
+<p>The Blaschke factor has unit modulus on the unit circle:
+$$B_\lambda\big(e^{-i\omega}\big)=\frac{e^{-i\omega}-\lambda}{1-\lambda e^{-i\omega}}=\frac{1-\lambda e^{i\omega}}{e^{i\omega}-\lambda}=\big(B_\lambda(e^{i\omega})\big)^{-1}$$
+so \(|B_\lambda(e^{-i\omega})|=1\) — it changes the phase but not the spectrum (modulus), hence not the autocovariances.</p>
+</div>
+<h3 id="9-5-8-the-fundamental-representation-of-ma-n">9.5.8 The Fundamental Representation of MA(\(n\))</h3>
+<div class="lang zh">
+<p>考虑 MA(\(n\)) \(y_t=\theta(L)\epsilon_t\)，\(\theta(L)=\sum_{j=0}^n\theta_j L^j\)。仿 AR 定义特征多项式 \(p(\lambda)=\lambda^n\theta(\lambda^{-1})\)，设其根为 \(\lambda_1,\dots,\lambda_n\)，则 \(\theta(L)=\theta_0(1-\lambda_1 L)\cdots(1-\lambda_n L)\)，从而
+$$y_t=\theta_0(1-\lambda_1 L)(1-\lambda_2 L)\cdots(1-\lambda_n L)\epsilon_t$$</p>
+<p><strong>翻根得到等价表示。</strong> 取某个根 \(\lambda_1\)，令 \(\hat\theta(L)=B_{\lambda_1}(L)\theta(L)\)、\(\hat y_t=B_{\lambda_1}(L)\theta(L)\epsilon_t\)。考虑 \(y_t\) 与 \(\hat y_t\) 的谱密度：
+$$s_{\hat y}(\omega)=\frac{\sigma^2}{2\pi}\underbrace{B_{\lambda_1}\big(e^{-i\omega}\big)B_{\lambda_1}\big(e^{i\omega}\big)}_{=1}\theta\big(e^{-i\omega}\big)\theta\big(e^{i\omega}\big)=\frac{\sigma^2}{2\pi}\theta\big(e^{-i\omega}\big)\theta\big(e^{i\omega}\big)=s_y(\omega)$$
+即用 \(B_{\lambda_1}(L)\) 乘 \(y_t\) 不改变谱。由于 \(s_{\hat y}(\omega)=s_y(\omega)\) 恒成立，\(\hat\gamma_j=\gamma_j\ (\forall j)\)，故 \(\hat y_t\) 与 \(y_t\) 有<strong>相同的 Wold 分解</strong>。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.10（MA(\(n\)) 的基本表示）
+考虑 MA(\(n\))：\(y_t=\theta_0(1-\lambda_1 L)(1-\lambda_2 L)\cdots(1-\lambda_n L)\epsilon_t\)，其中 \(|\lambda_1|>|\lambda_2|>\dots>|\lambda_r|>1>|\lambda_{r+1}|>\dots>|\lambda_m|\)。其<strong>基本表示</strong>为
+$$y_t=C(L)u_t$$
+其中
+$$C(L)=\frac{B_{\lambda_1}(L)\cdots B_{\lambda_r}(L)}{(-\lambda_1)\cdots(-\lambda_r)\,\theta_0}\theta(L)=\Big(1-\tfrac1{\lambda_1}L\Big)\Big(1-\tfrac1{\lambda_2}L\Big)\cdots\Big(1-\tfrac1{\lambda_r}L\Big)(1-\lambda_{r+1}L)\cdots(1-\lambda_n L)$$
+即把所有单位圆外的根 \(\lambda_1,\dots,\lambda_r\) 翻转到圆内，得到<strong>可逆</strong>（基本）表示。并注意
+$$\operatorname{Var}(u_t)=(\lambda_1\lambda_2\cdots\lambda_r\theta_0)^2\operatorname{Var}(\epsilon_t)$$</p></div>
+</div>
+<div class="lang en">
+<p>Consider MA(\(n\)) \(y_t=\theta(L)\epsilon_t\), \(\theta(L)=\sum_{j=0}^n\theta_j L^j\). As for AR, define the characteristic polynomial \(p(\lambda)=\lambda^n\theta(\lambda^{-1})\); if its roots are \(\lambda_1,\dots,\lambda_n\) then \(\theta(L)=\theta_0(1-\lambda_1 L)\cdots(1-\lambda_n L)\), so
+$$y_t=\theta_0(1-\lambda_1 L)(1-\lambda_2 L)\cdots(1-\lambda_n L)\epsilon_t$$</p>
+<p><strong>Flipping a root gives an equivalent representation.</strong> Take a root \(\lambda_1\) and let \(\hat\theta(L)=B_{\lambda_1}(L)\theta(L)\), \(\hat y_t=B_{\lambda_1}(L)\theta(L)\epsilon_t\). Consider the spectral densities of \(y_t\) and \(\hat y_t\):
+$$s_{\hat y}(\omega)=\frac{\sigma^2}{2\pi}\underbrace{B_{\lambda_1}\big(e^{-i\omega}\big)B_{\lambda_1}\big(e^{i\omega}\big)}_{=1}\theta\big(e^{-i\omega}\big)\theta\big(e^{i\omega}\big)=\frac{\sigma^2}{2\pi}\theta\big(e^{-i\omega}\big)\theta\big(e^{i\omega}\big)=s_y(\omega)$$
+so multiplying \(y_t\) by \(B_{\lambda_1}(L)\) does not change the spectrum. Since \(s_{\hat y}(\omega)=s_y(\omega)\) holds for all \(\omega\), \(\hat\gamma_j=\gamma_j\ (\forall j)\), so \(\hat y_t\) and \(y_t\) have the <strong>same Wold decomposition</strong>.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.10 (Fundamental representation of MA(\(n\)))
+Consider MA(\(n\)): \(y_t=\theta_0(1-\lambda_1 L)(1-\lambda_2 L)\cdots(1-\lambda_n L)\epsilon_t\), where \(|\lambda_1|>|\lambda_2|>\dots>|\lambda_r|>1>|\lambda_{r+1}|>\dots>|\lambda_m|\). Its <strong>fundamental representation</strong> is
+$$y_t=C(L)u_t$$
+where
+$$C(L)=\frac{B_{\lambda_1}(L)\cdots B_{\lambda_r}(L)}{(-\lambda_1)\cdots(-\lambda_r)\,\theta_0}\theta(L)=\Big(1-\tfrac1{\lambda_1}L\Big)\Big(1-\tfrac1{\lambda_2}L\Big)\cdots\Big(1-\tfrac1{\lambda_r}L\Big)(1-\lambda_{r+1}L)\cdots(1-\lambda_n L)$$
+i.e. flip all the outside-the-circle roots \(\lambda_1,\dots,\lambda_r\) to inside, giving an <strong>invertible</strong> (fundamental) representation. Note also
+$$\operatorname{Var}(u_t)=(\lambda_1\lambda_2\cdots\lambda_r\theta_0)^2\operatorname{Var}(\epsilon_t)$$</p></div>
+</div>
+<h2 id="9-6-unit-roots">9.6 Unit Roots</h2>
+<h3 id="9-6-1-integration">9.6.1 Integration</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p>注记 9.19
+讨论 Blaschke 因子翻根时隐含地要求根 \(|\lambda_j|\ne1\)，否则翻根 \(|\lambda_j^{-1}|=1\) 仍在单位圆上，对应一个持续但不爆炸的序列。这是介于平稳与爆炸之间的<strong>临界（knife-edge）</strong>情形：序列不会回到原水平，但也不会比单位根过程更快发散。</p>
+<p>[!important] 定义 9.11（单位根）
+一个 AR(\(m\)) 过程，若其特征多项式 \(p(\lambda)\) 的所有根 \(\lambda_i\)（\(i=1,\dots,m\)）的模长都小于或等于 1，且<strong>至少有一个根恰好等于 1</strong>，则称该过程为<strong>单整的</strong>，或称其有<strong>单位根</strong>。</p>
+<p>[!important] 定义 9.12（\(r\) 阶单整）
+设 AR(\(m\)) 特征多项式 \(p(\lambda)\) 的根 \(\lambda_i\)（\(i=1,\dots,m\)）的模长都小于或等于 1。令 \(r\) 为恰好等于 1 的根的个数，则称该过程为 <strong>\(r\) 阶单整</strong>，记 \(I(r)\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 9.19
+When discussing Blaschke factors we implicitly require roots with \(|\lambda_j|\ne1\); otherwise flipping a root gives \(|\lambda_j^{-1}|=1\), still on the unit circle, corresponding to a persistent but non-exploding series. This is the <strong>knife-edge</strong> case between stationary and exploding: the series never returns to its original level, but it also does not diverge faster than a unit-root process.</p>
+<p>[!important] Definition 9.11 (Unit root)
+An AR(\(m\)) process whose characteristic polynomial \(p(\lambda)\) has all roots \(\lambda_i\) (\(i=1,\dots,m\)) with modulus less than or equal to 1, and <strong>at least one root exactly equal to 1</strong>, is called <strong>integrated</strong>, or said to have a <strong>unit root</strong>.</p>
+<p>[!important] Definition 9.12 (Integrated of order \(r\))
+Suppose the roots \(\lambda_i\) (\(i=1,\dots,m\)) of the AR(\(m\)) characteristic polynomial \(p(\lambda)\) all have modulus less than or equal to 1. Let \(r\) be the number of roots exactly equal to 1; then the process is <strong>integrated of order \(r\)</strong>, written \(I(r)\).</p>
+<p>[!tip] Remark 9.20
+For an AR(\(m\)) process, the following two statements are equivalent: (i) the process is covariance stationary; (ii) the process is \(I(0)\). They are equivalent because, by definition, an \(I(0)\) process has all roots of the characteristic polynomial smaller than 1.</p></div>
+</div>
+<h3 id="9-6-2-the-difference-operator">9.6.2 The Difference Operator</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.13（差分算子）
+差分算子 \(\Delta\) 定义为
+$$\Delta y_t=y_t-y_{t-1}=(1-L)y_t$$
+多重差分用幂次表示：\(\Delta^r y_t=\Delta(\Delta(\cdots\Delta y_t))\)。例如
+$$\Delta^2 y_t=\Delta(\Delta y_t)=\Delta(y_t-y_{t-1})=(y_t-y_{t-1})-(y_{t-1}-y_{t-2})=y_t-2y_{t-1}+y_{t-2}$$</p>
+<p>[!important] 命题 9.3
+设 \(y_t\) 是 \(I(r)\) 的 AR(\(m\)) 过程，则 \(\Delta^r y_t\) 是协方差平稳的 AR(\(m-r\)) 过程。</p>
+<p>[!note]- 证明
+一般地，对 AR(\(m\)) 的特征多项式因式分解，把 \(r\) 个单位根分离出来：
+$$y_t=\frac1{\underbrace{(1-L)\cdots(1-L)}_{r}\cdot(1-\lambda_{r+1}L)\cdots(1-\lambda_m L)}\cdot\epsilon_t$$
+其中分母前 \(r\) 个 \((1-L)\) 对应 \(r\) 个单位根，\(|\lambda_{r+1}|,\dots,|\lambda_m|<1\)。于是
+$$\Delta^r y_t=(1-L)^r y_t=\frac1{(1-\lambda_{r+1}L)\cdots(1-\lambda_m L)}\cdot\epsilon_t$$
+右端是协方差平稳的（所有剩余根在圆内），即 \(\Delta^r y_t\) 为协方差平稳的 AR(\(m-r\))。\(\blacksquare\)</p></div>
+<p><strong>例 9.7。</strong> 考虑一个 AR(4)，它是 \(I(2)\)：
+$$(1-\rho(L))y_t=\epsilon_t$$
+$$\Rightarrow\big(1-2L+0.75L^2+0.5L^3-0.25L^4\big)y_t=\epsilon_t$$
+$$\Rightarrow(1-0.5L)(1+0.5L)(1-L)(1-L)y_t=\epsilon_t$$
+$$\Rightarrow(1-\rho^\star(L))x_t=\epsilon_t$$
+其中 \(x_t=\Delta^2 y_t\) 是协方差平稳的，\(1-\rho^\star(L)=(1-0.5L)(1+0.5L)\)。两个单位根被两次差分消去，剩下一个平稳的 AR(2)。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.13 (Difference operator)
+The difference operator \(\Delta\) is defined by
+$$\Delta y_t=y_t-y_{t-1}=(1-L)y_t$$
+Multiple differencing is indicated by powers: \(\Delta^r y_t=\Delta(\Delta(\cdots\Delta y_t))\). For example
+$$\Delta^2 y_t=\Delta(\Delta y_t)=\Delta(y_t-y_{t-1})=(y_t-y_{t-1})-(y_{t-1}-y_{t-2})=y_t-2y_{t-1}+y_{t-2}$$</p>
+<p>[!important] Proposition 9.3
+Let \(y_t\) be an \(I(r)\) AR(\(m\)) process. Then \(\Delta^r y_t\) is a covariance-stationary AR(\(m-r\)) process.</p>
+<p>[!note]- Proof
+Generally, factor the AR(\(m\)) characteristic polynomial and separate out the \(r\) unit roots:
+$$y_t=\frac1{\underbrace{(1-L)\cdots(1-L)}_{r\text{ unit roots}}\cdot(1-\lambda_{r+1}L)\cdots(1-\lambda_m L)}\cdot\epsilon_t$$
+with \(|\lambda_{r+1}|,\dots,|\lambda_m|<1\). Hence
+$$\Delta^r y_t=(1-L)^r y_t=\frac1{(1-\lambda_{r+1}L)\cdots(1-\lambda_m L)}\cdot\epsilon_t$$
+The right side is covariance stationary (all remaining roots inside the circle), i.e. \(\Delta^r y_t\) is a covariance-stationary AR(\(m-r\)). \(\blacksquare\)</p></div>
+<p><strong>Example 9.7.</strong> Consider an AR(4) that is \(I(2)\):
+$$(1-\rho(L))y_t=\epsilon_t$$
+$$\Rightarrow\big(1-2L+0.75L^2+0.5L^3-0.25L^4\big)y_t=\epsilon_t$$
+$$\Rightarrow(1-0.5L)(1+0.5L)(1-L)(1-L)y_t=\epsilon_t$$
+$$\Rightarrow(1-\rho^\star(L))x_t=\epsilon_t$$
+where \(x_t=\Delta^2 y_t\) is covariance stationary and \(1-\rho^\star(L)=(1-0.5L)(1+0.5L)\). The two unit roots are removed by differencing twice, leaving a stationary AR(2).</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#9-1-lag-operator-calculus">9.1 Lag Operator Calculus</a></li>
+        <li><a href="#9-2-the-characteristic-polynomial">9.2 The Characteristic Polynomial</a></li>
+          <li><a href="#9-2-1-inverting-lag-polynomials">9.2.1 Inverting Lag Polynomials</a></li>
+        <li><a href="#9-3-the-wold-decomposition">9.3 The Wold Decomposition</a></li>
+        <li><a href="#9-4-forecasting-and-impulse-responses">9.4 Forecasting and Impulse Responses</a></li>
+        <li><a href="#9-5-spectral-theory">9.5 Spectral Theory</a></li>
+          <li><a href="#9-5-2-euler-s-formula">9.5.2 Euler's Formula</a></li>
+          <li><a href="#9-5-3-fourier-transforms">9.5.3 Fourier Transforms</a></li>
+          <li><a href="#9-5-4-lag-operator-calculus-and-fourier-transforms">9.5.4 Lag-Operator Calculus and Fourier Transforms</a></li>
+          <li><a href="#9-5-5-the-spectrum">9.5.5 The Spectrum</a></li>
+          <li><a href="#9-5-6-lag-operator-calculus-and-the-spectrum">9.5.6 Lag-Operator Calculus and the Spectrum</a></li>
+          <li><a href="#9-5-7-the-blaschke-factor-and-root-flipping">9.5.7 The Blaschke Factor and Root Flipping</a></li>
+          <li><a href="#9-5-8-the-fundamental-representation-of-ma-n">9.5.8 The Fundamental Representation of MA(\(n\))</a></li>
+        <li><a href="#9-6-unit-roots">9.6 Unit Roots</a></li>
+          <li><a href="#9-6-1-integration">9.6.1 Integration</a></li>
+          <li><a href="#9-6-2-the-difference-operator">9.6.2 The Difference Operator</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

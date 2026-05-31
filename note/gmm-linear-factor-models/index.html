@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>24. GMM for Linear Factor Models – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>24. GMM for Linear Factor Models</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">广义矩估计</span><span class="lang en">GMM</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">线性因子模型</span><span class="lang en">Linear Factor Models</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Fama-MacBeth</span><span class="lang en">Fama-MacBeth</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">因子模仿组合</span><span class="lang en">Factor Mimicking</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">模型比较</span><span class="lang en">Model Comparison</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章用 <strong>GMM</strong> 估计线性 SDF \(m^\star_t(\mathbf b,\boldsymbol\mu_{\mathbf f})=1-\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f})\) (24.7)，并据此做<strong>假设检验</strong>与<strong>模型比较</strong>。先回顾 GMM 工具：矩约束 (24.1)、最优选择矩阵 \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\) (24.3)、\(\chi^2\) 检验 (24.6)。然后分两种情形：<strong>因子可交易</strong>（§24.3，因子本身是超额收益，beta 定价 \(\mathbb E[\mathbf z]=\boldsymbol\beta\boldsymbol\lambda\)，\(N+2k\) 矩约束）——最优选择矩阵把全部 \(N\) 个测试资产约束<strong>权重设为零</strong>，故 GMM 估计 \(\equiv\) 时间序列 OLS 回归，估计量 \(\hat{\boldsymbol\mu}_{\mathbf f}=\bar{\mathbf f}\)、\(\hat{\mathbf b}=\boldsymbol\Sigma_{\mathbf f}^{-1}\bar{\mathbf f}\)，检验统计量 (24.40) 含定价误差 \(\hat{\boldsymbol\alpha}\)；<strong>因子不可交易</strong>（§24.4，\(N+k\) 矩约束）——测试资产<strong>进入</strong>估计，估计量用<strong>截面 GLS</strong> 求风险溢价 \(\hat{\boldsymbol\lambda}\)，对应 Fama-MacBeth 两步（但 GMM 用 GLS、FM 用 OLS），并可解释为<strong>因子模仿组合 (factor mimicking portfolios)</strong>。两种情形都给出截面 \(R^2\) 与检验统计量做模型比较。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter uses <strong>GMM</strong> to estimate the linear SDF \(m^\star_t(\mathbf b,\boldsymbol\mu_{\mathbf f})=1-\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f})\) (24.7), and to do <strong>hypothesis testing</strong> and <strong>model comparison</strong>. First recall GMM tools: the moment restriction (24.1), the optimal selection matrix \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\) (24.3), and the \(\chi^2\) test (24.6). Then two cases: <strong>traded factors</strong> (§24.3, factors are themselves excess returns, beta pricing \(\mathbb E[\mathbf z]=\boldsymbol\beta\boldsymbol\lambda\), \(N+2k\) restrictions) — the optimal selection matrix sets the weight on all \(N\) test-asset restrictions to <strong>zero</strong>, so GMM estimation \(\equiv\) time-series OLS regression, with estimators \(\hat{\boldsymbol\mu}_{\mathbf f}=\bar{\mathbf f}\), \(\hat{\mathbf b}=\boldsymbol\Sigma_{\mathbf f}^{-1}\bar{\mathbf f}\), and test statistic (24.40) involving the pricing error \(\hat{\boldsymbol\alpha}\); <strong>non-traded factors</strong> (§24.4, \(N+k\) restrictions) — test assets <strong>do enter</strong> estimation, the estimator uses <strong>cross-sectional GLS</strong> for the risk premium \(\hat{\boldsymbol\lambda}\), corresponding to the Fama-MacBeth two-step (but GMM uses GLS, FM uses OLS), interpretable as <strong>factor mimicking portfolios</strong>. Both cases give cross-sectional \(R^2\) and a test statistic for model comparison.</p></div>
+</div>
+<h2 id="24-1-preliminaries">24.1 Preliminaries</h2>
+<div class="lang zh">
+<p>来自 He (2019a) 第 13 章的 GMM 工具。<strong>矩约束</strong> (24.1)：\(\mathbb E[\mathbf F(\mathbf X,\boldsymbol\beta)]=\mathbf 0_{r\times1}\)，通常假设 \(r\times1\)，\(\mathbf X\) 来自数据，\(\boldsymbol\beta\) 为待估的 \(k\times1\) 兴趣系数；这 \(r\) 个约束来自结构模型，在真 \(\boldsymbol\beta\) 下精确成立。</p>
+<p><strong>识别</strong>：\(r\ge k\) 时<strong>恰好/过度识别 (just/over-identification)</strong>，假设有唯一解；\(r<k\) 时<strong>欠识别 (under-identification)</strong>，可能多解。</p>
+<p><strong>选择矩阵</strong>：\(r\times k\) 矩阵 \(\mathbf A\) 作用于 (24.1) 得 \(\mathbf A'\mathbb E[\mathbf F(\mathbf X,\boldsymbol\beta)]=\mathbf 0_{k\times1}\) (24.2)，把 \(r\) 个方程组合成 \(k\) 个。渐近上一般无法找到 \(\mathbf b_N\) 使 \(\mathbb E[\mathbf F(\mathbf X,\mathbf b_N)]=\mathbf 0\) 对全部 \(r\) 个方程成立（随机误差）。不同 \(\mathbf A\) 给不同估计 \(\mathbf b^{\mathbf A}_N\)。<strong>最优选择矩阵</strong> \(\mathbf A^\star\) 使渐近方差最小：\(\sqrt N(\mathbf b^{\mathbf A}_N-\boldsymbol\beta)\xrightarrow{d}\mathcal N(\mathbf 0,\text{Cov}(\mathbf A))\)，\(\text{Cov}(\mathbf A)-\text{Cov}(\mathbf A^\star)\) 半正定。He (2019a) 第 13 章证 (24.3)：</p>
+</div>
+<div class="lang en">
+<p>GMM tools from He (2019a) Chapter 13. <strong>Moment restriction</strong> (24.1): \(\mathbb E[\mathbf F(\mathbf X,\boldsymbol\beta)]=\mathbf 0_{r\times1}\), generally \(r\times1\), \(\mathbf X\) from data, \(\boldsymbol\beta\) the \(k\times1\) coefficients of interest to estimate; these \(r\) restrictions come from the structural model and hold exactly at the true \(\boldsymbol\beta\).</p>
+<p><strong>Identification</strong>: \(r\ge k\) gives <strong>just/over-identification</strong>, assumed to have a unique solution; \(r<k\) gives <strong>under-identification</strong>, possibly multiple solutions.</p>
+<p><strong>Selection matrix</strong>: an \(r\times k\) matrix \(\mathbf A\) applied to (24.1) gives \(\mathbf A'\mathbb E[\mathbf F(\mathbf X,\boldsymbol\beta)]=\mathbf 0_{k\times1}\) (24.2), combining \(r\) equations into \(k\). Asymptotically one generally cannot find \(\mathbf b_N\) with \(\mathbb E[\mathbf F(\mathbf X,\mathbf b_N)]=\mathbf 0\) for all \(r\) equations (random errors). Different \(\mathbf A\) give different estimators \(\mathbf b^{\mathbf A}_N\). The <strong>optimal selection matrix</strong> \(\mathbf A^\star\) minimizes asymptotic variance: \(\sqrt N(\mathbf b^{\mathbf A}_N-\boldsymbol\beta)\xrightarrow{d}\mathcal N(\mathbf 0,\text{Cov}(\mathbf A))\), with \(\text{Cov}(\mathbf A)-\text{Cov}(\mathbf A^\star)\) positive semi-definite. He (2019a) Chapter 13 proves (24.3):</p>
+</div>
+<p>$$\mathbf A^\star=\mathbf V^{-1}\mathbf D\tag{24.3}$$</p>
+<div class="lang zh">
+<p>其中 \(r\times r\) 矩阵 \(\mathbf V\) 由 \(\mathbf F(\mathbf X,\boldsymbol\beta)\sim\mathcal N(\mathbf 0,\mathbf V)\) 定义 (24.4)，\(r\times k\) 矩阵 \(\mathbf D\equiv\mathbb E[\frac{\partial\mathbf F(\mathbf X,\boldsymbol\beta)}{\partial\boldsymbol\beta'}]\) (24.5)。最优估计满足 \(\sqrt N(\mathbf b^\star_N-\boldsymbol\beta)\xrightarrow{d}\mathcal N(\mathbf 0,(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1})\)。<strong>假设检验</strong>（He 2019a (13.34)）(24.6)：</p>
+</div>
+<div class="lang en">
+<p>where the \(r\times r\) matrix \(\mathbf V\) is defined by \(\mathbf F(\mathbf X,\boldsymbol\beta)\sim\mathcal N(\mathbf 0,\mathbf V)\) (24.4), and the \(r\times k\) matrix \(\mathbf D\equiv\mathbb E[\frac{\partial\mathbf F(\mathbf X,\boldsymbol\beta)}{\partial\boldsymbol\beta'}]\) (24.5). The optimal estimator satisfies \(\sqrt N(\mathbf b^\star_N-\boldsymbol\beta)\xrightarrow{d}\mathcal N(\mathbf 0,(\mathbf D'\mathbf V^{-1}\mathbf D)^{-1})\). <strong>Hypothesis testing</strong> (He 2019a (13.34)) (24.6):</p>
+</div>
+<p>$$\left[\frac1{\sqrt N}\sum_{t=1}^N\mathbf F(\mathbf X_t,\mathbf b^\star_N)\right]'\mathbf V^{-1}\left[\frac1{\sqrt N}\sum_{t=1}^N\mathbf F(\mathbf X_t,\mathbf b^\star_N)\right]\xrightarrow{d}\chi^2_{r-k}\tag{24.6}$$</p>
+<h2 id="24-2-setup">24.2 Setup</h2>
+<div class="lang zh">
+<p>沿用 §23.3 的超额收益空间 \(\mathcal Z_t\)（由 \(N\times1\) 向量 \(\mathbf z_t\) 张成）。由 (23.7) 启发，设线性 SDF (24.7)：</p>
+</div>
+<div class="lang en">
+<p>Following §23.3's excess return space \(\mathcal Z_t\) (spanned by the \(N\times1\) vector \(\mathbf z_t\)). Motivated by (23.7), suppose a linear SDF (24.7):</p>
+</div>
+<p>$$m^\star_t(\mathbf b,\boldsymbol\mu_{\mathbf f})=1-\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f})\tag{24.7}$$</p>
+<div class="lang zh">
+<p>\(\mathbf b\) 为 \(k\times1\) 待估；\(\mathbf f_t\) 为我们指定的 \(k\times1\) <strong>可观测因子</strong>（不估计，故 \(m^\star\) 只是 \(\mathbf b\) 与 \(\boldsymbol\mu_{\mathbf f}\) 的函数）；\(\boldsymbol\mu_{\mathbf f}\equiv\mathbb E[\mathbf f_t]\) 为待估因子均值，样本均值 \(\bar{\mathbf f}=\frac1T\sum_{t=1}^T\mathbf f_t\)；\(\boldsymbol\Sigma_{\mathbf f}\) 为 \(\mathbf f_t\) 的方差-协方差矩阵。<strong>假设</strong>：\(\mathbf f_t\) 与 \(\boldsymbol\varepsilon_t\)（见 24.14）正交且<strong>沿时间 i.i.d.</strong>（非截面 i.i.d.）。</p>
+<h2 id="24-3-traded-factors">24.3 Traded Factors</h2>
+<h3 id="24-3-1-beta-pricing-representation">24.3.1 Beta Pricing Representation</h3>
+<p>SDF 给 \(\mathbf z_t\) 定价：\(\mathbb E[m^\star_t\mathbf z_t]=\mathbf 0\)，整理得 (24.8)：\(\mathbb E[\mathbf z_t]=\boldsymbol\Sigma_{\mathbf z\mathbf f'}\mathbf b\)，\(\boldsymbol\Sigma_{\mathbf z\mathbf f'}=\text{Cov}(\mathbf z_t,\mathbf f_t')\)。定义 \(\boldsymbol\beta\equiv\boldsymbol\Sigma_{\mathbf z\mathbf f'}\boldsymbol\Sigma_{\mathbf f}^{-1}\) (24.9)、\(\boldsymbol\lambda\equiv\boldsymbol\Sigma_{\mathbf f}\mathbf b\) (24.10)，得 <strong>beta 定价</strong> (24.11)：</p>
+</div>
+<div class="lang en">
+<p>\(\mathbf b\) is \(k\times1\) to estimate; \(\mathbf f_t\) is the \(k\times1\) vector of <strong>observable factors</strong> specified by us (not estimated, so \(m^\star\) is only a function of \(\mathbf b\) and \(\boldsymbol\mu_{\mathbf f}\)); \(\boldsymbol\mu_{\mathbf f}\equiv\mathbb E[\mathbf f_t]\) is the factor mean to estimate, sample mean \(\bar{\mathbf f}=\frac1T\sum_{t=1}^T\mathbf f_t\); \(\boldsymbol\Sigma_{\mathbf f}\) the variance-covariance matrix of \(\mathbf f_t\). <strong>Assumption</strong>: \(\mathbf f_t\) and \(\boldsymbol\varepsilon_t\) (see 24.14) are orthogonal and <strong>i.i.d. across time</strong> (not cross-section).</p>
+<h2 id="24-3-traded-factors">24.3 Traded Factors</h2>
+<h3 id="24-3-1-beta-pricing-representation">24.3.1 Beta Pricing Representation</h3>
+<p>The SDF prices \(\mathbf z_t\): \(\mathbb E[m^\star_t\mathbf z_t]=\mathbf 0\), rearranging to (24.8): \(\mathbb E[\mathbf z_t]=\boldsymbol\Sigma_{\mathbf z\mathbf f'}\mathbf b\), \(\boldsymbol\Sigma_{\mathbf z\mathbf f'}=\text{Cov}(\mathbf z_t,\mathbf f_t')\). Define \(\boldsymbol\beta\equiv\boldsymbol\Sigma_{\mathbf z\mathbf f'}\boldsymbol\Sigma_{\mathbf f}^{-1}\) (24.9), \(\boldsymbol\lambda\equiv\boldsymbol\Sigma_{\mathbf f}\mathbf b\) (24.10), giving <strong>beta pricing</strong> (24.11):</p>
+</div>
+<p>$$\mathbb E[\mathbf z_t]=\boldsymbol\beta\boldsymbol\lambda\tag{24.11}$$</p>
+<div class="lang zh">
+<p>\(\boldsymbol\beta'=\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\Sigma_{\mathbf f\mathbf z'}\) 是把 \(\mathbf z_t-\boldsymbol\mu_{\mathbf z}\) 对 \(\mathbf f_t-\boldsymbol\mu_{\mathbf f}\) 回归（即 \(z_{i,t}\) 对 1 和 \(\mathbf f_t\) 回归）的系数矩阵；\(\boldsymbol\beta'\) 第 \(i\) 列是 \(z_{i,t}\) 的因子载荷；\(\boldsymbol\lambda\) 是各因子风险溢价。因 \(\mathbf f_t\) 也是超额收益，beta 定价 (24.11) 对 \(\mathbf z_t\to\mathbf f_t\) 也成立，此时 \(\boldsymbol\beta\to\boldsymbol\Sigma_{\mathbf f}\boldsymbol\Sigma_{\mathbf f}^{-1}=\mathbf I\)、\(\boldsymbol\lambda\) 不变，故 \(\mathbb E[\mathbf f_t]=\boldsymbol\lambda\)，即 \(\boldsymbol\mu_{\mathbf f}=\boldsymbol\lambda\) (24.12)。与 (24.11) 合得 (24.13)：\(\mathbb E[\mathbf z_t]=\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\)，及 (24.14)：\(\mathbf z_t=\boldsymbol\beta\mathbf f_t+\boldsymbol\varepsilon_t\)（\(\mathbb E[\boldsymbol\varepsilon_t]=\mathbf 0\)）。\(\boldsymbol\mu_{\mathbf f}=\boldsymbol\lambda\) 与 (24.10) 给 (24.15)：\(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f}\)。</p>
+<h3 id="24-3-2-moment-restrictions">24.3.2 Moment Restrictions</h3>
+<p>设 \(\mathbf f_t\) 全部作为超额收益在市场交易。三组矩约束（共 \(N+2k\)）：</p>
+</div>
+<div class="lang en">
+<p>\(\boldsymbol\beta'=\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\Sigma_{\mathbf f\mathbf z'}\) is the coefficient matrix of regressing \(\mathbf z_t-\boldsymbol\mu_{\mathbf z}\) on \(\mathbf f_t-\boldsymbol\mu_{\mathbf f}\) (i.e. \(z_{i,t}\) on 1 and \(\mathbf f_t\)); the \(i\)th column of \(\boldsymbol\beta'\) is \(z_{i,t}\)'s factor loading; \(\boldsymbol\lambda\) is each factor's risk premium. Since \(\mathbf f_t\) are also excess returns, beta pricing (24.11) also holds with \(\mathbf z_t\to\mathbf f_t\), where \(\boldsymbol\beta\to\boldsymbol\Sigma_{\mathbf f}\boldsymbol\Sigma_{\mathbf f}^{-1}=\mathbf I\) and \(\boldsymbol\lambda\) unchanged, so \(\mathbb E[\mathbf f_t]=\boldsymbol\lambda\), i.e. \(\boldsymbol\mu_{\mathbf f}=\boldsymbol\lambda\) (24.12). Combined with (24.11), (24.13): \(\mathbb E[\mathbf z_t]=\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\), and (24.14): \(\mathbf z_t=\boldsymbol\beta\mathbf f_t+\boldsymbol\varepsilon_t\) (\(\mathbb E[\boldsymbol\varepsilon_t]=\mathbf 0\)). \(\boldsymbol\mu_{\mathbf f}=\boldsymbol\lambda\) with (24.10) gives (24.15): \(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f}\).</p>
+<h3 id="24-3-2-moment-restrictions">24.3.2 Moment Restrictions</h3>
+<p>Suppose all \(\mathbf f_t\) trade in the market as excess returns. Three sets of restrictions (\(N+2k\) total):</p>
+</div>
+<p>$$\begin{cases}\mathbb E[m^\star_t(\mathbf b,\boldsymbol\mu_{\mathbf f})\mathbf z_t]=\mathbf 0_{N\times1}&N\text{ restrictions}\\[2pt]\mathbb E[m^\star_t(\mathbf b,\boldsymbol\mu_{\mathbf f})\mathbf f_t]=\mathbf 0_{k\times1}&k\text{ restrictions}\\[2pt]\mathbb E[\mathbf f_t-\boldsymbol\mu_{\mathbf f}]=\mathbf 0_{k\times1}&k\text{ restrictions}\end{cases}$$</p>
+<div class="lang zh">
+<p>但只有 \(2k\) 个系数（\(\mathbf b\) 与 \(\boldsymbol\mu_{\mathbf f}\)）需识别，故为<strong>过度识别</strong>。</p>
+<h3 id="24-3-3-calculations">24.3.3 Calculations</h3>
+<p>一般记号 (24.1) 的 \(\boldsymbol\beta\) 此处映射为 \((\mathbf b',\boldsymbol\mu_{\mathbf f}')'\)。计算 \(\mathbf D\) (24.5) 得 (24.16)、\(\mathbf V\) (24.4) 得 (24.17)–(24.23)：</p>
+</div>
+<div class="lang en">
+<p>but only \(2k\) coefficients (\(\mathbf b\) and \(\boldsymbol\mu_{\mathbf f}\)) to identify, so this is <strong>over-identification</strong>.</p>
+<h3 id="24-3-3-calculations">24.3.3 Calculations</h3>
+<p>The general-notation \(\boldsymbol\beta\) in (24.1) maps here to \((\mathbf b',\boldsymbol\mu_{\mathbf f}')'\). Computing \(\mathbf D\) (24.5) gives (24.16), and \(\mathbf V\) (24.4) gives (24.17)–(24.23):</p>
+</div>
+<p>$$\mathbf D=\begin{bmatrix}-\boldsymbol\beta\boldsymbol\Sigma_{\mathbf f}&\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\mathbf b'\\-\boldsymbol\Sigma_{\mathbf f}&\boldsymbol\mu_{\mathbf f}\mathbf b'\\\mathbf 0_{k\times k}&-\mathbf I_{k\times k}\end{bmatrix}\tag{24.16}$$</p>
+<div class="lang zh">
+<p>利用 \(\mathbf z_t=\boldsymbol\beta\mathbf f_t+\boldsymbol\varepsilon_t\) 与 \(\mathbf f_t\perp\boldsymbol\varepsilon_t\) i.i.d.（24.18–24.22），代入 \(\mathbf V\) (24.17) 得 (24.23)。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.1
+(24.23) 的 \(\mathbf V\) 仅在 \(\mathbf f_t\perp\boldsymbol\varepsilon_t\) 假设下成立；否则 (24.17) 仍成立，但无法化简为 (24.23)。</p></div>
+<p><strong>最优选择矩阵</strong> \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\) (24.3)。猜测 \(\mathbf V^{-1}\) 的分块（24.24–24.26）：\(\mathbf V_{11}=(1+\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f})^{-1}\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\)、\(\mathbf V_{12}=-(1+\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f})^{-1}\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\boldsymbol\beta\)、\(\mathbf V_{13}=\mathbf 0_{N\times k}\)，验证后得 \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\) (24.27)。</p>
+<h3 id="24-3-4-estimation">24.3.4 Estimation</h3>
+<p><strong>关键结果</strong>：\((\mathbf A^\star)'\) 的前 \(N\) 行全为零 (24.29)——即对前 \(N\) 个矩约束 \(\mathbb E[m^\star\mathbf z_t]=\mathbf 0\) 赋零权重，剩 \(2k\) 个约束给出<strong>恰好识别</strong>。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>最优选择矩阵的直觉
+因子本身在超额收益空间且可交易，故 SDF 须至少给因子自身定价。仅用因子信息做最优估计是合理的：加入更多资产会引入额外噪声、抬高估计量方差。故最优选择矩阵（为得最有效估计）合理地丢弃了 \(N\) 个测试资产的噪声信息。</p></div>
+<p>i.i.d. 样本类比 (24.30)，估计量 (24.31)/(24.32)：</p>
+</div>
+<div class="lang en">
+<p>Using \(\mathbf z_t=\boldsymbol\beta\mathbf f_t+\boldsymbol\varepsilon_t\) and \(\mathbf f_t\perp\boldsymbol\varepsilon_t\) i.i.d. (24.18–24.22), substituting into \(\mathbf V\) (24.17) gives (24.23).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.1
+The \(\mathbf V\) in (24.23) holds only under \(\mathbf f_t\perp\boldsymbol\varepsilon_t\); otherwise (24.17) still holds but cannot simplify to (24.23).</p></div>
+<p><strong>Optimal selection matrix</strong> \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\) (24.3). Guess the blocks of \(\mathbf V^{-1}\) (24.24–24.26): \(\mathbf V_{11}=(1+\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f})^{-1}\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\), \(\mathbf V_{12}=-(1+\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f})^{-1}\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\boldsymbol\beta\), \(\mathbf V_{13}=\mathbf 0_{N\times k}\); after verification, \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\) (24.27).</p>
+<h3 id="24-3-4-estimation">24.3.4 Estimation</h3>
+<p><strong>Key result</strong>: the first \(N\) rows of \((\mathbf A^\star)'\) are all zeros (24.29) — i.e. zero weight on the first \(N\) moment restrictions \(\mathbb E[m^\star\mathbf z_t]=\mathbf 0\), with the remaining \(2k\) giving <strong>just-identification</strong>.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Intuition of the optimal selection matrix
+The factors are themselves in the excess return space and tradable, so the SDF must at least price the factors themselves. Using only factor information for optimal estimation is reasonable: including more assets introduces additional noise that raises the estimator variance. So the optimal selection matrix (to obtain the most efficient estimator) reasonably drops the noisy information from the \(N\) test assets.</p></div>
+<p>The i.i.d. sample analogue (24.30), estimators (24.31)/(24.32):</p>
+</div>
+<p>$$\hat{\boldsymbol\mu}_{\mathbf f}=\bar{\mathbf f}\tag{24.31}$$</p>
+<p>$$\hat{\mathbf b}=\left(\frac1T\sum_{t=1}^T(\mathbf f_t-\bar{\mathbf f})(\mathbf f_t-\bar{\mathbf f})'\right)^{-1}\bar{\mathbf f}\tag{24.32}$$</p>
+<div class="lang zh">
+<p>((24.32) 是 \(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f}\) (24.33) 的样本类比，由中间 \(k\) 行约束推出。)</p>
+<h3 id="24-3-5-hypothesis-testing">24.3.5 Hypothesis Testing</h3>
+<p>估计量满足后 \(2k\) 行约束，故只可能不满足前 \(N\) 行；记前 \(N\) 行误差为 \(\hat{\boldsymbol\alpha}\)。前 \(N\) 行 ⟺ \(\boldsymbol\mu_{\mathbf z}-\boldsymbol\Sigma_{\mathbf z\mathbf f'}\mathbf b=\mathbf 0\) (24.34)，样本类比 (24.35)，代入 \(\hat{\mathbf b}\) 得 (24.36)：\(\hat{\boldsymbol\alpha}=\bar{\mathbf z}-\hat{\boldsymbol\Sigma}_{\mathbf z\mathbf f'}\hat{\mathbf b}\)。由 (24.6)（\(\chi^2_{N+2k-2k}=\chi^2_N\)），仅前 \(N\) 行非零，得检验统计量 (24.40)：</p>
+</div>
+<div class="lang en">
+<p>((24.32) is the sample analogue of \(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f}\) (24.33), derived from the middle \(k\) rows.)</p>
+<h3 id="24-3-5-hypothesis-testing">24.3.5 Hypothesis Testing</h3>
+<p>The estimators satisfy the last \(2k\) rows, so can only fail the first \(N\); denote the first-\(N\)-row errors \(\hat{\boldsymbol\alpha}\). The first \(N\) rows \(\Leftrightarrow\boldsymbol\mu_{\mathbf z}-\boldsymbol\Sigma_{\mathbf z\mathbf f'}\mathbf b=\mathbf 0\) (24.34), sample analogue (24.35), plugging \(\hat{\mathbf b}\) gives (24.36): \(\hat{\boldsymbol\alpha}=\bar{\mathbf z}-\hat{\boldsymbol\Sigma}_{\mathbf z\mathbf f'}\hat{\mathbf b}\). By (24.6) (\(\chi^2_{N+2k-2k}=\chi^2_N\)), only the first \(N\) rows nonzero, giving the test statistic (24.40):</p>
+</div>
+<p>$$T\,\hat{\boldsymbol\alpha}'_{1\times N}\left(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1}\right)_{N\times N}\hat{\boldsymbol\alpha}_{N\times1}\left(1+\hat{\boldsymbol\mu}_{\mathbf f}'\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\hat{\boldsymbol\mu}_{\mathbf f}\right)^{-1}_{1\times1}\xrightarrow{d}\chi^2_N\tag{24.40}$$</p>
+<div class="lang zh">
+<p>其中 \(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon},\hat{\boldsymbol\beta},\hat{\boldsymbol\Sigma}_{\mathbf f}\) 见 (24.39)，用以判断是否拒绝原假设"(24.7) 的 SDF 满足全部 \(N+2k\) 个矩约束"。</p>
+</div>
+<div class="lang en">
+<p>where \(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon},\hat{\boldsymbol\beta},\hat{\boldsymbol\Sigma}_{\mathbf f}\) are in (24.39), used to decide whether to reject the null that "the SDF in (24.7) satisfies all \(N+2k\) moment restrictions".</p>
+</div>
+<details class="proof">
+<summary>证明 / Proof：验证 \(\mathbf V^{-1}\) 分块 (24.24)–(24.26) 与检验统计量 (24.38)</summary>
+<div class="lang zh">
+<p>验证 \([\mathbf V_{11}\ \mathbf V_{12}\ \mathbf V_{13}]\mathbf V=[\mathbf I_{N\times N}\ \mathbf 0\ \mathbf 0]\)（即 \(\mathbf V^{-1}\) 第一分块行正确）：分别验证前 \(N\) 列 = \(\mathbf I_{N\times N}\)、中间 \(k\) 列 = \(\mathbf 0\)、右 \(k\) 列 = \(\mathbf 0\)（各用 \(\mathbf z_t=\boldsymbol\beta\mathbf f_t+\boldsymbol\varepsilon_t\)、\(\mathbf f_t\perp\boldsymbol\varepsilon_t\)、\(\mathbb E[\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f})]=0\)、\(\text{Var}(\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f}))=\mathbf b'\boldsymbol\Sigma_{\mathbf f}\mathbf b=\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f}\) 等）。</p>
+<p>将 \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\) 的前 \(N\) 行用 (24.24)–(24.26) 与 \(\mathbf D\) (24.16) 计算 (24.28)：前 \(k\) 列 \(=-\mathbf V_{11}\boldsymbol\beta\boldsymbol\Sigma_{\mathbf f}-\mathbf V_{12}\boldsymbol\Sigma_{\mathbf f}=\mathbf 0_{N\times k}\)；后 \(k\) 列 \(=\mathbf V_{11}\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\mathbf b'+\mathbf V_{12}\boldsymbol\mu_{\mathbf f}\mathbf b'-\mathbf V_{13}=\mathbf 0_{N\times k}\)。故 \(\mathbf A^\star\) 前 \(N\) 行全零，即 \((\mathbf A^\star)'\) 前 \(N\) 列全零。</p>
+<p>检验统计量：(24.6) 中只有前 \(N\) 行非零，代入 \(\mathbf V_{11}=(1+\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f})^{-1}\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\) (24.24) 得 \(T\hat{\boldsymbol\alpha}'\hat{\mathbf V}_{11}\hat{\boldsymbol\alpha}=T\hat{\boldsymbol\alpha}'(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1})\hat{\boldsymbol\alpha}(1+\hat{\boldsymbol\mu}_{\mathbf f}'\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\hat{\boldsymbol\mu}_{\mathbf f})^{-1}\xrightarrow{d}\chi^2_N\) (24.38)。\(\blacksquare\)</p>
+</div>
+<div class="lang en">
+<p>Verify \([\mathbf V_{11}\ \mathbf V_{12}\ \mathbf V_{13}]\mathbf V=[\mathbf I_{N\times N}\ \mathbf 0\ \mathbf 0]\) (i.e. the first block-row of \(\mathbf V^{-1}\) is correct): verify the first \(N\) columns \(=\mathbf I_{N\times N}\), the middle \(k\) columns \(=\mathbf 0\), and the right \(k\) columns \(=\mathbf 0\) (each using \(\mathbf z_t=\boldsymbol\beta\mathbf f_t+\boldsymbol\varepsilon_t\), \(\mathbf f_t\perp\boldsymbol\varepsilon_t\), \(\mathbb E[\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f})]=0\), \(\text{Var}(\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f}))=\mathbf b'\boldsymbol\Sigma_{\mathbf f}\mathbf b=\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f}\), etc.).</p>
+<p>Compute the first \(N\) rows of \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\) using (24.24)–(24.26) and \(\mathbf D\) (24.16) (24.28): the first \(k\) columns \(=-\mathbf V_{11}\boldsymbol\beta\boldsymbol\Sigma_{\mathbf f}-\mathbf V_{12}\boldsymbol\Sigma_{\mathbf f}=\mathbf 0_{N\times k}\); the last \(k\) columns \(=\mathbf V_{11}\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\mathbf b'+\mathbf V_{12}\boldsymbol\mu_{\mathbf f}\mathbf b'-\mathbf V_{13}=\mathbf 0_{N\times k}\). So the first \(N\) rows of \(\mathbf A^\star\) are zeros, i.e. the first \(N\) columns of \((\mathbf A^\star)'\) are zeros.</p>
+<p>Test statistic: in (24.6) only the first \(N\) rows are nonzero; substituting \(\mathbf V_{11}=(1+\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f})^{-1}\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\) (24.24) gives \(T\hat{\boldsymbol\alpha}'\hat{\mathbf V}_{11}\hat{\boldsymbol\alpha}=T\hat{\boldsymbol\alpha}'(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1})\hat{\boldsymbol\alpha}(1+\hat{\boldsymbol\mu}_{\mathbf f}'\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\hat{\boldsymbol\mu}_{\mathbf f})^{-1}\xrightarrow{d}\chi^2_N\) (24.38). \(\blacksquare\)</p>
+</div>
+</details>
+<h3 id="24-3-6-interpretation-and-model-comparison">24.3.6 Interpretation and Model Comparison</h3>
+<div class="lang zh">
+<p><strong>GMM vs 时间序列回归</strong>：(24.14) 的最优 GMM 估计 \(\hat{\boldsymbol\beta}'=\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\hat{\boldsymbol\Sigma}_{\mathbf f\mathbf z'}\) (24.39) 是把 \(\mathbf z_t-\boldsymbol\mu_{\mathbf z}\) 对 \(\mathbf f_t-\boldsymbol\mu_{\mathbf f}\) 时间序列回归的系数。因 \(\boldsymbol\mu_{\mathbf z}=\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\) (24.13)，\(\mathbf z_t=\hat{\boldsymbol\beta}\mathbf f_t+\tilde{\boldsymbol\varepsilon}_t\) (24.41)，即 i.i.d. 下最优 GMM = 时间序列 OLS。理想下 \(\tilde{\boldsymbol\varepsilon}\) 样本均值为零，但不保证 → \(\mathbf z_t=\hat{\boldsymbol\alpha}+\hat{\boldsymbol\beta}\mathbf f_t+\hat{\tilde{\boldsymbol\varepsilon}}_t\) (24.42)，\(\hat{\boldsymbol\alpha}\) 即用于检验统计量。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.2
+GMM 等价于时间序列 OLS 回归，是因为假设因子可交易（超额收益）、最优选择矩阵丢弃了 \(\mathbf z_t\) 中测试资产的全部信息。否则不等价（见 §24.4）。</p></div>
+<p><strong>检验统计量 (24.40) 的解读</strong>：\(\hat{\boldsymbol\alpha}'(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1})\hat{\boldsymbol\alpha}\) 是用 \(\mathbf z_t\) 构造的、对 \(\mathbf f_t\) <strong>零暴露</strong>组合的最大平方夏普比率（\(\hat{\boldsymbol\alpha}=\mathbb E[\mathbf z_t-\boldsymbol\beta\mathbf f_t]\) 是扣除因子暴露后的均值；模型若对则 \(\hat{\boldsymbol\alpha}=\mathbf 0\)，离零越近模型越好）。调整项 \((1+\hat{\boldsymbol\mu}_{\mathbf f}'\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\hat{\boldsymbol\mu}_{\mathbf f})^{-1}\) 修正因子系数估计误差：\(\hat{\boldsymbol\mu}_{\mathbf f}\) 越大 → 统计量越小、越难拒绝（解释更多超额收益的因子应更难拒绝）；\(\hat{\boldsymbol\Sigma}_{\mathbf f}\) 越大 → 统计量越大、越易拒绝（更波动的因子应有更强解释力、检验标准更高）。\(\hat{\boldsymbol\alpha}'(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1})\hat{\boldsymbol\alpha}\) 与 Hansen-Jagannathan 距离（§5.1.7）密切相关，可用于模型比较。</p>
+<p><strong>比较两因子模型</strong>：用 \(\hat{\boldsymbol\alpha}'_A(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon,A}^{-1})\hat{\boldsymbol\alpha}_A\) 与 \(\hat{\boldsymbol\alpha}'_B(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon,B}^{-1})\hat{\boldsymbol\alpha}_B\)（零暴露组合的最大平方夏普比率）。测试资产 \(\mathbf z_t\) 与此比较无关；较小者给出更好的、含全部可交易因子的线性 SDF。比较时丢弃因子方差归一化项 \((1+\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f})^{-1}\)。</p>
+<p><strong>截面 \(R^2\) 模型比较</strong>（一般比较，不限可交易因子）：
+- <strong>法一</strong>：算隐含均值收益 \(\widehat{\mathbb E[\mathbf z_t]}\)。前 \(N\) 矩约束 → \(\mathbb E[\mathbf z_t]=\mathbb E[\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f})\mathbf z_t]\) (24.43)，样本类比 \(\widehat{\mathbb E[\mathbf z_t]}=\frac1T\sum_t\hat{\mathbf b}'(\mathbf f_t-\hat{\boldsymbol\mu}_{\mathbf f})\mathbf z_t\)；实际样本均值 \(\bar{\mathbf z}\)。跑截面回归 \(\bar z_i=\widehat{\mathbb E[z_i]}+\epsilon_i\) (24.44)（约束常数为 0、系数为 1），报告 \(R^2=1-\frac{\overline{\text{Var}}(\epsilon_i)}{\overline{\text{Var}}(\bar z_i)}\) (24.45)。因 \(\bar\epsilon\) 不必为零，此 \(R^2\) 不必为正。
+- <strong>法二</strong>：Fama-MacBeth——第一步时间序列回归得 \(\hat{\boldsymbol\beta}_i\)；第二步把时间均值 \(\bar y_i\) 对 \(\hat{\boldsymbol\beta}_i\) 截面回归估风险溢价 \(\hat{\boldsymbol\phi}\)，报告 \(R^2\)。</p>
+<p>不同人对 \(R^2\) 定义不同，无统一框架，须留意所指。</p>
+</div>
+<div class="lang en">
+<p><strong>GMM vs time-series regression</strong>: the optimal GMM estimate of (24.14), \(\hat{\boldsymbol\beta}'=\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\hat{\boldsymbol\Sigma}_{\mathbf f\mathbf z'}\) (24.39), is the time-series regression coefficient of \(\mathbf z_t-\boldsymbol\mu_{\mathbf z}\) on \(\mathbf f_t-\boldsymbol\mu_{\mathbf f}\). Since \(\boldsymbol\mu_{\mathbf z}=\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\) (24.13), \(\mathbf z_t=\hat{\boldsymbol\beta}\mathbf f_t+\tilde{\boldsymbol\varepsilon}_t\) (24.41), i.e. under i.i.d. optimal GMM = time-series OLS. Ideally \(\tilde{\boldsymbol\varepsilon}\) has zero sample mean, but not guaranteed → \(\mathbf z_t=\hat{\boldsymbol\alpha}+\hat{\boldsymbol\beta}\mathbf f_t+\hat{\tilde{\boldsymbol\varepsilon}}_t\) (24.42), \(\hat{\boldsymbol\alpha}\) being used for the test statistic.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.2
+GMM is equivalent to time-series OLS regression because we assumed factors are tradable (excess returns) and the optimal selection matrix drops all test-asset information in \(\mathbf z_t\). Otherwise it would not be equivalent (see §24.4).</p></div>
+<p><strong>Interpreting the test statistic (24.40)</strong>: \(\hat{\boldsymbol\alpha}'(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1})\hat{\boldsymbol\alpha}\) is the maximized squared Sharpe ratio of the <strong>zero-exposure</strong> portfolio (zero exposure to \(\mathbf f_t\)) built from \(\mathbf z_t\) (\(\hat{\boldsymbol\alpha}=\mathbb E[\mathbf z_t-\boldsymbol\beta\mathbf f_t]\) is the mean after removing factor exposure; if the model is correct \(\hat{\boldsymbol\alpha}=\mathbf 0\), and the closer to zero the better). The adjustment \((1+\hat{\boldsymbol\mu}_{\mathbf f}'\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\hat{\boldsymbol\mu}_{\mathbf f})^{-1}\) corrects for factor-coefficient estimation error: higher \(\hat{\boldsymbol\mu}_{\mathbf f}\) → smaller statistic, less likely to reject (factors explaining more excess return should be harder to reject); higher \(\hat{\boldsymbol\Sigma}_{\mathbf f}\) → larger statistic, more likely to reject (more volatile factors should have more explaining power, so a higher testing standard). \(\hat{\boldsymbol\alpha}'(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1})\hat{\boldsymbol\alpha}\) is closely related to the Hansen-Jagannathan distance (§5.1.7), justifying model comparison.</p>
+<p><strong>Comparing two factor models</strong>: use \(\hat{\boldsymbol\alpha}'_A(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon,A}^{-1})\hat{\boldsymbol\alpha}_A\) and \(\hat{\boldsymbol\alpha}'_B(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon,B}^{-1})\hat{\boldsymbol\alpha}_B\) (maximized squared Sharpe of the zero-exposure portfolio). The test assets \(\mathbf z_t\) are irrelevant to this comparison; the smaller one gives a better linear SDF with all tradable factors. For comparison, drop the factor-variance normalization \((1+\boldsymbol\mu_{\mathbf f}'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f})^{-1}\).</p>
+<p><strong>Cross-sectional \(R^2\) for model comparison</strong> (general, not restricted to tradable factors):
+- <strong>Way 1</strong>: compute the implied mean return \(\widehat{\mathbb E[\mathbf z_t]}\). The first \(N\) restrictions → \(\mathbb E[\mathbf z_t]=\mathbb E[\mathbf b'(\mathbf f_t-\boldsymbol\mu_{\mathbf f})\mathbf z_t]\) (24.43), sample analogue \(\widehat{\mathbb E[\mathbf z_t]}=\frac1T\sum_t\hat{\mathbf b}'(\mathbf f_t-\hat{\boldsymbol\mu}_{\mathbf f})\mathbf z_t\); actual sample mean \(\bar{\mathbf z}\). Run the cross-sectional regression \(\bar z_i=\widehat{\mathbb E[z_i]}+\epsilon_i\) (24.44) (restricting constant 0, coefficient 1), report \(R^2=1-\frac{\overline{\text{Var}}(\epsilon_i)}{\overline{\text{Var}}(\bar z_i)}\) (24.45). Since \(\bar\epsilon\) need not be zero, this \(R^2\) need not be positive.
+- <strong>Way 2</strong>: Fama-MacBeth — Step 1 time-series regression gives \(\hat{\boldsymbol\beta}_i\); Step 2 cross-sectionally regress the time mean \(\bar y_i\) on \(\hat{\boldsymbol\beta}_i\) to estimate the risk premium \(\hat{\boldsymbol\phi}\), report \(R^2\).</p>
+<p>Different people define \(R^2\) differently with no unifying framework, so be careful which \(R^2\) is meant.</p>
+</div>
+<h2 id="24-4-non-traded-factors">24.4 Non-Traded Factors</h2>
+<h3 id="24-4-1-the-model">24.4.1 The Model</h3>
+<div class="lang zh">
+<p>因子 \(\mathbf f_t\) 现不可交易，故 (24.12)–(24.15)（皆基于因子可交易）不再成立。但仍有 \(\mathbb E[\mathbf z_t]=\boldsymbol\beta\boldsymbol\lambda\) (24.46)，\(\boldsymbol\beta\equiv\boldsymbol\Sigma_{\mathbf z\mathbf f'}\boldsymbol\Sigma_{\mathbf f}^{-1}\) (24.47)、\(\boldsymbol\lambda\equiv\boldsymbol\Sigma_{\mathbf f}\mathbf b\) (24.48)（同 24.9/24.10）。模型 (24.49)：</p>
+</div>
+<div class="lang en">
+<p>The factors \(\mathbf f_t\) are now non-tradable, so (24.12)–(24.15) (all based on traded factors) no longer hold. But \(\mathbb E[\mathbf z_t]=\boldsymbol\beta\boldsymbol\lambda\) (24.46) still holds, with \(\boldsymbol\beta\equiv\boldsymbol\Sigma_{\mathbf z\mathbf f'}\boldsymbol\Sigma_{\mathbf f}^{-1}\) (24.47), \(\boldsymbol\lambda\equiv\boldsymbol\Sigma_{\mathbf f}\mathbf b\) (24.48) (same as 24.9/24.10). The model (24.49):</p>
+</div>
+<p>$$\mathbf z_t=\boldsymbol\beta_0+\boldsymbol\beta\mathbf f_t+\boldsymbol\varepsilon_t,\qquad\boldsymbol\beta_0\equiv\boldsymbol\mu_{\mathbf z}-\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\tag{24.49}$$</p>
+<div class="lang zh">
+<p>\(\boldsymbol\beta_0\) 是因子不可交易的自然结果，<strong>不是</strong>定价误差 \(\boldsymbol\alpha\)（不同于 24.42）。重要的后续估计式 (24.50)：\(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\lambda\)，且此情形<strong>不再有</strong> \(\boldsymbol\lambda=\boldsymbol\mu_{\mathbf f}\)。</p>
+<h3 id="24-4-2-moment-restrictions">24.4.2 Moment Restrictions</h3>
+<p>与 §24.3 可交易情形相同，唯因子不可直接交易，故得 \(k\) 个对 \(k\) 因子定价的约束。共 \(N+k\) 个矩约束：\(\mathbb E[m^\star_t\mathbf z_t]=\mathbf 0_{N\times1}\)（\(N\) 个）、\(\mathbb E[\mathbf f_t-\boldsymbol\mu_{\mathbf f}]=\mathbf 0_{k\times1}\)（\(k\) 个）。\(2k\) 个系数（\(\mathbf b,\boldsymbol\mu_{\mathbf f}\)），\(N>k\)，仍<strong>过度识别</strong>。</p>
+<h3 id="24-4-3-calculations">24.4.3 Calculations</h3>
+<p>与 §24.3 类似但少 \(k\) 行。\(\mathbf D_{(N+k)\times2k}\) (24.51)：似 (24.16) 但无中间 \(k\) 行，\(\mathbf D=[[-\boldsymbol\beta\boldsymbol\Sigma_{\mathbf f},\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\mathbf b'],[\mathbf 0,-\mathbf I]]\)。\(\mathbf V\) (24.52) 无中间行列。\(\mathbf A^\star=\mathbf V^{-1}\mathbf D\)，用 \(\mathbf V_{11}=(1+\boldsymbol\lambda'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\lambda)^{-1}\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\) (24.53)，\(\boldsymbol\lambda=\boldsymbol\Sigma_{\mathbf f}\mathbf b\)。<strong>但 \(\mathbf A^\star\) 前 \(N\) 列不再全零</strong>——测试资产 \(\mathbf z_t\) 进入估计。</p>
+<h3 id="24-4-4-estimation">24.4.4 Estimation</h3>
+<p>矩约束 (24.54)、样本类比 (24.55)，估计量 (24.56)–(24.58)：</p>
+</div>
+<div class="lang en">
+<p>\(\boldsymbol\beta_0\) is a natural result of factors being non-tradable, <strong>not</strong> a pricing error \(\boldsymbol\alpha\) (unlike 24.42). The important later estimation equation (24.50): \(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\lambda\), and in this case we <strong>no longer</strong> have \(\boldsymbol\lambda=\boldsymbol\mu_{\mathbf f}\).</p>
+<h3 id="24-4-2-moment-restrictions">24.4.2 Moment Restrictions</h3>
+<p>Same as §24.3's traded case, except factors are not directly tradable, giving \(k\) restrictions on pricing the \(k\) factors. \(N+k\) restrictions: \(\mathbb E[m^\star_t\mathbf z_t]=\mathbf 0_{N\times1}\) (\(N\)), \(\mathbb E[\mathbf f_t-\boldsymbol\mu_{\mathbf f}]=\mathbf 0_{k\times1}\) (\(k\)). \(2k\) coefficients (\(\mathbf b,\boldsymbol\mu_{\mathbf f}\)), \(N>k\), still <strong>over-identification</strong>.</p>
+<h3 id="24-4-3-calculations">24.4.3 Calculations</h3>
+<p>Similar to §24.3 minus \(k\) rows. \(\mathbf D_{(N+k)\times2k}\) (24.51): like (24.16) without the middle \(k\) rows, \(\mathbf D=[[-\boldsymbol\beta\boldsymbol\Sigma_{\mathbf f},\boldsymbol\beta\boldsymbol\mu_{\mathbf f}\mathbf b'],[\mathbf 0,-\mathbf I]]\). \(\mathbf V\) (24.52) without middle rows/columns. \(\mathbf A^\star=\mathbf V^{-1}\mathbf D\), using \(\mathbf V_{11}=(1+\boldsymbol\lambda'\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\lambda)^{-1}\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\) (24.53), \(\boldsymbol\lambda=\boldsymbol\Sigma_{\mathbf f}\mathbf b\). <strong>But the first \(N\) columns of \(\mathbf A^\star\) are no longer all zeros</strong> — the test assets \(\mathbf z_t\) enter estimation.</p>
+<h3 id="24-4-4-estimation">24.4.4 Estimation</h3>
+<p>Moment restrictions (24.54), sample analogue (24.55), estimators (24.56)–(24.58):</p>
+</div>
+<p>$$\hat{\boldsymbol\mu}_{\mathbf f}=\bar{\mathbf f},\qquad\hat{\mathbf b}=\left(\frac1T\sum_{t=1}^T(\mathbf f_t-\bar{\mathbf f})(\mathbf f_t-\bar{\mathbf f})'\right)^{-1}\hat{\boldsymbol\lambda},\qquad\hat{\boldsymbol\lambda}=\left(\hat{\boldsymbol\beta}'\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1}\hat{\boldsymbol\beta}\right)^{-1}\hat{\boldsymbol\beta}'\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1}\left(\frac1T\sum_{t=1}^T\mathbf z_t\right)\tag{24.58}$$</p>
+<div class="lang zh">
+<p>由前 \(N\) 行约束推出 \(\boldsymbol\Sigma_{\mathbf z\mathbf f'}\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\Sigma_{\mathbf f}\mathbf b=\boldsymbol\mu_{\mathbf z}\)（即 \(\boldsymbol\beta\boldsymbol\lambda=\boldsymbol\mu_{\mathbf z}\)）(24.59)，其样本类比 (24.60)：\(\hat{\mathbf b}=\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}(\hat{\boldsymbol\beta}'\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1}\hat{\boldsymbol\beta})^{-1}\hat{\boldsymbol\beta}'\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1}(\frac1T\sum\mathbf z_t)\)，\(\hat{\boldsymbol\beta}=\hat{\boldsymbol\Sigma}_{\mathbf z\mathbf f'}\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\) (24.61)。(24.60) 中 \(\hat{\boldsymbol\lambda}\) 是把 \(\hat{\boldsymbol\mu}_{\mathbf z}\) 对 \(\hat{\boldsymbol\beta}\) 做<strong>截面 GLS 回归</strong>的系数（He 2019a §4.5.4）。GLS 是异方差下最有效线性估计，故由最优选择矩阵 \(\mathbf A^\star\) 给出。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.3
+最优 GMM 与 Fama-MacBeth 思路相似：\(\hat{\boldsymbol\beta}'\) (24.61) 由对每个超额收益 \(z_{i,t}\) 时间序列 OLS 得（对应 FM 第一步）；风险溢价 \(\hat{\boldsymbol\lambda}\) (24.60) 是把 \(\hat{\boldsymbol\mu}_{\mathbf z}\) 对 \(\hat{\boldsymbol\beta}\) 截面 GLS 回归（对应 FM 第二步）。<strong>差别</strong>：最优 GMM 第二步用 <strong>GLS</strong>，Fama-MacBeth 用 <strong>OLS</strong>；OLS 方差更大，故 FM 对应<strong>未用最优选择矩阵 \(\mathbf A^\star\)</strong> 的 GMM。</p></div>
+<h3 id="24-4-5-factor-mimicking-portfolios">24.4.5 Factor Mimicking Portfolios</h3>
+<p>可把 (24.60) 的 GLS 估计 \(\boldsymbol\lambda\) 解释为 \(\mathbf z_t\) 线性组合所成<strong>模仿组合 (mimicking portfolio)</strong> 的均值向量。模仿组合最好地追踪因子运动；把 \(\boldsymbol\mu_{\mathbf z}\) 对 \(\boldsymbol\beta\) 截面 GLS 回归正是寻找各因子模仿组合均值的最佳方式。权重矩阵 \(\mathbf W=(\boldsymbol\beta'\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\boldsymbol\beta)^{-1}\boldsymbol\beta'\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\)，样本 \(\hat{\mathbf W}\)，第 \(k\) 行是（不可交易的）第 \(k\) 因子模仿组合（可交易）的权重。模仿组合向量 \(\tilde{\mathbf f}_t=\mathbf W\mathbf z_t\)，样本 (24.62)；其均值 \(\tilde{\boldsymbol\mu}_{\mathbf f}=\mathbf W\boldsymbol\mu_{\mathbf z}=\boldsymbol\lambda\)，样本 (24.63)：\(\hat{\tilde{\boldsymbol\mu}}_{\mathbf f}=\hat{\mathbf W}\hat{\boldsymbol\mu}_{\mathbf z}=\hat{\boldsymbol\lambda}\)，即 (24.62) 回归系数向量 \(\tilde{\mathbf f}\) 的均值（对应 FM 第二步；第一步是时间序列 OLS 估 \(\hat{\boldsymbol\beta}\)）。(24.63) 恰是 (24.60) 的 \(\boldsymbol\lambda\)，故 (24.60) 可重写为 \(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\tilde{\boldsymbol\mu}_{\mathbf f}\)，与可交易情形 (24.32) 一致——因模仿组合可交易，满足 §24.3 全部条件（\(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\tilde{\boldsymbol\mu}_{\mathbf f}\)，非 \(\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f}\)）。</p>
+<h3 id="24-4-6-hypothesis-testing">24.4.6 Hypothesis Testing</h3>
+<p>估计量满足后 \(k\) 行，故只可能不满足前 \(N\) 行；记误差 \(\hat{\boldsymbol\alpha}\)。由 (24.6)（\(\chi^2_{N+k-2k}=\chi^2_{N-k}\)），仅前 \(N\) 行非零，得检验统计量 (24.67)：</p>
+</div>
+<div class="lang en">
+<p>The first \(N\) rows imply \(\boldsymbol\Sigma_{\mathbf z\mathbf f'}\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\Sigma_{\mathbf f}\mathbf b=\boldsymbol\mu_{\mathbf z}\) (i.e. \(\boldsymbol\beta\boldsymbol\lambda=\boldsymbol\mu_{\mathbf z}\)) (24.59), sample analogue (24.60): \(\hat{\mathbf b}=\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}(\hat{\boldsymbol\beta}'\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1}\hat{\boldsymbol\beta})^{-1}\hat{\boldsymbol\beta}'\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1}(\frac1T\sum\mathbf z_t)\), \(\hat{\boldsymbol\beta}=\hat{\boldsymbol\Sigma}_{\mathbf z\mathbf f'}\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\) (24.61). The \(\hat{\boldsymbol\lambda}\) in (24.60) is the coefficient of a <strong>cross-sectional GLS regression</strong> of \(\hat{\boldsymbol\mu}_{\mathbf z}\) on \(\hat{\boldsymbol\beta}\) (He 2019a §4.5.4). GLS is the most efficient linear estimator under heteroskedasticity, so it is given by the optimal selection matrix \(\mathbf A^\star\).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.3
+Optimal GMM has a similar idea to Fama-MacBeth: \(\hat{\boldsymbol\beta}'\) (24.61) is obtained by time-series OLS for each excess return \(z_{i,t}\) (FM Step 1); the risk premium \(\hat{\boldsymbol\lambda}\) (24.60) is the cross-sectional GLS regression of \(\hat{\boldsymbol\mu}_{\mathbf z}\) on \(\hat{\boldsymbol\beta}\) (FM Step 2). <strong>Difference</strong>: optimal GMM Step 2 uses <strong>GLS</strong>, Fama-MacBeth uses <strong>OLS</strong>; OLS has larger variance, so FM corresponds to GMM <strong>without the optimal selection matrix \(\mathbf A^\star\)</strong>.</p></div>
+<h3 id="24-4-5-factor-mimicking-portfolios">24.4.5 Factor Mimicking Portfolios</h3>
+<p>We can interpret the GLS estimator \(\boldsymbol\lambda\) in (24.60) as the mean vector of the <strong>mimicking portfolio</strong> built from a linear combination of \(\mathbf z_t\). Mimicking portfolios track factor movement best; cross-sectional GLS regression of \(\boldsymbol\mu_{\mathbf z}\) on \(\boldsymbol\beta\) is precisely the best way to find the mean of each factor mimicking portfolio. The weight matrix \(\mathbf W=(\boldsymbol\beta'\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\boldsymbol\beta)^{-1}\boldsymbol\beta'\boldsymbol\Sigma_{\boldsymbol\varepsilon}^{-1}\), sample \(\hat{\mathbf W}\), its \(k\)th row the weight vector for the (non-tradable) \(k\)th factor mimicking portfolio (tradable). The mimicking portfolio vector \(\tilde{\mathbf f}_t=\mathbf W\mathbf z_t\), sample (24.62); its mean \(\tilde{\boldsymbol\mu}_{\mathbf f}=\mathbf W\boldsymbol\mu_{\mathbf z}=\boldsymbol\lambda\), sample (24.63): \(\hat{\tilde{\boldsymbol\mu}}_{\mathbf f}=\hat{\mathbf W}\hat{\boldsymbol\mu}_{\mathbf z}=\hat{\boldsymbol\lambda}\), the average of the regression coefficient vector \(\tilde{\mathbf f}\) in (24.62) (corresponding to FM Step 2; Step 1 estimates \(\hat{\boldsymbol\beta}\) by time-series OLS). (24.63) is exactly the \(\boldsymbol\lambda\) in (24.60), so (24.60) rewrites as \(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\tilde{\boldsymbol\mu}_{\mathbf f}\), the same as the tradable case (24.32) — because mimicking portfolios are tradable and satisfy all conditions of §24.3 (\(\mathbf b=\boldsymbol\Sigma_{\mathbf f}^{-1}\tilde{\boldsymbol\mu}_{\mathbf f}\), not \(\boldsymbol\Sigma_{\mathbf f}^{-1}\boldsymbol\mu_{\mathbf f}\)).</p>
+<h3 id="24-4-6-hypothesis-testing">24.4.6 Hypothesis Testing</h3>
+<p>The estimators satisfy the last \(k\) rows, so can only fail the first \(N\); denote the errors \(\hat{\boldsymbol\alpha}\). By (24.6) (\(\chi^2_{N+k-2k}=\chi^2_{N-k}\)), only the first \(N\) rows nonzero, giving the test statistic (24.67):</p>
+</div>
+<p>$$T\,\hat{\boldsymbol\alpha}'_{1\times N}\left(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon}^{-1}\right)_{N\times N}\hat{\boldsymbol\alpha}_{N\times1}\left(1+\hat{\boldsymbol\lambda}'\hat{\boldsymbol\Sigma}_{\mathbf f}^{-1}\hat{\boldsymbol\lambda}\right)^{-1}_{1\times1}\xrightarrow{d}\chi^2_{N-k}\tag{24.67}$$</p>
+<div class="lang zh">
+<p>其中 \(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon},\hat{\boldsymbol\beta},\hat{\boldsymbol\Sigma}_{\mathbf f}\) 见 (24.66)，用以判断是否拒绝原假设"(24.7) 的 SDF 满足全部 \(N+k\) 个矩约束"。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.4 / 24.5
+<strong>24.4</strong>：\(\mathbf V\) 未知需估，三种方法（He 2019a §13.6.4），其一为两步估计：先用任一选择矩阵（通常用 \(\mathbf D\)）估 \(\boldsymbol\beta\)、据此估 \(\mathbf V\) 与 \(\mathbf A^\star\)，再重估 \(\boldsymbol\beta\) 并用 \(\mathbf A^\star\) 检验。
+<strong>24.5</strong>：当因子可交易时，应始终用 §24.3 的估计与检验，因为不可交易因子方法机械地少 \(k\) 个约束、用更多自由度拟合，样本内拟合机械地更好，但不代表模型真的更好。</p></div>
+</div>
+<div class="lang en">
+<p>where \(\hat{\boldsymbol\Sigma}_{\boldsymbol\varepsilon},\hat{\boldsymbol\beta},\hat{\boldsymbol\Sigma}_{\mathbf f}\) are in (24.66), used to decide whether to reject the null that "the SDF in (24.7) satisfies all \(N+k\) moment restrictions".</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.4 / 24.5
+<strong>24.4</strong>: \(\mathbf V\) is unknown and must be estimated, with three methods (He 2019a §13.6.4); one is two-step estimation: first estimate \(\boldsymbol\beta\) with any selection matrix (typically \(\mathbf D\)), estimate \(\mathbf V\) and thus \(\mathbf A^\star\), then re-estimate \(\boldsymbol\beta\) and test using \(\mathbf A^\star\).
+<strong>24.5</strong>: When factors are traded, always use §24.3's estimation and testing, because the non-traded factor method mechanically drops \(k\) restrictions and fits with more degrees of freedom, so in-sample fit is mechanically better but the model is not really better.</p></div>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Fama, E. F. and J. D. MacBeth (1973). Risk, return, and equilibrium: Empirical tests. <em>Journal of Political Economy</em> 81(3), 607–636.</li>
+<li>Hansen, L. P. and R. Jagannathan (1991). Implications of security market data for models of dynamic economies. <em>Journal of Political Economy</em> 99(2), 225–262.</li>
+<li>Hansen, L. P. (1982). Large sample properties of generalized method of moments estimators. <em>Econometrica</em> 50(4), 1029–1054.</li>
+<li>He, X. (2019a). <em>Econometrics Notes by Xindi He</em>.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#24-1-preliminaries">24.1 Preliminaries</a></li>
+        <li><a href="#24-2-setup">24.2 Setup</a></li>
+        <li><a href="#24-3-traded-factors">24.3 Traded Factors</a></li>
+          <li><a href="#24-3-1-beta-pricing-representation">24.3.1 Beta Pricing Representation</a></li>
+        <li><a href="#24-3-traded-factors">24.3 Traded Factors</a></li>
+          <li><a href="#24-3-1-beta-pricing-representation">24.3.1 Beta Pricing Representation</a></li>
+          <li><a href="#24-3-2-moment-restrictions">24.3.2 Moment Restrictions</a></li>
+          <li><a href="#24-3-2-moment-restrictions">24.3.2 Moment Restrictions</a></li>
+          <li><a href="#24-3-3-calculations">24.3.3 Calculations</a></li>
+          <li><a href="#24-3-3-calculations">24.3.3 Calculations</a></li>
+          <li><a href="#24-3-4-estimation">24.3.4 Estimation</a></li>
+          <li><a href="#24-3-4-estimation">24.3.4 Estimation</a></li>
+          <li><a href="#24-3-5-hypothesis-testing">24.3.5 Hypothesis Testing</a></li>
+          <li><a href="#24-3-5-hypothesis-testing">24.3.5 Hypothesis Testing</a></li>
+          <li><a href="#24-3-6-interpretation-and-model-comparison">24.3.6 Interpretation and Model Comparison</a></li>
+        <li><a href="#24-4-non-traded-factors">24.4 Non-Traded Factors</a></li>
+          <li><a href="#24-4-1-the-model">24.4.1 The Model</a></li>
+          <li><a href="#24-4-2-moment-restrictions">24.4.2 Moment Restrictions</a></li>
+          <li><a href="#24-4-3-calculations">24.4.3 Calculations</a></li>
+          <li><a href="#24-4-4-estimation">24.4.4 Estimation</a></li>
+          <li><a href="#24-4-2-moment-restrictions">24.4.2 Moment Restrictions</a></li>
+          <li><a href="#24-4-3-calculations">24.4.3 Calculations</a></li>
+          <li><a href="#24-4-4-estimation">24.4.4 Estimation</a></li>
+          <li><a href="#24-4-5-factor-mimicking-portfolios">24.4.5 Factor Mimicking Portfolios</a></li>
+          <li><a href="#24-4-6-hypothesis-testing">24.4.6 Hypothesis Testing</a></li>
+          <li><a href="#24-4-5-factor-mimicking-portfolios">24.4.5 Factor Mimicking Portfolios</a></li>
+          <li><a href="#24-4-6-hypothesis-testing">24.4.6 Hypothesis Testing</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>26. Bayesian Learning with Subjective Beliefs – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>26. Bayesian Learning with Subjective Beliefs</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">贝叶斯学习</span><span class="lang en">Bayesian Learning</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">主观信念</span><span class="lang en">Subjective Beliefs</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">收益可预测性</span><span class="lang en">Return Predictability</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">递归效用</span><span class="lang en">Recursive Utility</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">渐忘记忆</span><span class="lang en">Fading Memory</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章用<strong>贝叶斯学习</strong>为投资者的<strong>主观信念</strong>提供微观基础。设股利增长 \(\Delta d_t=\mu+\varepsilon_t\)，代理人不知真值 \(\mu\)，只能从数据中学习，得到时变的主观估计 \(\tilde\mu_t\)。三条主线：(1) <strong>收益可预测性</strong>（§26.2/26.3.6）——Campbell-Shiller 分解给出 \(\mathbb E_t[r_{t+1}]-r_f\) 由"误判 \(\mu-\tilde\mu_t\)"与"信念动态 \(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t\)"两部分驱动，即便代理人完全理性地贝叶斯学习，收益仍可预测；(2) <strong>贝叶斯更新</strong>（§26.3）——共轭正态先验 \(\mathcal N(\tilde\mu_0,\nu_0\sigma^2)\) 经更新得后验 \(\mathcal N(\tilde\mu_t,\nu_t\sigma^2)\)，增益 \(\nu_t\) 递减（<strong>递减增益</strong>），且主观信念是<strong>鞅</strong> \(\tilde\mu_t=\tilde{\mathbb E}_t[\tilde\mu_{t+1}]\) (26.20)；(3) <strong>资产定价</strong>（§26.4）——在 Epstein-Zin 偏好（\(\psi=1\)）下分两情形：<strong>情形 1 预期效用 (anticipated utility)</strong> 把当前估计 \(\tilde\mu_t\) 当作永久真值、忽略未来不确定性（主观风险溢价恒为 \(\gamma\sigma^2\)，学习对价格无影响）；<strong>情形 2 定价主观增长不确定性</strong> 把 \(\mu\) 的不确定性 \(\nu_t\) 也定价进 SDF。最后 (§26.5) 介绍 <strong>Nagel-Xu (2019) 渐忘记忆 (fading memory)</strong> 模型——<strong>常增益更新 (constant-gain)</strong> \(\tilde\mu_{t+1}=\tilde\mu_t+\nu(\Delta d_{t+1}-\tilde\mu_t)\)，预测客观股权溢价高且强反周期、主观股权溢价恒定。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter uses <strong>Bayesian learning</strong> to micro-found investors' <strong>subjective beliefs</strong>. With dividend growth \(\Delta d_t=\mu+\varepsilon_t\), the agent does not know the true \(\mu\) and learns it from data, obtaining a time-varying subjective estimate \(\tilde\mu_t\). Three threads: (1) <strong>return predictability</strong> (§26.2/26.3.6) — the Campbell-Shiller decomposition gives \(\mathbb E_t[r_{t+1}]-r_f\) driven by "misperception \(\mu-\tilde\mu_t\)" and "belief dynamics \(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t\)", so returns are predictable even when the agent is fully rational and Bayesian-learning; (2) <strong>Bayesian updating</strong> (§26.3) — a conjugate normal prior \(\mathcal N(\tilde\mu_0,\nu_0\sigma^2)\) updates to the posterior \(\mathcal N(\tilde\mu_t,\nu_t\sigma^2)\), with decreasing gain \(\nu_t\) (<strong>decreasing-gain updating</strong>), and the subjective belief is a <strong>martingale</strong> \(\tilde\mu_t=\tilde{\mathbb E}_t[\tilde\mu_{t+1}]\) (26.20); (3) <strong>asset pricing</strong> (§26.4) — under Epstein-Zin preference (\(\psi=1\)), two cases: <strong>Case 1 anticipated utility</strong> treats the current estimate \(\tilde\mu_t\) as a permanent truth and ignores future uncertainty (subjective risk premium constant at \(\gamma\sigma^2\), learning has no price effect); <strong>Case 2 priced subjective growth uncertainty</strong> also prices the uncertainty \(\nu_t\) about \(\mu\) into the SDF. Finally (§26.5) the <strong>Nagel-Xu (2019) fading-memory</strong> model — <strong>constant-gain updating</strong> \(\tilde\mu_{t+1}=\tilde\mu_t+\nu(\Delta d_{t+1}-\tilde\mu_t)\) predicts a high, strongly counter-cyclical objective equity premium and a constant subjective equity premium.</p></div>
+</div>
+<h2 id="26-1-setup">26.1 Setup</h2>
+<div class="lang zh">
+<p>经济中有一资产，\(t\) 时支付股利 \(D_t\)、价格 \(P_t\)（可解释为整体股市或个股；个股因学习涉及同业横截面更复杂，故假设整体市场）。记 \(d_t\equiv\ln D_t\)、\(\Delta d_t=d_t-d_{t-1}\)，股利增长 (26.1)：\(\Delta d_t=\mu+\varepsilon_t\)，\(\varepsilon_t\overset{iid}\sim\mathcal N(0,\sigma^2)\)，\(\mu\) 为客观（真）均值。\(p_t\equiv\ln P_t\)。Campbell-Shiller 分解 (7.5)（\(\kappa_0\to k\)、\(\kappa_1\to\rho\)）(26.2)：</p>
+</div>
+<div class="lang en">
+<p>The economy has an asset paying dividend \(D_t\) at \(t\), price \(P_t\) (interpretable as the whole equity market or an individual stock; an individual stock is more complex due to cross-sectional learning across the same industry, so assume the aggregate market). Denote \(d_t\equiv\ln D_t\), \(\Delta d_t=d_t-d_{t-1}\), dividend growth (26.1): \(\Delta d_t=\mu+\varepsilon_t\), \(\varepsilon_t\overset{iid}\sim\mathcal N(0,\sigma^2)\), \(\mu\) the objective (true) mean. \(p_t\equiv\ln P_t\). The Campbell-Shiller decomposition (7.5) (\(\kappa_0\to k\), \(\kappa_1\to\rho\)) (26.2):</p>
+</div>
+<p>$$p_t-d_t=\frac{k}{1-\rho}+\sum_{j=0}^{\infty}\rho^j\left[(\Delta d_{t+1+j})-r_{t+1+j}\right]\tag{26.2}$$</p>
+<div class="lang zh">
+<p>\(r_t\) 为对数毛收益，无风险利率 \(r_f\) 常数。\(\tilde{\mathbb E}_t[\cdot]\) 为 \(t\) 时主观条件期望（基于主观概率测度）；另设计量经济学家用客观测度 \(\mathbb E_t[\cdot]\) 且知真值 \(\mu\)。</p>
+<p><strong>关键假设</strong>：代理人有常数主观风险溢价 \(\tilde\theta\) (26.3)：\(\tilde{\mathbb E}_t[r_{t+j}]=\tilde\theta+r_f\)；及对（常数）无条件股利增长率的时变主观估计（对所有未来期）(26.4)：\(\tilde{\mathbb E}_t[\Delta d_{t+j}]=\tilde\mu_t\)，\(\forall t\ge1\)。\(\Delta d\) 真无条件均值为 (26.1) 的 \(\mu\)；时变下标 \(\tilde\mu_t\) 仅表示估计随信息变。（也可设 \(\tilde\theta\) 时变，此处聚焦单一主观信念来源。）</p>
+<h2 id="26-2-return-predictability">26.2 Return Predictability</h2>
+<p>\(t\) 时 \(p_t,d_t\) 被双方观测。由 (26.3)/(26.4) 对 (26.2) 取主观期望两端 → (26.5)：</p>
+</div>
+<div class="lang en">
+<p>\(r_t\) is the log gross return, the risk-free rate \(r_f\) constant. \(\tilde{\mathbb E}_t[\cdot]\) is the time-\(t\) subjective conditional expectation (under the subjective measure); separately the econometrician uses the objective measure \(\mathbb E_t[\cdot]\) and knows the true \(\mu\).</p>
+<p><strong>Crucial assumption</strong>: the agent has constant subjective risk premium \(\tilde\theta\) (26.3): \(\tilde{\mathbb E}_t[r_{t+j}]=\tilde\theta+r_f\); and a time-varying subjective estimate of the (constant) unconditional dividend growth rate (for all future periods) (26.4): \(\tilde{\mathbb E}_t[\Delta d_{t+j}]=\tilde\mu_t\), \(\forall t\ge1\). The true unconditional mean of \(\Delta d\) is \(\mu\) in (26.1); the time subscript on \(\tilde\mu_t\) just indicates the estimate varies with information. (One could also let \(\tilde\theta\) vary; here we focus on a single source of subjective beliefs.)</p>
+<h2 id="26-2-return-predictability">26.2 Return Predictability</h2>
+<p>At \(t\), \(p_t,d_t\) are observed by both. Taking the subjective expectation of (26.2) using (26.3)/(26.4) gives (26.5):</p>
+</div>
+<p>$$p_t-d_t=\frac{k}{1-\rho}+\frac1{1-\rho}\left(\tilde\mu_t-\tilde\theta-r_f\right)\tag{26.5}$$</p>
+<div class="lang zh">
+<p>价格今天 \(p_t\) 随主观股利增长预期 \(\tilde\mu_t\) 变。计量经济学家视角：(26.2)≡(7.4) → \(r_{t+1}=d_t-p_t+k+\rho(p_{t+1}-d_{t+1})+\Delta d_{t+1}\) (26.6)。把 (26.5) 代入 (26.6)、再取客观期望两端，得<strong>收益可预测性</strong> (26.8)：</p>
+</div>
+<div class="lang en">
+<p>Today's price \(p_t\) varies with the subjective dividend-growth expectation \(\tilde\mu_t\). Econometrician's view: (26.2)≡(7.4) → \(r_{t+1}=d_t-p_t+k+\rho(p_{t+1}-d_{t+1})+\Delta d_{t+1}\) (26.6). Plugging (26.5) into (26.6), then taking the objective expectation of both sides, gives <strong>return predictability</strong> (26.8):</p>
+</div>
+<p>$$\mathbb E_t[r_{t+1}]-r_f=\underbrace{\tilde\theta+\frac{\rho}{1-\rho}\left(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t\right)+(\mu-\tilde\mu_t)}_{\text{subjective premium }\tilde\theta\ \ne\ \text{objective }\theta}\tag{26.8}$$</p>
+<details class="proof">
+<summary>证明 / Proof：(26.7) 与 (26.8)</summary>
+<div class="lang zh">
+<p>把 (26.5)（及其 \(t+1\) 版）代入 (26.6) 整理得 (26.7)：
+$$r_{t+1}=\tilde\theta+r_f-\frac1{1-\rho}\tilde\mu_t+\frac{\rho}{1-\rho}\tilde\mu_{t+1}+\Delta d_{t+1}\tag{26.7}$$
+两端取客观期望 \(\mathbb E_t\)，\(\mathbb E_t[\Delta d_{t+1}]=\mu\)，整理即得 (26.8)。\(\blacksquare\)</p>
+</div>
+<div class="lang en">
+<p>Substituting (26.5) (and its \(t+1\) version) into (26.6) and simplifying gives (26.7):
+$$r_{t+1}=\tilde\theta+r_f-\frac1{1-\rho}\tilde\mu_t+\frac{\rho}{1-\rho}\tilde\mu_{t+1}+\Delta d_{t+1}\tag{26.7'}$$
+Taking the objective expectation \(\mathbb E_t\) of both sides, with \(\mathbb E_t[\Delta d_{t+1}]=\mu\), gives (26.8). \(\blacksquare\)</p>
+</div>
+</details>
+<div class="lang zh">
+<p>(26.8) 的可预测性来自两部分：<strong>Part 1</strong> \(\mu-\tilde\mu_t\)（下期股利增长的可预测误判——若代理人高估 \(\mu-\tilde\mu_t<0\)，计量经济学家知客观风险溢价下期更低）；<strong>Part 2</strong> \(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t\)（代理人主观信念的可预测动态——若计量经济学家知代理人下期更乐观 \(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t>0\)，客观风险溢价下期更高）。</p>
+<h2 id="26-3-bayesian-learning">26.3 Bayesian Learning</h2>
+<h3 id="26-3-1-assumptions">26.3.1 Assumptions</h3>
+<p>代理人想知道的参数是 (26.1) 中的 \(\mu\)，\(\varepsilon_t\overset{iid}\sim\mathcal N(0,\sigma^2)\)，\(\Delta d_t\) 的 p.d.f. \(f(\Delta d_t\mid\mu)\) 属指数族 (26.9)。设代理人知 \(\sigma^2\) 但不知 \(\mu\)（合理：大样本/高频数据改善 \(\sigma^2\) 而非 \(\mu\)，见第 39 章）。\(t\) 时累积信息 \(\mathcal H_t=\{\Delta d_t,\Delta d_{t-1},\dots,\Delta d_1\}\)。贝叶斯视角：代理人视 \(\mu\) 为随机变量（对它有主观不确定性）。</p>
+<h3 id="26-3-2-conjugate-prior">26.3.2 Conjugate Prior</h3>
+<p>设代理人在观测任何数据前有共轭先验 \(\pi_0(\mu)\)（He 2019a §7.3）(26.10)。改写分子 (26.11) 可见共轭先验为<strong>正态分布</strong>，均值 \(\tilde\mu_0\)、方差 \(\nu_0\sigma^2\)，\(\tilde\mu_0,\nu_0>0\) 任意 (26.12)：</p>
+</div>
+<div class="lang en">
+<p>The predictability in (26.8) comes from two parts: <strong>Part 1</strong> \(\mu-\tilde\mu_t\) (predictable misperception of next period's dividend growth — if the agent over-predicts, \(\mu-\tilde\mu_t<0\), the econometrician knows the objective risk premium is lower next period); <strong>Part 2</strong> \(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t\) (predictable dynamics of the agent's subjective beliefs — if the econometrician knows the agent will be more optimistic next period, \(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t>0\), the objective risk premium is higher next period).</p>
+<h2 id="26-3-bayesian-learning">26.3 Bayesian Learning</h2>
+<h3 id="26-3-1-assumptions">26.3.1 Assumptions</h3>
+<p>The parameter the agent wants to know is \(\mu\) in (26.1), \(\varepsilon_t\overset{iid}\sim\mathcal N(0,\sigma^2)\), and the p.d.f. \(f(\Delta d_t\mid\mu)\) is an exponential family (26.9). The agent knows \(\sigma^2\) but not \(\mu\) (reasonable: large-sample/high-frequency data improves \(\sigma^2\) but not \(\mu\), see Chapter 39). Accumulated information at \(t\): \(\mathcal H_t=\{\Delta d_t,\Delta d_{t-1},\dots,\Delta d_1\}\). Bayesian view: the agent treats \(\mu\) as a random variable (subjective uncertainty about it).</p>
+<h3 id="26-3-2-conjugate-prior">26.3.2 Conjugate Prior</h3>
+<p>The agent has a conjugate prior \(\pi_0(\mu)\) before observing any data (He 2019a §7.3) (26.10). Rewriting the numerator (26.11) shows the conjugate prior is a <strong>normal distribution</strong> with mean \(\tilde\mu_0\), variance \(\nu_0\sigma^2\), \(\tilde\mu_0,\nu_0>0\) arbitrary (26.12):</p>
+</div>
+<p>$$\text{Prior Distribution: }\mathcal N(\tilde\mu_0,\nu_0\sigma^2)\tag{26.12}$$</p>
+<div class="lang zh">
+<p>若 \(\nu_0=+\infty\)，代理人无任何先验信息（平坦先验、对任意 \(\mu\) 赋等零权重）。</p>
+<h3 id="26-3-3-bayesian-updating">26.3.3 Bayesian Updating</h3>
+<div class="callout"><div class="callout-title">Tip</div><p>Proposition 26.1（正态贝叶斯更新）
+设 \(x\mid\theta\sim\mathcal N(\theta,\sigma^2)\)，先验 \(\theta\sim\mathcal N(\mu,\tau^2)\)，则后验 \(\theta\mid x\sim\mathcal N(\bar\mu,\bar\tau^2)\)，其中 \(\bar\tau^{-2}=\tau^{-2}+\sigma^{-2}\)，\(\bar\mu=\frac{\sigma^{-2}}{\sigma^{-2}+\tau^{-2}}x+\frac{\tau^{-2}}{\sigma^{-2}+\tau^{-2}}\mu\)。（证：He 2019a Prop 7.8。）</p></div>
+<p>应用：观测 \(\mathcal H_1\) 后后验 \(\mu\sim\mathcal N(\tilde\mu_1,\sigma_1^2)\)。由 Prop 26.1 归纳，\(t\) 时后验 (26.13)：</p>
+</div>
+<div class="lang en">
+<p>If \(\nu_0=+\infty\), the agent has no prior information (flat prior, equal zero weights on any \(\mu\)).</p>
+<h3 id="26-3-3-bayesian-updating">26.3.3 Bayesian Updating</h3>
+<div class="callout"><div class="callout-title">Tip</div><p>Proposition 26.1 (Normal Bayesian updating)
+If \(x\mid\theta\sim\mathcal N(\theta,\sigma^2)\), prior \(\theta\sim\mathcal N(\mu,\tau^2)\), then the posterior \(\theta\mid x\sim\mathcal N(\bar\mu,\bar\tau^2)\), where \(\bar\tau^{-2}=\tau^{-2}+\sigma^{-2}\), \(\bar\mu=\frac{\sigma^{-2}}{\sigma^{-2}+\tau^{-2}}x+\frac{\tau^{-2}}{\sigma^{-2}+\tau^{-2}}\mu\). (Proof: He 2019a Prop 7.8.)</p></div>
+<p>Application: after observing \(\mathcal H_1\), the posterior \(\mu\sim\mathcal N(\tilde\mu_1,\sigma_1^2)\). By Proposition 26.1 and induction, the posterior at \(t\) (26.13):</p>
+</div>
+<p>$$\text{Posterior after }\mathcal H_t:\ \mathcal N(\tilde\mu_t,\nu_t\sigma^2),\quad\tilde\mu_t=\tilde\mu_{t-1}+\nu_t(\Delta d_t-\tilde\mu_{t-1}),\quad\nu_t=\frac{\nu_{t-1}}{1+\nu_{t-1}}\tag{26.13–15}$$</p>
+<div class="lang zh">
+<ul>
+<li>若 \(\nu_0=+\infty\)（无先验信息）：\(\nu_t=\frac1t\)（简单归纳），代理人实质取 \(\mathcal H_t\) 信息的样本平均估 \(\mu\)（直觉：无先验则等权对待每条新信息）。</li>
+<li>对任意 \(\nu_0\)，\(\nu_t\) 随时间递减（因 \(\frac1{1+\nu_{t-1}}\in(0,1)\)），故从观测 \(\Delta d_t\) 获得的信息增益随时间递减，称<strong>递减增益更新 (decreasing gain updating)</strong>。</li>
+</ul>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 26.1（MAP 估计）
+有时不需刻画整个后验，只需后验的点估计。<strong>最大后验 (MAP)</strong> 估计 (26.16)：\(\hat\mu_{\text{MAP},t}\equiv\arg\max_\mu\pi(\mu\mid\mathcal H_t)\)（给定先验与 \(\mathcal H_t\) 下"最可能"的 \(\mu\)）。两特例：(1) \(\pi(\mu\mid\mathcal H_t)\) 正态（如 26.13）→ \(\hat\mu_{\text{MAP},t}=\tilde\mu_t\) 后验均值；(2) 先验方差为无穷 → MAP = MLE（先验无信息）。</p></div>
+<h3 id="26-3-4-dynamic-subjective-distribution-of-dividend-growth">26.3.4 Dynamic Subjective Distribution of Dividend Growth</h3>
+<p>\(\Delta d_{t+1}=\mu_t+\varepsilon_{t+1}\)，\(\varepsilon\overset{iid}\sim\mathcal N(0,\sigma^2)\)，均值 \(\mu_t\) 服从主观分布 \(\mu_t\sim\mathcal N(\tilde\mu_t,\nu_t\sigma^2)\)。\(\varepsilon_{t+1}\)（\(t+1\) 信息）⊥ \(\mu_t\)（\(t\) 信息）→ \(\tilde{\mathbb E}_t[\Delta d_{t+1}]=\tilde\mu_t\)、\(\widetilde{\text{Var}}_t(\Delta d_{t+1})=(1+\nu_t)\sigma^2\)，即 (26.17)：</p>
+</div>
+<div class="lang en">
+<ul>
+<li>If \(\nu_0=+\infty\) (no prior information): \(\nu_t=\frac1t\) (simple induction), so the agent effectively takes the sample average of \(\mathcal H_t\) to estimate \(\mu\) (intuitive: with no prior, weight each new piece equally).</li>
+<li>For any \(\nu_0\), \(\nu_t\) is decreasing in time (since \(\frac1{1+\nu_{t-1}}\in(0,1)\)), so the information gain from observing \(\Delta d_t\) decreases over time — <strong>decreasing-gain updating</strong>.</li>
+</ul>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 26.1 (MAP estimator)
+Sometimes we needn't characterize the whole posterior, only its point estimate. The <strong>maximum-a-posteriori (MAP)</strong> estimator (26.16): \(\hat\mu_{\text{MAP},t}\equiv\arg\max_\mu\pi(\mu\mid\mathcal H_t)\) (the "most likely" \(\mu\) given the prior and \(\mathcal H_t\)). Two special cases: (1) \(\pi(\mu\mid\mathcal H_t)\) normal (e.g. 26.13) → \(\hat\mu_{\text{MAP},t}=\tilde\mu_t\) the posterior mean; (2) prior variance infinity → MAP = MLE (prior provides no information).</p></div>
+<h3 id="26-3-4-dynamic-subjective-distribution-of-dividend-growth">26.3.4 Dynamic Subjective Distribution of Dividend Growth</h3>
+<p>\(\Delta d_{t+1}=\mu_t+\varepsilon_{t+1}\), \(\varepsilon\overset{iid}\sim\mathcal N(0,\sigma^2)\), with mean \(\mu_t\) following the subjective distribution \(\mu_t\sim\mathcal N(\tilde\mu_t,\nu_t\sigma^2)\). \(\varepsilon_{t+1}\) (time \(t+1\) info) \(\perp\mu_t\) (time \(t\) info) → \(\tilde{\mathbb E}_t[\Delta d_{t+1}]=\tilde\mu_t\), \(\widetilde{\text{Var}}_t(\Delta d_{t+1})=(1+\nu_t)\sigma^2\), i.e. (26.17):</p>
+</div>
+<p>$$\Delta d_{t+1}\sim\mathcal N\!\left(\tilde\mu_t,(1+\nu_t)\sigma^2\right)\tag{26.17}$$</p>
+<div class="lang zh">
+<h3 id="26-3-5-martingale-posterior-beliefs">26.3.5 Martingale Posterior Beliefs</h3>
+<p>重写 (26.14) 为 \(t\to t+1\)：\(\tilde\mu_{t+1}=\tilde\mu_t+\nu_{t+1}(\Delta d_{t+1}-\tilde\mu_t)\) (26.18)，唯一随机部分是 \(\Delta d_{t+1}-\tilde\mu_t\)（\(t\) 时后验、\(t+1\) 时先验），\(\nu_{t+1}\) 由 (26.15) 确定。由 (26.17)，\(\Delta d_{t+1}-\tilde\mu_t\sim\mathcal N(0,(1+\nu_t)\sigma^2)\)，故 \(t\) 时 \(\tilde\mu_{t+1}\) 的分布 \(\mathcal N(\tilde\mu_t,\nu_{t+1}^2(1+\nu_t)\sigma^2)\) (26.19)。等价地 (26.20)/(26.21)：</p>
+</div>
+<div class="lang en">
+<h3 id="26-3-5-martingale-posterior-beliefs">26.3.5 Martingale Posterior Beliefs</h3>
+<p>Rewrite (26.14) for \(t\to t+1\): \(\tilde\mu_{t+1}=\tilde\mu_t+\nu_{t+1}(\Delta d_{t+1}-\tilde\mu_t)\) (26.18), the only random part being \(\Delta d_{t+1}-\tilde\mu_t\) (posterior at \(t\), prior at \(t+1\)), \(\nu_{t+1}\) deterministic by (26.15). By (26.17), \(\Delta d_{t+1}-\tilde\mu_t\sim\mathcal N(0,(1+\nu_t)\sigma^2)\), so the time-\(t\) distribution of \(\tilde\mu_{t+1}\) is \(\mathcal N(\tilde\mu_t,\nu_{t+1}^2(1+\nu_t)\sigma^2)\) (26.19). Equivalently (26.20)/(26.21):</p>
+</div>
+<p>$$\tilde\mu_{t+1}=\tilde\mu_t+\nu_{t+1}\sqrt{(1+\nu_t)}\sigma\tilde\epsilon_{t+1},\qquad\tilde\epsilon_{t+1}\equiv\frac{\Delta d_{t+1}-\tilde\mu_t}{\sqrt{(1+\nu_t)}\sigma}\sim\mathcal N(0,1)\tag{26.20–21}$$</p>
+<div class="lang zh">
+<p>\(\tilde\epsilon_{t+1}\) 是代理人视角的 i.i.d. 冲击。(26.20) 表明代理人信念是<strong>鞅</strong>：\(\tilde\mu_t=\tilde{\mathbb E}_t[\tilde\mu_{t+1}]\)（直觉：代理人用尽 \(t\) 时全部信息，无残留的预期非零差，否则会立即调整 \(\tilde\mu_t\) 使鞅性成立）。</p>
+<h3 id="26-3-6-revisit-return-predictability">26.3.6 Revisit Return Predictability</h3>
+<p>(26.8) 在贝叶斯学习下：先算 \(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t=\nu_{t+1}(\mathbb E_t[\Delta d_{t+1}]-\tilde\mu_t)=\nu_{t+1}(\mu-\tilde\mu_t)\) (26.23)（\(\nu_{t+1}\) 确定，\(\mathbb E_t[\Delta d_{t+1}]=\mu\) 客观）。代入 (26.22) 得 (26.24)：</p>
+</div>
+<div class="lang en">
+<p>\(\tilde\epsilon_{t+1}\) is the i.i.d. shock in the agent's perspective. (26.20) shows the agent's belief is a <strong>martingale</strong>: \(\tilde\mu_t=\tilde{\mathbb E}_t[\tilde\mu_{t+1}]\) (intuitive: the agent uses up all time-\(t\) information, with no expected nonzero difference remaining, else they would immediately adjust \(\tilde\mu_t\) to make martingality hold).</p>
+<h3 id="26-3-6-revisit-return-predictability">26.3.6 Revisit Return Predictability</h3>
+<p>(26.8) under Bayesian learning: first compute \(\mathbb E_t[\tilde\mu_{t+1}]-\tilde\mu_t=\nu_{t+1}(\mathbb E_t[\Delta d_{t+1}]-\tilde\mu_t)=\nu_{t+1}(\mu-\tilde\mu_t)\) (26.23) (\(\nu_{t+1}\) deterministic, \(\mathbb E_t[\Delta d_{t+1}]=\mu\) objective). Substituting into (26.22) gives (26.24):</p>
+</div>
+<p>$$\mathbb E_t[r_{t+1}]-r_f=\tilde\theta+\left(\frac{\rho}{1-\rho}\nu_{t+1}+1\right)(\mu-\tilde\mu_t)\tag{26.24}$$</p>
+<div class="lang zh">
+<p>即便代理人完全理性、动态贝叶斯学习并用尽每条信息更新信念，收益（风险溢价）仍可预测，可预测性来自 \(\mu-\tilde\mu_t\)。<strong>关键假设</strong>是计量经济学家知客观真值 \(\mu\)。</p>
+<h2 id="26-4-asset-pricing-with-subjective-learning">26.4 Asset Pricing with Subjective Learning</h2>
+<h3 id="26-4-1-environment">26.4.1 Environment</h3>
+<p>禀赋经济，代表性代理人，消费 \(C_t\) 唯一来源是资产股利。\(c_t\equiv\ln C_t\)。市场出清 \(C_{t+1}=D_{t+1}\)，故对数消费增长 = 对数股利增长 \(\Delta c_{t+1}=\Delta d_{t+1}\)。由 (26.1) (26.25)：\(\Delta c_{t+1}=\mu+\varepsilon_{t+1}\)，\(\varepsilon\overset{iid}\sim\mathcal N(0,\sigma^2)\)。</p>
+<h3 id="26-4-2-epstein-zin-preference">26.4.2 Epstein-Zin Preference</h3>
+<p>代表性代理人有 Epstein-Zin 偏好 (9.1) 即 (26.26)：\(V_t=[(1-\delta)C_t^{1-1/\psi}+\delta(\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}])^{\frac{1-1/\psi}{1-\gamma}}]^{\frac1{1-1/\psi}}\)。\(V_t,\delta,\psi\) 对应 (9.1) 的 \(U_t,\beta,1/\rho\)；用主观测度评估期望（代理人无客观测度信息）；\(\gamma\) 相对风险厌恶、\(\psi\) 跨期替代弹性 (IES)。财富组合 \(W_{t+1}=R_{w,t+1}(W_t-C_t)\) (26.27)，由 (9.15) \(W_t=\frac1{1-\delta}V_t^{1-1/\psi}C_t^{1/\psi}\) (26.28)。EZ 主观 SDF (9.12) (26.29)：\(\tilde M_{t+1}=\delta(\frac{C_{t+1}}{C_t})^{-1/\psi}(\frac{V_{t+1}}{(\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}])^{1/(1-\gamma)}})^{1/\psi-\gamma}\)。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 26.2
+(26.29) 的推导（§9.3）基于关键假设：\(C_{t+1}\) 与 \(\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}]^{1/(1-\gamma)}\) 独立（或至少 \(\partial(\cdot)/\partial C_{t+1}=0\)）。这对 §26.4.3 预期效用成立（未来股利冲击 i.i.d.，\(C_{t+1}\) 信息不改 \(\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}]\) 的评估）。对 §26.4.4 定价主观增长不确定性也成立：\(V_{t+1}\) 与 \(\tilde{\mathbb E}_{t+1}[V_{t+2}^{1-\gamma}]^{1/(1-\gamma)}\) 虽不完全独立，但 \(t+1\) 时主观测度的变动在 \(t\) 时不受代理人控制，那个额外边际效用渠道的 \(t\) 期期望为零，故仍退化为标准 SDF (26.29)。</p></div>
+<p>下文聚焦 \(\psi=1\)、\(\gamma\neq1\)。(26.28) → \(\frac{W_t}{C_t}=\frac1{1-\delta}\) 常数 (26.30)。由 (9.3)，(26.26) → \(V_t=(C_t)^{1-\delta}(R_t)^\delta\) (26.31)，\(R_t=\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}]^{\frac1{1-\gamma}}\)。\(V_{t+1}\) 关于全部未来消费一阶齐次 → 关于 \(W_{t+1}\) 一阶齐次 \(V_{t+1}=\alpha W_{t+1}=\alpha C_{t+1}\frac1{1-\delta}\) (26.32)。代入 (26.29) 并取对数得对数主观 SDF (26.34)：</p>
+</div>
+<div class="lang en">
+<p>Even when the agent is fully rational, dynamically Bayesian-learning, and uses every piece of information to update beliefs, returns (the risk premium) are still predictable, with predictability from \(\mu-\tilde\mu_t\). The <strong>crucial assumption</strong> is that the econometrician knows the objective true \(\mu\).</p>
+<h2 id="26-4-asset-pricing-with-subjective-learning">26.4 Asset Pricing with Subjective Learning</h2>
+<h3 id="26-4-1-environment">26.4.1 Environment</h3>
+<p>Endowment economy, representative agent, consumption \(C_t\) whose only source is the asset dividend. \(c_t\equiv\ln C_t\). Market clearing \(C_{t+1}=D_{t+1}\), so log consumption growth = log dividend growth \(\Delta c_{t+1}=\Delta d_{t+1}\). By (26.1) (26.25): \(\Delta c_{t+1}=\mu+\varepsilon_{t+1}\), \(\varepsilon\overset{iid}\sim\mathcal N(0,\sigma^2)\).</p>
+<h3 id="26-4-2-epstein-zin-preference">26.4.2 Epstein-Zin Preference</h3>
+<p>The representative agent has Epstein-Zin preference (9.1), i.e. (26.26): \(V_t=[(1-\delta)C_t^{1-1/\psi}+\delta(\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}])^{\frac{1-1/\psi}{1-\gamma}}]^{\frac1{1-1/\psi}}\). \(V_t,\delta,\psi\) map to \(U_t,\beta,1/\rho\) in (9.1); the subjective measure evaluates the expectation (agent has no objective-measure info); \(\gamma\) relative risk aversion, \(\psi\) IES. Wealth portfolio \(W_{t+1}=R_{w,t+1}(W_t-C_t)\) (26.27), by (9.15) \(W_t=\frac1{1-\delta}V_t^{1-1/\psi}C_t^{1/\psi}\) (26.28). EZ subjective SDF (9.12) (26.29): \(\tilde M_{t+1}=\delta(\frac{C_{t+1}}{C_t})^{-1/\psi}(\frac{V_{t+1}}{(\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}])^{1/(1-\gamma)}})^{1/\psi-\gamma}\).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 26.2
+The derivation (§9.3) of (26.29) relies on the crucial assumption that \(C_{t+1}\) and \(\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}]^{1/(1-\gamma)}\) are independent (or at least \(\partial(\cdot)/\partial C_{t+1}=0\)). This holds for §26.4.3 anticipated utility (future dividend shocks i.i.d., \(C_{t+1}\) info doesn't alter the evaluation of \(\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}]\)). It also applies to §26.4.4 priced subjective growth uncertainty: although \(V_{t+1}\) and \(\tilde{\mathbb E}_{t+1}[V_{t+2}^{1-\gamma}]^{1/(1-\gamma)}\) are not completely independent, the change in the time-\(t+1\) subjective measure is out of the agent's control at \(t\), so the time-\(t\) expectation of that additional marginal-utility channel is zero, and it degenerates to the standard SDF (26.29).</p></div>
+<p>Below we focus on \(\psi=1\), \(\gamma\neq1\). (26.28) → \(\frac{W_t}{C_t}=\frac1{1-\delta}\) constant (26.30). By (9.3), (26.26) → \(V_t=(C_t)^{1-\delta}(R_t)^\delta\) (26.31), \(R_t=\tilde{\mathbb E}_t[V_{t+1}^{1-\gamma}]^{\frac1{1-\gamma}}\). \(V_{t+1}\) is h.o.d. 1 in all future consumption → h.o.d. 1 in \(W_{t+1}\), \(V_{t+1}=\alpha W_{t+1}=\alpha C_{t+1}\frac1{1-\delta}\) (26.32). Substituting into (26.29) and taking logs gives the log subjective SDF (26.34):</p>
+</div>
+<p>$$\tilde m_{t+1}=\ln\delta-\gamma\Delta c_{t+1}-\ln\left(\tilde{\mathbb E}_t\!\left[e^{(1-\gamma)\Delta c_{t+1}}\right]\right)\tag{26.34}$$</p>
+<h3 id="26-4-3-scenario-1-anticipated-utility">26.4.3 Scenario 1: Anticipated Utility</h3>
+<div class="lang zh">
+<p>代理人把 \(t\) 时后验 \(\tilde\mu_t\) 代入 (26.25)，<strong>完全忽略</strong>未来不确定性与 \(\mu\) 的更新：\(\Delta c_{t+1}=\tilde\mu_t+\varepsilon_{t+1}\)，\(\varepsilon\overset{iid}\sim\mathcal N(0,\sigma^2)\) (26.35)（\(\Delta c\sim\mathcal N(\tilde\mu_t,\sigma^2)\)，代理人认定 \(\tilde\mu_t\) 为永久真值）。称<strong>预期效用 (anticipated utility)</strong>。由对数正态 \(\tilde{\mathbb E}_t[e^{(1-\gamma)\Delta c_{t+1}}]=e^{(1-\gamma)\tilde\mu_t+\frac12(1-\gamma)^2\sigma^2}\) (26.36)，代入 (26.34)：</p>
+</div>
+<div class="lang en">
+<p>The agent plugs the time-\(t\) posterior \(\tilde\mu_t\) into (26.25), <strong>completely ignoring</strong> future uncertainty and updating of \(\mu\): \(\Delta c_{t+1}=\tilde\mu_t+\varepsilon_{t+1}\), \(\varepsilon\overset{iid}\sim\mathcal N(0,\sigma^2)\) (26.35) (\(\Delta c\sim\mathcal N(\tilde\mu_t,\sigma^2)\), the agent fixes \(\tilde\mu_t\) as a permanent truth). Call this <strong>anticipated utility</strong>. By log-normality \(\tilde{\mathbb E}_t[e^{(1-\gamma)\Delta c_{t+1}}]=e^{(1-\gamma)\tilde\mu_t+\frac12(1-\gamma)^2\sigma^2}\) (26.36), substituting into (26.34):</p>
+</div>
+<p>$$\tilde m_{t+1}=\tilde\mu_m-\gamma\tilde\mu_t-\gamma\varepsilon_{t+1},\qquad\tilde\mu_m=\ln\delta-\tfrac12(1-\gamma)^2\sigma^2\tag{26.37}$$</p>
+<div class="lang zh">
+<p>无风险利率 \(\frac1{R_{f,t}}=\tilde{\mathbb E}_t[\tilde M_{t+1}]\) (26.38) → \(r_{f,t}=-\tilde\mu_m+\tilde\mu_t-\frac12\gamma^2\sigma^2\) (26.39)。财富组合：禀赋经济中财富组合即产生总股利的证券价格，\(R_{w,t+1}=\frac1\delta\frac{C_{t+1}}{C_t}\) (26.40)，\(r_{w,t+1}=-\ln\delta+\Delta c_{t+1}\) (26.41)，主观方差 \(\widetilde{\text{Var}}(r_{w,t+1})=\sigma^2\)（忽略 \(\mu\) 不确定性）。主观对数风险溢价 \(\tilde{rp}_{t+1}\equiv\ln\tilde{\mathbb E}_t[R_{w,t+1}]-\ln R_{f,t}\) (26.42)，及客观 \(rp_{t+1}\equiv\ln\mathbb E_t[R_{w,t+1}]-\ln R_{f,t}\) (26.44)：</p>
+</div>
+<div class="lang en">
+<p>Risk-free rate \(\frac1{R_{f,t}}=\tilde{\mathbb E}_t[\tilde M_{t+1}]\) (26.38) → \(r_{f,t}=-\tilde\mu_m+\tilde\mu_t-\frac12\gamma^2\sigma^2\) (26.39). Wealth portfolio: in an endowment economy the wealth portfolio is the price of the security generating the aggregate dividends, \(R_{w,t+1}=\frac1\delta\frac{C_{t+1}}{C_t}\) (26.40), \(r_{w,t+1}=-\ln\delta+\Delta c_{t+1}\) (26.41), subjective variance \(\widetilde{\text{Var}}(r_{w,t+1})=\sigma^2\) (ignoring \(\mu\) uncertainty). Subjective log risk-premium \(\tilde{rp}_{t+1}\equiv\ln\tilde{\mathbb E}_t[R_{w,t+1}]-\ln R_{f,t}\) (26.42), and objective \(rp_{t+1}\equiv\ln\mathbb E_t[R_{w,t+1}]-\ln R_{f,t}\) (26.44):</p>
+</div>
+<p>$$\tilde{rp}_{t+1}=\gamma\sigma^2\tag{26.43}$$</p>
+<p>$$rp_{t+1}=\gamma\sigma^2+(\mu-\tilde\mu_t)\tag{26.45}$$</p>
+<div class="lang zh">
+<p>差 \(rp-\tilde{rp}=\mu-\tilde\mu_t\)：代理人过乐观 \(\mu-\tilde\mu_t<0\) 时客观风险溢价小于主观。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 26.3
+贝叶斯学习对资产价格<strong>无影响</strong>（主观对数风险溢价恒为常数 \(\gamma\sigma^2\)）。因为代理人学习到 \(t\) 后突然认定所有未来期都用同一参数 \(\tilde\mu_t\)，机械地剔除了所有学习性质（除参数被更新外），问题退化为无学习情形。</p></div>
+</div>
+<div class="lang en">
+<p>The difference \(rp-\tilde{rp}=\mu-\tilde\mu_t\): when the agent is over-optimistic (\(\mu-\tilde\mu_t<0\)), the objective risk premium is smaller than the subjective.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 26.3
+Bayesian learning has <strong>no effect</strong> on asset prices (the subjective log risk premium is always the constant \(\gamma\sigma^2\)). Because the agent learns up until \(t\) and then suddenly decides all future periods use the same parameter \(\tilde\mu_t\), mechanically removing all learning properties (except that the parameter is updated), so the problem degenerates to the non-learning case.</p></div>
+</div>
+<h3 id="26-4-4-scenario-2-priced-subjective-growth-uncertainty">26.4.4 Scenario 2: Priced Subjective Growth Uncertainty</h3>
+<div class="lang zh">
+<p>代理人把 \(\tilde\mu_t\) 代入 (26.25)，但<strong>充分意识到</strong> \(\mu\) 不确定、未来对 \(\mu\) 分布的看法会变。\(\Delta c_{t+1}=\tilde\mu_t+\varepsilon_{t+1}\) (26.46) 配合 (26.17) \(\Delta c_{t+1}\sim\mathcal N(\tilde\mu_t,(1+\nu_t)\sigma^2)\)。\(\mu\) 不确定性通过 \(\nu_t\) 动态被定价，称<strong>定价主观增长不确定性 (priced subjective growth uncertainty)</strong>。对数 SDF：\(\tilde{\mathbb E}_t[e^{m(\Delta c_{t+1})}]=e^{m\tilde\mu_t+\frac12m^2(1+\nu_t)\sigma^2}\) (26.47)。由 Remark 26.2，SDF (26.29) 仍成立，但 \(R_t\) 须计入 \(V_{t+1}\) 在 \(t+1\) 时所有可能主观分布下的 \(t\) 期期望。经价值函数求解（见折叠推导）得对数主观 SDF (26.58)：</p>
+</div>
+<div class="lang en">
+<p>The agent plugs \(\tilde\mu_t\) into (26.25) but is <strong>fully aware</strong> that \(\mu\) is uncertain and views on its distribution will change in the future. \(\Delta c_{t+1}=\tilde\mu_t+\varepsilon_{t+1}\) (26.46) with (26.17) \(\Delta c_{t+1}\sim\mathcal N(\tilde\mu_t,(1+\nu_t)\sigma^2)\). The uncertainty about \(\mu\) is priced through the dynamics of \(\nu_t\) — <strong>priced subjective growth uncertainty</strong>. Log SDF: \(\tilde{\mathbb E}_t[e^{m(\Delta c_{t+1})}]=e^{m\tilde\mu_t+\frac12m^2(1+\nu_t)\sigma^2}\) (26.47). By Remark 26.2, the SDF (26.29) still holds, but \(R_t\) must take into account the time-\(t\) expectation of \(V_{t+1}\) under all possible subjective distributions at \(t+1\). Solving the value function (see the collapsible derivation) gives the log subjective SDF (26.58):</p>
+</div>
+<p>$$\tilde m_{t+1}=\tilde\mu_{m,t}-\tilde\mu_t-\xi_t\sigma\tilde\epsilon_{t+1}\tag{26.58}$$</p>
+<p>$$\tilde\mu_{m,t}=\ln\delta-\tfrac12(1-\gamma)^2(1+U_v\nu_{t+1})^2(1+\nu_t)\sigma^2,\quad\xi_t=[1-(1-\gamma)(U_v\nu_{t+1}+1)]\sqrt{1+\nu_t},\quad U_v=\tfrac{\delta}{1-\delta}\tag{26.59}$$</p>
+<details class="proof">
+<summary>证明 / Proof：价值函数 (26.49)–(26.53) 与 SDF (26.54)–(26.58)</summary>
+<div class="lang zh">
+<p><strong>价值函数</strong>：定义 \(v_t\equiv\ln\frac{V_t}{C_t}\)。由 (26.31) \(\psi=1\)，\(v_t=\delta\ln\frac{R_t}{C_t}=\frac{\delta}{1-\gamma}\ln(\tilde{\mathbb E}_t[e^{(1-\gamma)(v_{t+1}+\Delta c_{t+1})}])\) (26.48–49)。猜测 \(v_t=\mu_{v,t}+U_v\tilde\mu_t\) (26.50)。代入 (26.49)，用 (26.20)(26.21)(26.47)，匹配系数：\(\delta(U_v+1)=U_v\Rightarrow U_v=\frac\delta{1-\delta}\) (26.52)；\(\frac1\delta\mu_{v,t}=\mu_{v,t+1}+\frac12(1-\gamma)(1+U_v\nu_{t+1})^2(1+\nu_t)\sigma^2\) (26.53)。\(\mu_{v,t}\) 由确定性运动律 (26.53) 钉住（无需显式解）。(26.52)+(26.53) 验证 (26.50) 解 (26.49)。</p>
+<p><strong>SDF</strong>：重写 (26.29) \(\psi=1\)：\(\tilde M_{t+1}=\delta(\frac{C_{t+1}}{C_t})^{-1}(\frac{V_{t+1}}{R_t})^{1-\gamma}\) (26.54)。由 (26.48) \(R_t=e^{\frac1\delta v_t+c_t}\) (26.55)，\(V_{t+1}=e^{v_{t+1}+c_{t+1}}\) (26.56)，(26.21) \(\Delta c_{t+1}=\sqrt{1+\nu_t}\sigma\tilde\epsilon_{t+1}+\tilde\mu_t\) (26.57)。把 (26.55)(26.56)(26.57) 与 \(v_{t+1}=\mu_{v,t+1}+U_v\tilde\mu_{t+1}\)、(26.20) 代入 \(\tilde m_{t+1}=\ln\tilde M_{t+1}\)，整理（\(\tilde\mu_{t+1}\) 的系数合并、\(\mu_{v,t}\) 项用 (26.53) 抵消）得 (26.58)。\(\blacksquare\)</p>
+</div>
+<div class="lang en">
+<p><strong>Value function</strong>: define \(v_t\equiv\ln\frac{V_t}{C_t}\). By (26.31) \(\psi=1\), \(v_t=\delta\ln\frac{R_t}{C_t}=\frac{\delta}{1-\gamma}\ln(\tilde{\mathbb E}_t[e^{(1-\gamma)(v_{t+1}+\Delta c_{t+1})}])\) (26.48–49). Guess \(v_t=\mu_{v,t}+U_v\tilde\mu_t\) (26.50). Substituting into (26.49), using (26.20)(26.21)(26.47), matching coefficients: \(\delta(U_v+1)=U_v\Rightarrow U_v=\frac\delta{1-\delta}\) (26.52); \(\frac1\delta\mu_{v,t}=\mu_{v,t+1}+\frac12(1-\gamma)(1+U_v\nu_{t+1})^2(1+\nu_t)\sigma^2\) (26.53). \(\mu_{v,t}\) is pinned by the deterministic law of motion (26.53) (no explicit solution needed). (26.52)+(26.53) verify (26.50) solves (26.49).</p>
+<p><strong>SDF</strong>: rewrite (26.29) \(\psi=1\): \(\tilde M_{t+1}=\delta(\frac{C_{t+1}}{C_t})^{-1}(\frac{V_{t+1}}{R_t})^{1-\gamma}\) (26.54). By (26.48) \(R_t=e^{\frac1\delta v_t+c_t}\) (26.55), \(V_{t+1}=e^{v_{t+1}+c_{t+1}}\) (26.56), (26.21) \(\Delta c_{t+1}=\sqrt{1+\nu_t}\sigma\tilde\epsilon_{t+1}+\tilde\mu_t\) (26.57). Substituting (26.55)(26.56)(26.57) with \(v_{t+1}=\mu_{v,t+1}+U_v\tilde\mu_{t+1}\) and (26.20) into \(\tilde m_{t+1}=\ln\tilde M_{t+1}\), simplifying (the \(\tilde\mu_{t+1}\) coefficients combine, the \(\mu_{v,t}\) terms cancel via (26.53)) gives (26.58). \(\blacksquare\)</p>
+</div>
+</details>
+<div class="lang zh">
+<p>\(\tilde\epsilon_{t+1}=\frac{\Delta c_{t+1}-\tilde\mu_t}{\sqrt{1+\nu_t}\sigma}\sim\mathcal N(0,1)\)。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 26.4
+对比 SDF (26.58)（随机来自 \(\tilde\epsilon_{t+1}\)，定价主观增长不确定性）与 SDF (26.37)（随机来自 \(\varepsilon_{t+1}\)，预期效用），可见 SDF 只允许在代理人视角下<strong>完全不受控</strong>的随机性。</p></div>
+<p>无风险利率 \(r_{f,t}=-\tilde\mu_{m,t}+\tilde\mu_t-\frac12\xi_t^2\sigma^2\) (26.61)。财富-消费比仍常数（(26.30) 成立，因 (9.15) 只依赖 SDF 形式 26.29），\(R_{w,t+1}=\frac1\delta\frac{C_{t+1}}{C_t}\) (26.62)，\(r_{w,t+1}=-\ln\delta+\Delta c_{t+1}\) (26.63)，主观方差 \(\widetilde{\text{Var}}(r_{w,t+1})=(1+\nu_t)\sigma^2\)（计入 \(\mu\) 不确定性）。主观与客观对数风险溢价 (26.65)/(26.67)：</p>
+</div>
+<div class="lang en">
+<p>\(\tilde\epsilon_{t+1}=\frac{\Delta c_{t+1}-\tilde\mu_t}{\sqrt{1+\nu_t}\sigma}\sim\mathcal N(0,1)\).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 26.4
+Comparing SDF (26.58) (randomness from \(\tilde\epsilon_{t+1}\), priced subjective growth uncertainty) with SDF (26.37) (randomness from \(\varepsilon_{t+1}\), anticipated utility), the SDF only allows randomness that is <strong>completely out of control</strong> in the agent's perspective.</p></div>
+<p>Risk-free rate \(r_{f,t}=-\tilde\mu_{m,t}+\tilde\mu_t-\frac12\xi_t^2\sigma^2\) (26.61). The wealth-consumption ratio is still constant ((26.30) holds, since (9.15) only depends on the SDF form (26.29)), \(R_{w,t+1}=\frac1\delta\frac{C_{t+1}}{C_t}\) (26.62), \(r_{w,t+1}=-\ln\delta+\Delta c_{t+1}\) (26.63), subjective variance \(\widetilde{\text{Var}}(r_{w,t+1})=(1+\nu_t)\sigma^2\) (taking \(\mu\) uncertainty into account). Subjective and objective log risk-premia (26.65)/(26.67):</p>
+</div>
+<p>$$\tilde{rp}_{t+1}=\xi_t\sqrt{1+\nu_t}\,\sigma^2\tag{26.65}$$</p>
+<p>$$rp_{t+1}=-\frac{\nu_t}2\sigma^2+(\mu-\tilde\mu_t)+\xi_t\sqrt{1+\nu_t}\,\sigma^2\tag{26.67}$$</p>
+<div class="lang zh">
+<p>由 (26.59)(26.15)，\(t\to\infty\) 时 \(\nu_t\to0\)、\(\xi_t\to\gamma\)，故 (26.65) 趋近预期效用的 (26.43) \(\gamma\sigma^2\)。收益可预测性来自 \(\mu-\tilde\mu_t\)。主客观差 \(rp-\tilde{rp}=(\mu-\tilde\mu_t)-\frac{\nu_t}2\sigma^2\) (26.68)。</p>
+<h2 id="26-5-learning-from-fading-memory-nagel-and-xu-2019">26.5 Learning From Fading Memory: Nagel and Xu (2019)</h2>
+<h3 id="26-5-1-key-points">26.5.1 Key Points</h3>
+<p>代表性代理人以<strong>渐忘记忆 (fading memory)</strong> 学习禀赋增长的无条件均值。假设：跨期基本面 i.i.d.；代理人 Epstein-Zin 效用；风险厌恶常数；记忆随时间衰减。模型预测：客观股权溢价高且强反周期；主观股权溢价恒定。实证证据一致：经验支付增长率（主观增长预期 = 过去增长率的加权平均）与未来股市超额收益<strong>负相关</strong>；与调查中主观预期误差（主客观楔子）<strong>负相关</strong>；与分析师对长期盈利增长的预测（主观增长预期代理）<strong>正相关</strong>。</p>
+<h3 id="26-5-2-constant-gain-updating">26.5.2 Constant-Gain Updating</h3>
+<p>对数股市支付 \(\Delta d_{t+1}=\mu+\varepsilon_{t+1}\)，\(\varepsilon\) i.i.d.。同 §26.3.3 的贝叶斯学习，但记忆渐忘。\(t\) 时后验 (26.69)：\(\pi_t(\mu)\propto\pi_0(\mu)\prod_{j=0}^\infty[e^{-\frac12((\Delta d_{t-j}-\mu)/\sigma)^2}]^{(1-\nu)^j}\)，\(\nu>0\) 渐忘记忆参数。代理人始于无信息（\(\pi_t(0)\) 平坦），(26.69)→(26.70) 给后验均值 (26.71)：\(\tilde\mu_t=\nu\sum_{j=0}^\infty\Delta d_{t-j}(1-\nu)^j\)，后验方差 \(\nu\sigma^2\) 常数。由 (26.71) 递推得<strong>常增益更新 (constant-gain updating)</strong> (26.72)：</p>
+</div>
+<div class="lang en">
+<p>By (26.59)(26.15), as \(t\to\infty\), \(\nu_t\to0\), \(\xi_t\to\gamma\), so (26.65) approaches the anticipated-utility (26.43) \(\gamma\sigma^2\). Return predictability comes from \(\mu-\tilde\mu_t\). Subjective-objective difference \(rp-\tilde{rp}=(\mu-\tilde\mu_t)-\frac{\nu_t}2\sigma^2\) (26.68).</p>
+<h2 id="26-5-learning-from-fading-memory-nagel-and-xu-2019">26.5 Learning From Fading Memory: Nagel and Xu (2019)</h2>
+<h3 id="26-5-1-key-points">26.5.1 Key Points</h3>
+<p>The representative agent learns the unconditional mean of endowment growth with <strong>fading memory</strong>. Assumptions: fundamentals i.i.d. across periods; agent has Epstein-Zin utility; risk aversion constant; memory decays over time. Model predicts: objective equity premium high and strongly counter-cyclical; subjective equity premium constant. Consistent evidence: the experienced payout growth rate (subjective growth expectations as a weighted average of past growth rates) is <strong>negatively</strong> related to future stock-market excess returns; <strong>negatively</strong> related to subjective expectation errors (the objective-subjective wedge) in surveys; <strong>positively</strong> related to analyst forecasts of long-run earnings growth (a proxy for subjective growth expectations).</p>
+<h3 id="26-5-2-constant-gain-updating">26.5.2 Constant-Gain Updating</h3>
+<p>Log stock-market payout \(\Delta d_{t+1}=\mu+\varepsilon_{t+1}\), \(\varepsilon\) i.i.d. Same Bayesian learning as §26.3.3 but with fading memory. Time-\(t\) posterior (26.69): \(\pi_t(\mu)\propto\pi_0(\mu)\prod_{j=0}^\infty[e^{-\frac12((\Delta d_{t-j}-\mu)/\sigma)^2}]^{(1-\nu)^j}\), \(\nu>0\) the fading-memory parameter. The agent starts with no information (\(\pi_t(0)\) flat), (26.69)→(26.70) giving the posterior mean (26.71): \(\tilde\mu_t=\nu\sum_{j=0}^\infty\Delta d_{t-j}(1-\nu)^j\), posterior variance \(\nu\sigma^2\) constant. Recursing (26.71) gives <strong>constant-gain updating</strong> (26.72):</p>
+</div>
+<p>$$\tilde\mu_{t+1}=\tilde\mu_t+\nu(\Delta d_{t+1}-\tilde\mu_t)\tag{26.72}$$</p>
+<div class="lang zh">
+<p>更新 \(\tilde\mu\) 时从新信息 \(\Delta d_{t+1}\) 获得的增益是常数 \(\nu\)，故称常增益更新；\(\frac1\nu\) 是估 \(\mu\) 的有效样本量（Nagel-Xu 用 \(\nu=0.018\)）。两种动机：(1) <strong>聚合论据</strong>（Malmendier-Nagel 2016，§27.2：尽管各年龄队列增益参数异质，聚合增益参数 = 等权平均为常数；聚合参数对资产定价重要 → 代表性代理人做常增益学习合理）；(2) <strong>个体组合选择的心理学论据</strong>（近因偏误 recency bias：对近期事件赋更多权重 → 对久远历史递减权重，是好假设）。</p>
+<h3 id="26-5-3-empirical-analysis">26.5.3 Empirical Analysis</h3>
+<p><strong>数据</strong>：\(\Delta d\)（CRSP 1926 起季度；更早：Piketty et al. 2018 家庭股利税收数据 1913–1926、Wright 2004 公司非农非金融股利 1900–1913、Barro-Ursua 2008 人均实际 GDP 增长 1871–1900 作代理）；市场指数收益（CRSP 价值加权 1926 起；Shiller 2005 S&amp;P 综合 1871–1926，CPI 平减）；调查（定量：UBS/Gallup 1998–2007、Vanguard/Ameriks 2019、Lease et al. 1974；定性：Michigan Survey 1987–2016、Roper 1974–1977）；分析师预测（I/B/E/S 长期中位数 EPS 增长 1981 起；SPF 通胀预测）。</p>
+<p><strong>可检验假设</strong>：由 Campbell-Shiller (26.2) 导出 (26.73)；代入常数主观风险溢价 (26.3) 化简得三组回归 (26.76)/(26.77)/(26.78)：</p>
+</div>
+<div class="lang en">
+<p>The gain from new information \(\Delta d_{t+1}\) when updating \(\tilde\mu\) is the constant \(\nu\), hence constant-gain updating; \(\frac1\nu\) is the effective sample size for estimating \(\mu\) (Nagel-Xu use \(\nu=0.018\)). Two motivations: (1) <strong>aggregate argument</strong> (Malmendier-Nagel 2016, §27.2: despite heterogeneous gain parameters across age cohorts, the aggregate gain parameter = equally weighted average is constant; the aggregate parameter matters for asset pricing → reasonable for a representative agent to do constant-gain learning); (2) <strong>psychology argument for individual portfolio choice</strong> (recency bias: more emphasis on recent events → decreasing weights for further history is a good assumption).</p>
+<h3 id="26-5-3-empirical-analysis">26.5.3 Empirical Analysis</h3>
+<p><strong>Data</strong>: \(\Delta d\) (CRSP quarterly since 1926; earlier: Piketty et al. 2018 household dividend from tax 1913–1926, Wright 2004 corporate non-farm non-financial dividends 1900–1913, Barro-Ursua 2008 per-capita real GDP growth 1871–1900 as proxy); market index returns (CRSP value-weighted since 1926; Shiller 2005 S&amp;P Composite 1871–1926, CPI-deflated); surveys (quantitative: UBS/Gallup 1998–2007, Vanguard/Ameriks 2019, Lease et al. 1974; qualitative: Michigan Survey 1987–2016, Roper 1974–1977); analyst forecasts (I/B/E/S long-term median EPS growth since 1981; SPF inflation forecast).</p>
+<p><strong>Testable hypotheses</strong>: from Campbell-Shiller (26.2) derive (26.73); substituting the constant subjective risk premium (26.3) and simplifying gives three regressions (26.76)/(26.77)/(26.78):</p>
+</div>
+<p>$$\mathbb E_t[r_{t+1}]-r_f=\tilde\theta+\left(1+\tfrac{\rho}{1-\rho}\nu\right)(\mu-\tilde\mu_t)\tag{26.76}$$</p>
+<p>$$\mathbb E_t[r_{t+1}]-\tilde{\mathbb E}_t[r_{t+1}]=\left(1+\tfrac{\rho}{1-\rho}\nu\right)(\mu-\tilde\mu_t)\tag{26.77}$$</p>
+<p>$$\tilde{\mathbb E}_t[r_{t+1}]-r_f=\tilde\theta\quad(\text{constant})\tag{26.78}$$</p>
+<div class="lang zh">
+<p>(26.76)/(26.77) 中 \(\tilde\mu_t\) 对总股利支付（\(\tilde\mu_{d,t}\)）与总收益（\(\tilde\mu_{r,t}\)）两种构造都可跑；\(\tilde\mu_{r,t}\) 比 \(\tilde\mu_{d,t}\) 含更多噪声（可能含与市场基本面正交的投资者情绪）。实证结果（图 26.1–26.3 为回归系数表）：</p>
+<ul>
+<li><strong>图 26.1</strong>（回归 26.76；Panel A 用 \(\tilde\mu_{d,t}\)、Panel B 用 \(\tilde\mu_{r,t}\)，被解释变量为 CRSP 价值加权对数季度收益减 3 月期国库券）：\(\tilde\mu_t\) 系数（两 Panel）显著<strong>为负</strong>，验证 (26.76)。</li>
+<li><strong>图 26.2</strong>（Panel A 回归 26.78、Panel B 回归 26.77，被解释变量为调查受访者季度 \(t\) 主观预期股票收益减上季末一年期国债收益）：Panel A \(\tilde\mu_t\) 系数与零无显著差异（验证 26.78）；Panel B \(\tilde\mu_{d,t}\) 系数显著为负（验证 26.77）。</li>
+<li><strong>图 26.3</strong>（回归 26.72/26.79 \(\tilde\mu_{d,t+1}=(1-\nu)\tilde\mu_{d,t}+\nu\Delta d_{t+1}\)，被解释变量为 I/B/E/S 长期 EPS 增长分析师预测经 SPF 通胀平减）：\(\tilde\mu_{d,t}\) 系数显著为正，验证 (26.72)。用分析师预测因无调查问股利支付预期。</li>
+</ul>
+<h3 id="26-5-4-asset-pricing-model-with-epstein-zin-preference">26.5.4 Asset Pricing Model with Epstein-Zin Preference</h3>
+<p>代理人定价主观增长不确定性 → §26.4.4 的特例（\(\nu\) 此处为常数），直接用结果。对数主观 SDF (26.80)：\(\tilde m_{t+1}=\tilde\mu_m-\tilde\mu_t-\xi\sigma\tilde\epsilon_{t+1}\)，\(\tilde\mu_m=\ln\delta-\frac12(1-\gamma)^2(1+U_v\nu)^2(1+\nu)\sigma^2\)，\(\xi=[1-(1-\gamma)(U_v\nu+1)]\sqrt{1+\nu}\)，\(U_v=\frac\delta{1-\delta}\)。无风险利率 \(r_{f,t}=-\tilde\mu_m+\tilde\mu_t-\frac12\xi^2\sigma^2\)；财富组合收益 \(r_{w,t+1}=-\ln\delta+\Delta c_{t+1}\) (26.63)；主观对数风险溢价 \(\tilde{rp}_{t+1}=\xi\sqrt{1+\nu}\sigma^2\) (26.81)；客观 \(rp_{t+1}=(\mu-\tilde\mu_t)-\frac\nu2\sigma^2+\xi\sqrt{1+\nu}\sigma^2\) (26.82)；差 \(rp-\tilde{rp}=(\mu-\tilde\mu_t)-\frac\nu2\sigma^2\) (26.68)。</p>
+<p>进一步设 \(\Delta d_{t+1}\) 为 \(\Delta c_{t+1}\) 的函数 (26.83)：\(\Delta d_{t+1}=\lambda\Delta c_{t+1}-\alpha(d_t-c_t-\mu_{dc})+\sigma_d\eta_{t+1}\)（\(\alpha>0\)），导出<strong>无穷远单期股利条 (dividend strip)</strong> 的对数风险溢价：主观 (26.84) 恒定；客观 (26.85) 时变反周期（当期支付高 → \(\tilde\mu_t\) 高 → 风险溢价低）。</p>
+<h3>26.5.5 / 26.5.6 Contribution &amp; Discussion</h3>
+<p><strong>贡献</strong>：渐忘记忆学习框架简单又贴近现实；分析详尽（含模拟）；数据全面（合并多源得最长样本）。<strong>讨论（动机）</strong>：作者用 Malmendier-Nagel (2016) 论证渐忘记忆，但 M-N 由跨年龄队列聚合增益参数得常增益（只要各队列份额不变）——这对聚合层面资产定价（代表性代理人）无碍，但渐忘记忆框架更适合刻画<strong>特定</strong>投资者类型，故应以非聚合论据（近因偏误）为特定投资者类型动机常增益，并以经验证据支持。早期（pre-1926）与调查/分析师数据标准质量未必可比，模拟分析或应只用更干净的子样本。</p>
+</div>
+<div class="lang en">
+<p>In (26.76)/(26.77), \(\tilde\mu_t\) can be constructed from both aggregate dividend payout (\(\tilde\mu_{d,t}\)) and aggregate return (\(\tilde\mu_{r,t}\)); \(\tilde\mu_{r,t}\) contains more noise than \(\tilde\mu_{d,t}\) (may contain investor sentiment orthogonal to market fundamentals). Empirical results (Figures 26.1–26.3 are regression-coefficient tables):</p>
+<ul>
+<li><strong>Figure 26.1</strong> (regression 26.76; Panel A uses \(\tilde\mu_{d,t}\), Panel B \(\tilde\mu_{r,t}\); dependent variable the log quarterly CRSP value-weighted return minus 3-month T-bill): the coefficient of \(\tilde\mu_t\) (both panels) is significantly <strong>negative</strong>, confirming (26.76).</li>
+<li><strong>Figure 26.2</strong> (Panel A regression 26.78, Panel B regression 26.77; dependent variable the average subjective expected stock return of survey respondents in quarter \(t\) minus the one-year treasury yield at the end of quarter \(t-1\)): Panel A's \(\tilde\mu_t\) coefficient is non-significantly different from zero (confirming 26.78); Panel B's \(\tilde\mu_{d,t}\) coefficient is significantly negative (confirming 26.77).</li>
+<li><strong>Figure 26.3</strong> (regression 26.72/26.79 \(\tilde\mu_{d,t+1}=(1-\nu)\tilde\mu_{d,t}+\nu\Delta d_{t+1}\); dependent variable the aggregate long-term EPS growth analyst forecast from I/B/E/S deflated by SPF inflation forecast): the \(\tilde\mu_{d,t}\) coefficient is significantly positive, confirming (26.72). Analyst forecasts are used because no survey asks expectations of dividend payout.</li>
+</ul>
+<h3 id="26-5-4-asset-pricing-model-with-epstein-zin-preference">26.5.4 Asset Pricing Model with Epstein-Zin Preference</h3>
+<p>The agent prices subjective growth uncertainty → a special case of §26.4.4 (\(\nu\) constant here), so use the results directly. Log subjective SDF (26.80): \(\tilde m_{t+1}=\tilde\mu_m-\tilde\mu_t-\xi\sigma\tilde\epsilon_{t+1}\), \(\tilde\mu_m=\ln\delta-\frac12(1-\gamma)^2(1+U_v\nu)^2(1+\nu)\sigma^2\), \(\xi=[1-(1-\gamma)(U_v\nu+1)]\sqrt{1+\nu}\), \(U_v=\frac\delta{1-\delta}\). Risk-free rate \(r_{f,t}=-\tilde\mu_m+\tilde\mu_t-\frac12\xi^2\sigma^2\); wealth return \(r_{w,t+1}=-\ln\delta+\Delta c_{t+1}\) (26.63); subjective log risk-premium \(\tilde{rp}_{t+1}=\xi\sqrt{1+\nu}\sigma^2\) (26.81); objective \(rp_{t+1}=(\mu-\tilde\mu_t)-\frac\nu2\sigma^2+\xi\sqrt{1+\nu}\sigma^2\) (26.82); difference \(rp-\tilde{rp}=(\mu-\tilde\mu_t)-\frac\nu2\sigma^2\) (26.68).</p>
+<p>Further assume \(\Delta d_{t+1}\) is a function of \(\Delta c_{t+1}\) (26.83): \(\Delta d_{t+1}=\lambda\Delta c_{t+1}-\alpha(d_t-c_t-\mu_{dc})+\sigma_d\eta_{t+1}\) (\(\alpha>0\)), deriving the log risk-premium of a <strong>dividend strip</strong> in the infinite future: subjective (26.84) constant; objective (26.85) time-varying and counter-cyclical (high current payout → high \(\tilde\mu_t\) → low risk premium).</p>
+<h3>26.5.5 / 26.5.6 Contribution &amp; Discussion</h3>
+<p><strong>Contribution</strong>: the fading-memory learning framework is simple yet realistic; the analysis is thorough (including simulation); the data are comprehensive (merging multiple sources for the longest sample). <strong>Discussion (motivation)</strong>: the authors motivate fading memory via Malmendier-Nagel (2016), but M-N reach constant-gain by aggregating gain parameters across age cohorts (as long as each cohort's share is constant) — this is fine for aggregate-level asset pricing (representative agent), but the fading-memory framework is better suited to modeling <strong>specific</strong> investor types, so it should motivate constant-gain with a non-aggregate argument (recency bias) for specific investor types, supported by empirical evidence. The earlier (pre-1926) and survey/analyst data may not be of comparable standard and quality, so the simulation analysis should perhaps use a cleaner subset rather than the full sample.</p>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Barro, R. J. and J. F. Ursúa (2008). Macroeconomic crises since 1870. <em>Brookings Papers on Economic Activity</em> 2008(1), 255–350.</li>
+<li>Hansen, L. P., J. C. Heaton, and N. Li (2008). Consumption strikes back? Measuring long-run risk. <em>Journal of Political Economy</em> 116(2), 260–302.</li>
+<li>He, X. (2019a). <em>Econometrics Notes by Xindi He</em>.</li>
+<li>Malmendier, U. and S. Nagel (2016). Learning from inflation experiences. <em>The Quarterly Journal of Economics</em> 131(1), 53–87.</li>
+<li>Nagel, S. and Z. Xu (2019). Asset pricing with fading memory. <em>The Review of Financial Studies</em> (forthcoming).</li>
+<li>Piketty, T., E. Saez, and G. Zucman (2018). Distributional national accounts: Methods and estimates for the United States. <em>The Quarterly Journal of Economics</em> 133(2), 553–609.</li>
+<li>Shiller, R. J. (2005). <em>Irrational Exuberance</em> (2nd ed.). Princeton University Press.</li>
+<li>Wright, S. (2004). Measures of stock market value and returns for the US nonfinancial corporate sector, 1900–2002. <em>Review of Income and Wealth</em> 50(4), 561–584.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#26-1-setup">26.1 Setup</a></li>
+        <li><a href="#26-2-return-predictability">26.2 Return Predictability</a></li>
+        <li><a href="#26-2-return-predictability">26.2 Return Predictability</a></li>
+        <li><a href="#26-3-bayesian-learning">26.3 Bayesian Learning</a></li>
+          <li><a href="#26-3-1-assumptions">26.3.1 Assumptions</a></li>
+          <li><a href="#26-3-2-conjugate-prior">26.3.2 Conjugate Prior</a></li>
+        <li><a href="#26-3-bayesian-learning">26.3 Bayesian Learning</a></li>
+          <li><a href="#26-3-1-assumptions">26.3.1 Assumptions</a></li>
+          <li><a href="#26-3-2-conjugate-prior">26.3.2 Conjugate Prior</a></li>
+          <li><a href="#26-3-3-bayesian-updating">26.3.3 Bayesian Updating</a></li>
+          <li><a href="#26-3-3-bayesian-updating">26.3.3 Bayesian Updating</a></li>
+          <li><a href="#26-3-4-dynamic-subjective-distribution-of-dividend-growth">26.3.4 Dynamic Subjective Distribution of Dividend Growth</a></li>
+          <li><a href="#26-3-4-dynamic-subjective-distribution-of-dividend-growth">26.3.4 Dynamic Subjective Distribution of Dividend Growth</a></li>
+          <li><a href="#26-3-5-martingale-posterior-beliefs">26.3.5 Martingale Posterior Beliefs</a></li>
+          <li><a href="#26-3-5-martingale-posterior-beliefs">26.3.5 Martingale Posterior Beliefs</a></li>
+          <li><a href="#26-3-6-revisit-return-predictability">26.3.6 Revisit Return Predictability</a></li>
+          <li><a href="#26-3-6-revisit-return-predictability">26.3.6 Revisit Return Predictability</a></li>
+        <li><a href="#26-4-asset-pricing-with-subjective-learning">26.4 Asset Pricing with Subjective Learning</a></li>
+          <li><a href="#26-4-1-environment">26.4.1 Environment</a></li>
+          <li><a href="#26-4-2-epstein-zin-preference">26.4.2 Epstein-Zin Preference</a></li>
+        <li><a href="#26-4-asset-pricing-with-subjective-learning">26.4 Asset Pricing with Subjective Learning</a></li>
+          <li><a href="#26-4-1-environment">26.4.1 Environment</a></li>
+          <li><a href="#26-4-2-epstein-zin-preference">26.4.2 Epstein-Zin Preference</a></li>
+          <li><a href="#26-4-3-scenario-1-anticipated-utility">26.4.3 Scenario 1: Anticipated Utility</a></li>
+          <li><a href="#26-4-4-scenario-2-priced-subjective-growth-uncertainty">26.4.4 Scenario 2: Priced Subjective Growth Uncertainty</a></li>
+        <li><a href="#26-5-learning-from-fading-memory-nagel-and-xu-2019">26.5 Learning From Fading Memory: Nagel and Xu (2019)</a></li>
+          <li><a href="#26-5-1-key-points">26.5.1 Key Points</a></li>
+          <li><a href="#26-5-2-constant-gain-updating">26.5.2 Constant-Gain Updating</a></li>
+        <li><a href="#26-5-learning-from-fading-memory-nagel-and-xu-2019">26.5 Learning From Fading Memory: Nagel and Xu (2019)</a></li>
+          <li><a href="#26-5-1-key-points">26.5.1 Key Points</a></li>
+          <li><a href="#26-5-2-constant-gain-updating">26.5.2 Constant-Gain Updating</a></li>
+          <li><a href="#26-5-3-empirical-analysis">26.5.3 Empirical Analysis</a></li>
+          <li><a href="#26-5-3-empirical-analysis">26.5.3 Empirical Analysis</a></li>
+          <li><a href="#26-5-4-asset-pricing-model-with-epstein-zin-preference">26.5.4 Asset Pricing Model with Epstein-Zin Preference</a></li>
+          <li><a href="#26-5-5-26-5-6-contribution-discussion">26.5.5 / 26.5.6 Contribution & Discussion</a></li>
+          <li><a href="#26-5-4-asset-pricing-model-with-epstein-zin-preference">26.5.4 Asset Pricing Model with Epstein-Zin Preference</a></li>
+          <li><a href="#26-5-5-26-5-6-contribution-discussion">26.5.5 / 26.5.6 Contribution & Discussion</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

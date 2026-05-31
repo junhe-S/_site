@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>14. Real Business Cycle Model – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>14. Real Business Cycle Model</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">宏观经济学</span><span class="lang en">Macroeconomics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">真实经济周期</span><span class="lang en">Real Business Cycle</span></span>
+        
+        
+        
+        
+        <span class="tag">RBC</span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">HP滤波</span><span class="lang en">HP Filter</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">社会计划者</span><span class="lang en">Social Planner</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">递归竞争均衡</span><span class="lang en">Recursive Competitive Equilibrium</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：真实经济周期（RBC）模型。</strong> <strong>前言（RBC 引论 + HP 滤波）</strong>：经济周期是变量围绕趋势的波动；典型事实（耐用品波动大、资本不顺周期、生产率顺周期、工资波动小于生产率、投入比产出更顺周期、偏离持续）；冲击分实际/金融两类；<strong>HP 滤波</strong> \(\min_{\{g_t,d_t\}}\{\sum d_t^2+\lambda\sum[(g_{t+1}-g_t)-(g_t-g_{t-1})]^2\}\)（\(\lambda\to\infty\) 线性趋势、\(\lambda\to0\) 偏离为零）。<strong>§14.1 偏好与技术</strong>：代表性消费者 \(u(c_t,l_t)\)、厂商 \(y_t=e^{z_t}F(k_t,n_t)\)（CRS、\(n+l=1\)、\(\{e^{z_t}\}\) 一阶 Markov/AR(1)）。<strong>§14.2 市场结构</strong>、<strong>§14.3 家庭问题</strong>、<strong>§14.4 厂商问题</strong>（\(r_t=e^{z_t}F_k\)、\(w_t=e^{z_t}F_n\)）。<strong>§14.5 社会计划者问题</strong>：状态 \((k,z)\)、贝尔曼方程 (14.1)；f.o.c. (14.2)(14.3)、<strong>MRS=MRT</strong> \(\frac{u_l}{u_c}=e^z F_n\)（14.4）、包络 (14.5)、<strong>欧拉方程</strong> \(u_c=\beta\mathbb E_{z'}[u_c'(e^{z'}F_k'+(1-\delta))\mid z]\)（14.6）。<strong>§14.6 求解</strong>（\(F=Ak^\alpha n^{1-\alpha}\)、\(u=\ln c+\theta\ln(1-n)\)；校准 \(\bar z=0\)、求确定性稳态、二阶泰勒近似、模拟冲击对比数据）。<strong>§14.7 递归竞争均衡</strong>（含外部性/货币/税/定价厂商时第二福利定理失败）。<strong>§14.8 比较静态</strong>（劳动无弹性 \(n=\bar n\)，\(g(k)\) 随 \(k\) 递增、随 \(z\) 方向不明）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: the Real Business Cycle (RBC) model.</strong> <strong>Preamble (RBC intro + HP filter)</strong>: business cycles are fluctuations around trend; stylized facts (durables fluctuate more, capital is acyclical, productivity is procyclical, wage varies less than productivity, inputs more procyclical than outputs, deviations are persistent); shocks are real/financial; the <strong>HP filter</strong> \(\min_{\{g_t,d_t\}}\{\sum d_t^2+\lambda\sum[(g_{t+1}-g_t)-(g_t-g_{t-1})]^2\}\) (\(\lambda\to\infty\) linear trend, \(\lambda\to0\) zero deviation). <strong>§14.1 Preferences and technology</strong>: representative consumer \(u(c_t,l_t)\), firm \(y_t=e^{z_t}F(k_t,n_t)\) (CRS, \(n+l=1\), \(\{e^{z_t}\}\) first-order Markov/AR(1)). <strong>§14.2 Market structure</strong>, <strong>§14.3 Household's problem</strong>, <strong>§14.4 Firm's problem</strong> (\(r_t=e^{z_t}F_k\), \(w_t=e^{z_t}F_n\)). <strong>§14.5 Social planner's problem</strong>: state \((k,z)\), Bellman equation (14.1); f.o.c. (14.2)(14.3), <strong>MRS=MRT</strong> \(\frac{u_l}{u_c}=e^z F_n\) (14.4), envelope (14.5), <strong>Euler equation</strong> \(u_c=\beta\mathbb E_{z'}[u_c'(e^{z'}F_k'+(1-\delta))\mid z]\) (14.6). <strong>§14.6 Compute the model</strong> (\(F=Ak^\alpha n^{1-\alpha}\), \(u=\ln c+\theta\ln(1-n)\); calibrate \(\bar z=0\), deterministic steady state, second-order Taylor, simulate shocks vs data). <strong>§14.7 Recursive competitive equilibrium</strong> (Second Welfare Theorem fails with externality/money/taxes/price-setting firms). <strong>§14.8 Comparative statics</strong> (inelastic labor \(n=\bar n\), \(g(k)\) increasing in \(k\), ambiguous in \(z\)).</p></div>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>前言：RBC 引论与 HP 滤波（书中 RBC 组前置材料）
+<strong>RBC 引论。</strong> Long and Plosser (1983) 在论文 "Real Business Cycle" 中指出，术语"经济周期（business cycles）"指广泛经济变量（价格、产出、就业、消费、投资）的联合时间序列行为。关于经济周期常观察到如下事实：
+- 耐用品的波动高于非耐用品。
+- 资本存量波动较小、且与产出波动不相关。
+- 生产率是顺周期的。
+- 工资的变动小于生产率。
+- 投入比产出更强烈地顺周期。
+- 偏离趋势非常持续：若今天经济好于趋势，则明天很可能也好于趋势。</p>
+<p>经济周期的成因分两类：(1) <strong>实际冲击</strong>——直接影响实体经济的冲击；(2) <strong>金融冲击</strong>——影响金融系统、再渗透到经济的冲击。我们建立理论模型描述 RBC、再用经验数据检验模型效果。</p>
+<p><strong>HP 滤波去趋势。</strong> 既然经济周期是围绕趋势的波动，就需先把经济变量分为趋势部分与对趋势的偏离，这称为去趋势。令 \(y_t\) 为人均 GDP、\(g_t\) 为其趋势部分、\(d_t\) 为对趋势的偏离，则 \(y_t=g_t+d_t\)。HP 滤波去趋势通过选取 \(\{g_t,d_t\}_{t=1}^T\) 求解
+$$\min_{\{g_t,d_t\}_{t=1}^T}\left\{\sum_{t=1}^T(d_t)^2+\lambda\sum_{t=2}^{T-1}\left[(g_{t+1}-g_t)-(g_t-g_{t-1})\right]^2\right\}$$
+其中 \(\lambda>0\) 由研究者任意设定，可解释为对趋势变化的重视程度。两个极端：\(\lambda=\infty\Rightarrow g_t=\hat g t\)、\(d_t=y_t-\hat g t\)（线性趋势）；\(\lambda=0\Rightarrow g_t=y_t\)、\(d_t=0\)。故 \(\lambda\) 很大时研究者不愿趋势变化、用偏离解释 \(y_t\) 与趋势的全部差异；\(\lambda\) 很小时不介意趋势随时变化、偏离为零、趋势始终追随真实数据 \(y_t\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>Preamble: RBC introduction and the HP filter (the book's RBC-group front matter)
+<strong>Introduction to RBC.</strong> Long and Plosser (1983) point out in their paper "Real Business Cycle" that the term "business cycles" refers to the joint time-series behavior of a wide range of economic variables such as prices, outputs, employment, consumption, and investment. In real economies, we always observe the following facts about the business cycles:
+- Durable goods have higher fluctuations than non-durable goods.
+- Capital stock fluctuates less and is uncorrelated with output fluctuation.
+- Productivity is pro-cyclical.
+- Wage varies less than productivity.
+- Inputs are strongly more pro-cyclical than outputs.
+- Deviations from trend are very persistent, which means if the economy does better than the trend today, it is very likely that the economy will do better tomorrow.</p>
+<p>The causes of a business cycle fall into two categories: (1) <strong>real shocks</strong>: shocks that directly affect the real economy; (2) <strong>financial shocks</strong>: shocks that affect the financial system and then permeate through the economy. We establish theoretical models to describe RBC and then use empirical data to test how well the models work.</p>
+<p><strong>HP Filter Detrending.</strong> Since business cycles are fluctuations around the trend, it is important to start with splitting the economic variable into its trend part and deviation from trend, which is called detrending. Let \(y_t\) be GDP per capita, \(g_t\) its trend part and \(d_t\) its deviation from trend, so \(y_t=g_t+d_t\). The HP Filter Detrending is done by choosing \(\{g_t,d_t\}_{t=1}^T\) to solve
+$$\min_{\{g_t,d_t\}_{t=1}^T}\left\{\sum_{t=1}^T(d_t)^2+\lambda\sum_{t=2}^{T-1}\left[(g_{t+1}-g_t)-(g_t-g_{t-1})\right]^2\right\}$$
+where \(\lambda>0\) is set arbitrarily by the researcher and can be explained as the importance attached to changes in trend. Two extreme cases: \(\lambda=\infty\Rightarrow g_t=\hat g t\) and \(d_t=y_t-\hat g t\) (linear trend); \(\lambda=0\Rightarrow g_t=y_t\) and \(d_t=0\). So if \(\lambda\) is very large, the researcher really doesn't want the trend to change and ends up assuming a linear trend and using deviation to explain all the difference between \(y_t\) and the trend; on the contrary, if \(\lambda\) is very small, the research doesn't mind changing the trend all the time, so the deviation becomes zero and the trend is always changing to match the real data \(y_t\).</p></div>
+</div>
+<div class="lang zh">
+<p>设我们关注 \(y_t\)，即人均真实 GDP。先对 \(y_t\) 去趋势得到经济周期部分 \(\{d_t\}\)。然后建立含消费者、厂商与若干随机冲击的理论模型来理论性地预测 \(\{d_t\}\) 的性质。最后比较理论与经验的 \(\{d_t\}\)，看模型效果如何。</p>
+<h2 id="14-1-choose-preferences-and-technology">14.1 Choose Preferences and Technology</h2>
+<p>若我们施加使第二福利定理成立的条件，则可聚焦于带代表性消费者与代表性厂商的社会计划者问题——其解帕累托有效、且可由一次性总额转移与竞争实现。</p>
+<p>代表性消费者偏好记为 \(u(c_t,l_t)\)，\(c_t\) 消费、\(l_t\) 用于闲暇的时间禀赋比例。代表性厂商技术为
+$$y_t=e^{z_t}F(k_t,n_t)$$
+\(k_t\) 资本、\(n_t\) 用于工作的时间禀赋比例。注意：
+- \(c,l,k,n\) 都是人均的。
+- \(n+l=1\)。
+- \(u(c,l)\) 应与长期增长一致：长期增长的性质是，在剔除随机冲击 \(z\) 后，\(c\) 以恒定率增长而 \(l\) 保持不变。
+- \(F(k,n)\) 规模报酬不变（CRS），故只关心人均生产。
+- 函数 \(F\) 与 \(u\) 随时间平稳。
+- 生产率冲击 \(\{e^{z_t}\}_{t=0}^\infty\) 为随机一阶马尔可夫过程；为在经验上匹配经济周期事实，\(\{e^{z_t}\}_{t=0}^\infty\) 总被设为 AR(1)。</p>
+<h2 id="14-2-market-structure">14.2 Market Structure</h2>
+<ul>
+<li>不失一般性，家庭拥有全部资本存量、并把它租给厂商收取租金。</li>
+<li>家庭供给 \(n\) 数量的劳动、从厂商收取工资。</li>
+<li>家庭完全拥有厂商，但由于厂商技术的 CRS 性质，利润被对要素的支付耗尽，这意味着竞争下利润恒为零。</li>
+</ul>
+<h2 id="14-3-household-s-problem">14.3 Household's Problem</h2>
+<p>家庭求解
+$$\max_{\{c_t,k_{t+1}\}}\left\{\mathbb E\left[\sum_{t=0}^\infty\beta^t u(c_t,1-n_t)\right]\right\}$$
+约束于
+$$c_t+(k_{t+1}-(1-\delta)k_t)=\underbrace{w_t n_t+r_t k_t}_{=e^{z_t}F(k_t,n_t)}+\underbrace{\text{firm's profit}}_{=0,\text{ CRS}}\Rightarrow c_t+(k_{t+1}-(1-\delta)k_t)=w_t n_t+r_t k_t$$
+其中 \(w_t\) 工资、\(r_t\) 租金、\(\delta\) 资本恒定折旧率。</p>
+<h2 id="14-4-firm-s-problem">14.4 Firm's Problem</h2>
+<p>厂商求解
+$$\max_{\{k_t,n_t\}}\left\{e^{z_t}F(k_t,n_t)-w_t n_t-r_t k_t\right\}$$
+均衡中
+$$r_t=e^{z_t}F_k(k_t,n_t),\qquad w_t=e^{z_t}F_n(k_t,n_t)$$</p>
+</div>
+<div class="lang en">
+<p>Suppose we are interested in \(y_t\), the real GDP per capita. We first detrend \(y_t\) to get the business cycle part \(\{d_t\}\). Then, we establish our theoretical model for the economy with consumers and firms and some stochastic shocks to theoretically predict the properties of \(\{d_t\}\). Finally, we compare the theoretical and empirical \(\{d_t\}\) to see how well our model works.</p>
+<h2 id="14-1-choose-preferences-and-technology">14.1 Choose Preferences and Technology</h2>
+<p>If we impose conditions for the Second Welfare Theorem to hold, then we can focus on the social planner's problem with a representative consumer and firm whose solution is Pareto efficient and thus achievable by lump-sum transfers and competition.</p>
+<p>Let the preference of the representative consumer be represented by \(u(c_t,l_t)\) where \(c_t\) is consumption and \(l_t\) is the proportion of time endowment used for leisure. Let's choose the representative firm's technology as
+$$y_t=e^{z_t}F(k_t,n_t)$$
+where \(k_t\) is capital and \(n_t\) is the proportion of time endowment used to work. Note that:
+- \(c,l,k,n\) are all per capita basis.
+- \(n+l=1\).
+- \(u(c,l)\) should be consistent with long run growth: the long run growth has the property that after taking out the stochastic shocks \(z\), \(c\) is growing at constant rate while \(l\) remains constant.
+- \(F(k,n)\) is constant return to scale (CRS) so that we can only care about the per capita production.
+- function \(F\) and \(u\) are stationary over time.
+- the productivity shock \(\{e^{z_t}\}_{t=0}^\infty\) is a stochastic first-order Markov process; to match the business cycle facts empirically, \(\{e^{z_t}\}_{t=0}^\infty\) is always set as an AR(1).</p>
+<h2 id="14-2-market-structure">14.2 Market Structure</h2>
+<ul>
+<li>Without loss of generality, we let the household own all the capital stock, and they rent it out to the firms for rents.</li>
+<li>The household supplies \(n\) amount of labor and receive wage from the firm.</li>
+<li>The household owns the firm completely, but because of the CRS property of the firm's technology, profits are depleted by the payment to factors, which implies that profits are always zero under competition.</li>
+</ul>
+<h2 id="14-3-household-s-problem">14.3 Household's Problem</h2>
+<p>The household solves
+$$\max_{\{c_t,k_{t+1}\}}\left\{\mathbb E\left[\sum_{t=0}^\infty\beta^t u(c_t,1-n_t)\right]\right\}$$
+subject to
+$$c_t+(k_{t+1}-(1-\delta)k_t)=\underbrace{w_t n_t+r_t k_t}_{=e^{z_t}F(k_t,n_t)}+\underbrace{\text{firm's profit}}_{=0,\text{ CRS}}\Rightarrow c_t+(k_{t+1}-(1-\delta)k_t)=w_t n_t+r_t k_t$$
+where \(w_t\) is wage, \(r_t\) is rent and \(\delta\) is the constant depreciation rate of capital.</p>
+<h2 id="14-4-firm-s-problem">14.4 Firm's Problem</h2>
+<p>The firm solves
+$$\max_{\{k_t,n_t\}}\left\{e^{z_t}F(k_t,n_t)-w_t n_t-r_t k_t\right\}$$
+In equilibrium,
+$$r_t=e^{z_t}F_k(k_t,n_t),\qquad w_t=e^{z_t}F_n(k_t,n_t)$$</p>
+</div>
+<h2 id="14-5-social-planner-s-problem">14.5 Social Planner's Problem</h2>
+<div class="lang zh">
+<p><strong>14.5.1 社会计划者的贝尔曼方程</strong></p>
+<ul>
+<li>状态变量为 \((k,z)\)。</li>
+<li>贝尔曼方程为
+$$V(k,z)=\max_{\{c,n,y\}}\left\{u(c,1-n)+\beta\mathbb E_{z'}[V(y,z')\mid z]\right\}\quad\text{s.t.}\quad c+(y-(1-\delta)k)=e^z F(k,n)\tag{14.1}$$
+其中 \(\mathbb E_{z'}[V(y,z')\mid z]=\int V(y,z')q(z,z')dz'\)。</li>
+<li>求解 (14.1) 的一种方式是逐块求解：先对任意给定 \(y\) 求解 \(\max_{\{c,n\}}\{u(c,1-n)+\beta\mathbb E_{z'}[V(y,z')\mid z]\}\) s.t. \(c+(y-(1-\delta)k)=e^z F(k,n)\)，记解为 \(c^\star(y)\)、\(n^\star(y)\)；再把 \(c^\star(y)\)、\(n^\star(y)\) 代回 (14.1) 得 \(V(k,z)=\max_y\{u(c^\star(y),1-n^\star(y))+\beta\mathbb E_{z'}[V(y,z')\mid z]\}\) 求 \(y^\star\)。</li>
+</ul>
+<p><strong>14.5.2 一阶条件与包络条件</strong></p>
+<p>把 (14.1) 重写为
+$$V(k,z)=\max_{\{c,n,y\}}\left\{u(c,1-n)+\beta\int V(y,z')q(z,z')dz'\right\}$$
+其中 \(c=e^z F(k,n)-(y-(1-\delta)k)\)、\(y=e^z F(k,n)-c+(1-\delta)k\)。一阶条件为
+$$[c]:\quad u_c(c,1-n)=\beta\int V_y(y,z')q(z,z')dz'\tag{14.2}$$
+$$[n]:\quad u_l(c,1-n)=\beta\int e^z F_n(k,n)V_y(y,z')q(z,z')dz'\tag{14.3}$$
+$$[y]:\quad u_c(c,1-n)=\beta\int V_y(y,z')q(z,z')dz'$$
+注意 \([c]\) 的一阶条件 (14.2) 与 \([y]\) 的一阶条件相同，因为一旦 \(c\) 与 \(n\) 被最优选取，\(y\) 即被钉住，故 \([y]\) 的一阶条件冗余。或等价地，由 (14.2)、(14.3) 得
+$$\underbrace{\frac{u_l(c,1-n)}{u_c(c,1-n)}}_{\text{MRS}}=\underbrace{e^z F_n(k,n)}_{\text{MRT}}\tag{14.4}$$
+其中 LHS 是<strong>边际替代率（MRS）</strong>——使消费者同等满意时、为多一单位闲暇须放弃的消费单位数；RHS 是<strong>边际转换率（MRT）</strong>——该经济在技术上为多一单位闲暇所能放弃的消费单位数。</p>
+<p>包络条件为
+$$V_k(k,z)=u_c(c,1-n)(e^z F_k(k,n)+(1-\delta))\tag{14.5}$$
+合并 (14.5) 与 (14.2)：
+$$u_c(c,1-n)=\beta\int V_y(y,z')q(z,z')dz'=\beta\int u_c(c',1-n')\left(e^{z'}F_k(k',n')+(1-\delta)\right)q(z,z')dz'$$
+即欧拉方程
+$$u_c(c,1-n)=\beta\mathbb E_{z'}\left[u_c(c',1-n')\left(e^{z'}F_k(k',n')+(1-\delta)\right)\mid z\right]\tag{14.6}$$</p>
+</div>
+<div class="lang en">
+<p><strong>14.5.1 Social planner's Bellman equation</strong></p>
+<ul>
+<li>State variable is \((k,z)\).</li>
+<li>The Bellman equation is
+$$V(k,z)=\max_{\{c,n,y\}}\left\{u(c,1-n)+\beta\mathbb E_{z'}[V(y,z')\mid z]\right\}\quad\text{s.t.}\quad c+(y-(1-\delta)k)=e^z F(k,n)\tag{14.1}$$
+where \(\mathbb E_{z'}[V(y,z')\mid z]=\int V(y,z')q(z,z')dz'\).</li>
+<li>One way to solve (14.1) is to solve it piece by piece, i.e. we can first solve \(\max_{\{c,n\}}\{u(c,1-n)+\beta\mathbb E_{z'}[V(y,z')\mid z]\}\) s.t. \(c+(y-(1-\delta)k)=e^z F(k,n)\) for any given \(y\), and denote the solution by \(c^\star(y)\) and \(n^\star(y)\). Then plug \(c^\star(y)\) and \(n^\star(y)\) into (14.1) to obtain \(V(k,z)=\max_y\{u(c^\star(y),1-n^\star(y))+\beta\mathbb E_{z'}[V(y,z')\mid z]\}\) to solve for \(y^\star\).</li>
+</ul>
+<p><strong>14.5.2 First order conditions and envelop condition</strong></p>
+<p>Rewrite (14.1) as
+$$V(k,z)=\max_{\{c,n,y\}}\left\{u(c,1-n)+\beta\int V(y,z')q(z,z')dz'\right\}$$
+where \(c=e^z F(k,n)-(y-(1-\delta)k)\) and \(y=e^z F(k,n)-c+(1-\delta)k\). The f.o.c. are
+$$[c]:\quad u_c(c,1-n)=\beta\int V_y(y,z')q(z,z')dz'\tag{14.2}$$
+$$[n]:\quad u_l(c,1-n)=\beta\int e^z F_n(k,n)V_y(y,z')q(z,z')dz'\tag{14.3}$$
+$$[y]:\quad u_c(c,1-n)=\beta\int V_y(y,z')q(z,z')dz'$$
+Note that the \([c]\) f.o.c. (14.2) and the \([y]\) f.o.c. are the same because optimal \(y\) is pinned down if \(c\) and \(n\) are optimally chosen, so the \([y]\) f.o.c. is redundant. Or equivalently, (14.2) and (14.3) give
+$$\underbrace{\frac{u_l(c,1-n)}{u_c(c,1-n)}}_{\text{MRS}}=\underbrace{e^z F_n(k,n)}_{\text{MRT}}\tag{14.4}$$
+where the LHS is the <strong>marginal rate of substitution (MRS)</strong> measuring the number of units of consumption to forego for one extra unit of leisure that makes the consumer equally happy, and the RHS is the <strong>marginal rate of transformation (MRT)</strong> measuring the number of units of consumption to forego for one extra unit of leisure that is technologically possible for this economy.</p>
+<p>The envelop condition is
+$$V_k(k,z)=u_c(c,1-n)(e^z F_k(k,n)+(1-\delta))\tag{14.5}$$
+Combining (14.5) and (14.2):
+$$u_c(c,1-n)=\beta\int V_y(y,z')q(z,z')dz'=\beta\int u_c(c',1-n')\left(e^{z'}F_k(k',n')+(1-\delta)\right)q(z,z')dz'$$
+i.e. the Euler equation
+$$u_c(c,1-n)=\beta\mathbb E_{z'}\left[u_c(c',1-n')\left(e^{z'}F_k(k',n')+(1-\delta)\right)\mid z\right]\tag{14.6}$$</p>
+</div>
+<h2 id="14-6-compute-the-model">14.6 Compute the Model</h2>
+<div class="lang zh">
+<p>为计算，特化到如下便利的函数形式：
+$$F(k,n)=Ak^\alpha n^{1-\alpha},\qquad u(c,1-n)=\ln(c)+\theta\ln(1-n)$$
+计算模型的步骤：
+- 假设冲击过程有唯一遍历集。
+- 校准长期期望值，使稳态中 \(z=\bar z=0\)、\(e^z=1\)。
+- 下一步固定 \(z=0\)、求<strong>确定性稳态</strong>，记为 \((\bar k,\bar c,\bar n)\)。
+- 分别对 (14.1) 关于 \(\tilde k\)、对 (14.4) 关于 \(\tilde n\)、对 (14.6) 关于 \(\tilde c\) 做二阶泰勒展开，以近似 \(z\) 造成小扰动后 \(k,n,c\) 围绕稳态的收敛最优路径。
+- 然后按冲击过程随机生成一系列冲击 \(z\)，看 \(k,n,c\) 如何变动、并判断其变动是否与经验数据吻合。若不吻合，可调整（校准）偏好与技术的系数使之匹配，再从这些调好的参数推导含义。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记（校准 Calibration）
+校准是寻找使模型（其类型与结构已确定）按某种度量最贴近某一已知数据的系数的过程。</p></div>
+<h2 id="14-7-recursive-competitive-equilibrium">14.7 Recursive Competitive Equilibrium</h2>
+<p>若条件使第二福利定理成立，则可求解上述社会计划者（代表性 agent）问题以得到也是该经济竞争均衡的解。然而，若我们确实有
+- 外部性
+- 货币
+- 税收
+- 定价厂商</p>
+<p>等等，则第二福利定理失败，意味着无法用社会计划者问题刻画竞争均衡。此时必须直接对竞争均衡本身建模；为使该模型可处理，将如 §10.4 那样使用递归竞争均衡。</p>
+<h2 id="14-8-comparative-statics">14.8 Comparative Statics</h2>
+<p>本节用 \(F\) 与 \(u\) 的一般函数形式分析。先设 \(n=\bar n\)（劳动供给无弹性），则 (14.2) 与 (14.3) 意味着
+$$u_c(c,1-n)=\beta\mathbb E_{z'}[V_y(y,z')\mid z]\tag{14.7}$$
+<strong>图示（已转述）：</strong> 横轴下一期资本 \(y\)。RHS \(\beta\mathbb E_{z'}[V_y(y,z')\mid z]\) 关于 \(y\) 递减；LHS \(u_c\) 关于 \(y\) 递增（\(y\uparrow\Rightarrow c\downarrow\Rightarrow u_c\uparrow\)）。二者交点即最优 \(y^\star\)。图中另画"LHS with larger \(z\)"与"LHS with larger \(k\)"两条平移曲线、以及 \(y^\star\) 与 \(\hat y^\star\)。</p>
+<p>(14.7) 中 RHS 与 LHS 的交点是最优选择 \(y^\star\)。对 \(\hat k>k\)，RHS 不动、但由 \(u\) 的凹性 LHS 下移，故新最优选择 \(\hat y^\star>y^\star\)，即 \(g(k)=y^\star\) 随 \(k\) 递增。然而对更高的 \(z\)，LHS 出于同样原因下移、但 RHS 的移动方向不明——因为不知道 \(\beta\mathbb E_{z'}[V_y(y,z')\mid z]\) 如何依赖 \(z\)，且在此设定中假设 \(z_t\) i.i.d. 并不合理。</p>
+</div>
+<div class="lang en">
+<p>For computational purpose, we will specialize to the following convenient functional form:
+$$F(k,n)=Ak^\alpha n^{1-\alpha},\qquad u(c,1-n)=\ln(c)+\theta\ln(1-n)$$
+To compute the model, we need to:
+- assume the shock process has a unique ergodic set.
+- calibrate the long run expected value so that in steady state we have \(z=\bar z=0\) and \(e^z=1\).
+- The next step is fixing \(z=0\) and finding the <strong>deterministic steady state</strong>, which is written as \((\bar k,\bar c,\bar n)\).
+- Then, we do the second-order Taylor expansion to (14.1) w.r.t. \(\tilde k\), to (14.4) w.r.t. \(\tilde n\), and to (14.6) w.r.t. \(\tilde c\) respectively to approximate the optimal path of convergence of \(k,n,c\) around the steady state after a small disturbance caused by \(z\).
+- Then we can randomly generate a series of shocks \(z\) according to the shock process to see how would \(k,n,c\) move and conclude whether their movements coincide with the empirical data. If not, we can tweak (calibrate) the coefficients of preference and technology to make them match. Then we can derive some implications from those tweaked parameters.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark (Calibration)
+Calibration is the process of finding the coefficients that enable a model (the kind and structure of which is already determined) to most closely (according to some metric) reflect a particular known data set.</p></div>
+<h2 id="14-7-recursive-competitive-equilibrium">14.7 Recursive Competitive Equilibrium</h2>
+<p>If we have conditions such that the Second Welfare Theorem holds, then we can solve the above social planner's (representative agent's) problem to have a solution that is also a solution to the competitive equilibrium of that economy. However, if we do have
+- externality
+- money
+- taxes
+- price setting firms</p>
+<p>and so on, then the Second Welfare Theorem fails, which means we cannot characterize a competitive equilibrium with a social planner's problem. Instead, we have to directly model the competitive equilibrium itself. To make that model tractable, we will use recursive competitive equilibrium as we did in §10.4.</p>
+<h2 id="14-8-comparative-statics">14.8 Comparative Statics</h2>
+<p>For this section, we will do the analysis with the general functional form of \(F\) and \(u\). Let's first assume \(n=\bar n\), i.e. labor supply is inelastic. Then (14.2) and (14.3) imply that
+$$u_c(c,1-n)=\beta\mathbb E_{z'}[V_y(y,z')\mid z]\tag{14.7}$$
+<strong>Figure (paraphrased):</strong> the horizontal axis is next-period capital \(y\). The RHS \(\beta\mathbb E_{z'}[V_y(y,z')\mid z]\) is decreasing in \(y\); the LHS \(u_c\) is increasing in \(y\) (\(y\uparrow\Rightarrow c\downarrow\Rightarrow u_c\uparrow\)). Their intersection is the optimal \(y^\star\). The figure also draws the shifted "LHS with larger \(z\)" and "LHS with larger \(k\)" curves, and \(y^\star\) and \(\hat y^\star\).</p>
+<p>The intersection of RHS and LHS of (14.7) is the optimal choice of \(y^\star\). For \(\hat k>k\), the RHS doesn't move but the LHS moves down due to the concavity assumption of \(u\), so the new optimal choice \(\hat y^\star>y^\star\), which means \(g(k)=y^\star\) is increasing in \(k\). However, for a higher \(z\), the LHS moves down for the same reason but the direction of RHS movement is unclear because we don't know how \(\beta\mathbb E_{z'}[V_y(y,z')\mid z]\) depends on \(z\) and in this set-up it doesn't make sense to assume \(z_t\)'s are i.i.d..</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#14-1-choose-preferences-and-technology">14.1 Choose Preferences and Technology</a></li>
+        <li><a href="#14-2-market-structure">14.2 Market Structure</a></li>
+        <li><a href="#14-3-household-s-problem">14.3 Household's Problem</a></li>
+        <li><a href="#14-4-firm-s-problem">14.4 Firm's Problem</a></li>
+        <li><a href="#14-1-choose-preferences-and-technology">14.1 Choose Preferences and Technology</a></li>
+        <li><a href="#14-2-market-structure">14.2 Market Structure</a></li>
+        <li><a href="#14-3-household-s-problem">14.3 Household's Problem</a></li>
+        <li><a href="#14-4-firm-s-problem">14.4 Firm's Problem</a></li>
+        <li><a href="#14-5-social-planner-s-problem">14.5 Social Planner's Problem</a></li>
+        <li><a href="#14-6-compute-the-model">14.6 Compute the Model</a></li>
+        <li><a href="#14-7-recursive-competitive-equilibrium">14.7 Recursive Competitive Equilibrium</a></li>
+        <li><a href="#14-8-comparative-statics">14.8 Comparative Statics</a></li>
+        <li><a href="#14-7-recursive-competitive-equilibrium">14.7 Recursive Competitive Equilibrium</a></li>
+        <li><a href="#14-8-comparative-statics">14.8 Comparative Statics</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

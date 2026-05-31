@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10. Multivariate Time Series – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>10. Multivariate Time Series</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">时间序列</span><span class="lang en">Time Series</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">向量自回归</span><span class="lang en">VAR</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">协整</span><span class="lang en">Cointegration</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">误差修正</span><span class="lang en">Error Correction</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">脉冲响应</span><span class="lang en">Impulse Response</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">结构识别</span><span class="lang en">Structural Identification</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：多变量时间序列。</strong> <strong>§10.1 根、脉冲响应与协整</strong>：VAR(\(n\)) \((\mathbb I_m-\mathbf B(L))\mathbf y_t=\mathcal A\epsilon_t\)，合成冲击 \(\mathbf u_t=\mathcal A\epsilon_t\sim N(0,\Sigma)\)、\(\Sigma=\mathcal A\mathcal A'\)；堆叠为 VAR(1) \(\mathbf x_t=\mathcal B\mathbf x_{t-1}+\mathcal A\epsilon_t\)；特征多项式 \(p(\lambda)=\det(\lambda\mathbb I_{mn}-\mathcal B)\)，可对角化 \(\mathcal B=\mathbf V\mathbf D\mathbf V^{-1}\) 给出 Wold 分解；脉冲响应 \(\mathbf r_\mathbf a(k)=\mathcal B^k\mathbf a\)。<strong>§10.2 协整与误差修正</strong>：<strong>定义 10.3</strong> 秩 \(r\) 协整（各分量 \(I(1)\) 而某些线性组合 \(\beta'\mathbf y_t\) 平稳）；<strong>命题 10.1</strong> 协整矩阵 \(\beta=\)（\(\mathbf V^{-1}\) 前 \(r\) 行的转置）；脉冲响应拆为暂时部分 + 永久部分，\(\mathbf r_\mathbf a(\infty)=\nu_\star\mathbf a_\star\)；<strong>误差修正</strong> \(\Delta\mathbf y_t=-\alpha\beta'\mathbf y_{t-1}+\mathbf u_t\)，\(\alpha=\nu(\mathbb I_r-\mathbf D_r)\)（<strong>命题 10.2</strong> Engle–Granger 1987）。<strong>§10.3 \(\epsilon\) 冲击的脉冲响应识别</strong>：\(\epsilon_{t,j}\) 的脉冲响应是 \(\mathcal A\) 的第 \(j\) 列 \(\mathbf a_j\)；由 \(\Sigma=\mathcal A\mathcal A'\) 反解 \(\mathcal A\) 需 \(\frac{(m-1)m}2\) 个额外约束——<strong>Cholesky 分解</strong>（下三角，同期影响假设）、<strong>长期识别</strong>（Blanchard–Quah/Galí，暂时 vs 永久冲击）、<strong>符号约束</strong>。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: multivariate time series.</strong> <strong>§10.1 Roots, impulse responses, and cointegration</strong>: the VAR(\(n\)) \((\mathbb I_m-\mathbf B(L))\mathbf y_t=\mathcal A\epsilon_t\), with synthesized shocks \(\mathbf u_t=\mathcal A\epsilon_t\sim N(0,\Sigma)\), \(\Sigma=\mathcal A\mathcal A'\); stacking into a VAR(1) \(\mathbf x_t=\mathcal B\mathbf x_{t-1}+\mathcal A\epsilon_t\); characteristic polynomial \(p(\lambda)=\det(\lambda\mathbb I_{mn}-\mathcal B)\), with the diagonalization \(\mathcal B=\mathbf V\mathbf D\mathbf V^{-1}\) yielding the Wold decomposition; impulse response \(\mathbf r_\mathbf a(k)=\mathcal B^k\mathbf a\). <strong>§10.2 Cointegration and error correction</strong>: <strong>Definition 10.3</strong> cointegration of rank \(r\) (components \(I(1)\) while some linear combinations \(\beta'\mathbf y_t\) are stationary); <strong>Proposition 10.1</strong> the cointegrating matrix \(\beta=\) (transpose of the first \(r\) rows of \(\mathbf V^{-1}\)); impulse responses split into a transitory part + a permanent part, \(\mathbf r_\mathbf a(\infty)=\nu_\star\mathbf a_\star\); <strong>error correction</strong> \(\Delta\mathbf y_t=-\alpha\beta'\mathbf y_{t-1}+\mathbf u_t\), \(\alpha=\nu(\mathbb I_r-\mathbf D_r)\) (<strong>Proposition 10.2</strong>, Engle–Granger 1987). <strong>§10.3 Identifying impulse responses to \(\epsilon\) shocks</strong>: the impulse response to \(\epsilon_{t,j}\) is the \(j\)-th column \(\mathbf a_j\) of \(\mathcal A\); recovering \(\mathcal A\) from \(\Sigma=\mathcal A\mathcal A'\) needs \(\frac{(m-1)m}2\) extra restrictions — the <strong>Cholesky decomposition</strong> (lower triangular, contemporaneous-impact assumption), <strong>long-run identification</strong> (Blanchard–Quah/Galí, temporary vs permanent shocks), and <strong>sign restrictions</strong>.</p></div>
+</div>
+<h2 id="10-1-roots-impulse-responses-and-cointegration">10.1 Roots, Impulse Responses, and Cointegration</h2>
+<h3 id="10-1-1-var-n">10.1.1 VAR(\(n\))</h3>
+<div class="lang zh">
+<p>考虑 \(\mathbf y_t\in\mathbb R^m\) 上的 VAR(\(n\))：
+$$\mathbf y_t=\sum_{j=1}^n\mathbf B_j\mathbf y_{t-j}+\mathcal A\epsilon_t,\quad \epsilon_t\sim N(0,\mathbb I_n),\quad t=1,\dots,T$$
+$$\Rightarrow(\mathbb I_m-\mathbf B(L))\mathbf y_t=\mathcal A\epsilon_t$$
+其中 \(L^j\mathbf y_t=\mathbf y_{t-j}\)，\(\mathbf B(L)=\sum_{j=1}^n\mathbf B_j L^j\)。令合成冲击
+$$\mathbf u_t=\mathcal A\epsilon_t,\quad \mathbf u_t\sim N(0,\Sigma),\quad \Sigma=\mathcal A\mathcal A'$$
+\(\mathbf u_t\) 为一步预测误差。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 10.1
+直观上：\(\epsilon_t\) 是一组假想的<strong>相互独立的冲击源</strong>，\(\mathbf u_t\) 是这些独立冲击经线性组合 \(\mathcal A\) 后产生的<strong>合成冲击</strong>。我们通常只能观测到合成冲击 \(\mathbf u_t\)，而非单个基本冲击 \(\epsilon_t\)——后者总是混合在一起出现。因此后面需要额外假设才能恢复每个 \(\epsilon_t\) 冲击的效应。</p></div>
+<p>把 VAR(\(m\)) 堆叠成 VAR(1)。令 \(\mathbf x_t=(\mathbf y_t',\mathbf y_{t-1}',\dots,\mathbf y_{t-n+1}')'\)，则
+$$\mathbf x_t=\mathcal B\mathbf x_{t-1}+\mathcal A\epsilon_t,\qquad \mathcal B=\begin{bmatrix}\mathbf B_1&\cdots&\mathbf B_{n-1}&\mathbf B_n\\\mathbb I_m&\cdots&\mathbf 0&\mathbf 0\\\vdots&\ddots&\vdots&\vdots\\\mathbf 0&\cdots&\mathbb I_m&\mathbf 0\end{bmatrix},\quad \mathcal A=\begin{bmatrix}\mathbf A\\\mathbf 0\\\vdots\\\mathbf 0\end{bmatrix}$$
+不失一般性，下文多数讨论基于 VAR(1)。</p>
+</div>
+<div class="lang en">
+<p>Consider a VAR(\(n\)) on \(\mathbf y_t\in\mathbb R^m\):
+$$\mathbf y_t=\sum_{j=1}^n\mathbf B_j\mathbf y_{t-j}+\mathcal A\epsilon_t,\quad \epsilon_t\sim N(0,\mathbb I_n),\quad t=1,\dots,T$$
+$$\Rightarrow(\mathbb I_m-\mathbf B(L))\mathbf y_t=\mathcal A\epsilon_t$$
+where \(L^j\mathbf y_t=\mathbf y_{t-j}\), \(\mathbf B(L)=\sum_{j=1}^n\mathbf B_j L^j\). Let the synthesized shock be
+$$\mathbf u_t=\mathcal A\epsilon_t,\quad \mathbf u_t\sim N(0,\Sigma),\quad \Sigma=\mathcal A\mathcal A'$$
+with \(\mathbf u_t\) the one-step forecast error.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 10.1
+Intuitively: \(\epsilon_t\) is a vector of hypothetically <strong>independent sources of shocks</strong>, and \(\mathbf u_t\) is a vector of <strong>synthesized shocks</strong> produced by a linear combination \(\mathcal A\) of \(\epsilon_t\). We can usually observe only the synthesized shocks \(\mathbf u_t\), not the individual fundamental shocks \(\epsilon_t\) — those always come in combination. So later we need extra assumptions to recover the effect of each \(\epsilon_t\) shock.</p></div>
+<p>Stack the VAR(\(m\)) into a VAR(1). With \(\mathbf x_t=(\mathbf y_t',\mathbf y_{t-1}',\dots,\mathbf y_{t-n+1}')'\),
+$$\mathbf x_t=\mathcal B\mathbf x_{t-1}+\mathcal A\epsilon_t,\qquad \mathcal B=\begin{bmatrix}\mathbf B_1&\cdots&\mathbf B_{n-1}&\mathbf B_n\\\mathbb I_m&\cdots&\mathbf 0&\mathbf 0\\\vdots&\ddots&\vdots&\vdots\\\mathbf 0&\cdots&\mathbb I_m&\mathbf 0\end{bmatrix},\quad \mathcal A=\begin{bmatrix}\mathbf A\\\mathbf 0\\\vdots\\\mathbf 0\end{bmatrix}$$
+WLOG, most of what follows is based on the VAR(1).</p>
+</div>
+<h3 id="10-1-2-characteristic-polynomial-and-roots">10.1.2 Characteristic Polynomial and Roots</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 10.1（VAR(\(n\)) 的特征多项式）
+堆叠 VAR(\(n\)) 的特征多项式定义为
+$$p(\lambda)=\det(\lambda\mathbb I_{mn}-\mathcal B)$$</p></div>
+<p>若 \(\mathcal B\) 可对角化，则 \(\mathcal B=\mathbf V\mathbf D\mathbf V^{-1}\)，其中 \(\mathbf D=\operatorname{diag}(\lambda_1,\dots,\lambda_{nm})\) 是以 \(p(\lambda)\) 的根为对角元的对角矩阵。</p>
+<p><strong>例 10.1（VAR(\(n\)) 的 Wold 分解）。</strong> 对堆叠 \(\mathbf x_t=\mathcal B\mathbf x_{t-1}+\mathcal A\epsilon_t\)，若所有根 \(|\lambda_j|<1\) 且 \(\mathcal B\) 可对角化，则
+$$\begin{aligned}\mathbf x_t&=\underbrace{\mathcal B^\infty\mathbf x_{-\infty}}_{\to0}+\sum_{j=0}^\infty\mathcal B^j\mathcal A\epsilon_{t-j}=\sum_{j=0}^\infty\mathcal B^j\mathcal A\epsilon_{t-j}\\&=\sum_{j=0}^\infty\mathbf V\mathbf D^j\mathbf V^{-1}\mathcal A\epsilon_{t-j}=\sum_{j=0}^\infty\mathbf V\operatorname{diag}(\lambda_1^j,\dots,\lambda_{nm}^j)\mathbf V^{-1}\mathcal A\epsilon_{t-j}\end{aligned}$$
+取最后一式的前 \(m\) 行即给出该 VAR(\(n\)) 的 Wold 分解。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 10.1 (Characteristic polynomial of VAR(\(n\)))
+The characteristic polynomial of the stacked VAR(\(n\)) is
+$$p(\lambda)=\det(\lambda\mathbb I_{mn}-\mathcal B)$$</p></div>
+<p>If \(\mathcal B\) is diagonalizable, then \(\mathcal B=\mathbf V\mathbf D\mathbf V^{-1}\), where \(\mathbf D=\operatorname{diag}(\lambda_1,\dots,\lambda_{nm})\) is the diagonal matrix carrying the roots of \(p(\lambda)\).</p>
+<p><strong>Example 10.1 (Wold decomposition of VAR(\(n\))).</strong> For the stacking \(\mathbf x_t=\mathcal B\mathbf x_{t-1}+\mathcal A\epsilon_t\), if all roots \(|\lambda_j|<1\) and \(\mathcal B\) is diagonalizable, then
+$$\begin{aligned}\mathbf x_t&=\underbrace{\mathcal B^\infty\mathbf x_{-\infty}}_{\to0}+\sum_{j=0}^\infty\mathcal B^j\mathcal A\epsilon_{t-j}=\sum_{j=0}^\infty\mathcal B^j\mathcal A\epsilon_{t-j}\\&=\sum_{j=0}^\infty\mathbf V\mathbf D^j\mathbf V^{-1}\mathcal A\epsilon_{t-j}=\sum_{j=0}^\infty\mathbf V\operatorname{diag}(\lambda_1^j,\dots,\lambda_{nm}^j)\mathbf V^{-1}\mathcal A\epsilon_{t-j}\end{aligned}$$
+The first \(m\) rows of the last line give the Wold decomposition of this VAR(\(n\)).</p>
+</div>
+<h3 id="10-1-3-impulse-responses">10.1.3 Impulse Responses</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 10.2（脉冲响应）
+设 \(\mathbf a\) 为某个 \(m\) 维向量。\(\mathbf y_k\) 对冲击向量 \(\mathbf a\) 的<strong>脉冲响应</strong> \(\mathbf r_\mathbf a(k)\) 是给定 \(\mathbf u_0=\mathbf a\) 时的预测修正：
+$$\mathbf r_\mathbf a(k)=E[\mathbf y_k\mid \mathbf u_0=\mathbf a,\ \mathbf y_t:t<0]-E[\mathbf y_k\mid \mathbf y_t:t<0]$$
+对 \(k\ge0\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 10.2 (Impulse response)
+Let \(\mathbf a\) be an \(m\)-dimensional vector. The <strong>impulse response</strong> \(\mathbf r_\mathbf a(k)\) of \(\mathbf y_k\) to the shock vector \(\mathbf a\) is the forecast revision given \(\mathbf u_0=\mathbf a\):
+$$\mathbf r_\mathbf a(k)=E[\mathbf y_k\mid \mathbf u_0=\mathbf a,\ \mathbf y_t:t<0]-E[\mathbf y_k\mid \mathbf y_t:t<0]$$
+for \(k\ge0\).</p></div>
+</div>
+<h3 id="10-1-4-computing-impulse-responses-by-recursive-substitution">10.1.4 Computing Impulse Responses by Recursive Substitution</h3>
+<div class="lang zh">
+<p>与单变量类似，可用递归代入计算 \(k\) 步脉冲响应。对 VAR(1) \(\mathbf y_t=\mathbf B\mathbf y_{t-1}+\mathbf u_t\)，在 0 期施加冲击 \(\mathbf a\)、其余期冲击为零：</p>
+<table>
+<thead>
+<tr>
+<th>\(k\)</th>
+<th>\(\mathbf r_\mathbf a(k)\)</th>
+<th>\(\mathbf r_\mathbf a(k-1)\)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>\(\mathbf a\)</td>
+<td>\(\mathbf 0\)</td>
+</tr>
+<tr>
+<td>1</td>
+<td>\(\mathbf B\mathbf a\)</td>
+<td>\(\mathbf a\)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>\(\mathbf B^2\mathbf a\)</td>
+<td>\(\mathbf B\mathbf a\)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>\(\mathbf B^3\mathbf a\)</td>
+<td>\(\mathbf B^2\mathbf a\)</td>
+</tr>
+</tbody>
+</table>
+<p>一般地，对 VAR(1)，
+$$\mathbf r_\mathbf a(k)=\mathbf B^k\mathbf a$$</p>
+<p><strong>数值例 1。</strong> 设 \(\mathbf B=\begin{bmatrix}0.5&0\\0&1\end{bmatrix}\)、\(\mathbf a=\begin{bmatrix}1\\1\end{bmatrix}\)，则
+$$\mathbf r_\mathbf a(k)=\mathbf B^k\mathbf a=\begin{bmatrix}0.5^k&0\\0&1\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}=\begin{bmatrix}0.5^k\\1\end{bmatrix}$$
+画出脉冲响应函数：第二分量 \(y(2)\) 对应单位根，冲击<strong>永久持续</strong>（水平线停在 1）；第一分量 \(y(1)\) 模长小于 1，冲击<strong>衰减至零</strong>。</p>
+<p><strong>数值例 2。</strong> 设 \(\mathbf B=\begin{bmatrix}0.68&-0.24\\-0.24&0.82\end{bmatrix}\)、\(\mathbf a=\begin{bmatrix}1\\1\end{bmatrix}\)，对角化得
+$$\mathbf r_\mathbf a(k)=\mathbf B^k\mathbf a=\begin{bmatrix}0.8&-0.6\\0.6&0.8\end{bmatrix}\begin{bmatrix}0.5^k&0\\0&1\end{bmatrix}\begin{bmatrix}0.8&0.6\\-0.6&0.8\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}\xrightarrow{k\to\infty}\begin{bmatrix}-0.12\\0.16\end{bmatrix}$$
+即便存在一个单位根，系统也可能<strong>收敛到一个非零稳态</strong>（取决于对应的特征向量方向）：脉冲响应中可与单位根特征向量正交的成分会衰减掉，只留下沿单位根方向的永久成分。</p>
+</div>
+<div class="lang en">
+<p>As in the univariate case, the \(k\)-step impulse response can be computed by recursive substitution. For a VAR(1) \(\mathbf y_t=\mathbf B\mathbf y_{t-1}+\mathbf u_t\), apply a shock \(\mathbf a\) at date 0 and zero shocks otherwise:</p>
+<table>
+<thead>
+<tr>
+<th>\(k\)</th>
+<th>\(\mathbf r_\mathbf a(k)\)</th>
+<th>\(\mathbf r_\mathbf a(k-1)\)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>\(\mathbf a\)</td>
+<td>\(\mathbf 0\)</td>
+</tr>
+<tr>
+<td>1</td>
+<td>\(\mathbf B\mathbf a\)</td>
+<td>\(\mathbf a\)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>\(\mathbf B^2\mathbf a\)</td>
+<td>\(\mathbf B\mathbf a\)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>\(\mathbf B^3\mathbf a\)</td>
+<td>\(\mathbf B^2\mathbf a\)</td>
+</tr>
+</tbody>
+</table>
+<p>Generally, for a VAR(1),
+$$\mathbf r_\mathbf a(k)=\mathbf B^k\mathbf a$$</p>
+<p><strong>Numerical Example 1.</strong> Let \(\mathbf B=\begin{bmatrix}0.5&0\\0&1\end{bmatrix}\), \(\mathbf a=\begin{bmatrix}1\\1\end{bmatrix}\); then
+$$\mathbf r_\mathbf a(k)=\mathbf B^k\mathbf a=\begin{bmatrix}0.5^k&0\\0&1\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}=\begin{bmatrix}0.5^k\\1\end{bmatrix}$$
+Plotting the impulse-response functions: the second component \(y(2)\) corresponds to the unit root and the shock <strong>persists indefinitely</strong> (a flat line at 1); the first component \(y(1)\) has modulus below 1 and the shock <strong>dies out to zero</strong>.</p>
+<p><strong>Numerical Example 2.</strong> Let \(\mathbf B=\begin{bmatrix}0.68&-0.24\\-0.24&0.82\end{bmatrix}\), \(\mathbf a=\begin{bmatrix}1\\1\end{bmatrix}\); diagonalizing,
+$$\mathbf r_\mathbf a(k)=\mathbf B^k\mathbf a=\begin{bmatrix}0.8&-0.6\\0.6&0.8\end{bmatrix}\begin{bmatrix}0.5^k&0\\0&1\end{bmatrix}\begin{bmatrix}0.8&0.6\\-0.6&0.8\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}\xrightarrow{k\to\infty}\begin{bmatrix}-0.12\\0.16\end{bmatrix}$$
+Even with a unit root, the system can <strong>converge to a nonzero steady state</strong> (depending on the corresponding eigenvector direction): the part of the impulse response orthogonal to the unit-root eigenvector dies out, leaving only the permanent component along the unit-root direction.</p>
+</div>
+<h2 id="10-2-cointegration-and-error-correction">10.2 Cointegration and Error Correction</h2>
+<h3 id="10-2-1-cointegration">10.2.1 Cointegration</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 10.3（协整）
+向量时间序列 \(\mathbf y_t\) 称为<strong>秩 \(r\) 协整</strong>，若 \(\mathbf y_t\) 的每个分量单独看都非平稳（如 \(I(1)\)），而其分量的某些线性组合 \(\beta'\mathbf y_t\) 平稳，其中 \(\beta\) 是秩 \(r\ge1\) 的 \(m\times r\) <strong>协整矩阵</strong>。</p></div>
+<p><strong>直观例子。</strong> 实际 GDP 与实际消费各自都是 \(I(1)\)（随机趋势上行），但二者之差（对数产出减对数消费）围绕一个稳定水平波动——这条差序列是平稳的，体现两者共享同一长期随机趋势。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 10.3 (Cointegration)
+A vector time series \(\mathbf y_t\) is <strong>cointegrated of rank \(r\)</strong> if each component of \(\mathbf y_t\) taken individually is non-stationary (e.g. \(I(1)\)), while some linear combinations of its components, \(\beta'\mathbf y_t\), are stationary, where \(\beta\) is an \(m\times r\) <strong>cointegrating matrix</strong> of rank \(r\ge1\).</p></div>
+<p><strong>Intuitive example.</strong> Real GDP and real consumption are each \(I(1)\) (drifting along a stochastic trend), but their difference (log output minus log consumption) fluctuates around a stable level — this difference series is stationary, reflecting that the two share the same long-run stochastic trend.</p>
+</div>
+<h3 id="10-2-2-the-cointegrating-matrix">10.2.2 The Cointegrating Matrix</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>命题 10.1（协整矩阵）
+对 VAR(1) \(\mathbf y_t=\mathbf B\mathbf y_{t-1}+\mathbf u_t\)，设平稳根 \(|z_1|<1,\dots,|z_r|<1\)、单位根 \(z_{r+1}=\dots=z_m=1\)。若 \(\mathbf B\) 可对角化 \(\mathbf B=\mathbf V\mathbf D\mathbf V^{-1}\)，则一个协整矩阵 \(\beta\) 由 \(\mathbf V^{-1}\) <strong>前 \(r\) 行的转置</strong>给出。</p>
+<p>[!note]- 证明
+用分块矩阵。记 \(\mathbf V=\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\)、\(\mathbf V^{-1}=\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\)，其中 \(\nu\) 为 \(m\times r\)、\(\nu_\star\) 为 \(m\times(m-r)\)，\(\beta'\) 为 \(r\times m\)、\((\beta_\star)'\) 为 \((m-r)\times m\)。动态写为
+$$\mathbf y_t=\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\mathbf y_{t-1}+\mathbf u_t$$
+其中 \(\mathbf D_r=\operatorname{diag}(z_1,\dots,z_r)\)。检验 \(\beta'\mathbf y_t\) 的协方差平稳性：
+$$\begin{aligned}\beta'\mathbf y_t&=\begin{bmatrix}\beta'\nu&\beta'\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\mathbf y_{t-1}+\beta'\mathbf u_t\\&=(\beta'\nu\mathbf D_r\beta'+\beta'\nu_\star\beta_\star')\mathbf y_{t-1}+\beta'\mathbf u_t\end{aligned}$$
+由 \(\mathbf V^{-1}\mathbf V=\mathbb I_m\) 得 \(\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\begin{bmatrix}\nu&\nu_\star\end{bmatrix}=\begin{bmatrix}\mathbb I_r&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\)，即 \(\beta'\nu=\mathbb I_r\)、\(\beta'\nu_\star=\mathbf 0\)。代入得
+$$\beta'\mathbf y_t=(\mathbb I_r\mathbf D_r\beta'+\mathbf 0\cdot\beta_\star')\mathbf y_{t-1}+\beta'\mathbf u_t=\mathbf D_r\beta'\mathbf y_{t-1}+\beta'\mathbf u_t$$
+记 \(\mathbf x_t=\beta'\mathbf y_t\)、\(\mathbf e_t=\beta'\mathbf u_t\)，则 \(\mathbf x_t=\mathbf D_r\mathbf x_t+\mathbf e_t\)（应作 \(\mathbf x_t=\mathbf D_r\mathbf x_{t-1}+\mathbf e_t\)）。由于 \(\mathbf D_r\) 的根 \(|z_1|,\dots,|z_r|<1\)，\(\mathbf x_t\) 协方差平稳。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 10.1 (Cointegrating matrix)
+For a VAR(1) \(\mathbf y_t=\mathbf B\mathbf y_{t-1}+\mathbf u_t\), let the stationary roots be \(|z_1|<1,\dots,|z_r|<1\) and the unit roots \(z_{r+1}=\dots=z_m=1\). If \(\mathbf B\) is diagonalizable \(\mathbf B=\mathbf V\mathbf D\mathbf V^{-1}\), then a cointegrating matrix \(\beta\) is given by the <strong>transpose of the first \(r\) rows</strong> of \(\mathbf V^{-1}\).</p>
+<p>[!note]- Proof
+Use block matrices. Write \(\mathbf V=\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\), \(\mathbf V^{-1}=\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\), where \(\nu\) is \(m\times r\), \(\nu_\star\) is \(m\times(m-r)\), \(\beta'\) is \(r\times m\), \((\beta_\star)'\) is \((m-r)\times m\). The dynamics read
+$$\mathbf y_t=\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\mathbf y_{t-1}+\mathbf u_t$$
+with \(\mathbf D_r=\operatorname{diag}(z_1,\dots,z_r)\). Check covariance stationarity of \(\beta'\mathbf y_t\):
+$$\begin{aligned}\beta'\mathbf y_t&=\begin{bmatrix}\beta'\nu&\beta'\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\mathbf y_{t-1}+\beta'\mathbf u_t\\&=(\beta'\nu\mathbf D_r\beta'+\beta'\nu_\star\beta_\star')\mathbf y_{t-1}+\beta'\mathbf u_t\end{aligned}$$
+From \(\mathbf V^{-1}\mathbf V=\mathbb I_m\), \(\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\begin{bmatrix}\nu&\nu_\star\end{bmatrix}=\begin{bmatrix}\mathbb I_r&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\), so \(\beta'\nu=\mathbb I_r\), \(\beta'\nu_\star=\mathbf 0\). Substituting,
+$$\beta'\mathbf y_t=(\mathbb I_r\mathbf D_r\beta'+\mathbf 0\cdot\beta_\star')\mathbf y_{t-1}+\beta'\mathbf u_t=\mathbf D_r\beta'\mathbf y_{t-1}+\beta'\mathbf u_t$$
+Denote \(\mathbf x_t=\beta'\mathbf y_t\), \(\mathbf e_t=\beta'\mathbf u_t\), so \(\mathbf x_t=\mathbf D_r\mathbf x_{t-1}+\mathbf e_t\). Since the roots of \(\mathbf D_r\) satisfy \(|z_1|,\dots,|z_r|<1\), \(\mathbf x_t\) is covariance stationary. \(\blacksquare\)</p></div>
+</div>
+<h3 id="10-2-3-splitting-the-impulse-responses">10.2.3 Splitting the Impulse Responses</h3>
+<div class="lang zh">
+<p>回忆脉冲响应 \(\mathbf r_\mathbf a(k)=\mathbf B^k\mathbf a\)。用 \(\mathbf B=\mathbf V\mathbf D\mathbf V^{-1}\) 的分块形式：
+$$\mathbf r_\mathbf a(k)=\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r^k&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\mathbf a=\big(\nu\mathbf D_r^k\beta'+\nu_\star(\beta_\star)'\big)\mathbf a$$
+定义 \(\mathbf a_r=\beta'\mathbf a\in\mathbb R^r\)、\(\mathbf a_\star=(\beta_\star)'\mathbf a\in\mathbb R^{m-r}\)，则
+$$\mathbf r_\mathbf a(k)=\nu\mathbf D_r^k\mathbf a_r+\nu_\star\mathbf a_\star$$
+第一项是<strong>暂时部分</strong>（随 \(k\) 衰减），第二项是<strong>永久部分</strong>（不随 \(k\) 变）。由于 \(\lim_{k\to\infty}\mathbf D_r^k=\mathbf 0\)，
+$$\mathbf r_\mathbf a(\infty)=\lim_{k\to\infty}\mathbf r_\mathbf a(k)=\nu_\star\mathbf a_\star$$</p>
+</div>
+<div class="lang en">
+<p>Recall the impulse response \(\mathbf r_\mathbf a(k)=\mathbf B^k\mathbf a\). Using the block form of \(\mathbf B=\mathbf V\mathbf D\mathbf V^{-1}\):
+$$\mathbf r_\mathbf a(k)=\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r^k&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\mathbf a=\big(\nu\mathbf D_r^k\beta'+\nu_\star(\beta_\star)'\big)\mathbf a$$
+Defining \(\mathbf a_r=\beta'\mathbf a\in\mathbb R^r\), \(\mathbf a_\star=(\beta_\star)'\mathbf a\in\mathbb R^{m-r}\),
+$$\mathbf r_\mathbf a(k)=\nu\mathbf D_r^k\mathbf a_r+\nu_\star\mathbf a_\star$$
+The first term is the <strong>transitory part</strong> (decays with \(k\)), the second is the <strong>permanent part</strong> (constant in \(k\)). Since \(\lim_{k\to\infty}\mathbf D_r^k=\mathbf 0\),
+$$\mathbf r_\mathbf a(\infty)=\lim_{k\to\infty}\mathbf r_\mathbf a(k)=\nu_\star\mathbf a_\star$$</p>
+</div>
+<h3 id="10-2-4-error-correction">10.2.4 Error Correction</h3>
+<div class="lang zh">
+<p>考虑一阶差分。由 \(\mathbf B=\nu\mathbf D_r\beta'+\nu_\star(\beta_\star)'\)（带单位根块）展开：
+$$\begin{aligned}\Delta\mathbf y_t&=(\mathbf B-\mathbb I_m)\mathbf y_{t-1}+\mathbf u_t\\&=\Big(\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r-\mathbb I_r&\mathbf 0\\\mathbf 0&\mathbf 0\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\Big)\mathbf y_{t-1}+\mathbf u_t\\&=\nu(\mathbf D_r-\mathbb I_r)\beta'\mathbf y_{t-1}+\mathbf u_t\end{aligned}$$
+定义 \(\alpha=\nu(\mathbb I_r-\mathbf D_r)\)（即 \(\alpha\beta'=\mathbb I_m-\mathbf B\)），则 VAR(1) 可写成<strong>误差修正表示</strong>：
+$$\Delta\mathbf y_t=-\alpha\beta'\mathbf y_{t-1}+\mathbf u_t$$</p>
+<p><strong>直观。</strong> \(\mathbf y_t\) 一期到下期的变化由两部分驱动：(1) 新冲击 \(\mathbf u_t\)；(2) 协整的平稳成分 \(\beta'\mathbf y_{t-1}\)——当系统偏离长期均衡（\(\beta'\mathbf y_{t-1}\ne0\)）时，\(-\alpha\beta'\mathbf y_{t-1}\) 把它拉回，\(\alpha\) 是<strong>调整速度</strong>。</p>
+<div class="callout"><div class="callout-title">Important</div><p>命题 10.2（Engle–Granger 1987）
+一个秩 \(r\) 协整的 VAR(\(k\)) 可写成误差修正表示
+$$A^\star(L)\Delta\mathbf y_t=-\alpha\beta'\mathbf y_{t-1}+\mathbf u_t$$
+其中 \(A^\star(L)\) 只有稳定根。</p></div>
+</div>
+<div class="lang en">
+<p>Consider first differences. Expanding \(\mathbf B=\nu\mathbf D_r\beta'+\nu_\star(\beta_\star)'\) (with the unit-root block):
+$$\begin{aligned}\Delta\mathbf y_t&=(\mathbf B-\mathbb I_m)\mathbf y_{t-1}+\mathbf u_t\\&=\Big(\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r-\mathbb I_r&\mathbf 0\\\mathbf 0&\mathbf 0\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\Big)\mathbf y_{t-1}+\mathbf u_t\\&=\nu(\mathbf D_r-\mathbb I_r)\beta'\mathbf y_{t-1}+\mathbf u_t\end{aligned}$$
+Defining \(\alpha=\nu(\mathbb I_r-\mathbf D_r)\) (so \(\alpha\beta'=\mathbb I_m-\mathbf B\)), the VAR(1) can be written as the <strong>error-correction representation</strong>:
+$$\Delta\mathbf y_t=-\alpha\beta'\mathbf y_{t-1}+\mathbf u_t$$</p>
+<p><strong>Intuition.</strong> The change in \(\mathbf y_t\) from one period to the next is driven by two parts: (1) the new shock \(\mathbf u_t\); (2) the cointegrated stationary component \(\beta'\mathbf y_{t-1}\) — when the system departs from long-run equilibrium (\(\beta'\mathbf y_{t-1}\ne0\)), \(-\alpha\beta'\mathbf y_{t-1}\) pulls it back, with \(\alpha\) the <strong>speed of adjustment</strong>.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 10.2 (Engle–Granger 1987)
+A VAR(\(k\)) that is cointegrated of rank \(r\) can be given an error-correction representation
+$$A^\star(L)\Delta\mathbf y_t=-\alpha\beta'\mathbf y_{t-1}+\mathbf u_t$$
+where \(A^\star(L)\) has only stable roots.</p></div>
+</div>
+<h2 id="10-3-identifying-the-impulse-responses-to-epsilon-shocks">10.3 Identifying the Impulse Responses to \(\epsilon\) Shocks</h2>
+<div class="lang zh">
+<p>在真实经济中，\(\epsilon\) 冲击可代表货币政策变化、财政政策变化、战争爆发等。我们关心的是某个 \(\epsilon_{t,j}\) 冲击（且仅它）发生后对 \(\mathbf y_t\) 的影响。可惜 \(\epsilon_{t,1},\dots,\epsilon_{t,m}\) 在每期都混合在一起出现（即 \(\mathbf u_t=\mathcal A\epsilon_t\)），无法在真实经济中单独实验。</p>
+<p>利用我们能观测的合成冲击 \(\mathbf u_t\) 加上对 \(\mathbf A\) 的合理假设，可反推出 \(\mathbf A\)。回忆
+$$\mathbf u_t=\mathbf A\epsilon_t,\quad \Sigma=\mathbf A\mathbf A'=\begin{bmatrix}\mid&\mid&&\mid\\\mathbf a_1&\mathbf a_2&\cdots&\mathbf a_m\\\mid&\mid&&\mid\end{bmatrix}\begin{bmatrix}\epsilon_{t,1}\\\vdots\\\epsilon_{t,m}\end{bmatrix}=\mathbf a_1\epsilon_{t,1}+\dots+\mathbf a_m\epsilon_{t,m}$$
+注意 \(\epsilon_{t,j}\) 的脉冲是 \(\mathbf u_t=\mathbf a_j\) 的脉冲，其中 \(\mathbf a_j\) 是 \(\mathbf A\) 的第 \(j\) 列。故只要有 \(\mathbf A\) 的良好候选，就能计算单独 \(\epsilon_{t,j}\) 的脉冲响应。</p>
+<p><strong>约束计数。</strong> 设 \(\mathbf A\) 为 \(k\times m\)（下设 \(k\ge m\)，这里假设 \(\mathbf A\) 为方阵），共 \(m^2\) 个元素。\(\Sigma=\mathbf A\mathbf A'\)（对称）给出 \(\frac{m(m+1)}2\) 个方程，故还需至少
+$$m^2-\frac{m(m+1)}2=\frac{(m-1)m}2$$
+个额外约束才能由合理假设定出 \(\mathbf A\)。</p>
+</div>
+<div class="lang en">
+<p>In the real economy, \(\epsilon\) shocks may represent monetary policy changes, fiscal policy changes, the outbreak of war, and so on. We are interested in the effect on \(\mathbf y_t\) of one \(\epsilon_{t,j}\) shock (and only it) happening. Unfortunately \(\epsilon_{t,1},\dots,\epsilon_{t,m}\) always happen together in any period \(t\) (i.e. \(\mathbf u_t=\mathcal A\epsilon_t\)), so we cannot experiment around in the real economy.</p>
+<p>Using the synthesized shock \(\mathbf u_t\) we can observe, plus reasonable assumptions on \(\mathbf A\), we can back out \(\mathbf A\). Recall
+$$\mathbf u_t=\mathbf A\epsilon_t,\quad \Sigma=\mathbf A\mathbf A'=\begin{bmatrix}\mid&\mid&&\mid\\\mathbf a_1&\mathbf a_2&\cdots&\mathbf a_m\\\mid&\mid&&\mid\end{bmatrix}\begin{bmatrix}\epsilon_{t,1}\\\vdots\\\epsilon_{t,m}\end{bmatrix}=\mathbf a_1\epsilon_{t,1}+\dots+\mathbf a_m\epsilon_{t,m}$$
+Notice the impulse of \(\epsilon_{t,j}\) is the impulse response to \(\mathbf u_t=\mathbf a_j\) where \(\mathbf a_j\) is the \(j\)-th column of \(\mathbf A\). So with a good candidate for \(\mathbf A\) we can compute the impulse response to \(\epsilon_{t,j}\) alone.</p>
+<p><strong>Counting restrictions.</strong> Let \(\mathbf A\) be \(k\times m\) (below assume \(k\ge m\); here we take \(\mathbf A\) square), with \(m^2\) elements. The symmetric \(\Sigma=\mathbf A\mathbf A'\) gives \(\frac{m(m+1)}2\) equations, so we still need at least
+$$m^2-\frac{m(m+1)}2=\frac{(m-1)m}2$$
+extra restrictions to pin down \(\mathbf A\) from reasonable assumptions.</p>
+</div>
+<h3 id="10-3-1-identification-via-the-cholesky-decomposition">10.3.1 Identification via the Cholesky Decomposition</h3>
+<div class="lang zh">
+<p>一个合理假设是 \(\mathbf A\) 为<strong>下三角</strong>（Cholesky 分解）。上三角的 \(\frac{(m-1)m}2\) 个元素为零，恰好给出所需数目的额外约束：
+$$\mathbf A=\begin{bmatrix}\star&0&0&0&0\\\star&\star&0&0&0\\\star&\star&\star&0&0\\\vdots&\vdots&\vdots&\ddots&\vdots\\\star&\star&\star&\cdots&\star\end{bmatrix}$$
+其中可约定对角元非负（必要时翻转 \(\epsilon_{t,j}\) 的经济定义符号即可）。</p>
+<ul>
+<li>该识别假设冲击 \(\epsilon_{t,j}\) 对变量 \(y_{t,i}\)（\(i<j\)）<strong>没有同期影响</strong>。</li>
+<li>在此假设下，\(\mathbf A\) 可由 \(\Sigma=\mathbf A\mathbf A'\) 的估计直接解出。</li>
+<li>但下三角假设很强，除非有很好的经济故事支持 \(\mathbf y_t\) 各分量与 \(\epsilon_{t,j}\) 之间的这种关系，否则可能受到批评。</li>
+</ul>
+</div>
+<div class="lang en">
+<p>One reasonable assumption is that \(\mathbf A\) is <strong>lower triangular</strong> (Cholesky decomposition). The \(\frac{(m-1)m}2\) upper-triangular elements being zero gives exactly the required number of extra restrictions:
+$$\mathbf A=\begin{bmatrix}\star&0&0&0&0\\\star&\star&0&0&0\\\star&\star&\star&0&0\\\vdots&\vdots&\vdots&\ddots&\vdots\\\star&\star&\star&\cdots&\star\end{bmatrix}$$
+where we adopt a sign convention that diagonal elements are non-negative (achieved by flipping the economic definition of \(\epsilon_{t,j}\) if necessary).</p>
+<ul>
+<li>This identification assumes shock \(\epsilon_{t,j}\) has <strong>no contemporaneous impact</strong> on variables \(y_{t,i}\) for \(i<j\).</li>
+<li>Under this assumption, \(\mathbf A\) can be easily solved from our estimate of \(\Sigma=\mathbf A\mathbf A'\).</li>
+<li>But the lower-triangular assumption is strong and may be criticized unless we have a very good economic story for such relationships among the elements of \(\mathbf y_t\) and the shocks \(\epsilon_{t,j}\).</li>
+</ul>
+</div>
+<h3 id="10-3-2-long-run-identification-blanchard-quah-gal-etc">10.3.2 Long-Run Identification (Blanchard–Quah, Galí, etc.)</h3>
+<div class="lang zh">
+<p>有时我们有很好的经济故事，能断定某些 \(\epsilon_{t,j}\) 冲击是<strong>暂时的</strong>，而另一些 \(\epsilon_{t,j'}\) 冲击是<strong>永久的</strong>。如前所述，对协整 VAR(1)，
+$$\mathbf y_t=\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\mathbf y_{t-1}+\mathbf A\epsilon_t$$
+\(\epsilon_{t,j}\) 单独的 \(k\) 步脉冲响应是 \(\mathbf u_t=\mathbf a_j\) 的脉冲响应，\(\mathbf a_j\) 为 \(\mathbf A\) 第 \(j\) 列。由 §10.2.3，
+$$\mathbf r_{\mathbf a_j}(k)=\nu\mathbf D_r^k\beta'\mathbf a_j+\nu_\star(\beta_\star)'\mathbf a_j$$
+其长期（永久）部分为 \(\mathbf r_{\mathbf a_j}(\infty)=\nu_\star(\beta_\star)'\mathbf a_j\)。</p>
+<ul>
+<li>对任意<strong>暂时</strong>冲击 \(\epsilon_{t,j}\)，可假设 \(\nu_\star(\beta_\star)'\mathbf a_j=\mathbf 0\)（无长期影响）——这成为对 \(\mathbf A\) 的额外约束。</li>
+<li>对任意<strong>永久</strong>冲击 \(\epsilon_{t,j'}\)，可假设 \(\nu_\star(\beta_\star)'\mathbf a_{j'}\ne\mathbf 0\)（有长期影响）——也成为额外约束。</li>
+<li>这些假设单独不足以完全定出 \(\mathbf A\)，但至少缩小候选范围，与其他约束结合可把 \(\mathbf A\) 限制到较小范围。</li>
+</ul>
+</div>
+<div class="lang en">
+<p>Sometimes we have a good economic story to say some \(\epsilon_{t,j}\) shocks are <strong>temporary</strong> while other \(\epsilon_{t,j'}\) shocks are <strong>permanent</strong>. As discussed, for a cointegrated VAR(1),
+$$\mathbf y_t=\begin{bmatrix}\nu&\nu_\star\end{bmatrix}\begin{bmatrix}\mathbf D_r&\mathbf 0\\\mathbf 0&\mathbb I_{m-r}\end{bmatrix}\begin{bmatrix}\beta'\\(\beta_\star)'\end{bmatrix}\mathbf y_{t-1}+\mathbf A\epsilon_t$$
+The \(k\)-lag impulse response to \(\epsilon_{t,j}\) alone is the impulse response to \(\mathbf u_t=\mathbf a_j\), where \(\mathbf a_j\) is the \(j\)-th column of \(\mathbf A\). By §10.2.3,
+$$\mathbf r_{\mathbf a_j}(k)=\nu\mathbf D_r^k\beta'\mathbf a_j+\nu_\star(\beta_\star)'\mathbf a_j$$
+whose long-run (permanent) part is \(\mathbf r_{\mathbf a_j}(\infty)=\nu_\star(\beta_\star)'\mathbf a_j\).</p>
+<ul>
+<li>For any <strong>temporary</strong> shock \(\epsilon_{t,j}\), we can assume \(\nu_\star(\beta_\star)'\mathbf a_j=\mathbf 0\) (no long-run impact) — an additional restriction on \(\mathbf A\).</li>
+<li>For any <strong>permanent</strong> shock \(\epsilon_{t,j'}\), we can assume \(\nu_\star(\beta_\star)'\mathbf a_{j'}\ne\mathbf 0\) (a long-run impact) — also an additional restriction.</li>
+<li>Such assumptions alone are not sufficient to pin down \(\mathbf A\), but they at least shrink the scope, and combined with other restrictions can restrict our candidates for \(\mathbf A\) to a smaller scope.</li>
+</ul>
+</div>
+<h3 id="10-3-3-identification-with-sign-restrictions">10.3.3 Identification with Sign Restrictions</h3>
+<div class="lang zh">
+<p>考虑同期冲击
+$$\mathbf u_t=\mathbf a_1\epsilon_{t,1}+\dots+\mathbf a_m\epsilon_{t,m}$$
+若对 \(\epsilon_{t,j}\) 施加正冲击（\(\epsilon_{t,j}=1\)，其余 \(\epsilon_{t,i}=0\ \forall i\ne j\)），应导致 \(\mathbf y_t\) 的同期变化为 \(\mathbf a_j\)。若有很好的经济故事或直觉判断 \(\mathbf a_j\) 各元素的符号，就更有把握。</p>
+<p><strong>例。</strong> 设 \(\epsilon_{t,j}\) 是货币政策变化、正的 \(\epsilon_{t,j}\) 表示货币宽松；又设 \(\mathbf y_t=(y_{t,1},y_{t,2},\dots)'\)，\(y_{t,1}\) 为实际 GDP 增长、\(y_{t,2}\) 为利率。经济上我们相信货币宽松应<strong>提高</strong> GDP 增长、<strong>降低</strong>利率，故对 \(\mathbf a_j=(a_1,a_2,\dots)'\) 可合理地令 \(a_1>0\)、\(a_2<0\)。</p>
+<p>这类符号约束又给 \(\mathbf A\) 增加限制。它们单独仍不足以定出 \(\mathbf A\)，但能缩小候选范围。本节所有技巧可组合使用，配合其他合理假设把候选范围缩到较小，再选一个作为先验、用贝叶斯更新去逼近真实的 \(\mathbf A\)。</p>
+</div>
+<div class="lang en">
+<p>Consider the contemporaneous shock
+$$\mathbf u_t=\mathbf a_1\epsilon_{t,1}+\dots+\mathbf a_m\epsilon_{t,m}$$
+A positive shock to \(\epsilon_{t,j}\) (\(\epsilon_{t,j}=1\) with all \(\epsilon_{t,i}=0\ \forall i\ne j\)) should lead to a contemporaneous change in \(\mathbf y_t\) equal to \(\mathbf a_j\). With a good economic story or intuition about the signs of the elements of \(\mathbf a_j\), we gain more confidence.</p>
+<p><strong>Example.</strong> Suppose \(\epsilon_{t,j}\) is a monetary policy change and positive \(\epsilon_{t,j}\) means monetary stimulus; also suppose \(\mathbf y_t=(y_{t,1},y_{t,2},\dots)'\) where \(y_{t,1}\) is real GDP growth and \(y_{t,2}\) is the interest rate. Economically we believe monetary stimulus should <strong>increase</strong> GDP growth and <strong>decrease</strong> the interest rate, so for \(\mathbf a_j=(a_1,a_2,\dots)'\) it is fair to say \(a_1>0\) and \(a_2<0\).</p>
+<p>Such sign restrictions add more restrictions on \(\mathbf A\). They are again not sufficient to pin down \(\mathbf A\), but they shrink the scope of candidates. All the tricks in this section can be used in combination, along with other reasonable assumptions, to reduce the candidates for \(\mathbf A\) to a fairly small scope; then pick one as our prior to do Bayesian updating to approximate the real \(\mathbf A\).</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#10-1-roots-impulse-responses-and-cointegration">10.1 Roots, Impulse Responses, and Cointegration</a></li>
+          <li><a href="#10-1-1-var-n">10.1.1 VAR(\(n\))</a></li>
+          <li><a href="#10-1-2-characteristic-polynomial-and-roots">10.1.2 Characteristic Polynomial and Roots</a></li>
+          <li><a href="#10-1-3-impulse-responses">10.1.3 Impulse Responses</a></li>
+          <li><a href="#10-1-4-computing-impulse-responses-by-recursive-substitution">10.1.4 Computing Impulse Responses by Recursive Substitution</a></li>
+        <li><a href="#10-2-cointegration-and-error-correction">10.2 Cointegration and Error Correction</a></li>
+          <li><a href="#10-2-1-cointegration">10.2.1 Cointegration</a></li>
+          <li><a href="#10-2-2-the-cointegrating-matrix">10.2.2 The Cointegrating Matrix</a></li>
+          <li><a href="#10-2-3-splitting-the-impulse-responses">10.2.3 Splitting the Impulse Responses</a></li>
+          <li><a href="#10-2-4-error-correction">10.2.4 Error Correction</a></li>
+        <li><a href="#10-3-identifying-the-impulse-responses-to-epsilon-shocks">10.3 Identifying the Impulse Responses to \(\epsilon\) Shocks</a></li>
+          <li><a href="#10-3-1-identification-via-the-cholesky-decomposition">10.3.1 Identification via the Cholesky Decomposition</a></li>
+          <li><a href="#10-3-2-long-run-identification-blanchard-quah-gal-etc">10.3.2 Long-Run Identification (Blanchard–Quah, Galí, etc.)</a></li>
+          <li><a href="#10-3-3-identification-with-sign-restrictions">10.3.3 Identification with Sign Restrictions</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

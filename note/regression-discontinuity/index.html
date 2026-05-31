@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>17. Regression Discontinuity – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>17. Regression Discontinuity</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">因果推断</span><span class="lang en">Causal Inference</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">断点回归</span><span class="lang en">Regression Discontinuity</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">锐断点</span><span class="lang en">Sharp Design</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">模糊断点</span><span class="lang en">Fuzzy Design</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">运行变量</span><span class="lang en">Running Variable</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">局部多项式</span><span class="lang en">Local Polynomial</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：断点回归（RD）。</strong> 当处理基于某<strong>临界值（cutoff）</strong> \(c\) 分配时，临界值附近形成一个可假设随机性的特殊区域。<strong>§17.1 设定</strong>：运行变量 \(R\) 与处理 \(D\) 在 \(R=c\) 处有间断；<strong>锐设计（sharp）</strong> \(\mathbb P(D=1\mid R=r)=\mathbf 1\{R\ge c\}\)、<strong>模糊设计（fuzzy）</strong> 概率在 \(c\) 处跳但非 0 到 1；<strong>平滑假设</strong> \(Y_0,Y_1\) 在 \(R=c\) 连续。<strong>§17.2 锐 RD</strong>：等价于 \(R=c\) 处的"基于可观测量的选择"；<strong>命题 17.1</strong> \(\text{ATE}(c)=\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]\)（17.1）。<strong>§17.3 模糊 RD</strong>：以 \(Z=\mathbf 1\{R\ge c\}\) 为工具的 IV 设计；<strong>命题 17.2</strong> \(\text{LATE}=\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}\)（17.2，\(R=c\) 处顺从者的 LATE）。<strong>§17.4 解读与外推</strong>：锐识别临界点全体的 ATE、模糊识别临界点顺从者的 LATE；外推难。<strong>§17.5 估计</strong>：用临界点附近（而非恰好 \(R=c\)）的数据；局部线性 \(Y=\alpha+\tau D+\beta(R-c)+\gamma D(R-c)+\varepsilon\)（17.11）；非参数局部常数/局部线性；带宽选择的偏差—方差权衡；RD 使用建议（验证无操纵、检验协变量/密度/结果的间断、稳健性）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: regression discontinuity (RD).</strong> When treatment is assigned based on some <strong>cutoff value</strong> \(c\), a special region forms around the cutoff where we can assume randomness. <strong>§17.1 Setup</strong>: a running variable \(R\) with a discontinuous relationship with treatment \(D\) at \(R=c\); <strong>sharp design</strong> \(\mathbb P(D=1\mid R=r)=\mathbf 1\{R\ge c\}\), <strong>fuzzy design</strong> where the probability jumps at \(c\) but not from 0 to 1; the <strong>smoothness assumption</strong> \(Y_0,Y_1\) continuous at \(R=c\). <strong>§17.2 Sharp RD</strong>: equivalent to "selection on observables" at \(R=c\); <strong>Proposition 17.1</strong> \(\text{ATE}(c)=\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]\) (17.1). <strong>§17.3 Fuzzy RD</strong>: an IV design with \(Z=\mathbf 1\{R\ge c\}\) as instrument; <strong>Proposition 17.2</strong> \(\text{LATE}=\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}\) (17.2, the LATE of compliers at \(R=c\)). <strong>§17.4 Interpretation and extrapolation</strong>: sharp identifies the ATE for all at the cutoff, fuzzy the LATE for compliers at the cutoff; extrapolation is hard. <strong>§17.5 Estimation</strong>: use data near (not exactly at) \(R=c\); local linear \(Y=\alpha+\tau D+\beta(R-c)+\gamma D(R-c)+\varepsilon\) (17.11); non-parametric local constant/local linear; the bias-variance trade-off in bandwidth selection; advice on using RD (validate no manipulation, test for discontinuities in covariates/density/outcomes, robustness).</p></div>
+</div>
+<div class="lang zh">
+<p>参与某项目（处理）有时基于临界值分配，而非由决策者审慎裁量——这在临界值附近形成一个可假设随机性的特殊区域。</p>
+</div>
+<div class="lang en">
+<p>Participation in a program (treatment) is sometimes assigned based on cutoff values, as opposed to assigned carefully on discretion of the decision maker, which creates a special region around that cutoff value where we can assume randomness.</p>
+</div>
+<h2 id="17-1-setup">17.1 Setup</h2>
+<div class="lang zh">
+<p>潜在结果框架下的记号：
+- 结果 \(Y\)、二值处理 \(D\in\{0,1\}\)。
+- 潜在结果 \(Y_1\)（\(D=1\)）、\(Y_0\)（\(D=0\)）。
+- 对任意 agent，切换回归 \(Y=Y_1D+Y_0(1-D)\)。
+- 每个 agent 有一个变量 \(R\)，它与 \(D\) 在 \(R=c\) 处有间断关系，\(c\) 为<strong>阈值/临界值（cutoff）</strong>，即 \(\mathbb P(D=1\mid R=r)\) 在 \(r=c\) 处有间断。（\(R\) 即<strong>运行变量（running variable）</strong>；如入学考试，\(c\) 为录取最低分。）
+- <strong>锐设计（sharp design）</strong>：
+$$\lim_{r\uparrow c}\mathbb P(D=1\mid R=r)=0,\qquad\lim_{r\downarrow c}\mathbb P(D=1\mid R=r)=1$$
+- <strong>模糊设计（fuzzy design）</strong>：
+$$\lim_{r\uparrow c}\mathbb P(D=1\mid R=r)=p\in(0,1),\qquad\lim_{r\downarrow c}\mathbb P(D=1\mid R=r)=q\in(p,1)$$
+- <strong>平滑假设（smoothness assumption）</strong>：假设潜在结果 \(Y_1,Y_0\) 对每个人在 \(R=c\) 处（乃至全 \(R\) 上）连续（见 Figure 2）。</p>
+<p>关键在于：我们<strong>不需要</strong> \(D\)，只需处理在临界值附近间断地变化、而潜在结果连续地变化。故临界值 \(c\) 足够小邻域内的人被视为同一组人，他们在潜在结果意义上"随机"分配到处理（锐设计），或随机分配到通过 \(c\) 的工具（模糊设计）。</p>
+<p><strong>图示（Figure 2，已转述）：</strong> 横轴运行变量 \(R\)、纵轴结果 \(Y\)。两条曲线 \(\mathbb E[Y_1\mid R=r]\)、\(\mathbb E[Y_0\mid R=r]\) 在 \(R\) 上都连续；二者在 \(R=c\) 处的竖直差 \(\mathbb E[Y_1\mid R=c]-\mathbb E[Y_0\mid R=c]\) 即临界点处的处理效应。锐设计下 \(R<c\) 观测到 \(\mathbb E[Y_0\mid R=r]\)、\(R\ge c\) 观测到 \(\mathbb E[Y_1\mid R=r]\)，故已实现结果 \(\mathbb E[Y\mid R=r]\) 在 \(R=c\) 处跳一个等于处理效应的高度。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 17.1
+断点回归模型有几个局限与缺点：
+- 须假设潜在结果 \(Y_0,Y_1\) 在 \(R=c\) 处连续变化。
+- 只能点识别 \(R=c\) 那群人的效应（锐设计），或恰是顺从者、即 \(R=c\) 那群人中的子组（模糊设计）。
+- 外部有效性有限：只能提取 \(R=c\) 处的效应，对其他人群无话可说。</p></div>
+</div>
+<div class="lang en">
+<p>Notations in the potential outcome framework:
+- Outcome \(Y\) and binary treatment \(D\in\{0,1\}\).
+- Potential outcomes \(Y_1\) for \(D=1\) and \(Y_0\) for \(D=0\).
+- For any agent, the switching regression \(Y=Y_1D+Y_0(1-D)\).
+- Everyone has a variable \(R\) that has a discontinuous relationship with \(D\) at \(R=c\), where \(c\) is the threshold or cutoff value, i.e.
+$$\mathbb P(D=1\mid R=r)\ \text{has a discontinuity at }r=c$$
+(\(R\) is the <strong>running variable</strong>; e.g. an exam with a lowest score for which you would qualify for admission, the cutoff being the threshold \(c\).)
+- In <strong>sharp design</strong>:
+$$\lim_{r\uparrow c}\mathbb P(D=1\mid R=r)=0,\qquad\lim_{r\downarrow c}\mathbb P(D=1\mid R=r)=1$$
+- In <strong>fuzzy design</strong>:
+$$\lim_{r\uparrow c}\mathbb P(D=1\mid R=r)=p\in(0,1),\qquad\lim_{r\downarrow c}\mathbb P(D=1\mid R=r)=q\in(p,1)$$
+- <strong>Smoothness assumption</strong>: we would assume that the potential outcomes \(Y_1\) and \(Y_0\) for everyone are continuous in \(R\) even at \(R=c\) (see Figure 2).</p>
+<p>The key is that we don't need \(D\). We only need that treatment varies discontinuously around the cutoff while potential outcomes vary continuously. So, people in a sufficiently small neighborhood around cutoff \(c\) are considered as the same group of people in terms of potential outcomes, but "randomly" assigned with the treatment (sharp design) or the instrument of passing \(c\) (fuzzy design).</p>
+<p><strong>Figure (Figure 2, paraphrased):</strong> horizontal axis the running variable \(R\), vertical axis the outcome \(Y\). The two curves \(\mathbb E[Y_1\mid R=r]\) and \(\mathbb E[Y_0\mid R=r]\) are both continuous in \(R\); their vertical gap at \(R=c\), \(\mathbb E[Y_1\mid R=c]-\mathbb E[Y_0\mid R=c]\), is the treatment effect at the cutoff. Under sharp design, for \(R<c\) we observe \(\mathbb E[Y_0\mid R=r]\) and for \(R\ge c\) we observe \(\mathbb E[Y_1\mid R=r]\), so the realized outcome \(\mathbb E[Y\mid R=r]\) jumps at \(R=c\) by a height equal to the treatment effect.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 17.1
+There are some limitations and drawbacks of the regression discontinuity model:
+- We need to assume that the potential outcomes \(Y_0\) and \(Y_1\) vary continuously at \(R=c\).
+- We can only point identify the effects for the group of people with \(R=c\) (sharp design) or just the compliers, i.e. the subgroup in the group of people with \(R=c\) (fuzzy design).
+- There is limited external validity, since we can only extract effects at \(R=c\) and have nothing to say about other groups of people.</p></div>
+</div>
+<h2 id="17-2-sharp-regression-discontinuity">17.2 Sharp Regression Discontinuity</h2>
+<div class="lang zh">
+<p>基本上，\(R\) 等于或哪怕略高于临界值 \(c\) 的人会受处理，而 \(R\) 略低于 \(c\) 的人不受处理。\(c\) 稍下与稍上的人是同一组人。故若假设临界值确定性地（概率 1）决定处理，则处理 \(D\) 在 \(R=c\) 小邻域内如随机分配般好——这是<strong>锐设计（sharp design）</strong>，可识别该小邻域处理的因果 ATE。</p>
+<h3 id="17-2-1-definition">17.2.1 Definition</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 17.1（锐断点回归）
+称为<strong>锐断点回归设计</strong>，若 \(R\) 跨过 \(c\) 时处理 \(D\) 确定性地从 0 变 1，即
+$$\mathbb P(D=1\mid R=r)=\mathbf 1\{R\ge c\}$$
+或等价地
+$$\mathbb P(D=1\mid R=r)=\begin{cases}1&\text{if }r\ge c\\0&\text{if }r<c\end{cases}$$</p></div>
+<h3 id="17-2-2-relationship-with-selection-on-observables">17.2.2 Relationship with "Selection on Observables"</h3>
+<p>锐设计蕴含对 \(R\) 的"基于可观测量的选择"成立，即 \((Y_0,Y_1)\perp D\mid R\)——因 \(D\) 给定 \(R\) 时确定，故可在某单元 \(R=r\) 内识别 \(\text{ATE}(r)\)。然而重叠（共同支撑）条件除 \(R=c\) 外处处被违反：因对 \(R\ne c\)，只存在一类人（要么全受处理、要么全不受处理）；在 \(R=c\) 处由于 \(Y_0,Y_1\) 在 \(R\) 上连续，几乎有重叠。这也是为何需要平滑假设。故只能识别 \(R=c\) 处的 \(\text{ATE}(r)\)。</p>
+<h3 id="17-2-3-identification-with-sharp-design">17.2.3 Identification with Sharp Design</h3>
+<div class="callout"><div class="callout-title">Important</div><p>命题 17.1
+在定义 17.1 的锐设计下，若假设 \(\mathbb E[Y_1\mid R=r]\) 与 \(\mathbb E[Y_0\mid R=r]\) 在 \(R\) 上、在 \(R=c\)（临界值）处连续，则可点识别
+$$\text{ATE}(c)\equiv\mathbb E[Y_1-Y_0\mid R=c]=\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]$$</p>
+<p>[!note]- 证明
+由锐设计定义，
+$$\lim_{r\downarrow c}\underbrace{\mathbb E[Y\mid R=r]}_{\text{data}}=\lim_{r\downarrow c}\mathbb E[Y_1\mid R=r],\qquad\lim_{r\uparrow c}\underbrace{\mathbb E[Y\mid R=r]}_{\text{data}}=\lim_{r\uparrow c}\mathbb E[Y_0\mid R=r]$$
+由 \(\mathbb E[Y_1\mid R=r]\)、\(\mathbb E[Y_0\mid R=r]\) 在 \(R=c\) 处连续，
+$$\lim_{r\downarrow c}\mathbb E[Y_1\mid R=r]=\mathbb E[Y_1\mid R=c],\qquad\lim_{r\uparrow c}\mathbb E[Y_0\mid R=r]=\mathbb E[Y_0\mid R=c]$$
+故
+$$\begin{aligned}\text{ATE}(c)&\equiv\mathbb E[Y_1-Y_0\mid R=c]=\mathbb E[Y_1\mid R=c]-\mathbb E[Y_0\mid R=c]\\&=\lim_{r\downarrow c}\mathbb E[Y_1\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y_0\mid R=r]=\underbrace{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]}_{\text{data}}-\underbrace{\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}_{\text{data}}\end{aligned}\tag{17.1}$$
+末式可观测，故可用非参数方法估计。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<p>Basically, a person whose value \(R\) is equal to or even just slightly above the cutoff value \(c\) will get treatment, whereas a person whose value \(R\) is just a bit lower the cutoff \(c\) won't get treatment. People slightly below and people slightly above the cutoff value \(c\) are just the same group of people. So, if we assume that cutoff value deterministically (with probability one) decides treatment, then treatment \(D\) is as good as randomly assigned in the small neighborhood around \(R=c\), which enables us to identify the causal ATE of treatment in that small neighborhood. This is the <strong>sharp design</strong>.</p>
+<h3 id="17-2-1-definition">17.2.1 Definition</h3>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 17.1 (Sharp regression discontinuity)
+We say that it is a <strong>sharp regression discontinuity design</strong> if the treatment \(D\) changes deterministically from 0 to 1 when \(R\) crosses \(c\), i.e.
+$$\mathbb P(D=1\mid R=r)=\mathbf 1\{R\ge c\}$$
+or equivalently
+$$\mathbb P(D=1\mid R=r)=\begin{cases}1&\text{if }r\ge c\\0&\text{if }r<c\end{cases}$$</p></div>
+<h3 id="17-2-2-relationship-with-selection-on-observables">17.2.2 Relationship with "Selection on Observables"</h3>
+<p>Sharp design implies selection on observables holds for \(R\), i.e. \((Y_0,Y_1)\perp D\mid R\) since \(D\) is deterministically chosen given \(R\). So we can identify \(\text{ATE}(r)\) in some cell \(R=r\). However, the overlapping (or common support) condition is violated except for \(R=c\), because for any \(R\ne c\) there is only one type existing (either treated or untreated), but at \(R=c\) we have almost overlapping condition since \(Y_0\) and \(Y_1\) are continuous in \(R\) at \(R=c\), which is also why we do need the smoothness assumption. So, we can only identify the \(\text{ATE}(r)\) at \(R=c\).</p>
+<h3 id="17-2-3-identification-with-sharp-design">17.2.3 Identification with Sharp Design</h3>
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 17.1
+Under sharp design defined in 17.1, if we assume that \(\mathbb E[Y_1\mid R=r]\) and \(\mathbb E[Y_0\mid R=r]\) are continuous in \(R\) at \(R=c\) where \(c\) is the cutoff value, then we can point identify
+$$\text{ATE}(c)\equiv\mathbb E[Y_1-Y_0\mid R=c]=\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]$$</p>
+<p>[!note]- Proof
+By definition of sharp design,
+$$\lim_{r\downarrow c}\underbrace{\mathbb E[Y\mid R=r]}_{\text{data}}=\lim_{r\downarrow c}\mathbb E[Y_1\mid R=r],\qquad\lim_{r\uparrow c}\underbrace{\mathbb E[Y\mid R=r]}_{\text{data}}=\lim_{r\uparrow c}\mathbb E[Y_0\mid R=r]$$
+By continuity of \(\mathbb E[Y_1\mid R=r]\) and \(\mathbb E[Y_0\mid R=r]\) in \(R\) at \(R=c\),
+$$\lim_{r\downarrow c}\mathbb E[Y_1\mid R=r]=\mathbb E[Y_1\mid R=c],\qquad\lim_{r\uparrow c}\mathbb E[Y_0\mid R=r]=\mathbb E[Y_0\mid R=c]$$
+so
+$$\begin{aligned}\text{ATE}(c)&\equiv\mathbb E[Y_1-Y_0\mid R=c]=\mathbb E[Y_1\mid R=c]-\mathbb E[Y_0\mid R=c]\\&=\lim_{r\downarrow c}\mathbb E[Y_1\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y_0\mid R=r]=\underbrace{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]}_{\text{data}}-\underbrace{\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}_{\text{data}}\end{aligned}\tag{17.1}$$
+which is identifiable because the last line is observable, and can be estimated by non-parametric methods. \(\blacksquare\)</p></div>
+</div>
+<h2 id="17-3-fuzzy-regression-discontinuity">17.3 Fuzzy Regression Discontinuity</h2>
+<div class="lang zh">
+<p>改而假设临界值只改变处理的<strong>概率</strong>而非确定处理——这是<strong>模糊设计（fuzzy design）</strong>。可把通过临界值看作工具 \(Z=\mathbf 1\{R\ge c\}\)（\(Z=1\) 表示 \(R\ge c\)），\(c\) 的小邻域内工具如随机分配般好（同组人）。于是可识别该小邻域内通过 \(c\) 这一工具的<strong>顺从者的 LATE</strong>。</p>
+<h3 id="17-3-1-definition">17.3.1 Definition</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 17.2（模糊断点回归）
+称为<strong>模糊断点回归设计</strong>，若 \(\mathbb P(D=1\mid R=r)\) 在 \(c\) 处间断，即
+$$\lim_{r\uparrow c}\mathbb P(D=1\mid R=r)=p,\qquad\lim_{r\downarrow c}\mathbb P(D=1\mid R=r)=q,\quad q>p$$</p>
+<p>[!tip] 注记 17.2
+模糊设计比锐设计更一般，因只需间断、无需从 0 跳到 1。</p></div>
+<h3 id="17-3-2-relationship-with-iv-designs">17.3.2 Relationship with "IV Designs"</h3>
+<p>模糊设计蕴含 IV 的条件独立，即 \((Y_0,Y_1)\perp Z\mid R\)，因 \(Z\) 给定 \(R\) 时确定。故可识别该工具在 \(R=c\) 处顺从者的 LATE。</p>
+<h3 id="17-3-3-identification-with-fuzzy-design">17.3.3 Identification with Fuzzy Design</h3>
+<ul>
+<li>定义工具 \(Z=\mathbf 1\{R\ge c\}\)。</li>
+<li>假设单调性（无违抗者），即 \(D_1\ge D_0\)。</li>
+<li>记类型 \(T=t\in\{\text{at},\text{nt},\text{cp}\}\)，"at" 恒取者、"nt" 恒不取者、"cp" 顺从者。</li>
+</ul>
+<div class="callout"><div class="callout-title">Important</div><p>命题 17.2
+在定义 17.2 的模糊设计下，若假设对 \(t\in\{\text{at},\text{nt},\text{cp}\}\)，\(\mathbb E[Y_1\mid R=r,T=t]\)、\(\mathbb E[Y_0\mid R=r,T=t]\)、\(\mathbb E[D_1\mid R=r,T=t]\)、\(\mathbb E[D_0\mid R=r,T=t]\) 在 \(R\) 上、在 \(R=c\)（临界值）处连续，则可点识别 \(R\to c\) 极限处的 Wald 估计量定义的 LATE，即
+$$\begin{aligned}\text{LATE}&\equiv\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]\\&=\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}\end{aligned}\tag{17.2}$$</p>
+<p>[!note]- 证明
+回忆可写 \(Y=Y_0+D(Y_1-Y_0)\)（17.3）。先看分子，把 \(Y\) 用 (17.3) 代入：
+$$\begin{aligned}&\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]\\=&\lim_{r\downarrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]-\lim_{r\uparrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]+\underbrace{\lim_{r\downarrow c}\mathbb E[Y_0\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y_0\mid R=r]}_{=0\text{ by continuity}}\\=&\lim_{r\downarrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]-\lim_{r\uparrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]\end{aligned}\tag{17.4}$$
+第一项（\(r\downarrow c\)，\(Z=1\) 故受处理者是顺从者与恒取者两互斥组）：
+$$\lim_{r\downarrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]=\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]\mathbb P(T=\text{cp}\mid R=c)+\mathbb E[Y_1-Y_0\mid R=c,T=\text{at}]\mathbb P(T=\text{at}\mid R=c)\tag{17.5}$$
+第二项（\(r\uparrow c\)，\(Z=0\) 故受处理者只有恒取者）：
+$$\lim_{r\uparrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]=\mathbb E[Y_1-Y_0\mid R=c,T=\text{at}]\mathbb P(T=\text{at}\mid R=c)\tag{17.6}$$
+相减得分子
+$$\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]=\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]\mathbb P(T=\text{cp}\mid R=c)\tag{17.7}$$
+分母：用 \(D=D_0+Z(D_1-D_0)\)（17.8），代入并按类型展开、用连续性，
+$$\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]=\mathbb E[D_1-D_0\mid R=c]\overset{\text{mono}}{=}\mathbb P(D_1>D_0\mid R=c)=\mathbb P(T=\text{cp}\mid R=c)\tag{17.9}$$
+故 (17.2) 等于分子 (17.7) 除以分母 (17.9)：
+$$\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}=\frac{\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]\mathbb P(T=\text{cp}\mid R=c)}{\mathbb P(T=\text{cp}\mid R=c)}=\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]$$
+注意 \(\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}\) 可由非参数方法估计。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<p>We instead assume that cutoff value only shifts the probability of treatment instead of determines treatment, which is <strong>fuzzy design</strong>, then we can think that passing cutoff can be an instrument \(Z=\mathbf 1\{R\ge c\}\) for treatment \(D\), and the instrument is as good as randomly assigned in the small neighborhood around \(R=c\) because there they are considered the same group of people. Then, we will be able to identify the LATE of the compliers to that instrument in the small neighborhood around \(R=c\).</p>
+<h3 id="17-3-1-definition">17.3.1 Definition</h3>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 17.2 (Fuzzy regression discontinuity)
+We say that it is a <strong>fuzzy regression discontinuity design</strong> if \(\mathbb P(D=1\mid R=r)\) is discontinuous at \(c\), i.e.
+$$\lim_{r\uparrow c}\mathbb P(D=1\mid R=r)=p,\qquad\lim_{r\downarrow c}\mathbb P(D=1\mid R=r)=q,\quad q>p$$</p>
+<p>[!tip] Remark 17.2
+Fuzzy design is a more general assumption than a sharp design, since discontinuity is enough, and there is no need to jump from 0 to 1 in a fuzzy design.</p></div>
+<h3 id="17-3-2-relationship-with-iv-designs">17.3.2 Relationship with "IV Designs"</h3>
+<p>Fuzzy design implies conditional independence for IV, i.e. \((Y_0,Y_1)\perp Z\mid R\) since \(Z\) is deterministically chosen given \(R\). So we can identify LATE for compliers of this instrument, which is at \(R=c\).</p>
+<h3 id="17-3-3-identification-with-fuzzy-design">17.3.3 Identification with Fuzzy Design</h3>
+<ul>
+<li>Define instrument \(Z=\mathbf 1\{R\ge c\}\).</li>
+<li>Assume monotonicity (no defiers), i.e. \(D_1\ge D_0\).</li>
+<li>Denote type \(T=t\in\{\text{at},\text{nt},\text{cp}\}\), where "at" stands for always takers, "nt" for never takers, and "cp" for compliers.</li>
+</ul>
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 17.2
+Under fuzzy design defined in 17.2, if we assume that for \(t\in\{\text{at},\text{nt},\text{cp}\}\), \(\mathbb E[Y_1\mid R=r,T=t]\), \(\mathbb E[Y_0\mid R=r,T=t]\), \(\mathbb E[D_1\mid R=r,T=t]\) and \(\mathbb E[D_0\mid R=r,T=t]\) are continuous in \(R\) at \(R=c\) where \(c\) is the cutoff value, then we can point identify LATE with the limiting Wald estimand as \(R\to c\), i.e.
+$$\begin{aligned}\text{LATE}&\equiv\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]\\&=\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}\end{aligned}\tag{17.2}$$</p>
+<p>[!note]- Proof
+Recall that we can write \(Y=Y_0+D(Y_1-Y_0)\) (17.3). First the numerator, substituting \(Y\) via (17.3):
+$$\begin{aligned}&\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]\\=&\lim_{r\downarrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]-\lim_{r\uparrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]+\underbrace{\lim_{r\downarrow c}\mathbb E[Y_0\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y_0\mid R=r]}_{=0\text{ by continuity}}\\=&\lim_{r\downarrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]-\lim_{r\uparrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]\end{aligned}\tag{17.4}$$
+The first term (\(r\downarrow c\), \(Z=1\) so the treated are the two mutually exclusive groups compliers and always takers):
+$$\lim_{r\downarrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]=\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]\mathbb P(T=\text{cp}\mid R=c)+\mathbb E[Y_1-Y_0\mid R=c,T=\text{at}]\mathbb P(T=\text{at}\mid R=c)\tag{17.5}$$
+The second term (\(r\uparrow c\), \(Z=0\) so the treated are only always takers):
+$$\lim_{r\uparrow c}\mathbb E[D(Y_1-Y_0)\mid R=r]=\mathbb E[Y_1-Y_0\mid R=c,T=\text{at}]\mathbb P(T=\text{at}\mid R=c)\tag{17.6}$$
+Subtracting gives the numerator
+$$\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]=\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]\mathbb P(T=\text{cp}\mid R=c)\tag{17.7}$$
+Denominator: using \(D=D_0+Z(D_1-D_0)\) (17.8), substituting, expanding by type and using continuity,
+$$\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]=\mathbb E[D_1-D_0\mid R=c]\overset{\text{mono}}{=}\mathbb P(D_1>D_0\mid R=c)=\mathbb P(T=\text{cp}\mid R=c)\tag{17.9}$$
+So (17.2) equals the numerator (17.7) divided by the denominator (17.9):
+$$\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}=\frac{\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]\mathbb P(T=\text{cp}\mid R=c)}{\mathbb P(T=\text{cp}\mid R=c)}=\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]$$
+Note that \(\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}\) is estimable by non-parametric methods. \(\blacksquare\)</p></div>
+</div>
+<h2 id="17-4-interpretation-and-extrapolation">17.4 Interpretation and Extrapolation</h2>
+<h3 id="17-4-1-interpretation">17.4.1 Interpretation</h3>
+<div class="lang zh">
+<ul>
+<li><strong>锐断点回归</strong>识别
+$$\text{ATE}(c)\equiv\mathbb E[Y_1-Y_0\mid R=c]=\underbrace{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]}_{\text{data}}-\underbrace{\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}_{\text{data}}$$
+可解读为临界值处所有个体的平均因果效应。</li>
+<li><strong>模糊断点回归</strong>识别
+$$\text{LATE}\equiv\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]=\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}$$
+可解读为临界值处顺从者（即临界值处全体中的一个子组）的平均因果效应。</li>
+<li>锐与模糊模型在我们关心临界值处人群的效应时都具政策相关性。</li>
+</ul>
+<h3 id="17-4-2-extrapolation">17.4.2 Extrapolation</h3>
+<p>有两大类外推：
+- 考虑 \(R=c\) 处非顺从者子组的处理效应。
+- 考虑 \(R\) 远离临界值 \(c\) 的人群的处理效应。</p>
+<p>由断点回归本质，外推很难论证。但有几种尝试：
+- Dong 和 Lewbel (2014)：估计 \(\mathbb E[Y_1\mid R]\)、\(\mathbb E[Y_0\mid R]\) 对 \(R\) 的斜率，以从阈值 \(R=c\) 向外外推。
+- Angrist 和 Rokkanen (2012)：若条件于外生协变量后回归函数变平，则可外推。</p>
+</div>
+<div class="lang en">
+<h3 id="17-4-1-interpretation">17.4.1 Interpretation</h3>
+<ul>
+<li><strong>Sharp regression discontinuity</strong> identifies
+$$\text{ATE}(c)\equiv\mathbb E[Y_1-Y_0\mid R=c]=\underbrace{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]}_{\text{data}}-\underbrace{\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}_{\text{data}}$$
+which can be interpreted as the average causal effect for all individuals at the cutoff.</li>
+<li><strong>Fuzzy regression discontinuity</strong> identifies
+$$\text{LATE}\equiv\mathbb E[Y_1-Y_0\mid R=c,T=\text{cp}]=\frac{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]-\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}{\lim_{r\downarrow c}\mathbb E[D\mid R=r]-\lim_{r\uparrow c}\mathbb E[D\mid R=r]}$$
+which can be interpreted as the average causal effect for compliers at the cutoff, who form a subgroup of all individuals at the cutoff.</li>
+<li>Both sharp and fuzzy models are policy relevant if we are interested in the effect of people at cutoff.</li>
+</ul>
+<h3 id="17-4-2-extrapolation">17.4.2 Extrapolation</h3>
+<p>There are two major types of extrapolations:
+- Consider the treatment effects for subgroups at \(R=c\) other than compliers.
+- Consider the treatment effects for groups whose \(R\) is far from critical value \(c\).</p>
+<p>Extrapolations are very hard to justify because of the nature of regression discontinuity. But there are a few attempts:
+- Dong and Lewbel (2014): estimate slopes of \(\mathbb E[Y_1\mid R]\) and \(\mathbb E[Y_0\mid R]\) w.r.t. \(R\) to extrapolate away from threshold \(R=c\).
+- Angrist and Rokkanen (2012): it is possible to extrapolate if conditional on exogenous covariates and conditional on flat regression functions.</p>
+</div>
+<h2 id="17-5-estimation">17.5 Estimation</h2>
+<div class="lang zh">
+<p>估计断点回归模型时，多数情形不能只用临界值处的数据，原因有二：
+1. 没有恰好 \(R=c\) 的数据点。
+2. \(R\approx c\) 的数据点太少。</p>
+<p>故须用临界值附近的数据估计。因此最好考察推断对带宽选择的敏感性：若推断不随不同带宽 \(h\) 显著变化，则称推断对带宽变化稳健。</p>
+<h3 id="17-5-1-estimation-for-sharp-regression-discontinuity">17.5.1 Estimation for Sharp Regression Discontinuity</h3>
+<p>基本假设 \(\mathbb E[Y_1\mid R=r]\)、\(\mathbb E[Y_0\mid R=r]\) 在 \(R\) 上连续。设真模型
+$$Y=\alpha+\tau D+f(R)+\varepsilon\tag{17.10}$$
+\(f(R)\) 为连续函数，蕴含 \(\mathbb E[Y_1\mid R=r]=\alpha+\tau+f(R)\)、\(\mathbb E[Y_0\mid R=r]=\alpha+f(R)\)。锐设计 \(D=\mathbf 1\{R\ge c\}\)，\(f(\cdot)\) 未知。一个自然起点是在 \(R=c\) 小邻域内用线性形式估 (17.10)：
+$$Y=\alpha+\tau D+\beta(R-c)+\gamma D(R-c)+\varepsilon\tag{17.11}$$
+\(R\in[c-h,c+h]\)，\(h>0\) 为带宽。\(\tau\) 正确识别 \(\text{ATE}(c)\equiv\mathbb E[Y_1-Y_0\mid R=c]\)，因
+$$\begin{aligned}\mathbb E[Y_1-Y_0\mid R=c]&=\underbrace{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]}_{\text{data}}-\underbrace{\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}_{\text{data}}\\&=[\alpha+\tau\cdot1+\beta(c-c)+\gamma D(c-c)]-[\alpha+\tau\cdot0+\beta(c-c)+\gamma D(c-c)]=\tau\end{aligned}$$</p>
+<h3 id="17-5-2-estimation-for-fuzzy-regression-discontinuity">17.5.2 Estimation for Fuzzy Regression Discontinuity</h3>
+<p>把 (17.11) 推广到模糊情形：
+$$Y=\alpha_l+\tau D+\beta_l(R-c)\times\mathbf 1\{R<c\}+\beta_r(R-c)\times\mathbf 1\{R\ge c\}+\varepsilon$$
+\(D\) 为内生变量。可用 TSLS 估 \(\tau\)：定义工具 \(Z=\mathbf 1\{R\ge c\}\)，做首阶段回归 \(D=\kappa+\phi Z+u\) 与约简形式回归
+$$Y=\alpha_l+\tau Z+\beta_l(R-c)(1-Z)+\beta_r(R-c)Z+\varepsilon$$
+\(R\in[c-h,c+h]\)。如前所证，TSLS 估计量正确识别工具 \(Z\) 的 LATE。</p>
+</div>
+<div class="lang en">
+<p>When estimating regression discontinuity models, in most cases we cannot only use data at the cut-off because of two reasons:
+1. There is no data point with exactly \(R=c\).
+2. There is too few data points with \(R\approx c\).</p>
+<p>So, we have to use data points near the cut-off for estimation. Therefore, it's better to investigate the sensitivity of the inferences to bandwidth choice. If the inference does not change dramatically with different bandwidth \(h\), then we say the inference is robust to variations in bandwidths.</p>
+<h3 id="17-5-1-estimation-for-sharp-regression-discontinuity">17.5.1 Estimation for Sharp Regression Discontinuity</h3>
+<p>The basic assumption is that \(\mathbb E[Y_1\mid R=r]\) and \(\mathbb E[Y_0\mid R=r]\) are continuous in \(R\). Suppose the true model is
+$$Y=\alpha+\tau D+f(R)+\varepsilon\tag{17.10}$$
+where \(f(R)\) is a continuous function, implying \(\mathbb E[Y_1\mid R=r]=\alpha+\tau+f(R)\) and \(\mathbb E[Y_0\mid R=r]=\alpha+f(R)\). In the sharp design case, \(D=\mathbf 1\{R\ge c\}\), but \(f(\cdot)\) is unknown. A natural start is to estimate (17.10) with a linear form in the small neighborhood around \(R=c\):
+$$Y=\alpha+\tau D+\beta(R-c)+\gamma D(R-c)+\varepsilon\tag{17.11}$$
+for \(R\in[c-h,c+h]\) where \(h>0\) is the bandwidth. \(\tau\) correctly identifies \(\text{ATE}(c)\equiv\mathbb E[Y_1-Y_0\mid R=c]\) since
+$$\begin{aligned}\mathbb E[Y_1-Y_0\mid R=c]&=\underbrace{\lim_{r\downarrow c}\mathbb E[Y\mid R=r]}_{\text{data}}-\underbrace{\lim_{r\uparrow c}\mathbb E[Y\mid R=r]}_{\text{data}}\\&=[\alpha+\tau\cdot1+\beta(c-c)+\gamma D(c-c)]-[\alpha+\tau\cdot0+\beta(c-c)+\gamma D(c-c)]=\tau\end{aligned}$$</p>
+<h3 id="17-5-2-estimation-for-fuzzy-regression-discontinuity">17.5.2 Estimation for Fuzzy Regression Discontinuity</h3>
+<p>We can extend (17.11) to the fuzzy case, which becomes
+$$Y=\alpha_l+\tau D+\beta_l(R-c)\times\mathbf 1\{R<c\}+\beta_r(R-c)\times\mathbf 1\{R\ge c\}+\varepsilon$$
+where \(D\) is the endogenous variable. We can estimate \(\tau\) by TSLS estimator. Define instrument \(Z=\mathbf 1\{R\ge c\}\), then do both the first stage regression \(D=\kappa+\phi Z+u\) and the reduced form regression
+$$Y=\alpha_l+\tau Z+\beta_l(R-c)(1-Z)+\beta_r(R-c)Z+\varepsilon$$
+for \(R\in[c-h,c+h]\). As we have shown before, the TSLS estimator correctly identifies the LATE to instrument \(Z\).</p>
+</div>
+<h3 id="17-5-3-non-parametric-methods">17.5.3 Non-parametric Methods</h3>
+<div class="lang zh">
+<p>§17.5.1、§17.5.2 用的估计法限于 \(R=c\) 的极小邻域，本质即非参数局部线性回归的思想。非参数法有两类：局部常数（核）回归与局部线性回归。</p>
+<p><strong>锐设计。</strong>
+- <strong>局部常数回归</strong>：
+$$\hat\mu_l(c)=\frac{\sum_{i:c-h<R<c}Y_i}{\sum_{i:c-h<R<c}1},\qquad\hat\mu_r(c)=\frac{\sum_{i:c\le R<c+h}Y_i}{\sum_{i:c\le R<c+h}1}$$
+$$\hat\tau_{\text{Sharp RD}}^{\text{LC}}=\hat\mu_r(c)-\hat\mu_l(c)=\frac{\sum_{i:c\le R<c+h}Y_i}{\sum_{i:c\le R<c+h}1}-\frac{\sum_{i:c-h<R<c}Y_i}{\sum_{i:c-h<R<c}1}$$
+- <strong>局部线性回归</strong>：
+$$(\hat a_l,\hat\beta_l)=\arg\max_{(\alpha_l,\beta_l)}\sum_{i:c-h<R<c}(Y_i-\alpha_l-\beta_l(R-c))^2$$
+$$(\hat a_r,\hat\beta_r)=\arg\max_{(\alpha_r,\beta_r)}\sum_{i:c\le R<c+h}(Y_i-\alpha_r-\beta_r(R-c))^2$$
+则 \(\hat\mu_l(c)=\hat a_l+\hat\beta_l(c-c)=\hat a_l\)、\(\hat\mu_r(c)=\hat a_r\)，故 \(\hat\tau_{\text{Sharp RD}}^{\text{LL}}=\hat\mu_r(c)-\hat\mu_l(c)=\hat a_r-\hat a_l\)。</p>
+<p><strong>模糊设计。</strong>
+- <strong>局部常数回归</strong>：对 \(Y\) 与 \(D\) 各取左右侧局部均值 \(\hat\mu_{Yl},\hat\mu_{Yr},\hat\mu_{Dl},\hat\mu_{Dr}\)，则
+$$\hat\tau_{\text{Fuzzy RD}}^{\text{LC}}=\frac{\hat\mu_{Yr}(c)-\hat\mu_{Yl}(c)}{\hat\mu_{Dr}(c)-\hat\mu_{Dl}(c)}=\frac{\frac{\sum_{i:c\le R<c+h}Y_i}{\sum_{i:c\le R<c+h}1}-\frac{\sum_{i:c-h<R<c}Y_i}{\sum_{i:c-h<R<c}1}}{\frac{\sum_{i:c\le R<c+h}D_i}{\sum_{i:c\le R<c+h}1}-\frac{\sum_{i:c-h<R<c}D_i}{\sum_{i:c-h<R<c}1}}$$
+- <strong>局部线性回归</strong>：对 \(Y\)、\(D\) 各在左右侧跑局部线性回归得 \(\hat\mu_{Yl},\hat\mu_{Yr},\hat\mu_{Dl},\hat\mu_{Dr}\)，则
+$$\hat\tau_{\text{Fuzzy RD}}^{\text{LL}}=\frac{\hat\mu_{Yr}(c)-\hat\mu_{Yl}(c)}{\hat\mu_{Dr}(c)-\hat\mu_{Dl}(c)}=\frac{\hat a_{Yr}-\hat a_{Yl}}{\hat a_{Dr}-\hat a_{Dl}}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 17.3
+局部线性回归函数中我们假设了线性形式。也可假设多项式形式如 \(Y=\alpha_0+\alpha_1x+\alpha_2x^2+\dots+\varepsilon\)。多项式阶越高、估计越不偏，但因系数更多、估计方差越高。故回归函数形式的设定也是偏差—方差权衡（详见 §15.1 非参数方法）。</p></div>
+</div>
+<div class="lang en">
+<p>The estimation methods used in §17.5.1 and §17.5.2 are constrained in very small neighborhood of \(R=c\), which is basically the idea of non-parametric local linear regression. For non-parametric methods, we have two types of regressions: local constant (kernel) regression and local linear regression.</p>
+<p><strong>Sharp design.</strong>
+- <strong>Local constant regression</strong>:
+$$\hat\mu_l(c)=\frac{\sum_{i:c-h<R<c}Y_i}{\sum_{i:c-h<R<c}1},\qquad\hat\mu_r(c)=\frac{\sum_{i:c\le R<c+h}Y_i}{\sum_{i:c\le R<c+h}1}$$
+$$\hat\tau_{\text{Sharp RD}}^{\text{LC}}=\hat\mu_r(c)-\hat\mu_l(c)=\frac{\sum_{i:c\le R<c+h}Y_i}{\sum_{i:c\le R<c+h}1}-\frac{\sum_{i:c-h<R<c}Y_i}{\sum_{i:c-h<R<c}1}$$
+- <strong>Local linear regression</strong>:
+$$(\hat a_l,\hat\beta_l)=\arg\max_{(\alpha_l,\beta_l)}\sum_{i:c-h<R<c}(Y_i-\alpha_l-\beta_l(R-c))^2$$
+$$(\hat a_r,\hat\beta_r)=\arg\max_{(\alpha_r,\beta_r)}\sum_{i:c\le R<c+h}(Y_i-\alpha_r-\beta_r(R-c))^2$$
+then \(\hat\mu_l(c)=\hat a_l+\hat\beta_l(c-c)=\hat a_l\), \(\hat\mu_r(c)=\hat a_r\), so \(\hat\tau_{\text{Sharp RD}}^{\text{LL}}=\hat\mu_r(c)-\hat\mu_l(c)=\hat a_r-\hat a_l\).</p>
+<p><strong>Fuzzy design.</strong>
+- <strong>Local constant regression</strong>: take left/right local means of both \(Y\) and \(D\), \(\hat\mu_{Yl},\hat\mu_{Yr},\hat\mu_{Dl},\hat\mu_{Dr}\); then
+$$\hat\tau_{\text{Fuzzy RD}}^{\text{LC}}=\frac{\hat\mu_{Yr}(c)-\hat\mu_{Yl}(c)}{\hat\mu_{Dr}(c)-\hat\mu_{Dl}(c)}=\frac{\frac{\sum_{i:c\le R<c+h}Y_i}{\sum_{i:c\le R<c+h}1}-\frac{\sum_{i:c-h<R<c}Y_i}{\sum_{i:c-h<R<c}1}}{\frac{\sum_{i:c\le R<c+h}D_i}{\sum_{i:c\le R<c+h}1}-\frac{\sum_{i:c-h<R<c}D_i}{\sum_{i:c-h<R<c}1}}$$
+- <strong>Local linear regression</strong>: run local linear regressions on each of \(Y\) and \(D\) on both sides to get \(\hat\mu_{Yl},\hat\mu_{Yr},\hat\mu_{Dl},\hat\mu_{Dr}\); then
+$$\hat\tau_{\text{Fuzzy RD}}^{\text{LL}}=\frac{\hat\mu_{Yr}(c)-\hat\mu_{Yl}(c)}{\hat\mu_{Dr}(c)-\hat\mu_{Dl}(c)}=\frac{\hat a_{Yr}-\hat a_{Yl}}{\hat a_{Dr}-\hat a_{Dl}}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 17.3
+In the local linear regression function, we assume the linear functional form. Instead, we can also assume polynomial form such as \(Y=\alpha_0+\alpha_1x+\alpha_2x^2+\dots+\varepsilon\). The more terms we add in, the less biased the estimate will be. But since we have more coefficients, the estimates will have higher variance. So, the specification of regression functional form is also a variance-bias trade-off (see more details about non-parametric methods in §15.1).</p></div>
+</div>
+<h3 id="17-5-4-bandwidth-selection">17.5.4 Bandwidth Selection</h3>
+<div class="lang zh">
+<p>如 §15.1 所述，相对大的带宽降低方差但增大偏差，故有偏差—方差权衡。以下论文讨论如何选带宽：
+- Ludwig 和 Miller (2007)：交叉验证。
+- Imbens 和 Kalyanaraman (2012)、Calonico 等 (2014)：直接插入法（plug-in rules）。Imbens-Kalyanaraman (2012) 找使估计处理效应 MSE 的一阶近似最小的带宽；Calonico 等 (2014) 加偏差修正、导出新的最优 MSE。</p>
+</div>
+<div class="lang en">
+<p>As discussed in §15.1, a relatively large bandwidth reduces variance but increases bias, so there is a variance-bias trade-off. The following papers discuss how to select bandwidth:
+- Ludwig and Miller (2007): cross validation.
+- Imbens and Kalyanaraman (2012), Calonico et al. (2014): direct plug-in rules. Imbens and Kalyanaraman (2012) find the bandwidth that minimizes a first-order approximation of the MSE of the estimated treatment effect; Calonico et al. (2014) add bias correction and derive a new optimal MSE.</p>
+</div>
+<h3 id="17-5-5-some-advice-on-how-to-use-regression-discontinuity">17.5.5 Some Advice on How to Use Regression Discontinuity</h3>
+<div class="lang zh">
+<p>断点回归的关键是：处理（锐设计）或工具（模糊设计）在临界值附近如随机分配般好。故为拟合 RD 模型，数据应呈现以下特征：
+- 预先决定的特征 \(X\)（即协变量）在临界值两侧应有相同分布。
+- 运行变量 \(R\) 的密度应跨临界值平滑变化。
+- 处理 \(D\) 的密度应跨临界值间断变化。</p>
+<p>据此，做 RD 时典型要思考的事：
+- <strong>论证设计有效性</strong>：极重要的是没有个体能操纵运行变量 \(R\)，故须论证为何如此。
+- <strong>检验设计有效性</strong>（图形与正式检验以下三点）：
+  - 协变量 \(X\) 的间断：\(R=c\) 附近无间断则支持 RD。
+  - 运行变量 \(R\) 分布的间断：\(R=c\) 附近无间断则支持 RD。
+  - 结果在 \(R=c\) 与 \(R\ne c\) 处的间断：\(R=c\) 附近有间断支持 RD；若 \(R\ne c\) 处也见间断，则可能有多个间断。
+- <strong>展示 RD 估计的稳健性</strong>（关于带宽选择、\(f(R)\) 的设定）：对二者低敏感即支持非参数估计的稳健性。</p>
+</div>
+<div class="lang en">
+<p>The key in regression discontinuity is that treatment (sharp design) or instrument (fuzzy design) are as good as randomly assigned near the cut-off. So, in order to fit an RD model, the data should display the following features:
+- The pre-determined characteristics \(X\) (i.e. covariates) should have the same distribution on both sides near the cut-off.
+- The density w.r.t. running variable \(R\) should change smoothly across the cut-off.
+- The density w.r.t. treatment \(D\) should change discontinuously across the cut-off.</p>
+<p>Accordingly, the following are the typical things to think about when doing RD:
+- <strong>Motivate validity of design</strong>: it is very important that no individuals can manipulate the running variable \(R\), so we need to argue why this is the case.
+- <strong>Test the validity of design</strong> (graphically and formally check the following):
+  - Discontinuity in covariates \(X\): no discontinuity around \(R=c\) justifies RD.
+  - Discontinuity in the distribution of running variable \(R\): no discontinuity around \(R=c\) justifies RD.
+  - Discontinuity in outcomes at \(R=c\) and at \(R\ne c\): discontinuity around \(R=c\) justifies RD; if at \(R\ne c\) we also see discontinuity, then there might be multiple discontinuities.
+- <strong>Show robustness of RD estimation</strong> w.r.t. bandwidth choice and specification of \(f(R)\): low sensitivity to both justifies the non-parametric estimation robustness.</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#17-1-setup">17.1 Setup</a></li>
+        <li><a href="#17-2-sharp-regression-discontinuity">17.2 Sharp Regression Discontinuity</a></li>
+          <li><a href="#17-2-1-definition">17.2.1 Definition</a></li>
+          <li><a href="#17-2-2-relationship-with-selection-on-observables">17.2.2 Relationship with "Selection on Observables"</a></li>
+          <li><a href="#17-2-3-identification-with-sharp-design">17.2.3 Identification with Sharp Design</a></li>
+          <li><a href="#17-2-1-definition">17.2.1 Definition</a></li>
+          <li><a href="#17-2-2-relationship-with-selection-on-observables">17.2.2 Relationship with "Selection on Observables"</a></li>
+          <li><a href="#17-2-3-identification-with-sharp-design">17.2.3 Identification with Sharp Design</a></li>
+        <li><a href="#17-3-fuzzy-regression-discontinuity">17.3 Fuzzy Regression Discontinuity</a></li>
+          <li><a href="#17-3-1-definition">17.3.1 Definition</a></li>
+          <li><a href="#17-3-2-relationship-with-iv-designs">17.3.2 Relationship with "IV Designs"</a></li>
+          <li><a href="#17-3-3-identification-with-fuzzy-design">17.3.3 Identification with Fuzzy Design</a></li>
+          <li><a href="#17-3-1-definition">17.3.1 Definition</a></li>
+          <li><a href="#17-3-2-relationship-with-iv-designs">17.3.2 Relationship with "IV Designs"</a></li>
+          <li><a href="#17-3-3-identification-with-fuzzy-design">17.3.3 Identification with Fuzzy Design</a></li>
+        <li><a href="#17-4-interpretation-and-extrapolation">17.4 Interpretation and Extrapolation</a></li>
+          <li><a href="#17-4-1-interpretation">17.4.1 Interpretation</a></li>
+          <li><a href="#17-4-2-extrapolation">17.4.2 Extrapolation</a></li>
+          <li><a href="#17-4-1-interpretation">17.4.1 Interpretation</a></li>
+          <li><a href="#17-4-2-extrapolation">17.4.2 Extrapolation</a></li>
+        <li><a href="#17-5-estimation">17.5 Estimation</a></li>
+          <li><a href="#17-5-1-estimation-for-sharp-regression-discontinuity">17.5.1 Estimation for Sharp Regression Discontinuity</a></li>
+          <li><a href="#17-5-2-estimation-for-fuzzy-regression-discontinuity">17.5.2 Estimation for Fuzzy Regression Discontinuity</a></li>
+          <li><a href="#17-5-1-estimation-for-sharp-regression-discontinuity">17.5.1 Estimation for Sharp Regression Discontinuity</a></li>
+          <li><a href="#17-5-2-estimation-for-fuzzy-regression-discontinuity">17.5.2 Estimation for Fuzzy Regression Discontinuity</a></li>
+          <li><a href="#17-5-3-non-parametric-methods">17.5.3 Non-parametric Methods</a></li>
+          <li><a href="#17-5-4-bandwidth-selection">17.5.4 Bandwidth Selection</a></li>
+          <li><a href="#17-5-5-some-advice-on-how-to-use-regression-discontinuity">17.5.5 Some Advice on How to Use Regression Discontinuity</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7. Present Value Decomposition – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>7. Present Value Decomposition</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 30, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">现值分解</span><span class="lang en">Present Value Decomposition</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">收益可预测性</span><span class="lang en">Return Predictability</span></span>
+        
+        
+        
+        
+        <span class="tag">Campbell-Shiller</span>
+        
+        
+        
+        
+        <span class="tag">VAR</span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章用<strong>现值分解</strong>把"价格-红利比 (price-dividend ratio) 为何波动"这个问题拆开。核心工具是 <strong>Campbell–Shiller 对数线性分解</strong>：把价格-红利比恒等地写成未来<strong>红利增长（现金流）</strong>与未来<strong>收益（贴现率）</strong>两部分的折现和。实证发现：红利增长几乎不可预测，而<strong>收益高度可预测</strong>——所以价格-红利比的波动主要反映<strong>预期收益（贴现率）的变动</strong>，而非现金流。随后讨论<strong>预测回归</strong>与 <strong>Stambaugh 有限样本偏差修正</strong>，再用<strong>移动平均 / VAR</strong> 框架把各冲击的脉冲响应分解为现金流部分与收益部分，并给出一个完整的幂效用 VAR 算例。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter uses <strong>present-value decomposition</strong> to take apart the question "why does the price-dividend ratio move?" The key tool is the <strong>Campbell–Shiller log-linear decomposition</strong>: write the price-dividend ratio identically as the discounted sum of future <strong>dividend growth (cash flow)</strong> and future <strong>returns (discount rates)</strong>. Empirically, dividend growth is nearly unpredictable while <strong>returns are highly predictable</strong> — so price-dividend ratio movements mainly reflect <strong>variation in expected returns (discount rates)</strong>, not cash flows. We then cover <strong>predictive regressions</strong> and the <strong>Stambaugh finite-sample bias correction</strong>, and use a <strong>moving-average / VAR</strong> framework to split each shock's impulse responses into a cash-flow part and a return part, ending with a full power-utility VAR worked example.</p></div>
+</div>
+<h2 id="7-1-return-predictability">7.1 Return Predictability</h2>
+<h3 id="7-1-1-the-campbell-shiller-decomposition">7.1.1 The Campbell-Shiller Decomposition</h3>
+<div class="lang zh">
+<p>回忆 \(t+1\) 期总收益 \(R_{t+1}\equiv\dfrac{P_{t+1}+D_{t+1}}{P_t}\)，整理为</p>
+</div>
+<div class="lang en">
+<p>Recall the period-\(t+1\) gross return \(R_{t+1}\equiv\dfrac{P_{t+1}+D_{t+1}}{P_t}\), rearranged as</p>
+</div>
+<p>$$R_{t+1}=\frac{D_{t+1}}{D_t}\cdot\frac{1+\frac{P_{t+1}}{D_{t+1}}}{\frac{P_t}{D_t}}.\tag{7.1}$$</p>
+<div class="lang zh">
+<p>记小写为对数：\(r_{t+1}=\ln R_{t+1}\)，价格-红利比的对数 \(z_t\equiv\ln\frac{P_t}{D_t}=p_t-d_t\)。取对数得</p>
+</div>
+<div class="lang en">
+<p>Lower case denotes logs: \(r_{t+1}=\ln R_{t+1}\), and the log price-dividend ratio \(z_t\equiv\ln\frac{P_t}{D_t}=p_t-d_t\). Taking logs,</p>
+</div>
+<p>$$r_{t+1}=d_{t+1}-d_t+\ln\big(1+e^{z_{t+1}}\big)-z_t.\tag{7.2}$$</p>
+<div class="lang zh">
+<p>对 (7.2) 在 \(\bar z\) 处对 \(z_{t+1}\) 做<strong>一阶线性近似</strong>，得 <strong>Campbell–Shiller 分解</strong>：</p>
+</div>
+<div class="lang en">
+<p>A <strong>first-order linear approximation</strong> of (7.2) in \(z_{t+1}\) around \(\bar z\) gives the <strong>Campbell–Shiller decomposition</strong>:</p>
+</div>
+<p>$$r_{t+1}\approx\kappa_0+\kappa_1 p_{t+1}+(1-\kappa_1)d_{t+1}-p_t,\qquad \kappa_1=\frac{e^{\bar z}}{1+e^{\bar z}},\quad \kappa_0=\ln(1+e^{\bar z})-\kappa_1\bar z.\tag{7.3}$$</p>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 7.1。</strong> (7.3) 把 \(r_{t+1}\) 写成随机变量 \(d_{t+1},p_{t+1}\) 与已实现的 \(p_t\) 的函数。这<strong>不是</strong>说我们已知未实现的 \(d_{t+1},p_{t+1}\)；它只是一个必须成立的<strong>恒等式</strong>，\(r_{t+1}\) 本身也是随机变量。</p></div>
+<p>把 (7.3) 改写成关于 \(p_t\) 的方程 (7.4)，并向前递归展开成<strong>伸缩和 (telescope sum)</strong> (7.5)：</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Remark 7.1.</strong> (7.3) writes \(r_{t+1}\) as a function of the random \(d_{t+1},p_{t+1}\) and the realized \(p_t\). This does <strong>not</strong> say we already know the unrealized \(d_{t+1},p_{t+1}\); it is just an <strong>identity</strong> that must hold, and \(r_{t+1}\) is itself random.</p></div>
+<p>Rewrite (7.3) as an equation for \(p_t\) (7.4) and iterate forward into a <strong>telescope sum</strong> (7.5):</p>
+</div>
+<p>$$p_t-d_t=-r_{t+1}+\kappa_0+\kappa_1 p_{t+1}+(1-\kappa_1)d_{t+1}.\tag{7.4}$$</p>
+<p>$$p_t-d_t=\frac{\kappa_0}{1-\kappa_1}+\sum_{j=0}^\infty\kappa_1^j\big[(d_{t+1+j}-d_{t+j})-r_{t+1+j}\big],\tag{7.5}$$</p>
+<div class="lang zh">
+<p>需要<strong>横截性条件 (transversality condition)</strong> \(\lim_{T\to\infty}\kappa_1^T(p_{t+T}-d_{t+T})=0\)，即价格中<strong>无泡沫 (no bubble)</strong>。在 \(t\) 期取条件期望 (7.6)、(7.7)：</p>
+</div>
+<div class="lang en">
+<p>This requires the <strong>transversality condition</strong> \(\lim_{T\to\infty}\kappa_1^T(p_{t+T}-d_{t+T})=0\), i.e. <strong>no bubble</strong> in prices. Taking the period-\(t\) conditional expectation (7.6), (7.7):</p>
+</div>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{pv1}{\ln\frac{P_t}{D_t}} = \frac{\kappa_0}{1-\kappa_1} + \cssId{pv2}{\mathbb E_t\!\Big[\sum_{j=0}^\infty\kappa_1^j\ln\frac{D_{t+1+j}}{D_{t+j}}\Big]} - \cssId{pv3}{\mathbb E_t\!\Big[\sum_{j=0}^\infty\kappa_1^j\ln R_{t+1+j}\Big]}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="pv1"><span class="mathanno-num">1</span><span class="lang zh">对数价格-红利比（要解释其波动）</span><span class="lang en">Log price-dividend ratio (whose variation we explain)</span></div><div class="mathanno-card" data-target="pv2"><span class="mathanno-num">2</span><span class="lang zh">第 1 部分：未来红利增长（现金流）</span><span class="lang en">Part 1: future dividend growth (cash flow)</span></div><div class="mathanno-card" data-target="pv3"><span class="mathanno-num">3</span><span class="lang zh">第 2 部分：未来收益（贴现率）</span><span class="lang en">Part 2: future returns (discount rates)</span></div></aside><svg class="mathanno-lines"></svg></div>
+
+<div class="lang zh">
+<p>实证上 \(\ln\frac{D_{t+1+j}}{D_{t+j}}\) 几乎为零（红利增长很平滑），所以第 1 部分近似为常数。于是当价格-红利比变动时，第 1 部分（现金流）几乎不动，<strong>必然是第 2 部分（人们对未来收益的预期）在变</strong>。这就是"贴现率变动"主导价格波动的核心结论。</p>
+</div>
+<div class="lang en">
+<p>Empirically \(\ln\frac{D_{t+1+j}}{D_{t+j}}\) is almost zero (dividend growth is smooth), so Part 1 is nearly constant. Thus when the price-dividend ratio moves, Part 1 (cash flow) barely changes, so <strong>it must be Part 2 (people's expectation of future returns) that changes</strong>. This is the central conclusion that "discount-rate variation" drives price movements.</p>
+</div>
+<h3 id="7-1-2-predictive-regression-and-stambaugh-bias-correction">7.1.2 Predictive Regression and Stambaugh-Bias Correction</h3>
+<div class="lang zh">
+<p>把 (7.6) 写成 (7.8)（\(\rho_j=\kappa_1^j\)）：</p>
+</div>
+<div class="lang en">
+<p>Write (7.6) as (7.8) (with \(\rho_j=\kappa_1^j\)):</p>
+</div>
+<p>$$p_t-d_t=\kappa+\mathbb E_t\!\left[\sum_{j=0}^\infty\rho_j\big(\Delta d_{t+1+j}-r_{t+1+j}\big)\right].\tag{7.8}$$</p>
+<div class="lang zh">
+<p>为把这个（近似）恒等式拆成两块，看当前价格-红利比能预测 \(\Delta d_{t+1+j}\) 还是 \(r_{t+1+j}\)，跑两个<strong>预测回归</strong>：</p>
+</div>
+<div class="lang en">
+<p>To split this (approximate) identity into two parts — does the current price-dividend ratio predict \(\Delta d_{t+1+j}\) or \(r_{t+1+j}\) — run two <strong>predictive regressions</strong>:</p>
+</div>
+<p>$$\text{Regression 1:}\quad \Delta d_{t+1+k}=\alpha+\beta\,(p_t-d_t)+\varepsilon_{t+1+k}.\tag{7.9}$$</p>
+<p>$$\text{Regression 2:}\quad r_{t+1+k}=\alpha+\beta\,(p_t-d_t)+\varepsilon_{t+1+k}.\tag{7.10}$$</p>
+<div class="lang zh">
+<p>Cochrane (2009) 用 1947–1997 样本给出 (7.9)、(7.10) 的 OLS 估计（图 7.1）。其中 \(R_{t\to t+k}\) 是价值加权美国 NYSE 指数超额收益（减去国库券利率），\(D_{t+k}/D_t\) 是 \(t\) 到 \(t+k\) 的实际红利增长，\(D_t/P_t\) 是价值加权红利价格比。</p>
+</div>
+<div class="lang en">
+<p>Cochrane (2009) gives OLS estimates of (7.9), (7.10) on the 1947–1997 sample (Figure 7.1). Here \(R_{t\to t+k}\) is the excess return of the value-weighted U.S. NYSE index (minus the T-bill rate), \(D_{t+k}/D_t\) is real dividend growth from \(t\) to \(t+k\), and \(D_t/P_t\) is the value-weighted dividend-to-price ratio.</p>
+</div>
+<div class="article-image"><img alt="Figure 7.1: OLS Regression (Cochrane 2009)" src="assets/fig-7-1.png" /></div>
+<div class="lang zh">
+<p><em>图 7.1：OLS 回归 (Cochrane 2009)，样本 1947–1997。左半 \(R_{t\to t+k}=a+b(D_t/P_t)\) 为收益回归，右半 \(D_{t+k}/D_t=a+b(D_t/P_t)\) 为红利增长回归。收益的 \(R^2\) 随期限大幅上升（5 年达 0.60），红利增长的 \(R^2\) 几乎不变——价格-红利比预测的是收益（贴现率），而非现金流。</em></p>
+</div>
+<div class="lang en">
+<p><em>Figure 7.1: OLS regression (Cochrane 2009), sample 1947–1997. The left block \(R_{t\to t+k}=a+b(D_t/P_t)\) is the return regression; the right block \(D_{t+k}/D_t=a+b(D_t/P_t)\) is the dividend-growth regression. The return \(R^2\) rises sharply with horizon (0.60 at 5 years) while the dividend-growth \(R^2\) barely moves — the price-dividend ratio predicts returns (discount rates), not cash flows.</em></p>
+</div>
+<div class="lang zh">
+<p><strong>Stambaugh 偏差。</strong> 预测变量本身有自相关时，OLS 会有有限样本偏差。考虑系统 (7.11)：</p>
+</div>
+<div class="lang en">
+<p><strong>Stambaugh bias.</strong> When the predictor is autocorrelated, OLS has a finite-sample bias. Consider the system (7.11):</p>
+</div>
+<p>$$r_t=\alpha_r+\beta r_{t-1+k}+\varepsilon_t,\quad x_t=\alpha_x+\phi x_{t-1}+\nu_t,\quad \begin{pmatrix}\varepsilon_t\\\nu_t\end{pmatrix}\overset{i.i.d.}{\sim}\mathcal N(\mathbf 0,\Sigma),\ |\phi|<1.\tag{7.11}$$</p>
+<div class="lang zh">
+<p>OLS 无偏要求 \(\mathbb E[x_{t-1}\varepsilon_t]=0\)。但对 \(x_t\)（如 \(D_t/P_t\)）的冲击往往也改变收益，故 \(\varepsilon_t\) 与 \(\nu_t\) 相关；又因 AR(1) 把 \(\nu_t\) 传递到 \(\forall j\ge0\) 的 \(x_{t+j}\)，使 \(\varepsilon_t\) 与 \(x_{t+j}\) 相关。于是有限样本中 OLS 的 \(\beta\) 有系统性偏差。</p>
+<p><strong>Stambaugh (1999) 修正：</strong></p>
+</div>
+<div class="lang en">
+<p>OLS unbiasedness needs \(\mathbb E[x_{t-1}\varepsilon_t]=0\). But a shock to \(x_t\) (e.g. \(D_t/P_t\)) usually also changes the return, so \(\varepsilon_t\) and \(\nu_t\) are correlated; and the AR(1) transmits \(\nu_t\) to \(x_{t+j}\) for all \(j\ge0\), making \(\varepsilon_t\) correlated with \(x_{t+j}\). Hence a systematic finite-sample bias in the OLS \(\beta\).</p>
+<p><strong>Stambaugh (1999) correction:</strong></p>
+</div>
+<p>$$\hat\beta_{\text{adj}}=\hat\beta_{\text{OLS}}+\gamma\,\frac{1+3\phi}{T},\qquad \hat\alpha_{\text{adj}}=\Big(\frac1T\sum_{t=1}^T r_t\Big)-\hat\beta_{\text{adj}}\Big(\frac1T\sum_{t=1}^T x_{t-1}\Big),\qquad \gamma\equiv\frac{\mathrm{Cov}(\varepsilon_t,\nu_t)}{\mathrm{Var}(\nu_t)}.$$</p>
+<div class="article-image"><img alt="Figure 7.2: OLS Regression with Stambaugh-Bias Correction" src="assets/fig-7-2.png" /></div>
+<div class="lang zh">
+<p><em>图 7.2：含 Stambaugh 偏差修正的 OLS 回归 (Stambaugh 1999)。有限样本偏差（蓝框）相对原始 OLS 系数（红框）在某些样本期相当大：偏差可占估计可预测性的一半（1952–1996），甚至翻转可预测系数的符号（1977–1996）。</em></p>
+</div>
+<div class="lang en">
+<p><em>Figure 7.2: OLS regression with Stambaugh-bias correction (Stambaugh 1999). The finite-sample bias (blue box) is large relative to the original OLS coefficient (red box) in some periods: it can account for half the estimated predictability (1952–1996) or even flip the sign of the predictability coefficient (1977–1996).</em></p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p><span class="lang zh"><strong>结论。</strong> 跑预测性 OLS 回归时应<strong>始终</strong>做 Stambaugh 偏差修正，结论才可信。</span></p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p><span class="lang en"><strong>Takeaway.</strong> Always apply the Stambaugh-bias correction when running predictive OLS regressions to make the results convincing.</span></p></div>
+</div>
+<h2 id="7-2-moving-average-model">7.2 Moving Average Model</h2>
+<div class="lang zh">
+<p>把 (7.3) 的近似当作等式 (7.12)：</p>
+</div>
+<div class="lang en">
+<p>Treat the approximation (7.3) as an equality (7.12):</p>
+</div>
+<p>$$p_t-d_t=\kappa_0+\kappa_1(p_{t+1}-d_{t+1})+(d_{t+1}-d_t)-r_{t+1}.\tag{7.12}$$</p>
+<div class="lang zh">
+<p>用 <strong>VAR / 状态空间</strong>刻画：状态向量 \(\mathbf x_t\) 服从一阶向量自回归 (7.13)，其中 \(\mathbf w_{t+1}\sim\mathcal N(\mathbf 0,\mathbb I)\) 是 \(K\) 维标准化冲击：</p>
+</div>
+<div class="lang en">
+<p>Model with a <strong>VAR / state space</strong>: the state vector \(\mathbf x_t\) follows a first-order vector autoregression (7.13), where \(\mathbf w_{t+1}\sim\mathcal N(\mathbf 0,\mathbb I)\) is a \(K\)-dimensional standardized shock:</p>
+</div>
+<p>$$\mathbf x_{t+1}=\mathbf A\mathbf x_t+\mathbf B\mathbf w_{t+1}.\tag{7.13}$$</p>
+<div class="lang zh">
+<p>迭代得 \(\mathbf x_t\) 为过去冲击的<strong>移动平均 (moving average)</strong> (7.14)：</p>
+</div>
+<div class="lang en">
+<p>Iterating, \(\mathbf x_t\) is a <strong>moving average</strong> of past shocks (7.14):</p>
+</div>
+<p>$$\mathbf x_{t+1}=\sum_{j=0}^\infty\mathbf A^j\mathbf B\,\mathbf w_{t-j+1}=A(L)\,\mathbf w_{t+1},\qquad A(L)=\sum_{j=0}^\infty(\mathbf A L)^j\mathbf B,\tag{7.14}$$</p>
+<div class="lang zh">
+<p>其中 \(L\) 为滞后算子。类似地记红利增长、收益、价格-红利比的移动平均表示 (7.15)–(7.17)：</p>
+</div>
+<div class="lang en">
+<p>where \(L\) is the lag operator. Similarly denote the moving-average representations of dividend growth, returns, and the price-dividend ratio (7.15)–(7.17):</p>
+</div>
+<p>$$d_{t+1}-d_t=\mu_d+\delta(L)\mathbf w_{t+1},\tag{7.15}$$</p>
+<p>$$r_{t+1}=\mu_r+\rho(L)\mathbf w_{t+1},\tag{7.16}$$</p>
+<p>$$p_{t+1}-d_{t+1}=\mu_{p-d}+\pi(L)\mathbf w_{t+1},\tag{7.17}$$</p>
+<div class="lang zh">
+<p>其中 \(\delta(z)=\sum_j\boldsymbol\delta_j z^j\) 等，\(\boldsymbol\delta_j,\boldsymbol\rho_j,\boldsymbol\pi_j\in\mathbb R^K\)。由 \(\boldsymbol\delta_0=\mathbf H_d'\)、\(\boldsymbol\delta_1=\mathbf G_d'\mathbf B\)、\(\boldsymbol\delta_2=\mathbf G_d'\mathbf A\mathbf B\) 可得 \(\delta(z)=\mathbf H_d'+\mathbf G_d'(\mathbb I-z\mathbf A)^{-1}\mathbf B\)。</p>
+<p>把 (7.12)、(7.15)–(7.17) 联立，比较 \(\mathbf w\) 的系数得 (7.18)，再在 \(z=\kappa_1\) 取值得 (7.19)：</p>
+</div>
+<div class="lang en">
+<p>where \(\delta(z)=\sum_j\boldsymbol\delta_j z^j\) etc., with \(\boldsymbol\delta_j,\boldsymbol\rho_j,\boldsymbol\pi_j\in\mathbb R^K\). From \(\boldsymbol\delta_0=\mathbf H_d'\), \(\boldsymbol\delta_1=\mathbf G_d'\mathbf B\), \(\boldsymbol\delta_2=\mathbf G_d'\mathbf A\mathbf B\) we get \(\delta(z)=\mathbf H_d'+\mathbf G_d'(\mathbb I-z\mathbf A)^{-1}\mathbf B\).</p>
+<p>Combining (7.12) and (7.15)–(7.17) and matching coefficients of \(\mathbf w\) gives (7.18); evaluating at \(z=\kappa_1\) gives (7.19):</p>
+</div>
+<p>$$\pi(z)\,z=\kappa_1\pi(z)+\delta(z)-\rho(z),\tag{7.18}$$</p>
+<p>$$\pi(\kappa_1)\kappa_1=\kappa_1\pi(\kappa_1)+\delta(\kappa_1)-\rho(\kappa_1)\ \Rightarrow\ \delta(\kappa_1)=\rho(\kappa_1).\tag{7.19}$$</p>
+<div class="lang zh">
+<p>由 (7.16)，\(r_{t+1}=\mu_r+\boldsymbol\rho_0\mathbf w_{t+1}+\boldsymbol\rho_1\mathbf w_t+\cdots\)，其中只有 \(\mathbf w_{t+1}\) 与 SDF 协动（其余已实现），故 \(\boldsymbol\rho_0\) 最关键。由 (7.19) 可得 (7.20)：</p>
+</div>
+<div class="lang en">
+<p>From (7.16), \(r_{t+1}=\mu_r+\boldsymbol\rho_0\mathbf w_{t+1}+\boldsymbol\rho_1\mathbf w_t+\cdots\), where only \(\mathbf w_{t+1}\) covaries with the SDF (the rest are realized), so \(\boldsymbol\rho_0\) is the key. By (7.19) we obtain (7.20):</p>
+</div>
+<p>$$\boldsymbol\rho_0=\rho(\kappa_1)-\sum_{j=1}^\infty\boldsymbol\rho_j\kappa_1^j=\delta(\kappa_1)-\sum_{j=1}^\infty\boldsymbol\rho_j\kappa_1^j=\underbrace{\sum_{j=0}^\infty\boldsymbol\delta_j\kappa_1^j}_{\text{cash flow}}-\underbrace{\sum_{j=1}^\infty\boldsymbol\rho_j\kappa_1^j}_{\text{return predictability}}.\tag{7.20}$$</p>
+<div class="lang zh">
+<p>(7.20) 之所以有意思：\(\boldsymbol\rho_0\) 是收益对当期冲击 \(\mathbf w_{t+1}\) 的脉冲响应，但它<strong>不只是</strong> \(\boldsymbol\delta_0\)（当期红利增长的脉冲），而等于<strong>未来全部红利增长脉冲（贴现的现金流变动）</strong>减去<strong>未来收益脉冲之和（收益可预测性）</strong>。</p>
+<div class="callout"><div class="callout-title">Warning</div><p><span class="lang zh"><strong>VAR 变量选择。</strong> \(r_{t+1}\) 与 \(d_{t+1}-d_t\) <strong>不能</strong>同时放进 VAR：要从 \(\mathbf y_t,\mathbf y_{t-1},\dots\) 反推冲击 \(\mathbf w_{t+1}\)，需 \(\mathbf M(z)\) 在 \(|z|<1\)（尤其 \(z=\kappa_1\)）满秩；但 \((1,1)\cdot\mathbf M(\kappa_1)=(1,1)(\rho(\kappa_1),\delta(\kappa_1))'\overset{(7.19)}{=}0\)，与满秩矛盾。故通常改用 \(d_{t+1}-d_t\) 与 \(p_{t+1}-d_{t+1}\)，或 \(r_{t+1}\) 与 \(p_{t+1}-d_{t+1}\) 做 VAR。</span></p></div>
+</div>
+<div class="lang en">
+<p>Why (7.20) is interesting: \(\boldsymbol\rho_0\) is the impulse response of returns to the contemporaneous shock \(\mathbf w_{t+1}\), but it is <strong>not just</strong> \(\boldsymbol\delta_0\) (the impulse of contemporaneous dividend growth) — it equals the <strong>sum of all future dividend-growth impulses (discounted cash-flow change)</strong> minus the <strong>sum of future return impulses (return predictability)</strong>.</p>
+<div class="callout"><div class="callout-title">Warning</div><p><span class="lang en"><strong>VAR variable choice.</strong> \(r_{t+1}\) and \(d_{t+1}-d_t\) <strong>cannot</strong> both go into the VAR: to recover the shock \(\mathbf w_{t+1}\) from \(\mathbf y_t,\mathbf y_{t-1},\dots\) we need \(\mathbf M(z)\) full rank for \(|z|<1\) (especially \(z=\kappa_1\)); but \((1,1)\cdot\mathbf M(\kappa_1)=(1,1)(\rho(\kappa_1),\delta(\kappa_1))'\overset{(7.19)}{=}0\), contradicting full rank. So one typically uses \(d_{t+1}-d_t\) with \(p_{t+1}-d_{t+1}\), or \(r_{t+1}\) with \(p_{t+1}-d_{t+1}\), for the VAR.</span></p></div>
+</div>
+<h2 id="7-3-example">7.3 Example</h2>
+<h3 id="7-3-1-setup">7.3.1 Setup</h3>
+<div class="lang zh">
+<p>考虑一个动态设定，观测向量与状态向量为</p>
+</div>
+<div class="lang en">
+<p>Consider a dynamic setting with observation and state vectors</p>
+</div>
+<p>$$\mathbf y_t=\begin{pmatrix}d_t-d_{t-1}\\ p_t-d_t\\ c_t-c_{t-1}\end{pmatrix},\qquad \mathbf y_t^*=\mathbf y_t-\mathbb E[\mathbf y_t],\qquad \mathbf x_t=\begin{pmatrix}\mathbf y_t^*\\ \mathbf y_{t-1}^*\end{pmatrix},$$</p>
+<div class="lang zh">
+<p>VAR 为 \(\mathbf x_t=\mathbf A\mathbf x_{t-1}+\mathbf B\mathbf w_t\)。投资者用<strong>幂效用</strong>，\(t\) 期价值</p>
+</div>
+<div class="lang en">
+<p>with VAR \(\mathbf x_t=\mathbf A\mathbf x_{t-1}+\mathbf B\mathbf w_t\). The investor has <strong>power utility</strong>, with time-\(t\) value</p>
+</div>
+<p>$$U_t=\sum_{s=0}^\infty\beta^s\frac{C_{t+s}^{1-\gamma}-1}{1-\gamma}.$$</p>
+<h3 id="7-3-2-risk-free-asset">7.3.2 Risk-Free Asset</h3>
+<div class="lang zh">
+<p>SDF 为 \(m_{t+1}=\beta(C_{t+1}/C_t)^{-\gamma}\)，无风险总收益满足 \(\frac{1}{R^f_{t,t+1}}=\mathbb E_t[m_{t+1}]\)。定义对数无风险利率 \(r^f_{t,t+1}\equiv\ln R^f_{t,t+1}\)、\(c_t=\ln C_t\)，则</p>
+</div>
+<div class="lang en">
+<p>The SDF is \(m_{t+1}=\beta(C_{t+1}/C_t)^{-\gamma}\), and the risk-free gross return satisfies \(\frac{1}{R^f_{t,t+1}}=\mathbb E_t[m_{t+1}]\). Defining the log risk-free rate \(r^f_{t,t+1}\equiv\ln R^f_{t,t+1}\) and \(c_t=\ln C_t\),</p>
+</div>
+<p>$$r^f_{t,t+1}=-\ln\beta-\ln\mathbb E_t\!\left[e^{-\gamma(c_{t+1}-c_t)}\right].\tag{7.21}$$</p>
+<div class="lang zh">
+<p>由 \(\mathbf x_{t+1}=(\mathbf y_{t+1}^*,\mathbf y_t^*)'\sim\mathcal N(\mathbf A\mathbf x^*,\mathbf{BB}')\)，对数正态期望 (7.22)：</p>
+</div>
+<div class="lang en">
+<p>Since \(\mathbf x_{t+1}=(\mathbf y_{t+1}^*,\mathbf y_t^*)'\sim\mathcal N(\mathbf A\mathbf x^*,\mathbf{BB}')\), the log-normal expectation (7.22):</p>
+</div>
+<p>$$\mathbb E_t\!\left[e^{-\gamma(c_{t+1}-c_t)}\right]=e^{-\gamma\big([\mathbf A\mathbf x^*]_3+\mathbb E[c_{t+1}-c_t]\big)+\frac12\gamma^2[\mathbf{BB}']_{33}}.\tag{7.22}$$</p>
+<div class="lang zh">
+<p>代入 (7.21) 可见 \(r^f_{t,t+1}=-\ln\beta+[\mathbf A\mathbf x^*]_3+\mathbb E[c_{t+1}-c_t]-\frac12\gamma^2[\mathbf{BB}']_{33}\)，它含 \(\mathbf x^*\)，<strong>随时间变化</strong>（不是常数）。</p>
+</div>
+<div class="lang en">
+<p>Substituting into (7.21), \(r^f_{t,t+1}=-\ln\beta+[\mathbf A\mathbf x^*]_3+\mathbb E[c_{t+1}-c_t]-\frac12\gamma^2[\mathbf{BB}']_{33}\) — it contains \(\mathbf x^*\) and is <strong>time-varying</strong> (not constant).</p>
+</div>
+<h3 id="7-3-3-risky-asset">7.3.3 Risky Asset</h3>
+<div class="lang zh">
+<p>把 Campbell–Shiller (7.3) 当作等式 (7.23)，对风险资产（红利索取权）用 \(1=\mathbb E_t[m_{t+1}R_{t+1}]\) (7.24) 与 (7.23) 得 (7.25)：</p>
+</div>
+<div class="lang en">
+<p>Treating Campbell–Shiller (7.3) as an equality (7.23), and using \(1=\mathbb E_t[m_{t+1}R_{t+1}]\) (7.24) with (7.23) for the risky asset (a claim on dividends), we get (7.25):</p>
+</div>
+<p>$$r_{t+1}=\kappa_0+\kappa_1(p_{t+1}-d_{t+1})+(d_{t+1}-d_t)-(p_t-d_t).\tag{7.23}$$</p>
+<p>$$\mathbb E[r_{t+1}]=\kappa_0+\mathbb E\big[\kappa_1(p_{t+1}-d_{t+1})+(d_{t+1}-d_t)-(p_t-d_t)\big].\tag{7.25}$$</p>
+<details class="proof">
+<summary>证明 / Proof：\(\mathbb E[r_{t+1}]-r^f_{t,t+1}\) 是常数</summary>
+<div class="lang zh">
+<p>扩展状态 \(\mathbf x_{t+1}=(\mathbf y_{t+1}^*,\mathbf y_t^*)'\sim\mathcal N(\mathbf A\mathbf x^*,\mathbf{BB}')\)，记 \(\bar{\mathbf x}=\mathbb E[\cdot]\)。取选择向量 \(\mathbf a'=(1,\kappa_1,-\gamma,0,-1,0)\)，则 \(\mathbf a'(\mathbf x_{t+1}+\bar{\mathbf x})\sim\mathcal N(\mathbf a'(\mathbf A\mathbf x^*+\bar{\mathbf x}),\mathbf a'\mathbf{BB}'\mathbf a)\)；再取 \(\mathbf b'=(1,\kappa_1,0,0,-1,0)\)。由对数正态把 (7.24) 写成</p>
+</div>
+<div class="lang en">
+<p>With the augmented state \(\mathbf x_{t+1}=(\mathbf y_{t+1}^*,\mathbf y_t^*)'\sim\mathcal N(\mathbf A\mathbf x^*,\mathbf{BB}')\) and \(\bar{\mathbf x}=\mathbb E[\cdot]\), take the selection vector \(\mathbf a'=(1,\kappa_1,-\gamma,0,-1,0)\), so \(\mathbf a'(\mathbf x_{t+1}+\bar{\mathbf x})\sim\mathcal N(\mathbf a'(\mathbf A\mathbf x^*+\bar{\mathbf x}),\mathbf a'\mathbf{BB}'\mathbf a)\); and take \(\mathbf b'=(1,\kappa_1,0,0,-1,0)\). The log-normal form of (7.24) is</p>
+</div>
+<p>$$0=\ln\beta+\kappa_0+\mathbf a'(\mathbf A\mathbf x^*+\bar{\mathbf x})+\tfrac12\mathbf a'\mathbf{BB}'\mathbf a,$$</p>
+<div class="lang zh">
+<p>而 (7.25) 写成 \(\mathbb E[r_{t+1}]=\kappa_0+\mathbf b'(\mathbf A\mathbf x^*+\bar{\mathbf x})\)。两式相减（并用 (7.21)），含 \(\mathbf x^*\) 的项恰好抵消，得 (7.26)：</p>
+</div>
+<div class="lang en">
+<p>while (7.25) is \(\mathbb E[r_{t+1}]=\kappa_0+\mathbf b'(\mathbf A\mathbf x^*+\bar{\mathbf x})\). Subtracting (and using (7.21)), the \(\mathbf x^*\) terms cancel exactly, giving (7.26):</p>
+</div>
+<p>$$\mathbb E[r_{t+1}]-r^f_{t,t+1}=-\ln\beta-\tfrac12\mathbf a'\mathbf{BB}'\mathbf a+\tfrac12\gamma^2[\mathbf{BB}']_{33}.\quad\blacksquare\tag{7.26}$$</p>
+</details>
+<div class="lang zh">
+<p>由 (7.26) 显然 \(\mathbb E[r_{t+1}]-r^f_{t,t+1}\) 是<strong>随时间不变的常数</strong>——尽管无风险利率本身随时间变动，<strong>风险溢价</strong>在该对数正态设定下是常数。</p>
+<div class="callout"><div class="callout-title">Tip</div><p><span class="lang zh"><strong>直觉。</strong> 在幂效用 + 联合对数正态的设定里，所有时变都通过状态 \(\mathbf x^*\) 进入收益和无风险利率；两者相减时这些时变项抵消，剩下只由协方差结构（\(\mathbf{BB}'\)）决定的常数风险溢价。要得到<strong>时变风险溢价</strong>，需引入非正态或异方差等更丰富的结构。</span></p></div>
+</div>
+<div class="lang en">
+<p>By (7.26), \(\mathbb E[r_{t+1}]-r^f_{t,t+1}\) is a <strong>time-invariant constant</strong> — even though the risk-free rate itself varies over time, the <strong>risk premium</strong> is constant in this log-normal setting.</p>
+<div class="callout"><div class="callout-title">Tip</div><p><span class="lang en"><strong>Intuition.</strong> Under power utility plus joint log-normality, all time variation enters returns and the risk-free rate through the state \(\mathbf x^*\); on subtraction these time-varying terms cancel, leaving a constant risk premium determined only by the covariance structure (\(\mathbf{BB}'\)). Obtaining a <strong>time-varying risk premium</strong> requires richer structure such as non-normality or heteroskedasticity.</span></p></div>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Campbell, J. Y. (2017). <em>Financial Decisions and Markets: A Course in Asset Pricing</em>. Princeton University Press.</li>
+<li>Campbell, J. Y. and R. J. Shiller (1988). The Dividend-Price Ratio and Expectations of Future Dividends and Discount Factors. <em>The Review of Financial Studies</em> 1(3), 195–228.</li>
+<li>Cochrane, J. H. (2009). <em>Asset Pricing</em> (Revised Edition). Princeton University Press.</li>
+<li>Cochrane, J. H. (2011). Presidential Address: Discount Rates. <em>The Journal of Finance</em> 66(4), 1047–1108.</li>
+<li>Stambaugh, R. F. (1999). Predictive Regressions. <em>Journal of Financial Economics</em> 54(3), 375–421.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#7-1-return-predictability">7.1 Return Predictability</a></li>
+          <li><a href="#7-1-1-the-campbell-shiller-decomposition">7.1.1 The Campbell-Shiller Decomposition</a></li>
+          <li><a href="#7-1-2-predictive-regression-and-stambaugh-bias-correction">7.1.2 Predictive Regression and Stambaugh-Bias Correction</a></li>
+        <li><a href="#7-2-moving-average-model">7.2 Moving Average Model</a></li>
+        <li><a href="#7-3-example">7.3 Example</a></li>
+          <li><a href="#7-3-1-setup">7.3.1 Setup</a></li>
+          <li><a href="#7-3-2-risk-free-asset">7.3.2 Risk-Free Asset</a></li>
+          <li><a href="#7-3-3-risky-asset">7.3.3 Risky Asset</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

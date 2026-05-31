@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11. Decision Theory – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>11. Decision Theory</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">决策理论</span><span class="lang en">Decision Theory</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">风险函数</span><span class="lang en">Risk Function</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">贝叶斯决策</span><span class="lang en">Bayesian Decision</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">可容许性</span><span class="lang en">Admissibility</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">极大极小</span><span class="lang en">Max-Min</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">模糊厌恶</span><span class="lang en">Ambiguity Aversion</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：决策理论。</strong> 统计学有<strong>双重角色</strong>——模型内的 agent 与模型外的研究者都用统计。三类不确定性：<strong>风险</strong>（模型内、概率已知）、<strong>模糊</strong>（模型间、权重未知）、<strong>误设</strong>（模型本身是近似）。<strong>§11.1 基本设定</strong>：参数空间 \(\Theta\)、数据 \(Y\)（空间 \(\mathcal Y\)）、似然 \(\psi(y\mid\theta)\)、决策规则 \(D:\mathcal Y\to\mathcal D\)、效用 \(U(D(y),y,\theta)\)；<strong>风险函数</strong>（定义 11.1）\(\overline U(D\mid\theta)=\int U\,\psi(y\mid\theta)\tau(dy)\) 即条件期望效用。<strong>§11.2 贝叶斯解</strong>：先验 \(\pi\)、后验 \(\overline\pi(\theta\mid y)\)；<strong>事前问题</strong> \(\max_D\int\overline U(D\mid\theta)\pi(d\theta)\) 与<strong>事后问题</strong> \(\max_{D(y)}\int U\,\overline\pi(d\theta\mid y)\) 等价（命题 11.1），其解即<strong>贝叶斯决策规则</strong>（定义 11.2）。<strong>§11.3 可容许性</strong>：唯一的贝叶斯决策规则可容许（命题 11.2）。<strong>§11.4 极大极小决策</strong>：\(\max_D\min_\pi\{\int\overline U\pi(d\theta)+C(\pi)\}\)——谨慎理论；凸惩罚 \(C(\pi)\) 例（基准 \(0/\infty\)、相对熵 \(\xi\sum\pi_j[\log\pi_j-\log\pi_j^0]\)）；模型选择得<strong>指数倾斜</strong>先验、<strong>确定性等价</strong>解读，\(\xi\) 度量对先验的信心、\(1/\xi\) 度量<strong>模糊厌恶</strong>；max-min 与 min-max 同得稳健贝叶斯结果；动态两阶段抽彩 vs 一阶段抽彩。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: decision theory.</strong> Statistics plays a <strong>dual role</strong> — agents inside the model and the researcher outside both use statistics. Three concepts of uncertainty: <strong>risk</strong> (within a model, probabilities known), <strong>ambiguity</strong> (over models, weights unknown), <strong>misspecification</strong> (the model itself is an approximation). <strong>§11.1 Basic set-up</strong>: parameter space \(\Theta\), data \(Y\) (space \(\mathcal Y\)), likelihood \(\psi(y\mid\theta)\), decision rule \(D:\mathcal Y\to\mathcal D\), utility \(U(D(y),y,\theta)\); the <strong>risk function</strong> (Definition 11.1) \(\overline U(D\mid\theta)=\int U\,\psi(y\mid\theta)\tau(dy)\) is conditional expected utility. <strong>§11.2 Bayesian solution</strong>: prior \(\pi\), posterior \(\overline\pi(\theta\mid y)\); the <strong>ex-ante problem</strong> \(\max_D\int\overline U(D\mid\theta)\pi(d\theta)\) and the <strong>ex-post problem</strong> \(\max_{D(y)}\int U\,\overline\pi(d\theta\mid y)\) are equivalent (Proposition 11.1), with solution the <strong>Bayesian decision rule</strong> (Definition 11.2). <strong>§11.3 Admissibility</strong>: a unique Bayesian decision rule is admissible (Proposition 11.2). <strong>§11.4 Max-min decision rules</strong>: \(\max_D\min_\pi\{\int\overline U\pi(d\theta)+C(\pi)\}\) — a theory of caution; examples of the convex penalty \(C(\pi)\) (the \(0/\infty\) benchmark, the relative entropy \(\xi\sum\pi_j[\log\pi_j-\log\pi_j^0]\)); model selection yields an <strong>exponentially-tilted</strong> prior with a <strong>certainty-equivalence</strong> reading, where \(\xi\) measures confidence in the prior and \(1/\xi\) measures <strong>ambiguity aversion</strong>; max-min and min-max give the same robust Bayesian result; the dynamic two-stage vs one-stage lottery.</p></div>
+</div>
+<div class="lang zh">
+<p>在展开设定前，先介绍统计模型的几个基本思想。统计可被模型<strong>内部</strong>与<strong>外部</strong>的 agent 同时使用——这是统计在经济分析中的<strong>双重角色</strong>。模型内的 agent 用统计去理解模型的关键特征（如感兴趣的关键参数），模型外的研究者也用统计。</p>
+<p>关于统计模型的不确定性有三个重要概念：</p>
+<ul>
+<li><strong>风险（risk）：模型内的不确定性。</strong> 结果不确定但概率假定已知；这些已知概率可随时间演化。<em>即便我们选对了模型，这部分不确定性仍告诉我们对该正确模型的结果不确定。</em></li>
+<li><strong>模糊（ambiguity）：模型间的不确定性。</strong> 对各候选模型的权重未知；手上有几个候选模型，但不知哪个更准确。<em>即便我们正确设定了所有候选模型，这部分不确定性仍告诉我们不确定哪个候选描述了现实。</em></li>
+<li><strong>误设（misspecification）：关于模型的不确定性。</strong> 我们使用的模型是刻意的抽象；必然存在模型误设。如何应对仅为近似的模型的未知缺陷，是误设与经济动态之间的关键联系——即在何处施加结构、又在何处不可非参数地展开。<em>这部分不确定性告诉我们：在最初搭建候选模型时，我们可能从一开始就大错特错。</em></li>
+</ul>
+</div>
+<div class="lang en">
+<p>Before laying out the set-up, we introduce some basic ideas about statistical models. Statistics can be used by agents both <strong>inside</strong> and <strong>outside</strong> the model — this is the <strong>dual role</strong> of statistics in economic analysis. Agents inside the model may use statistics to understand crucial features of the model (e.g. key parameters of interest), and the researcher outside the model uses statistics too.</p>
+<p>There are three important concepts of uncertainty about a statistical model:</p>
+<ul>
+<li><strong>Risk: uncertainty within a model.</strong> Uncertain outcomes with presumably known probabilities; these known probabilities can evolve over time. <em>Suppose we have picked the right model, then this part of uncertainty tells us that we are still uncertain about the outcomes of that correct model.</em></li>
+<li><strong>Ambiguity: uncertainty over models.</strong> Unknown weights for alternative possible models; we have several candidate models on hand but don't know which one is more accurate. <em>Suppose we have correctly set up all the candidate models, then this part of uncertainty tells us that we are still uncertain about which candidate describes the reality in our case.</em></li>
+<li><strong>Misspecification: uncertainty about models.</strong> Models we use are deliberate abstractions; by necessity there will always be model misspecification. How to cope with unknown flaws of models that are only meant to be approximations is the key link between misspecification and economic dynamics — i.e. where to impose structure and where to leave things non-parametric. <em>This part of uncertainty tells us that we may be very wrong at the very beginning when we set up our candidate models.</em></li>
+</ul>
+</div>
+<h2 id="11-1-basic-set-up">11.1 Basic Set-up</h2>
+<h3 id="11-1-1-notation">11.1.1 Notation</h3>
+<div class="lang zh">
+<ul>
+<li>\(\Theta\)：未知参数 \(\theta\) 的空间，其测度为 \(\lambda\)。</li>
+<li>\(Y\)：数据，是随机向量；其实现记为 \(y\)，空间为 \(\mathcal Y\)（即 \(y\in\mathcal Y\)），测度为 \(\tau\)。</li>
+<li>\(\psi(y\mid\theta)\)：似然函数——即给定 \(\theta\) 时 \(Y\) 的概率密度。</li>
+<li>\(D:\mathcal Y\to\mathcal D\)：<strong>决策规则</strong>，把实现数据 \(y\in\mathcal Y\) 映为决策 \(d\in\mathcal D\)。\(\mathcal D\) 为所有可能决策 \(d\) 的集合。决策 \(d\) 基于观测数据 \(y\)，并影响效用水平。在参数估计问题中，决策 \(d\) 可能直接、也可能不直接是参数 \(\theta\) 的选择，但一定会通过效用函数 \(U(D(y),y,\theta)\) 的函数形式决定 \(\theta\) 的选择。</li>
+<li>\(U(D(y),y,\theta)\)：<strong>效用函数</strong>，是我们要通过参数 \(\theta\) 的选择来最大化的目标函数。在参数估计问题中，给定预先设定的 \(D\) 和观测到的 \(y\)，我们挑选使 \(U\) 最大的 \(\theta\)。<strong>损失</strong>定义为 \(-U(D(y),y,\theta)\)。</li>
+</ul>
+</div>
+<div class="lang en">
+<ul>
+<li>\(\Theta\): space of the unknown parameter \(\theta\); its measure is \(\lambda\).</li>
+<li>\(Y\): the data, a random vector; its realization is denoted \(y\), with space \(\mathcal Y\) (i.e. \(y\in\mathcal Y\)) and measure \(\tau\).</li>
+<li>\(\psi(y\mid\theta)\): the likelihood function — the probability density for \(Y\) given \(\theta\).</li>
+<li>\(D:\mathcal Y\to\mathcal D\): a <strong>decision rule</strong> mapping realized data \(y\in\mathcal Y\) into a decision \(d\in\mathcal D\). \(\mathcal D\) is the set of all possible decisions \(d\). The decision \(d\) is based on the observed data \(y\) and affects the level of utility. In a parameter-estimation problem, \(d\) may or may not directly be the choice of \(\theta\), but it will definitely determine the choice of \(\theta\) through the functional form of \(U(D(y),y,\theta)\).</li>
+<li>\(U(D(y),y,\theta)\): the <strong>utility function</strong>, our objective to be maximized by the choice of \(\theta\). In a parameter-estimation problem, given a predetermined \(D\) and observed \(y\), we pick the \(\theta\) that maximizes \(U\). The <strong>loss</strong> is defined as \(-U(D(y),y,\theta)\).</li>
+</ul>
+</div>
+<h3 id="11-1-2-risk-function">11.1.2 Risk Function</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 11.1（风险函数）
+决策规则 \(D:\mathcal Y\to\mathcal D\) 的<strong>风险函数</strong>为
+$$\overline U(D\mid\theta)=\int_{\mathcal Y}U(D(y),y,\theta)\,\psi(y\mid\theta)\,\tau(dy)$$
+即给定 \(\theta\) 时的<strong>期望效用</strong>（注意 \(\overline U(D\mid\theta)\) 仍依赖未知参数 \(\theta\)）。</p></div>
+<p><strong>例 11.1（模型选择）。</strong> 设有两个候选模型（实际上是同一模型的两个参数选择），\(\Theta=\{\theta_1,\theta_2\}\)。我们想用数据 \(y\) 决定该用哪个。设效用函数为
+$$U(D(y),y,\theta)=\begin{cases}D(y)&\text{if }\theta=\theta_1\\1-D(y)&\text{if }\theta=\theta_2\end{cases}$$
+把 \(\mathcal Y\) 划分为两个不交子空间 \(\mathcal Y_1,\mathcal Y_2\)（\(\mathcal Y=\mathcal Y_1\cup\mathcal Y_2\)，\(\mathcal Y_1\cap\mathcal Y_2=\varnothing\)），令阈值决策规则 \(D(y)\) 为
+$$D(y)=\begin{cases}1&\text{if }y\in\mathcal Y_1\\0&\text{if }y\in\mathcal Y_2\end{cases}$$
+显然 \(y\in\mathcal Y_1\) 时选 \(\theta=\theta_1\)，\(y\in\mathcal Y_2\) 时选 \(\theta=\theta_2\)。所以选择决策规则 \(D\) 实质上就是选择对 \(\mathcal Y\) 的一种划分，从而定下给定任意 \(y\) 时对 \(\theta\) 的选择。</p>
+<p>两个风险函数为
+$$\overline U(D\mid\theta_1)=\int_{\mathcal Y}D(y)\psi(y\mid\theta_1)\tau(dy)=\int_{\mathcal Y_1}\psi(y\mid\theta_1)\tau(dy)=\mathbb P(y\in\mathcal Y_1\mid\theta_1)$$
+$$\overline U(D\mid\theta_2)=\int_{\mathcal Y}(1-D(y))\psi(y\mid\theta_2)\tau(dy)=\int_{\mathcal Y_2}\psi(y\mid\theta_2)\tau(dy)=\mathbb P(y\in\mathcal Y_2\mid\theta_2)$$
+要最大化效用，合理的做法是选一个划分（即选 \(D\)），使无论 \(\theta=\theta_1\) 还是 \(\theta=\theta_2\) 都有较高的期望效用。在 \((\overline U(D\mid\theta_1),\overline U(D\mid\theta_2))\) 平面上，所有可行 \((\mathcal Y_1,\mathcal Y_2)\) 组合构成一条<strong>凸边界</strong>，边界上及内部的点穷尽所有划分；我们希望尽量推向右上方的凸边界。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 11.1 (Risk function)
+The <strong>risk function</strong> for the decision rule \(D:\mathcal Y\to\mathcal D\) is
+$$\overline U(D\mid\theta)=\int_{\mathcal Y}U(D(y),y,\theta)\,\psi(y\mid\theta)\,\tau(dy)$$
+i.e. the <strong>expected utility</strong> given \(\theta\) (note \(\overline U(D\mid\theta)\) still depends on the unknown parameter \(\theta\)).</p></div>
+<p><strong>Example 11.1 (Model selection).</strong> Suppose we have two candidate models (actually one model with two possible choices of parameter), \(\Theta=\{\theta_1,\theta_2\}\). We want to use data \(y\) to decide which to use. Let the utility function be
+$$U(D(y),y,\theta)=\begin{cases}D(y)&\text{if }\theta=\theta_1\\1-D(y)&\text{if }\theta=\theta_2\end{cases}$$
+Partition \(\mathcal Y\) into two disjoint subspaces \(\mathcal Y_1,\mathcal Y_2\) (\(\mathcal Y=\mathcal Y_1\cup\mathcal Y_2\), \(\mathcal Y_1\cap\mathcal Y_2=\varnothing\)), with the threshold decision rule \(D(y)\) being
+$$D(y)=\begin{cases}1&\text{if }y\in\mathcal Y_1\\0&\text{if }y\in\mathcal Y_2\end{cases}$$
+Clearly we choose \(\theta=\theta_1\) when \(y\in\mathcal Y_1\) and \(\theta=\theta_2\) when \(y\in\mathcal Y_2\). So choosing a decision rule \(D\) is actually choosing a way of partitioning \(\mathcal Y\), which pins down the choice of \(\theta\) given any \(y\).</p>
+<p>The two risk functions are
+$$\overline U(D\mid\theta_1)=\int_{\mathcal Y}D(y)\psi(y\mid\theta_1)\tau(dy)=\int_{\mathcal Y_1}\psi(y\mid\theta_1)\tau(dy)=\mathbb P(y\in\mathcal Y_1\mid\theta_1)$$
+$$\overline U(D\mid\theta_2)=\int_{\mathcal Y}(1-D(y))\psi(y\mid\theta_2)\tau(dy)=\int_{\mathcal Y_2}\psi(y\mid\theta_2)\tau(dy)=\mathbb P(y\in\mathcal Y_2\mid\theta_2)$$
+To maximize utility, it is reasonable to choose a partition (i.e. choose \(D\)) giving high expected utility in either \(\theta=\theta_1\) or \(\theta=\theta_2\). In the \((\overline U(D\mid\theta_1),\overline U(D\mid\theta_2))\) plane, all feasible \((\mathcal Y_1,\mathcal Y_2)\) combinations trace out a <strong>convex boundary</strong>; points on and inside the boundary exhaust all partitions, and we want to push toward the upper-right boundary.</p>
+</div>
+<h2 id="11-2-bayesian-solution">11.2 Bayesian Solution</h2>
+<h3 id="11-2-1-prior-and-posterior">11.2.1 Prior and Posterior</h3>
+<div class="lang zh">
+<p>由前例可见，决策规则 \(D\) 决定了模型选择问题中 \(\theta\) 的选择。但如何得到<strong>最优</strong>决策规则 \(D^\star\)？最优的定义又是什么？以下从贝叶斯视角作答。</p>
+<p>用贝叶斯视角，引入 \(\theta\) 的主观<strong>先验</strong>分布（密度 \(\pi(\theta)\)，关于测度 \(\lambda\)），并定义 \(\theta\) 的<strong>后验</strong>分布密度 \(\overline\pi(\theta\mid y)\)：
+$$\overline\pi(\theta\mid y)\equiv\frac{\psi(y\mid\theta)\pi(\theta)}{\int_\Theta\psi(y\mid\theta)\pi(\theta)\lambda(d\theta)}$$
+为简便，把 \(\pi(d\theta)\) 写作 \(\pi(\theta)\lambda(d\theta)\)、\(\overline\pi(d\theta\mid y)\) 写作 \(\overline\pi(\theta\mid y)\lambda(d\theta)\)，即
+$$\overline\pi(d\theta\mid y)\equiv\frac{\psi(y\mid\theta)\pi(d\theta)}{\int_\Theta\psi(y\mid\theta)\pi(d\theta)}$$</p>
+</div>
+<div class="lang en">
+<p>From the previous example, the decision rule \(D\) determines the choice of \(\theta\) in the model-selection problem. But how can we obtain an <strong>optimal</strong> decision rule \(D^\star\)? What is the definition of an optimal rule? The following answers this from the Bayesian perspective.</p>
+<p>Using the Bayesian perspective, introduce a subjective <strong>prior</strong> distribution of \(\theta\) (density \(\pi(\theta)\) w.r.t. measure \(\lambda\)), and define the <strong>posterior</strong> distribution density \(\overline\pi(\theta\mid y)\):
+$$\overline\pi(\theta\mid y)\equiv\frac{\psi(y\mid\theta)\pi(\theta)}{\int_\Theta\psi(y\mid\theta)\pi(\theta)\lambda(d\theta)}$$
+For convenience, write \(\pi(d\theta)\) for \(\pi(\theta)\lambda(d\theta)\) and \(\overline\pi(d\theta\mid y)\) for \(\overline\pi(\theta\mid y)\lambda(d\theta)\), i.e.
+$$\overline\pi(d\theta\mid y)\equiv\frac{\psi(y\mid\theta)\pi(d\theta)}{\int_\Theta\psi(y\mid\theta)\pi(d\theta)}$$</p>
+</div>
+<h3 id="11-2-2-the-ex-ante-problem">11.2.2 The Ex-ante Problem</h3>
+<div class="lang zh">
+<p>以下问题称为<strong>事前问题（ex-ante problem）</strong>：
+$$\max_D\int_\Theta\overline U(D\mid\theta)\pi(d\theta)$$
+其解记为 \(D^\star\)。即在观测数据之前，先按先验 \(\pi\) 把风险函数对 \(\theta\) 取平均，再选最优决策规则。</p>
+</div>
+<div class="lang en">
+<p>The following problem is called the <strong>ex-ante problem</strong>:
+$$\max_D\int_\Theta\overline U(D\mid\theta)\pi(d\theta)$$
+whose solution is denoted \(D^\star\). That is, before observing the data, average the risk function over \(\theta\) using the prior \(\pi\), then choose the optimal decision rule.</p>
+</div>
+<h3 id="11-2-3-the-ex-post-problem">11.2.3 The Ex-post Problem</h3>
+<div class="lang zh">
+<p>重写事前问题：
+$$\begin{aligned}&\max_D\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\\\Leftrightarrow&\max_D\int_\Theta\int_{\mathcal Y}U(D(y),y,\theta)\psi(y\mid\theta)\tau(dy)\pi(d\theta)\\\overset{(\ast)}{\Leftrightarrow}&\max_D\int_{\mathcal Y}\int_\Theta U(D(y),y,\theta)\frac{\pi(d\theta)\psi(y\mid\theta)}{\int_\Theta\psi(y\mid\theta)\pi(d\theta)}\Big(\int_\Theta\psi(y\mid\theta)\pi(d\theta)\Big)\tau(dy)\\\Leftrightarrow&\max_D\int_{\mathcal Y}\int_\Theta U(D(y),y,\theta)\overline\pi(d\theta\mid y)\Big(\int_\Theta\psi(y\mid\theta)\pi(d\theta)\Big)\tau(dy)\end{aligned}$$
+（\((\ast)\) 处交换了积分次序。）由于 \(\big(\int_\Theta\psi(y\mid\theta)\pi(d\theta)\big)\) 只依赖 \(y\)、与 \(D\) 无关，可改而求解<strong>事后问题（ex-post problem）</strong>：
+$$\max_{D(y)}\int_\Theta U(D(y),y,\theta)\overline\pi(d\theta\mid y)$$
+其解记为 \(d^\star(y)\)。逐个 \(y\) 求解 \(d^\star(y)\) 即给出决策规则 \(\overline D^\star\)。</p>
+<div class="callout"><div class="callout-title">Important</div><p>命题 11.1
+只要事前问题的目标函数 \(\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\) 有限，则解事后问题等价于解事前问题，即
+$$\overline D^\star=D^\star$$</p></div>
+</div>
+<div class="lang en">
+<p>Rewrite the ex-ante problem:
+$$\begin{aligned}&\max_D\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\\\Leftrightarrow&\max_D\int_\Theta\int_{\mathcal Y}U(D(y),y,\theta)\psi(y\mid\theta)\tau(dy)\pi(d\theta)\\\overset{\text{interchange}}{\Leftrightarrow}&\max_D\int_{\mathcal Y}\int_\Theta U(D(y),y,\theta)\frac{\pi(d\theta)\psi(y\mid\theta)}{\int_\Theta\psi(y\mid\theta)\pi(d\theta)}\Big(\int_\Theta\psi(y\mid\theta)\pi(d\theta)\Big)\tau(dy)\\\Leftrightarrow&\max_D\int_{\mathcal Y}\int_\Theta U(D(y),y,\theta)\overline\pi(d\theta\mid y)\Big(\int_\Theta\psi(y\mid\theta)\pi(d\theta)\Big)\tau(dy)\end{aligned}$$
+Since \(\big(\int_\Theta\psi(y\mid\theta)\pi(d\theta)\big)\) depends only on \(y\) and is unrelated to \(D\), we can instead solve the <strong>ex-post problem</strong>:
+$$\max_{D(y)}\int_\Theta U(D(y),y,\theta)\overline\pi(d\theta\mid y)$$
+whose solution is denoted \(d^\star(y)\). Solving for \(d^\star(y)\) for each \(y\) gives the decision rule \(\overline D^\star\).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 11.1
+As long as the objective function \(\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\) of the ex-ante problem is finite, solving the ex-post problem is equivalent to solving the ex-ante problem, i.e.
+$$\overline D^\star=D^\star$$</p></div>
+</div>
+<h3 id="11-2-4-the-bayesian-decision-rule">11.2.4 The Bayesian Decision Rule</h3>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 11.2（贝叶斯决策规则）
+<strong>贝叶斯决策规则</strong> \(D^\star\) 是事前问题的解。若事前问题的目标 \(\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\) 有限，则 \(D^\star\) 也是事后问题的解。</p></div>
+<p><strong>例 11.2（重访模型选择）。</strong> 回到例 11.1，按后验
+$$\overline\pi(\theta_1\mid y)=\frac{\psi(y\mid\theta_1)\pi(\theta_1)}{\psi(y\mid\theta_1)\pi(\theta_1)+\psi(y\mid\theta_2)\pi(\theta_2)},\quad \overline\pi(\theta_2\mid y)=\frac{\psi(y\mid\theta_2)\pi(\theta_2)}{\psi(y\mid\theta_1)\pi(\theta_1)+\psi(y\mid\theta_2)\pi(\theta_2)}$$
+贝叶斯决策规则解
+$$\begin{aligned}&\max_{D(y)}U(D(y),y,\theta_1)\overline\pi(\theta_1\mid y)+U(D(y),y,\theta_2)\overline\pi(\theta_2\mid y)\\\Leftrightarrow&\max_{D(y)}D(y)\overline\pi(\theta_1\mid y)+(1-D(y))\overline\pi(\theta_2\mid y)\\\Leftrightarrow&\max_{D(y)}D(y)(\overline\pi(\theta_1\mid y)-\overline\pi(\theta_2\mid y))+\overline\pi(\theta_2\mid y)\end{aligned}$$
+带约束 \(D(y)=1\) 若 \(y\in\mathcal Y_1\)、\(0\) 若 \(y\in\mathcal Y_2\)。解为
+$$\mathcal Y_1=\{y:\overline\pi(\theta_1\mid y)-\overline\pi(\theta_2\mid y)>0\},\quad \mathcal Y_2=\{y:\overline\pi(\theta_1\mid y)-\overline\pi(\theta_2\mid y)\le0\}$$
+即贝叶斯决策规则
+$$D^\star(y)=\begin{cases}1&\text{if }\overline\pi(\theta_1\mid y)>\overline\pi(\theta_2\mid y)\\0&\text{if }\overline\pi(\theta_1\mid y)\le\overline\pi(\theta_2\mid y)\end{cases}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 11.1–11.2
+- 此前我们说 \(y\in\mathcal Y_1\) 选 \(\theta_1\)、\(y\in\mathcal Y_2\) 选 \(\theta_2\)。贝叶斯模型选择结果非常直观：选<strong>后验概率密度更高</strong>（用 \(y\) 更新后）的那个参数。
+- 注意：我们对 \(\theta\) 的选择依赖<strong>主观先验</strong> \(\pi(\theta)\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Important</div><p>Definition 11.2 (Bayesian decision rule)
+The <strong>Bayesian decision rule</strong> \(D^\star\) is the solution to the ex-ante problem. If the ex-ante objective \(\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\) is finite, \(D^\star\) is also a solution to the ex-post problem.</p></div>
+<p><strong>Example 11.2 (Revisit the model selection example).</strong> Back to Example 11.1, with the posterior
+$$\overline\pi(\theta_1\mid y)=\frac{\psi(y\mid\theta_1)\pi(\theta_1)}{\psi(y\mid\theta_1)\pi(\theta_1)+\psi(y\mid\theta_2)\pi(\theta_2)},\quad \overline\pi(\theta_2\mid y)=\frac{\psi(y\mid\theta_2)\pi(\theta_2)}{\psi(y\mid\theta_1)\pi(\theta_1)+\psi(y\mid\theta_2)\pi(\theta_2)}$$
+the Bayesian decision rule solves
+$$\begin{aligned}&\max_{D(y)}U(D(y),y,\theta_1)\overline\pi(\theta_1\mid y)+U(D(y),y,\theta_2)\overline\pi(\theta_2\mid y)\\\Leftrightarrow&\max_{D(y)}D(y)\overline\pi(\theta_1\mid y)+(1-D(y))\overline\pi(\theta_2\mid y)\\\Leftrightarrow&\max_{D(y)}D(y)(\overline\pi(\theta_1\mid y)-\overline\pi(\theta_2\mid y))+\overline\pi(\theta_2\mid y)\end{aligned}$$
+with the constraint \(D(y)=1\) if \(y\in\mathcal Y_1\), \(0\) if \(y\in\mathcal Y_2\). The solution is
+$$\mathcal Y_1=\{y:\overline\pi(\theta_1\mid y)-\overline\pi(\theta_2\mid y)>0\},\quad \mathcal Y_2=\{y:\overline\pi(\theta_1\mid y)-\overline\pi(\theta_2\mid y)\le0\}$$
+i.e. the Bayesian decision rule
+$$D^\star(y)=\begin{cases}1&\text{if }\overline\pi(\theta_1\mid y)>\overline\pi(\theta_2\mid y)\\0&\text{if }\overline\pi(\theta_1\mid y)\le\overline\pi(\theta_2\mid y)\end{cases}$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remarks 11.1–11.2
+- Previously we said choose \(\theta_1\) when \(y\in\mathcal Y_1\) and \(\theta_2\) when \(y\in\mathcal Y_2\). The Bayesian model-selection result is very intuitive: choose the parameter with <strong>higher posterior probability density</strong> (updated using \(y\)).
+- Note: our choice of \(\theta\) depends on the <strong>subjective prior</strong> \(\pi(\theta)\).</p></div>
+</div>
+<h2 id="11-3-admissibility">11.3 Admissibility</h2>
+<div class="lang zh">
+<p>考虑两个决策规则 \(D_1:\mathcal Y\to\mathcal D\)、\(D_2:\mathcal Y\to\mathcal D\)。若 \(\overline U(D_2\mid\theta)\ge\overline U(D_1\mid\theta)\) 对所有 \(\theta\in\Theta\) 成立，则对任意先验 \(\pi\) 都有 \(D_2\) 的事前目标不低于 \(D_1\)：
+$$\overline U(D_2\mid\theta)\ge\overline U(D_1\mid\theta)\ \forall\theta\Rightarrow\int_\Theta\overline U(D_2\mid\theta)\pi(d\theta)\ge\int_\Theta\overline U(D_1\mid\theta)\pi(d\theta)\ \forall\pi$$
+此时称 \(D_2\) <strong>支配</strong> \(D_1\)，记 \(D_2\succsim D_1\)（这是<strong>偏序</strong>，因为我们只比较成对的 \(D_1,D_2\)，而非所有决策规则）。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 11.3（可容许性）
+决策规则 \(D\) 称为<strong>可容许的（admissible）</strong>，若不存在另一决策规则 \(\tilde D\) 使得 \(\tilde D\succsim D\) 且 \(\overline U(\tilde D\mid\theta)>\overline U(D\mid\theta)\) 对某个 \(\theta\in\Theta\) 严格成立。</p>
+<p>[!tip] 注记 11.3
+回到例 11.1 的图：可容许决策规则对应边界上的所有点；边界<strong>内部</strong>的点被边界上的（可容许）规则支配；贝叶斯决策规则 \(D^\star\) 对应边界上的某一点。</p>
+<p>[!important] 命题 11.2
+若贝叶斯决策规则（事前问题的解）唯一，则它可容许。</p>
+<p>[!note]- 证明（反证）
+反设不然：存在 \(\tilde D\ne D^\star\)，使 \(\overline U(\tilde D\mid\theta)\ge\overline U(D^\star\mid\theta)\) 对所有 \(\theta\in\Theta\)、且对某个 \(\theta\) 严格。由于 \(D^\star\) 解事前问题
+$$\max_D\int_\Theta\overline U(D\mid\theta)\pi(d\theta)$$
+则
+$$\overline U(\tilde D\mid\theta)\ge\overline U(D^\star\mid\theta)\ \forall\theta\Rightarrow\int_\Theta\overline U(\tilde D\mid\theta)\pi(d\theta)\ge\int_\Theta\overline U(D^\star\mid\theta)\pi(d\theta)\ \forall\pi$$
+故 \(\tilde D\) 也解事前问题，与 \(D^\star\) 唯一矛盾。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<p>Consider two decision rules \(D_1:\mathcal Y\to\mathcal D\), \(D_2:\mathcal Y\to\mathcal D\). If \(\overline U(D_2\mid\theta)\ge\overline U(D_1\mid\theta)\) for all \(\theta\in\Theta\), then for any prior \(\pi\) the ex-ante objective of \(D_2\) is no lower than that of \(D_1\):
+$$\overline U(D_2\mid\theta)\ge\overline U(D_1\mid\theta)\ \forall\theta\Rightarrow\int_\Theta\overline U(D_2\mid\theta)\pi(d\theta)\ge\int_\Theta\overline U(D_1\mid\theta)\pi(d\theta)\ \forall\pi$$
+We then say \(D_2\) <strong>dominates</strong> \(D_1\), written \(D_2\succsim D_1\) (this is a <strong>partial order</strong>, since we only compare the pair \(D_1,D_2\), not all decision rules).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 11.3 (Admissibility)
+A decision rule \(D\) is <strong>admissible</strong> if there is no other decision rule \(\tilde D\) such that \(\tilde D\succsim D\) with \(\overline U(\tilde D\mid\theta)>\overline U(D\mid\theta)\) strictly for some \(\theta\in\Theta\).</p>
+<p>[!tip] Remark 11.3
+Back to the graph in Example 11.1: admissible decision rules correspond to all the points on the boundary; points in the <strong>interior</strong> are dominated by (admissible) rules on the boundary; the Bayesian decision rule \(D^\star\) corresponds to one point on the boundary.</p>
+<p>[!important] Proposition 11.2
+If the Bayesian decision rule (the solution to the ex-ante problem) is unique, then it is admissible.</p>
+<p>[!note]- Proof (by contradiction)
+Suppose not: there exists \(\tilde D\ne D^\star\) with \(\overline U(\tilde D\mid\theta)\ge\overline U(D^\star\mid\theta)\) for all \(\theta\in\Theta\), strict for some \(\theta\). Since \(D^\star\) solves the ex-ante problem
+$$\max_D\int_\Theta\overline U(D\mid\theta)\pi(d\theta)$$
+then
+$$\overline U(\tilde D\mid\theta)\ge\overline U(D^\star\mid\theta)\ \forall\theta\Rightarrow\int_\Theta\overline U(\tilde D\mid\theta)\pi(d\theta)\ge\int_\Theta\overline U(D^\star\mid\theta)\pi(d\theta)\ \forall\pi$$
+so \(\tilde D\) also solves the ex-ante problem, contradicting the uniqueness of \(D^\star\). \(\blacksquare\)</p></div>
+</div>
+<h2 id="11-4-max-min-decision-rules">11.4 Max-Min Decision Rules</h2>
+<div class="lang zh">
+<p>贝叶斯决策规则依赖我们任意选定的先验 \(\pi\)。为减少在选 \(D\) 时引入的任意主观成分，考虑如下形式的决策规则：
+$$\max_D\min_\pi\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}$$
+其中 \(D\) 是决策规则的选择，\(\pi\) 是 \(\theta\) 的先验，\(C(\pi)\) 是 \(\pi\) 的某个<strong>凸函数</strong>——一种显式地直面先验不确定性的方式。本质上这是一套<strong>谨慎理论</strong>：我们为最坏情形（在 \(C(\pi)\) 给定的对 \(\pi\) 分布的限制下）挑一个最大化效用的决策规则。</p>
+</div>
+<div class="lang en">
+<p>The Bayesian decision rule depends on our arbitrary choice of prior \(\pi\). To be more specific about the decision rule (i.e. eliminate the arbitrary component in selecting \(D\)), consider decision rules of the form
+$$\max_D\min_\pi\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}$$
+where \(D\) is a choice of decision rules, \(\pi\) is a prior distribution of \(\theta\), and \(C(\pi)\) is some convex function of \(\pi\) — an explicit way to confront prior uncertainty. Fundamentally this is a theory of caution: we pick a utility-maximizing decision rule for the worst case (given restrictions on \(\pi\) specified by \(C(\pi)\) of \(\theta\)'s distribution).</p>
+</div>
+<h3 id="11-4-1-some-examples-of-the-convex-penalty-function-c-pi">11.4.1 Some Examples of the Convex Penalty Function \(C(\pi)\)</h3>
+<div class="lang zh">
+<p><strong>1. 基准例。</strong> \(C(\pi)\) 取
+$$C=\begin{cases}0&\pi\in\Pi\\\infty&\pi\notin\Pi\end{cases}$$
+此时问题坍缩为只在集合 \(\Pi\) 内寻找解：
+$$\max_D\min_\pi\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}=\max_D\min_{\pi\in\Pi}\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\Big\}$$</p>
+<p><strong>2. "相对熵"惩罚。</strong> 记法方便起见（非必要）把 \(\Theta\) 与可能的先验 \(\pi\) 限制为有限（离散）元素：\(\Theta=\{\theta_1,\dots,\theta_n\}\)、\(\pi=(\pi_1,\dots,\pi_n)\)。定义惩罚函数
+$$C(\pi)=\xi\sum_{j=1}^n\pi_j\big[\log\pi_j-\log\pi_j^0\big],\quad \xi>0$$
+其中 \(\pi^0=(\pi_1^0,\dots,\pi_n^0)\) 是<strong>参照先验</strong>。可重写为
+$$C(\pi)=\xi\sum_{j=1}^n\Big(\frac{\pi_j}{\pi_j^0}\Big)\Big(\log\Big(\frac{\pi_j}{\pi_j^0}\Big)\Big)\pi_j^0$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 证明（\(C(\pi)\) 凸且在 \(\pi^0\) 取最小 0）
+考虑 \(f(r)=r\log r\)（\(r>0\)）。\(f'(r)=\log r+1\)、\(f''(r)=1/r>0\)，故 \(f\) 在每个 \(\pi_j\) 上凸。由表达式 \(C(\pi_0)=0\) 显然（\(r=1\) 时 \(r\log r=0\)）。为证 \(C(\pi_0)\) 是 \(C(\cdot)\) 的最小值：凸函数必处处位于其切线之上；\(f\) 在 \(r=1\) 的切线为 \(y=r-1\)，故 \(r\log r\ge r-1\)。令 \(r=\pi_j/\pi_j^0\)：
+$$C(\pi)=\xi\sum_{j=1}^n\Big(\frac{\pi_j}{\pi_j^0}\Big)\Big(\log\Big(\frac{\pi_j}{\pi_j^0}\Big)\Big)\pi_j^0\ge\xi\sum_{j=1}^n\Big(\frac{\pi_j}{\pi_j^0}-1\Big)\pi_j^0=\xi\sum_{j=1}^n(\pi_j-\pi_j^0)=0$$
+（末步用 \(\sum\pi_j=\sum\pi_j^0=1\)。）故 \(C(\pi)\ge C(\pi_0)=0\) 对所有 \(j\)。\(\blacksquare\)</p>
+<p>[!tip] 注记 11.4
+一个直接的问题是：参照先验从何而来？它是主观的，来自关于该问题的某些既有知识。极大极小决策规则正是为了限制所用先验的主观性，但<strong>主观性来源永远存在</strong>。</p></div>
+</div>
+<div class="lang en">
+<p><strong>1. Benchmark example.</strong> Take \(C(\pi)\) as
+$$C=\begin{cases}0&\pi\in\Pi\\\infty&\pi\notin\Pi\end{cases}$$
+Then the problem collapses to simply looking in the set \(\Pi\) for a solution:
+$$\max_D\min_\pi\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}=\max_D\min_{\pi\in\Pi}\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\Big\}$$</p>
+<p><strong>2. The "relative entropy" penalty.</strong> For notational convenience (not strictly necessary), restrict \(\Theta\) and the possible prior \(\pi\) to finite (discrete) elements: \(\Theta=\{\theta_1,\dots,\theta_n\}\), \(\pi=(\pi_1,\dots,\pi_n)\). Define the penalty
+$$C(\pi)=\xi\sum_{j=1}^n\pi_j\big[\log\pi_j-\log\pi_j^0\big],\quad \xi>0$$
+where \(\pi^0=(\pi_1^0,\dots,\pi_n^0)\) is the <strong>reference prior</strong>. This can be rewritten as
+$$C(\pi)=\xi\sum_{j=1}^n\Big(\frac{\pi_j}{\pi_j^0}\Big)\Big(\log\Big(\frac{\pi_j}{\pi_j^0}\Big)\Big)\pi_j^0$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Proof (\(C(\pi)\) is convex with minimum \(0\) at \(\pi^0\))
+Consider \(f(r)=r\log r\) (\(r>0\)). \(f'(r)=\log r+1\), \(f''(r)=1/r>0\), so \(f\) is convex in each \(\pi_j\). That \(C(\pi_0)=0\) is immediate (\(r\log r=0\) at \(r=1\)). To show \(C(\pi_0)\) is the minimum of \(C(\cdot)\): a convex function lies everywhere above its tangent line; the tangent of \(f\) at \(r=1\) is \(y=r-1\), so \(r\log r\ge r-1\). Let \(r=\pi_j/\pi_j^0\):
+$$C(\pi)=\xi\sum_{j=1}^n\Big(\frac{\pi_j}{\pi_j^0}\Big)\Big(\log\Big(\frac{\pi_j}{\pi_j^0}\Big)\Big)\pi_j^0\ge\xi\sum_{j=1}^n\Big(\frac{\pi_j}{\pi_j^0}-1\Big)\pi_j^0=\xi\sum_{j=1}^n(\pi_j-\pi_j^0)=0$$
+(the last step uses \(\sum\pi_j=\sum\pi_j^0=1\).) So \(C(\pi)\ge C(\pi_0)=0\) for all \(j\). \(\blacksquare\)</p>
+<p>[!tip] Remark 11.4
+One immediate question is where the reference prior comes from. It is subjective, specified from some pre-existing knowledge about the problem. Max-min decision rules are designed to limit the subjectivity of the prior used; however, this <strong>source of subjectivity will always exist</strong>.</p></div>
+</div>
+<h3 id="11-4-2-model-selection-with-max-min-and-the-relative-entropy-penalty">11.4.2 Model Selection with Max-Min and the "Relative Entropy" Penalty</h3>
+<div class="lang zh">
+<p>设 \(\theta\) 有 \(n\) 个可能值，\(\Theta=\{\theta_1,\dots,\theta_n\}\)。模型选择问题为
+$$\begin{aligned}&\max_D\min_\pi\Big\{\sum_{j=1}^n\pi_j\overline U(D\mid\theta_j)+C(\pi)\Big\}\\\Rightarrow&\max_D\min_\pi\Big\{\sum_{j=1}^n\pi_j\overline U(D\mid\theta_j)+\xi\sum_{j=1}^n\pi_j\big(\log\pi_j-\log\pi_j^0\big)\Big\}\\\Rightarrow&\max_D\min_\pi\Big\{\sum_{j=1}^n\pi_j\big[\overline U(D\mid\theta_j)+\xi\big(\log\pi_j-\log\pi_j^0\big)\big]\Big\}\end{aligned}$$
+内层（对 \(\pi\)）的拉格朗日函数为
+$$\mathcal L=\sum_{j=1}^n\pi_j\big[\overline U(D\mid\theta_j)+\xi(\log\pi_j-\log\pi_j^0)\big]+\lambda\Big(1-\sum_{j=1}^n\pi_j\Big)$$
+（约束 \(\pi_j\ge0\) 自动满足，因 \(\log\) 在 0 处趋 \(-\infty\)。）对每个 \(\pi_j\) 取一阶条件：
+$$\forall j:\quad \overline U(D\mid\theta_j)+\xi(\log\pi_j-\log\pi_j^0)+\xi-\log s=0,\quad \log s=\lambda$$
+整理得
+$$\pi_j^\star=\frac{\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)}{\sum_{j=1}^n\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)}$$
+这就是著名的<strong>指数倾斜（exponential tilting）</strong>：给效用 \(\overline U\) 低的 \(\theta\) 赋予高权重、给效用高的 \(\theta\) 赋予低权重——这是一个非常<strong>保守</strong>的先验。</p>
+</div>
+<div class="lang en">
+<p>Suppose \(\theta\) has \(n\) possible values, \(\Theta=\{\theta_1,\dots,\theta_n\}\). The model-selection problem is
+$$\begin{aligned}&\max_D\min_\pi\Big\{\sum_{j=1}^n\pi_j\overline U(D\mid\theta_j)+C(\pi)\Big\}\\\Rightarrow&\max_D\min_\pi\Big\{\sum_{j=1}^n\pi_j\overline U(D\mid\theta_j)+\xi\sum_{j=1}^n\pi_j\big(\log\pi_j-\log\pi_j^0\big)\Big\}\\\Rightarrow&\max_D\min_\pi\Big\{\sum_{j=1}^n\pi_j\big[\overline U(D\mid\theta_j)+\xi\big(\log\pi_j-\log\pi_j^0\big)\big]\Big\}\end{aligned}$$
+The Lagrangian of the inner (over \(\pi\)) problem is
+$$\mathcal L=\sum_{j=1}^n\pi_j\big[\overline U(D\mid\theta_j)+\xi(\log\pi_j-\log\pi_j^0)\big]+\lambda\Big(1-\sum_{j=1}^n\pi_j\Big)$$
+(the constraint \(\pi_j\ge0\) holds automatically, since \(\log\to-\infty\) at \(0\).) The first-order condition for each \(\pi_j\):
+$$\forall j:\quad \overline U(D\mid\theta_j)+\xi(\log\pi_j-\log\pi_j^0)+\xi-\log s=0,\quad \log s=\lambda$$
+Rearranging,
+$$\pi_j^\star=\frac{\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)}{\sum_{j=1}^n\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)}$$
+This is the celebrated <strong>exponential tilting</strong>: it assigns higher weight (probability) to the \(\theta\)'s with which we have lower values of the utility \(\overline U\), and lower weight to the \(\theta\)'s with higher utility — confirming that \(\pi^\star\) is a very conservative prior.</p>
+</div>
+<div class="lang zh">
+<p>把 \(\pi_j^\star\) 代回目标并取对数（两边除以 \(\pi_j^0\) 取 \(\log\) 得 \(\log\pi_j^\star-\log\pi_j^0=-\tfrac1\xi\overline U(D\mid\theta_j)-\log\sum_j\pi_j^0\exp[-\tfrac1\xi\overline U(D\mid\theta_j)]\)），得到最小化后的目标
+$$\begin{aligned}&\sum_{j=1}^n\pi_j^\star\Big[\overline U(D\mid\theta_j)+\xi\Big(-\tfrac1\xi\overline U(D\mid\theta_j)-\log\sum_{j=1}^n\pi_j^0\exp\big[-\tfrac1\xi\overline U(D\mid\theta_j)\big]\Big)\Big]\\=&\sum_{j=1}^n\pi_j^\star\Big[-\xi\log\Big(\sum_{j=1}^n\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)\Big)\Big]\\=&-\xi\log\Big(\sum_{j=1}^n\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)\Big)\end{aligned}\tag{11.1}$$</p>
+<p><strong>把最小化目标解读为确定性等价。</strong> 回忆随机变量 \(x\) 的期望效用 \(U(x)=\sum_{j=1}^n\pi_j u(x_j)\)，其<strong>确定性等价</strong>定义为 \(CE(x)=u^{-1}\big(\sum_{j=1}^n\pi_j u(x_j)\big)\)。注意 (11.1) 形如确定性等价：取效用函数
+$$u(x_j)=-\exp\Big(-\tfrac1\xi x_j\Big)$$
+则其确定性等价
+$$\begin{aligned}CE(x)&=u^{-1}\Big(\sum_{j=1}^n\pi_j u(x_j)\Big)=-\xi\log\Big(-\sum_{j=1}^n\pi_j(-1)\exp\big(-\tfrac1\xi x_j\big)\Big)\end{aligned}$$
+正是 (11.1) 所得形式，即令 \(u(\overline U(D\mid\theta_j))=-\exp(-\tfrac1\xi\overline U(D\mid\theta_j))\) 时，
+$$CE(\overline U(D\mid\theta_j))=-\xi\log\Big(\sum_{j=1}^n\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)\Big)$$
+其中 (11.1) 求和内部严格小于 1（\(\sum_j\pi_j^0=1\) 且 \(\exp(-\tfrac1\xi\overline U)<1\)），故整项为正。<strong>于是：最小化目标就是参照先验 \(\pi_0\) 下 \(\overline U(D\mid\theta_j)\) 的确定性等价。</strong> 极大极小 + 相对熵惩罚，就是选取使 \(\overline U(D\mid\theta_j)\)（在主观参照先验 \(\pi_0\) 下）确定性等价最大的决策规则。</p>
+</div>
+<div class="lang en">
+<p>Plugging \(\pi_j^\star\) back into the objective and taking logs (dividing both sides by \(\pi_j^0\) and taking \(\log\) gives \(\log\pi_j^\star-\log\pi_j^0=-\tfrac1\xi\overline U(D\mid\theta_j)-\log\sum_j\pi_j^0\exp[-\tfrac1\xi\overline U(D\mid\theta_j)]\)), the minimized objective is
+$$\begin{aligned}&\sum_{j=1}^n\pi_j^\star\Big[\overline U(D\mid\theta_j)+\xi\Big(-\tfrac1\xi\overline U(D\mid\theta_j)-\log\sum_{j=1}^n\pi_j^0\exp\big[-\tfrac1\xi\overline U(D\mid\theta_j)\big]\Big)\Big]\\=&\sum_{j=1}^n\pi_j^\star\Big[-\xi\log\Big(\sum_{j=1}^n\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)\Big)\Big]\\=&-\xi\log\Big(\sum_{j=1}^n\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)\Big)\end{aligned}\tag{11.1}$$</p>
+<p><strong>Reading the minimized objective as a certainty equivalence.</strong> Recall the expected utility from a random variable \(x\), \(U(x)=\sum_{j=1}^n\pi_j u(x_j)\), with <strong>certainty equivalence</strong> \(CE(x)=u^{-1}\big(\sum_{j=1}^n\pi_j u(x_j)\big)\). Notice (11.1) is similar to a certainty equivalent: take the utility function
+$$u(x_j)=-\exp\Big(-\tfrac1\xi x_j\Big)$$
+Then its certainty equivalence
+$$\begin{aligned}CE(x)&=u^{-1}\Big(\sum_{j=1}^n\pi_j u(x_j)\Big)=-\xi\log\Big(-\sum_{j=1}^n\pi_j(-1)\exp\big(-\tfrac1\xi x_j\big)\Big)\end{aligned}$$
+is exactly the form obtained in (11.1), i.e. with \(u(\overline U(D\mid\theta_j))=-\exp(-\tfrac1\xi\overline U(D\mid\theta_j))\),
+$$CE(\overline U(D\mid\theta_j))=-\xi\log\Big(\sum_{j=1}^n\pi_j^0\exp\big(-\tfrac1\xi\overline U(D\mid\theta_j)\big)\Big)$$
+where the inside of the summation in (11.1) is strictly less than one (\(\sum_j\pi_j^0=1\) and \(\exp(-\tfrac1\xi\overline U)<1\)), so the entire term is positive. <strong>Thus the minimized objective is the certainty equivalence of \(\overline U(D\mid\theta_j)\) under the reference prior \(\pi_0\).</strong> By the max-min decision rule with the "relative entropy" penalty, we are selecting the decision rule that maximizes the certainty equivalence of \(\overline U(D\mid\theta_j)\) under a subjectively-picked reference prior \(\pi_0\).</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p>注记 11.5–11.6（\(\xi\) 与模糊厌恶）
+- \(\xi\) 越小，\(u(x_j)=-\exp(-\tfrac1\xi x_j)\) 越凹，确定性等价越小，即我们最大化的是更<strong>保守</strong>的最小化目标。故小 \(\xi\) 对 \(\pi\) 偏离参照先验 \(\pi^0\) 的惩罚更低、对 \(\pi\) 选择更宽容，从而下一步要最大化的目标更保守。一句话：小 \(\xi\) 更保守（对选先验不太确定）、大 \(\xi\) 更不保守、对主观先验更自信、对选先验惩罚更大。极端地 \(\xi\to\infty\) 时 \(u(x_j)=-\exp(-\tfrac1\xi x_j)\) 线性、确定性等价就是期望效用本身，最小化目标即 \(\pi^0\) 下的期望效用，我们对主观先验完全自信，恰用 \(\pi^0\) 算 \(\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\)。
+- \(\tfrac1\xi\) 度量<strong>模糊厌恶</strong>。\(\tfrac1\xi\) 越大（\(\xi\) 越小），参照先验 \(\pi^0\) 下 \(\sum_j\pi_j^0\overline U\) 与 \(CE(\overline U)\) 的差越大；我们不再选最大化 \(\sum_j\pi_j^0\overline U\) 的 \(D\)，而是最大化更低的 \(CE(\overline U)\)——在选先验时更厌恶模糊。反之 \(\tfrac1\xi\) 很小则直接用主观参照先验，对模糊不太担心。一句话：高 \(\xi\) 兼有低模糊厌恶与从参照先验离开的高惩罚（观测数据后不太愿大改先验，即不太担心选错先验）；低 \(\xi\) 兼有高模糊厌恶与低惩罚（更愿在观测数据后大改先验，即更担心选错先验）。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p>Remarks 11.5–11.6 (\(\xi\) and ambiguity aversion)
+- The smaller \(\xi\) is, the more concave \(u(x_j)=-\exp(-\tfrac1\xi x_j)\) will be, thus the lower the certainty equivalence, which means we are maximizing a more conservative minimized objective. So smaller \(\xi\) means lower penalty on \(\pi\)'s deviation from the reference prior \(\pi^0\) and more latitude on the choice of \(\pi\), leading to a more conservative objective to be maximized. In a word, smaller \(\xi\) means more conservative (less certain about the choice of reference prior), and higher \(\xi\) means less conservative, more subjective (more confident about the choice of reference prior) and a higher penalty for the subjectivity in choosing prior. In the extreme \(\xi=\infty\), \(u(x_j)=-\exp(-\tfrac1\xi x_j)\) is linear and the certainty equivalence is the expected utility itself, so the minimized objective is simply the expected utility under \(\pi^0\); we are so confident in our subjective choice of \(\pi^0\) that we use exactly \(\pi^0\) to compute \(\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\).
+- \(\tfrac1\xi\) captures <strong>ambiguity aversion</strong>. The higher \(\tfrac1\xi\) (the lower \(\xi\)), the greater the difference between \(\sum_j\pi_j^0\overline U(D\mid\theta_j)\) under reference prior \(\pi^0\) and \(CE(\overline U(D\mid\theta_j))\). Instead of choosing the \(D\) maximizing \(\sum_j\pi_j^0\overline U(D\mid\theta_j)\), we maximize a lower \(CE(\overline U(D\mid\theta_j))\) — more averse to ambiguity in selecting the prior. On the other hand, if \(\tfrac1\xi\) is very low we simply pick the subjective reference prior, less worried about ambiguity. In a word, high \(\xi\) means both low ambiguity aversion and a high penalty from moving away from the reference prior (unlikely to make a significant update on prior selection after observing the data, i.e. less worried about picking a wrong prior); low \(\xi\) means both high ambiguity aversion and low penalty (more likely to make a significant update after observing the data, i.e. more worried about picking a wrong prior).</p></div>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p>注记 11.7（稳健性下界）
+由 \(\pi^\star\) 是最小化问题的解，对任意 \(\pi\) 有
+$$\sum_{j=1}^N\pi_j\overline U(D\mid\theta_j)+\xi\sum_{j=1}^N\pi_j(\log\pi_j-\log\pi_j^0)\ge\sum_{j=1}^N\pi_j^\star\overline U(D\mid\theta_j)+\xi\sum_{j=1}^N\pi_j^\star(\log\pi_j^\star-\log\pi_j^0)\tag{11.2}$$
+若另设
+$$\sum_{j=1}^n\pi_j[\log\pi_j-\log\pi_j^0]\le\sum_{j=1}^n\pi_j^\star[\log\pi_j^\star-\log\pi_j^0]\tag{11.3}$$
+则
+$$\sum_{j=1}^N\pi_j\overline U(D\mid\theta_j)\ge\sum_{j=1}^N\pi_j^\star\overline U(D\mid\theta_j)\tag{11.4}$$
+直观：本练习的动机是通过限制先验主观性、在给定偏好下最小化效用的意义上取得<strong>稳健</strong>。若找到比 \(\pi^\star\) 惩罚更小（即更接近主观猜测 \(\pi^0\)）的某个 \(\pi\)（不等式 (11.3)），则由 (11.2) 保证在 \(\pi\) 下的期望效用高于 \(\pi^\star\) 下（第三个不等式 (11.4)）。这是稳健意义上的下界：对足够接近主观先验 \(\pi^0\)（在 (11.3) 意义上离 \(\pi^0\) 最远不超过 \(\pi^\star\)）的先验，期望效用有一个下界。</p>
+<p>[!tip] 注记 11.8（min-max vs max-min）
+考虑调换决策者 max-min 的次序，得 min-max 问题：
+$$\min_\pi\max_D\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}$$
+由于 \(C(\pi)\) 不依赖 \(D\)，内层（对 \(D\)）即简单的贝叶斯决策问题 \(\max_D\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\}\)；外层对 \(\pi\) 最小化即一个稳健先验选择问题。在正则条件下，max-min 与 min-max 给出相同的稳健贝叶斯结果：
+$$\max_D\min_\pi\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}=\min_\pi\max_D\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}$$</p></div>
+<p><strong>两候选参数情形的图解（例 11.1）。</strong> 设 \(C(\pi)=0\)（即对 \(\pi\) 无约束、无锚点 \(\pi^0\)）。max-min 问题为
+$$\max_D\min_\pi\overline U(D\mid\theta_1)\pi(\theta_1)+\overline U(D\mid\theta_2)\pi(\theta_2)$$
+内层最小化解
+$$\min_{\pi(\theta_1)}\{\overline U(D\mid\theta_1)\pi(\theta_1)+\overline U(D\mid\theta_2)(1-\pi(\theta_1))\}=\min_{\pi(\theta_1)}\{[\overline U(D\mid\theta_1)-\overline U(D\mid\theta_2)]\pi(\theta_1)+\overline U(D\mid\theta_2)\}$$
+\(\Rightarrow\pi^\star(\theta_2)=0\)、\(\pi^\star(\theta_1)=1\)（若 \(\overline U(D\mid\theta_1)<\overline U(D\mid\theta_2)\)），即把权重全压在效用较低的那个参数上。于是最大化问题变为 \(\max_D\{\overline U(D\mid\theta_1)\}\)；其结果可通过把 \(\overline U(D\mid\theta_1)\) 推到 \(\overline U(D\mid\theta_1)=\overline U(D\mid\theta_2)\)（45 度线上）为止得到。min-max 同理：min-max 也对应 45 度线与凸边界的<strong>唯一交点</strong>。一句话：加上最小化（无论在贝叶斯最大化之前还是之后）只是把那个点推向 45 度线、保持其留在凸边界上——max-min 与 min-max 给出相同的最优决策规则，对应 45 度线与边界的唯一交点；因而只有唯一一个最优决策规则。</p>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 11.7 (Robustness lower bound)
+Since \(\pi^\star\) is the solution to the minimization problem, for any \(\pi\),
+$$\sum_{j=1}^N\pi_j\overline U(D\mid\theta_j)+\xi\sum_{j=1}^N\pi_j(\log\pi_j-\log\pi_j^0)\ge\sum_{j=1}^N\pi_j^\star\overline U(D\mid\theta_j)+\xi\sum_{j=1}^N\pi_j^\star(\log\pi_j^\star-\log\pi_j^0)\tag{11.2}$$
+If in addition
+$$\sum_{j=1}^n\pi_j[\log\pi_j-\log\pi_j^0]\le\sum_{j=1}^n\pi_j^\star[\log\pi_j^\star-\log\pi_j^0]\tag{11.3}$$
+then
+$$\sum_{j=1}^N\pi_j\overline U(D\mid\theta_j)\ge\sum_{j=1}^N\pi_j^\star\overline U(D\mid\theta_j)\tag{11.4}$$
+Intuition: this exercise is motivated by limiting the subjectivity of our prior so as to be robust in the sense of minimizing utility given our preferences. If we found some prior \(\pi\) with a smaller penalty (closer to our subjective guess \(\pi^0\)) than \(\pi^\star\) (inequality (11.3)), then by inequality (11.2) the expected utility under \(\pi\) is guaranteed higher than under \(\pi^\star\) (the third inequality (11.4) follows). This is a robustness lower bound: for priors close enough to our subjective prior \(\pi^0\) (at furthest from \(\pi^0\) in the sense of (11.3)), expected utility has a lower bound.</p>
+<p>[!tip] Remark 11.8 (min-max vs max-min)
+Consider changing the order of the decision maker's max-min problem, giving the min-max problem:
+$$\min_\pi\max_D\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}$$
+Since \(C(\pi)\) does not depend on \(D\), the inner (over \(D\)) problem is simply a Bayesian decision problem \(\max_D\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)\}\); the outer minimization over \(\pi\) is a robust prior-choice problem. Under regularity conditions, max-min and min-max yield the same robust Bayesian result:
+$$\max_D\min_\pi\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}=\min_\pi\max_D\Big\{\int_\Theta\overline U(D\mid\theta)\pi(d\theta)+C(\pi)\Big\}$$</p></div>
+<p><strong>Graphical argument for the two-candidate-parameter case (Example 11.1).</strong> Set \(C(\pi)=0\) (no restriction on \(\pi\), no anchor point \(\pi^0\)). The max-min problem is
+$$\max_D\min_\pi\overline U(D\mid\theta_1)\pi(\theta_1)+\overline U(D\mid\theta_2)\pi(\theta_2)$$
+The inner minimization solves
+$$\min_{\pi(\theta_1)}\{\overline U(D\mid\theta_1)\pi(\theta_1)+\overline U(D\mid\theta_2)(1-\pi(\theta_1))\}=\min_{\pi(\theta_1)}\{[\overline U(D\mid\theta_1)-\overline U(D\mid\theta_2)]\pi(\theta_1)+\overline U(D\mid\theta_2)\}$$
+\(\Rightarrow\pi^\star(\theta_2)=0\), \(\pi^\star(\theta_1)=1\) (if \(\overline U(D\mid\theta_1)<\overline U(D\mid\theta_2)\)), putting all weight on the parameter with lower utility. Then the maximization becomes \(\max_D\{\overline U(D\mid\theta_1)\}\); its result is obtained by moving \(\overline U(D\mid\theta_1)\) up until \(\overline U(D\mid\theta_1)=\overline U(D\mid\theta_2)\) (on the 45-degree line). By symmetry, min-max gives the same, corresponding to the <strong>unique intersection</strong> of the 45-degree line and the convex boundary. In a word, adding a minimization (whether before or after the Bayesian maximization) simply moves that point toward the 45-degree line while keeping it on the convex boundary — max-min and min-max give the same resulting optimal decision rule, the unique intersection of the 45-degree line and the boundary; hence there is only one resulting optimal decision rule.</p>
+</div>
+<h3 id="11-4-3-dynamic-decision-theory-under-uncertainty-two-stage-vs-reduced-one-stage-lottery">11.4.3 Dynamic Decision Theory under Uncertainty: Two-stage vs Reduced One-stage Lottery</h3>
+<div class="lang zh">
+<p>设 \(y^\star\) 为明天的状态、\(y\) 为今天的状态。我们想用今天的 \(y\)、基于参数 \(\theta\) 与决策 \(D(y)\) 来预测 \(y^\star\)，<strong>条件转移密度</strong>为 \(\psi(y^\star\mid y,D,\theta)\)。参数 \(\theta\) 之所以重要，是因为它影响我们对未来的看法；但问题是我们不知道 \(\theta\)，需作推断——用后验密度 \(\overline\pi(d\theta\mid y)\) 作为不同 \(\theta\) 的权重（它是某个最小化问题的解）。</p>
+<p>效用函数定义在条件转移密度 \(\psi(y^\star\mid y,D,\theta)\) 上，故事后问题的目标函数为
+$$\phi(y^\star\mid y,D)\equiv\int_\Theta\psi(y^\star\mid y,D,\theta)\overline\pi(d\theta\mid y)\tag{11.5}$$
+它定义了<strong>不含参数 \(\theta\)</strong> 的条件转移密度 \(\phi(y^\star\mid y,D)\)。</p>
+</div>
+<div class="lang en">
+<p>Let \(y^\star\) be tomorrow's state and \(y\) today's state. We want to forecast \(y^\star\) with today's \(y\) based on some parameter \(\theta\) and decision \(D(y)\), with the <strong>conditional transition density</strong> \(\psi(y^\star\mid y,D,\theta)\). The parameter \(\theta\) is important because it affects our perspective about the future; but the issue is we don't know \(\theta\) and need to make inferences — we use the posterior density \(\overline\pi(d\theta\mid y)\) as the weight of different \(\theta\)'s (it is the solution to some minimization problem).</p>
+<p>The utility function is defined on the conditional transition density \(\psi(y^\star\mid y,D,\theta)\), so the ex-post problem has objective function
+$$\phi(y^\star\mid y,D)\equiv\int_\Theta\psi(y^\star\mid y,D,\theta)\overline\pi(d\theta\mid y)\tag{11.5}$$
+which defines a conditional transition density \(\phi(y^\star\mid y,D)\) <strong>without the parameter \(\theta\)</strong>.</p>
+</div>
+<div class="lang zh">
+<p>(11.5) 的右端让我们把动态问题里的不确定性（转移函数里的不确定性）拆成两部分：</p>
+<ul>
+<li><strong>第 1 部分（风险）</strong> 来自 \(\psi(y^\star\mid y,D,\theta)\)——它决定风险函数 \(\int_{\mathcal Y}\psi(y^\star\mid y,D,\theta)f(y\mid\theta)\tau(dy)\)，其中 \(f(y\mid\theta)\) 是给定 \(\theta\) 时 \(y\) 的条件密度。这里风险函数被解读为：给定参数 \(\theta\)、给定今天状态 \(y\)，下一期出现 \(y^\star\) 的（无条件）概率。</li>
+<li><strong>第 2 部分（模糊）</strong> 来自 \(\overline\pi(d\theta\mid y)\)——它是带某些激励（如 max-min 决策里的最小化问题）选出的解。</li>
+</ul>
+<p>(11.5) 的右端可视为<strong>两阶段抽彩</strong>：第一阶段观测 \(y\)、再按 \(\overline\pi(d\theta\mid y)\) 抽出一个 \(\theta\)；第二阶段基于 \(y,D,\theta\) 按 \(\psi(y^\star\mid y,D,\theta)\) 抽出 \(y^\star\)；重复多次可估出分布 \(\phi(y^\star\mid y,D)\)。而 (11.5) 的左端把两阶段抽彩坍缩成<strong>一阶段抽彩</strong>——从左端本身，我们无法把 \(\phi(y^\star\mid y,D)\) 里的不确定性以任何方式分离开。</p>
+<p><strong>两阶段 vs 一阶段抽彩。</strong> 两阶段抽彩比一阶段在模型校准上有更大余地：某些经验证据可能用合理参数值的一阶段模型难以匹配；把转移函数里的不确定性拆成风险部分与模糊部分，给校准留出更多空间。所以我们不简单地把两阶段坍缩为一阶段。</p>
+<p><strong>不可避免的主观性。</strong> 模型中永远无法完全避免主观输入。两阶段抽彩里 \(\overline\pi(d\theta\mid y)\) 的选择依赖我们的主观输入；以带"相对熵"惩罚的 max-min 决策规则为例，\(\overline\pi(d\theta\mid y)\) 的选择依赖 \(\overline\pi(d\theta)\)，而后者又依赖主观选取的参照先验 \(\pi^0\)。</p>
+</div>
+<div class="lang en">
+<p>The RHS of (11.5) enables us to split the uncertainty in a dynamic problem (i.e. uncertainty in the transition function) into two parts:</p>
+<ul>
+<li><strong>Part 1 (risk)</strong> comes from \(\psi(y^\star\mid y,D,\theta)\) — it determines the risk function \(\int_{\mathcal Y}\psi(y^\star\mid y,D,\theta)f(y\mid\theta)\tau(dy)\), where \(f(y\mid\theta)\) is the conditional density of \(y\) given \(\theta\). Here the risk function is interpreted as the unconditional (on today's state \(y\)) probability of having \(y^\star\) in the next period given parameter \(\theta\).</li>
+<li><strong>Part 2 (ambiguity)</strong> comes from \(\overline\pi(d\theta\mid y)\) — it is chosen as a solution to certain problems with some incentives (e.g. the minimization problem as in the max-min decision rule).</li>
+</ul>
+<p>The RHS of (11.5) can be regarded as a <strong>two-stage lottery</strong>: in the first stage we observe \(y\) and then draw a \(\theta\) according to \(\overline\pi(d\theta\mid y)\); in the second stage, based on \(y,D,\theta\), we draw a \(y^\star\) according to \(\psi(y^\star\mid y,D,\theta)\); repeating these two stages many times, we can estimate the distribution \(\phi(y^\star\mid y,D)\). The LHS of (11.5) collapses the two-stage lottery into a one-stage lottery — from the LHS itself, we cannot separate the uncertainty in \(\phi(y^\star\mid y,D)\) in any way.</p>
+<p><strong>Two-stage vs one-stage lottery.</strong> The two-stage lottery has more latitude for model calibration than the one-stage lottery: some empirical evidence may be hard to meet by model calibration with reasonable parameter values; splitting the uncertainty in the transition function into a risk part and an ambiguity part gives more room for calibration. So we don't simply reduce the two-stage lottery to a one-stage lottery.</p>
+<p><strong>Unavoidable subjectivity.</strong> We can never completely avoid subjective input in a model. In the two-stage lottery, the selection of \(\overline\pi(d\theta\mid y)\) is dependent on our subjective input. Take the max-min decision rule with the "relative entropy" penalty for example: the choice of \(\overline\pi(d\theta\mid y)\) depends on \(\overline\pi(d\theta)\), which depends on our subjectively-selected reference prior \(\pi^0\).</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#11-1-basic-set-up">11.1 Basic Set-up</a></li>
+          <li><a href="#11-1-1-notation">11.1.1 Notation</a></li>
+          <li><a href="#11-1-2-risk-function">11.1.2 Risk Function</a></li>
+        <li><a href="#11-2-bayesian-solution">11.2 Bayesian Solution</a></li>
+          <li><a href="#11-2-1-prior-and-posterior">11.2.1 Prior and Posterior</a></li>
+          <li><a href="#11-2-2-the-ex-ante-problem">11.2.2 The Ex-ante Problem</a></li>
+          <li><a href="#11-2-3-the-ex-post-problem">11.2.3 The Ex-post Problem</a></li>
+          <li><a href="#11-2-4-the-bayesian-decision-rule">11.2.4 The Bayesian Decision Rule</a></li>
+        <li><a href="#11-3-admissibility">11.3 Admissibility</a></li>
+        <li><a href="#11-4-max-min-decision-rules">11.4 Max-Min Decision Rules</a></li>
+          <li><a href="#11-4-1-some-examples-of-the-convex-penalty-function-c-pi">11.4.1 Some Examples of the Convex Penalty Function \(C(\pi)\)</a></li>
+          <li><a href="#11-4-2-model-selection-with-max-min-and-the-relative-entropy-penalty">11.4.2 Model Selection with Max-Min and the "Relative Entropy" Penalty</a></li>
+          <li><a href="#11-4-3-dynamic-decision-theory-under-uncertainty-two-stage-vs-reduced-one-stage-lottery">11.4.3 Dynamic Decision Theory under Uncertainty: Two-stage vs Reduced One-stage Lottery</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

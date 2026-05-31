@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>16. Instrumental Variables with Heterogeneous Effects – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>16. Instrumental Variables with Heterogeneous Effects</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">计量经济学</span><span class="lang en">Econometrics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">因果推断</span><span class="lang en">Causal Inference</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">工具变量</span><span class="lang en">Instrumental Variables</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">异质效应</span><span class="lang en">Heterogeneous Effects</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">LATE</span><span class="lang en">LATE</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">顺从者</span><span class="lang en">Compliers</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Wald 估计量</span><span class="lang en">Wald Estimand</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：异质效应下的工具变量。</strong> 基本想法：\(Z\to D\to Y\) 的因果链，\(Z\) 通过 \(D\) 影响 \(Y\)、对 \(Y\) 无直接效应——这使 \(Z\) 成为测量 \(D\) 对 \(Y\) 效应的好工具。<strong>§16.1 简单情形</strong>（二值处理、单一二值工具、无协变量）：四个 IV 假设（随机分配、排除限制、相关性、单调性）；<strong>Wald 估计量</strong> \(\beta^{\text{IV}}=\frac{\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]}{\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]}\)（16.2）\(=\text{LATE}=\mathbb E[Y_1-Y_0\mid D_1>D_0]\)（顺从者的 ATE）；恒定效应的过度识别检验。<strong>§16.2 扩展 1：反事实分布</strong>（Imbens–Rubin 1997，恢复四组人结果的边际分布）。<strong>§16.3 扩展 2：多个二值工具的 LATE</strong>（\(\beta^{\text{TSLS}}\) 为各工具特定 LATE 的加权平均；多工具单调性）。<strong>§16.4 扩展 3：可变处理强度</strong>（\(S\in\{0,\dots,J\}\)，Wald$=\(**平均因果反应（ACR）**）。**§16.5 扩展 4：协变量**（分层 LATE \)\beta(x)\(、TSLS 加权平均 Angrist–Imbens 1995、Abadie 2003 \)\kappa$）。<strong>§16.6 扩展 5：多个无序处理</strong>。<strong>§16.7 扩展 6：弱工具与多工具</strong>。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: instrumental variables with heterogeneous effects.</strong> The basic idea: a causal chain \(Z\to D\to Y\), where \(Z\) affects \(Y\) through \(D\) with no direct effect on \(Y\) — this makes \(Z\) a good IV to measure \(D\)'s effect on \(Y\). <strong>§16.1 Simple case</strong> (binary treatment, single binary instrument, no covariates): the four IV assumptions (random assignment, exclusion restriction, relevance, monotonicity); the <strong>Wald estimand</strong> \(\beta^{\text{IV}}=\frac{\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]}{\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]}\) (16.2) \(=\text{LATE}=\mathbb E[Y_1-Y_0\mid D_1>D_0]\) (ATE of compliers); the over-identifying test for constant-effect models. <strong>§16.2 Extension 1: counterfactual distributions</strong> (Imbens–Rubin 1997, recover the marginal distributions of outcomes among the four groups). <strong>§16.3 Extension 2: LATE with multiple binary instruments</strong> (\(\beta^{\text{TSLS}}\) a weighted average of instrument-specific LATEs; monotonicity with multiple instruments). <strong>§16.4 Extension 3: variable treatment intensity</strong> (\(S\in\{0,\dots,J\}\), Wald $=$ the <strong>average causal response (ACR)</strong>). <strong>§16.5 Extension 4: covariates</strong> (stratified LATE \(\beta(x)\), the TSLS weighted average of Angrist–Imbens 1995, Abadie 2003's \(\kappa\)). <strong>§16.6 Extension 5: multiple unordered treatments</strong>. <strong>§16.7 Extension 6: weak instruments and many instruments</strong>.</p></div>
+</div>
+<div class="lang zh">
+<p>基本想法：\(Z,D,Y\) 之间有因果链。可论证 \(Z\) 影响 \(D\)、\(D\) 进而影响 \(Y\)，但 \(Z\) 对 \(Y\) 无直接效应——这使 \(Z\) 成为测量 \(D\) 对 \(Y\) 效应的好工具变量（IV）。</p>
+<p>例如，二值处理、单一二值工具情形，用潜在结果记号写问题为
+$$Y_i=\underbrace{\mathbb E[Y_{0,i}]}_{\alpha}+\underbrace{(Y_{1,i}-Y_{0,i})}_{\beta_i}D_i+\underbrace{Y_{0,i}-\mathbb E[Y_{0,i}]}_{U_i}\Rightarrow Y_i=\alpha+\beta D_i+U_i$$
+$$D_i=D_{1,i}Z_i+D_{0,i}(1-Z_i)$$
+\(\beta\) 是异质效应 \(\beta_i\) 的平均，\(Y_{0,i}\)、\(Y_{1,i}\) 为个体 \(i\) 受/不受处理的潜在结果，\(D_{1,i}\)、\(D_{0,i}\) 为带/不带工具的两个潜在处理决策。</p>
+<p>基本问题是：当处理效应异质时，线性 IV 识别什么？典型做法是先找一个工具变量、再反向工程它识别了什么。</p>
+</div>
+<div class="lang en">
+<p>The basic idea is that there is a causal chain between \(Z\), \(D\) and \(Y\). We can argue that \(Z\) affects \(D\) which in turn affects \(Y\), but there is no effect of \(Z\) directly on \(Y\), which makes \(Z\) a good instrument variable (IV) to measure \(D\)'s effect on \(Y\).</p>
+<p>For example, in the binary treatment and single binary instrument case, we write the problem in potential outcome notation as
+$$Y_i=\underbrace{\mathbb E[Y_{0,i}]}_{\alpha}+\underbrace{(Y_{1,i}-Y_{0,i})}_{\beta_i}D_i+\underbrace{Y_{0,i}-\mathbb E[Y_{0,i}]}_{U_i}\Rightarrow Y_i=\alpha+\beta D_i+U_i$$
+$$D_i=D_{1,i}Z_i+D_{0,i}(1-Z_i)$$
+where \(\beta\) is the average of the heterogeneous effect \(\beta_i\), \(Y_{0,i}\) and \(Y_{1,i}\) are the potential outcomes of treated and untreated individual \(i\), and finally \(D_{1,i}\) and \(D_{0,i}\) are the two potential treatment decisions of the person with and without the instrument.</p>
+<p>The fundamental question is: what does linear IV identify when treatment effects are heterogeneous? A typical approach is to find an instrumental variable first, and then reverse engineer what it identifies.</p>
+</div>
+<h2 id="16-1-simple-case-heterogeneous-effects-under-binary-treatment-with-single-binary-iv">16.1 Simple Case: Heterogeneous Effects under Binary Treatment with Single Binary IV</h2>
+<h3 id="16-1-1-set-up">16.1.1 Set-up</h3>
+<div class="lang zh">
+<ul>
+<li>\(D_z\) 为个体 \(i\) 在工具值 \(Z=z\in\{0,1\}\) 时的处理状态（省略 \(i\) 下标）。</li>
+<li>\(Y_{d,z}\) 为个体 \(i\) 在受处理 \(D=d\)、工具值 \(Z=z\) 时的结果。</li>
+</ul>
+<p>由此可定义多种待识别的因果效应，例如：
+- \(Y_{1,z}-Y_{0,z}\)：每个工具值下处理对潜在结果的效应。
+- \(Y_{D,1}-Y_{D,0}\)：每个处理决策下工具对潜在结果的效应。
+- \(D_1-D_0\)：工具对处理决策的效应。</p>
+<p>注意这些带 IV 的潜在结果需要同时设定工具与处理的值——这与基线模型不同（彼处只区分处理/不处理的结果）。</p>
+</div>
+<div class="lang en">
+<ul>
+<li>\(D_z\) is the treatment status of individual \(i\) at instrument value \(Z=z\in\{0,1\}\) (we drop the \(i\) subscript, and this applies to all the variables below).</li>
+<li>\(Y_{d,z}\) is the outcome of individual \(i\) if he receives treatment \(D=d\) and instrument value is \(Z=z\).</li>
+</ul>
+<p>By the structure of this problem, we can now define various causal effects to be identified, for example:
+- \(Y_{1,z}-Y_{0,z}\): the effect of treatment on the potential outcome for each instrument value.
+- \(Y_{D,1}-Y_{D,0}\): the effect of instrument on the potential outcome for each treatment decision.
+- \(D_1-D_0\): the effect of instrument on the treatment decision.</p>
+<p>Notice that for these potential outcomes with IV we need to jointly specify the value of both the instrument and the treatment — this stands in contrast to our baseline model of potential outcomes without IV where we only distinguish between the outcomes under treatment and without treatment.</p>
+</div>
+<h3 id="16-1-2-assumptions-for-iv">16.1.2 Assumptions for IV</h3>
+<div class="lang zh">
+<p>\(Z\) 是 \(D\) 对 \(Y\) 因果效应的工具变量，若以下四个假设成立：
+1. <strong>随机分配（Random assignment）</strong>：\(Y_{d,z},D_z\perp Z\)，\(\forall d,z\)。即 \(D\) 如同实验或准实验中随机分配般好。这足以识别 \(Z\) 对 \(Y\) 的平均因果效应。要看清这点，注意
+$$\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]=\mathbb E[Y_{D_1,1}\mid Z=1]-\mathbb E[Y_{D_0,0}\mid Z=0]\overset{Y_{d,z},D_z\perp Z}{=}\mathbb E[Y_{D_1,1}-Y_{D_0,0}]\tag{16.1}$$
+2. <strong>排除限制（Exclusion restriction）</strong>：\(Y_{d,1}=Y_{d,0}\)，\(\forall d\)。即 \(Z\) 对 \(Y\) 的任何效应必须经由 \(Z\) 对 \(D\) 的效应；固定 \(D\) 后工具对结果无直接效应。
+   - 例：学费补贴（工具）可能违反——学费降使上大学（处理）更便宜，但也可能让人请家教、少打工等，使排除限制更难成立。
+   - 排除限制常以"在 \(Y=\alpha+\beta D+U\) 中省略 \(Z\)"表达，即控制处理 \(D\) 后结果不依赖 \(Z\)。
+   - 排除限制 + 随机分配 = 工具外生性。最好分开论证，因二者是概念上不同的对象。
+3. <strong>工具相关性（Instrument relevance）</strong>：\(\mathbb E[D_1-D_0]\ne0\)。即 \(Z\) 对平均处理概率有某种效应；总体中至少有一人的决策随工具值改变。实务中通常需多于一人来估计。
+4. <strong>单调性（Monotonicity）</strong>：\(D_1\ge D_0\) \(\forall i\) 或 \(D_1\le D_0\) \(\forall i\)。即工具对所有 agent 处理选择的影响方向弱一致。
+   - 单调性某种意义是个不好的名字：我们真正想捕捉的是对工具的反应的一致性——人人被同向影响。
+   - 直观：仅看数据流 \(D=\alpha_0+\alpha_1Z+\epsilon\)，\(\alpha_1=\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]=\mathbb P(D=1\mid Z=1)-\mathbb P(D=1\mid Z=0)\) 度量工具引起的处理比例净变化。单调性下，\(\alpha_1\) 度量（不多不少）被工具推向处理的人的比例，即顺从者比例。若单调性被违反，\(\alpha_1\) 变成净效应，难以有意义地解读。</p>
+<div class="callout"><div class="callout-title">Important</div><p>注记 16.1
+随机分配 + 排除限制 = 工具外生性。回忆 §5.2.1 中我们把工具外生性定义为 \(\mathbb E[\mathbf Z U]=\mathbf 0\)。这两个定义等价：排除限制使 \(\mathbf Z\) 不属于 \(U\) 的一部分，随机分配使 \(\mathbf Z\) 独立于不含 \(\mathbf Z\) 的 \(U\)，二者合起来蕴含 \(\mathbb E[\mathbf Z U]=\mathbf 0\)。</p></div>
+</div>
+<div class="lang en">
+<p>The variable \(Z\) is an instrumental variable for the causal effect of \(D\) on \(Y\) if the following four assumptions hold:
+1. <strong>Random assignment</strong>: \(Y_{d,z},D_z\perp Z\) for all \(d,z\). In words, we need that \(D\) is as good as randomly assigned as in an experimental or quasi-experimental setting. This is sufficient to identify the average causal effect of \(Z\) on \(Y\). To see this, notice that
+$$\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]=\mathbb E[Y_{D_1,1}\mid Z=1]-\mathbb E[Y_{D_0,0}\mid Z=0]\overset{Y_{d,z},D_z\perp Z}{=}\mathbb E[Y_{D_1,1}-Y_{D_0,0}]\tag{16.1}$$
+2. <strong>Exclusion restriction</strong>: \(Y_{d,1}=Y_{d,0}\) for all \(d\), which states that any effect of \(Z\) on \(Y\) must be via an effect of \(Z\) on \(D\). If you fix \(D\), there's no more effect of the instrument on outcome.
+   - One example of where this might be violated is a tuition subsidy (instrument): a tuition subsidy will make college (treatment) cheaper, but might also allow people to buy a tutor, spend a shorter time working for a job, etc. It's typically harder to argue for exclusion for random assignment.
+   - The exclusion restriction is often expressed by omitting \(Z\) in the equation of interest, i.e. \(Y=\alpha+\beta D+U\), which means outcomes don't depend on \(Z\) when we control for treatment \(D\).
+   - Exclusion restriction + random assignment = instrument exogeneity. It is good to break down instrument exogeneity into exclusion restriction + random assignment because they are conceptually different objects, so it's better to argue separately.
+3. <strong>Instrument relevance</strong>: \(\mathbb E[D_1-D_0]\ne0\). We need that \(Z\) has some effect on the average probability of treatment. In the population this means there is at least one guy whose decision changes based on the value of the instrument. In practice, you probably need more than a single person for estimation.
+4. <strong>Monotonicity</strong>: \(D_1\ge D_0\) for all \(i\), or \(D_1\le D_0\) for all \(i\). In words, the instrument should have weakly same direction influence on all agent's choice of treatment.
+   - Monotonicity is in some sense a bad word for this assumption: we really want to capture uniformity of response to the instrument — everyone is affected the same way.
+   - Some intuition: only seeing flows in the data, i.e. \(D=\alpha_0+\alpha_1Z+\epsilon\), \(\alpha_1=\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]=\mathbb P(D=1\mid Z=1)-\mathbb P(D=1\mid Z=0)\) measures the net change in the fraction of treatment due to the instrument. Under monotonicity, \(\alpha_1\) measures (not net any more) the fraction of people moved towards treatment by instrument, i.e. the fraction of compliers to the instrument \(Z\). If monotonicity is violated, \(\alpha_1\) becomes the net effect, and it's not clear how to interpret \(\alpha_1\) in a meaningful way.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Remark 16.1
+Random assignment + Exclusion restriction = Instrument Exogeneity. Remember that in §5.2.1 we defined instrument exogeneity as \(\mathbb E[\mathbf Z U]=\mathbf 0\). These two definitions are equivalent in the sense that Exclusion restriction imposes that \(\mathbf Z\) is not part of \(U\), and Random assignment imposes that \(\mathbf Z\) is independent of the \(U\) without \(\mathbf Z\), which together implies \(\mathbb E[\mathbf Z U]=\mathbf 0\).</p></div>
+</div>
+<h3 id="16-1-3-wald-estimand-and-local-average-treatment-effect-late">16.1.3 Wald Estimand and Local Average Treatment Effect (LATE)</h3>
+<div class="lang zh">
+<p><strong>Wald 估计量。</strong> 考虑用单一二值 $(0,1)$ 工具 \(Z_i\) 估计含一个内生处理回归元 \(D_i\)、无协变量的结果 \(Y_i\) 模型。因果回归模型为 \(Y_i=\alpha+\beta D_i+\eta_i\)，工具（首阶段）回归为 \(D_i=\psi+\gamma Z_i+v_i\)。由 §5.2.5 的 (5.14)，
+$$\beta^{\text{IV}}=\frac{\operatorname{Cov}(Z_i,Y_i)}{\operatorname{Cov}(Z_i,D_i)}$$
+计算 \(\operatorname{Cov}(Z_i,Y_i)=(\mathbb E[Y_i\mid Z_i=1]-\mathbb E[Y_i\mid Z_i=0])\mathbb E[Z_i](1-\mathbb E[Z_i])\)，同理 \(\operatorname{Cov}(Z_i,D_i)=(\mathbb E[D_i\mid Z_i=1]-\mathbb E[D_i\mid Z_i=0])\mathbb E[Z_i](1-\mathbb E[Z_i])\)，故
+$$\beta^{\text{IV}}=\frac{\mathbb E[Y_i\mid Z_i=1]-\mathbb E[Y_i\mid Z_i=0]}{\mathbb E[D_i\mid Z_i=1]-\mathbb E[D_i\mid Z_i=0]}\tag{16.2}$$
+末式即 <strong>Wald 估计量（Wald Estimand）</strong>，其样本类比为 Wald 估计器。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 16.2
+Wald 估计量给出<strong>局部平均处理效应（LATE）</strong>，可解读为对那些"因 \(Z=1\) 而受处理、若 \(Z=0\) 则不受处理"的个体的平均处理效应（ATE）——即所谓<strong>顺从者（compliers）</strong>的 ATE。把总体按对工具的反应分四组：
+1. <strong>顺从者（compliers）</strong>：\(D_1=1\)、\(D_0=0\)，处理随 \(Z\) 从 1 到 0 而改变。
+2. <strong>恒取者（always takers）</strong>：\(D_1=1\)、\(D_0=1\)，无论工具值都受处理。
+3. <strong>恒不取者（never takers）</strong>：\(D_1=0\)、\(D_0=0\)，无论工具值都不受处理。
+4. <strong>违抗者（defiers）</strong>：\(D_1=0\)、\(D_0=1\)，只在 \(Z=0\) 时受处理（由单调性假设排除）。</p>
+<p>[!tip] 注记 16.3
+此四组分解是对工具特定的。换工具，原来的恒不取者可能变恒取者，如个体 \(i\) 可能对距离工具是顺从者、对学费补贴工具不是。故不同工具定义不同的总体子组（顺从者），Wald 估计量给出对应每组顺从者的不同 LATE。</p>
+<p>[!important] 命题 16.1（Claim 16.1）
+Wald 估计量即 LATE，定义为顺从者中的平均处理效应：
+$$\beta^{\text{IV}}=\frac{\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]}{\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]}=\mathbb E[Y_1-Y_0\mid D_1>D_0]\tag{16.3}$$</p>
+<p>[!note]- 证明
+由随机分配与 (16.1)，\(\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]=\mathbb E[Y_{D_1}-Y_{D_0}]\)。由全期望律，
+$$\begin{aligned}\mathbb E[Y_{D_1}-Y_{D_0}]&=\mathbb E[\underbrace{Y_{D_1}-Y_{D_0}}_{=Y_1-Y_0}\mid\text{Complier}]\mathbb P(D_1=1,D_0=0)+\mathbb E[\underbrace{Y_{D_1}-Y_{D_0}}_{=Y_0-Y_0=0}\mid\text{Never Taker}]\mathbb P(D_1=0,D_0=0)\\&\quad+\mathbb E[\underbrace{Y_{D_1}-Y_{D_0}}_{=Y_1-Y_1=0}\mid\text{Always Taker}]\mathbb P(D_1=1,D_0=1)+\mathbb E[Y_{D_1}-Y_{D_0}\mid\text{Defier}]\underbrace{\mathbb P(D_1=0,D_0=1)}_{=0\text{ by monotonicity}}\end{aligned}$$
+故 \(\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]=\mathbb E[Y_1-Y_0\mid\text{Complier}]\mathbb P(D_1=1,D_0=0)\)（16.4）。分母 \(\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]\overset{\text{random}}{=}\mathbb E[D_1-D_0]\overset{\text{mono}}{=}\mathbb P(D_1=1,D_0=0)\)（16.5；因 \(\mathbb E[D_1-D_0]=1\cdot\mathbb P(D_1=1,D_0=0)+0\cdot\mathbb P(D_1=1,D_0=1)+0\cdot\mathbb P(D_1=0,D_0=0)+(-1)\mathbb P(D_1=0,D_0=1)\)，末项由单调性为零）。故首阶段 \(\gamma=\mathbb P(D_1=1,D_0=0)\) 为顺从者比例。代入：
+$$\frac{\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]}{\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]}=\frac{\mathbb E[Y_1-Y_0\mid\text{Complier}]\mathbb P(D_1=1,D_0=0)}{\mathbb P(D_1=1,D_0=0)}=\mathbb E[Y_1-Y_0\mid D_1>D_0]$$
+\(\blacksquare\)</p>
+<p>[!tip] 注记 16.4
+异质效应 \(\beta_i\) 下，IV 估计的是处理对顺从者的平均因果效应。不同工具有不同效应，因不同工具识别不同顺从者组。我们关心哪个 LATE，应规范我们对工具的选择。</p></div>
+</div>
+<div class="lang en">
+<p><strong>Wald Estimand.</strong> Consider the case where we use a single binary $(0,1)$ instrument \(Z_i\) to estimate a model for outcome \(Y_i\) with one endogenous treatment regressor \(D_i\) and no covariates. The causal regression model is \(Y_i=\alpha+\beta D_i+\eta_i\), and the instrument (first stage) regression is \(D_i=\psi+\gamma Z_i+v_i\). From (5.14) in §5.2.5,
+$$\beta^{\text{IV}}=\frac{\operatorname{Cov}(Z_i,Y_i)}{\operatorname{Cov}(Z_i,D_i)}$$
+Computing \(\operatorname{Cov}(Z_i,Y_i)=(\mathbb E[Y_i\mid Z_i=1]-\mathbb E[Y_i\mid Z_i=0])\mathbb E[Z_i](1-\mathbb E[Z_i])\), and similarly \(\operatorname{Cov}(Z_i,D_i)=(\mathbb E[D_i\mid Z_i=1]-\mathbb E[D_i\mid Z_i=0])\mathbb E[Z_i](1-\mathbb E[Z_i])\), so
+$$\beta^{\text{IV}}=\frac{\mathbb E[Y_i\mid Z_i=1]-\mathbb E[Y_i\mid Z_i=0]}{\mathbb E[D_i\mid Z_i=1]-\mathbb E[D_i\mid Z_i=0]}\tag{16.2}$$
+The last line is the <strong>Wald Estimand</strong>, and its sample analog is the Wald Estimator.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 16.2
+The Wald estimand gives the <strong>Local Average Treatment Effect (LATE)</strong>, which can be interpreted as the average effect (ATE) of treatment on outcomes for individuals who were treated because \(Z=1\), but who would not have been treated given \(Z=0\), i.e. the ATE of treatment among the so-called <strong>compliers</strong>. We can characterize the population as being composed of four groups:
+1. <strong>Compliers</strong>: \(D_1=1\) and \(D_0=0\), i.e. the treatment is change by whether \(Z=1\) or \(Z=0\).
+2. <strong>Always takers</strong>: \(D_1=1\) and \(D_0=1\), i.e. always take treatment regardless of the value of the instrument.
+3. <strong>Never takers</strong>: \(D_1=0\) and \(D_0=0\), i.e. never take treatment regardless of the value of the instrument.
+4. <strong>Defiers</strong>: \(D_1=0\) and \(D_0=1\), i.e. only take treatment when \(Z=0\) (ruled out by our monotonicity assumption).</p>
+<p>[!tip] Remark 16.3
+This four-groups-decomposition is specific to the instrument. If you change the instrument, the never takers may become always takers. E.g. an individual \(i\) could be a complier to the distance instrument but not to the tuition subsidy instrument. So, different instruments define different groups of population as compliers, and the Wald Estimand thus gives us different LATE corresponding to each group of compliers.</p>
+<p>[!important] Proposition 16.1 (Claim 16.1)
+The Wald Estimand is the LATE, defined as the average treatment effect among the compliers:
+$$\beta^{\text{IV}}=\frac{\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]}{\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]}=\mathbb E[Y_1-Y_0\mid D_1>D_0]\tag{16.3}$$</p>
+<p>[!note]- Proof
+By random assignment and (16.1), \(\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]=\mathbb E[Y_{D_1}-Y_{D_0}]\). By the law of total expectation,
+$$\begin{aligned}\mathbb E[Y_{D_1}-Y_{D_0}]&=\mathbb E[\underbrace{Y_{D_1}-Y_{D_0}}_{=Y_1-Y_0}\mid\text{Complier}]\mathbb P(D_1=1,D_0=0)+\mathbb E[\underbrace{Y_{D_1}-Y_{D_0}}_{=Y_0-Y_0=0}\mid\text{Never Taker}]\mathbb P(D_1=0,D_0=0)\\&\quad+\mathbb E[\underbrace{Y_{D_1}-Y_{D_0}}_{=Y_1-Y_1=0}\mid\text{Always Taker}]\mathbb P(D_1=1,D_0=1)+\mathbb E[Y_{D_1}-Y_{D_0}\mid\text{Defier}]\underbrace{\mathbb P(D_1=0,D_0=1)}_{=0\text{ by monotonicity}}\end{aligned}$$
+so \(\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]=\mathbb E[Y_1-Y_0\mid\text{Complier}]\mathbb P(D_1=1,D_0=0)\) (16.4). The denominator \(\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]\overset{\text{random}}{=}\mathbb E[D_1-D_0]\overset{\text{mono}}{=}\mathbb P(D_1=1,D_0=0)\) (16.5; since \(\mathbb E[D_1-D_0]=1\cdot\mathbb P(D_1=1,D_0=0)+0\cdot\mathbb P(D_1=1,D_0=1)+0\cdot\mathbb P(D_1=0,D_0=0)+(-1)\mathbb P(D_1=0,D_0=1)\), the last term zero by monotonicity). So in the first stage \(\gamma=\mathbb P(D_1=1,D_0=0)\) is the fraction of compliers. Plugging in:
+$$\frac{\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]}{\mathbb E[D\mid Z=1]-\mathbb E[D\mid Z=0]}=\frac{\mathbb E[Y_1-Y_0\mid\text{Complier}]\mathbb P(D_1=1,D_0=0)}{\mathbb P(D_1=1,D_0=0)}=\mathbb E[Y_1-Y_0\mid D_1>D_0]$$
+\(\blacksquare\)</p>
+<p>[!tip] Remark 16.4
+With heterogeneous effects \(\beta_i\), IV estimates the average causal effect of treatment on compliers. Again, different instruments will have different effects because you will have different group of compliers. So different IV estimands will identify different things. Which LATE we care about should discipline our choice of instrument.</p></div>
+</div>
+<h3 id="16-1-4-over-identifying-test-for-constant-effect-models">16.1.4 Over-identifying Test for Constant Effect Models</h3>
+<div class="lang zh">
+<p>过度识别检验的基本思想是：在恒定效应（\(\beta_i=\beta\) \(\forall i\)）模型中，用不同工具得到的估计应相同（受抽样误差影响）。例如，设有两个工具 \(Z_1,Z_2\)、对应 Wald 估计量 \(\beta_1^{\text{IV}}\)、\(\beta_2^{\text{IV}}\)。恒定效应假设下，任意顺从者组的 ATE 都是全总体的 ATE，故应有 \(\beta_1^{\text{IV}}=\beta_2^{\text{IV}}\)。若已确信 \(Z_1\) 有效，则可检验
+$$H_0:\ Z_2\text{ valid},\qquad H_1:\ Z_2\text{ not valid}$$
+通过检验 \(\beta_1^{\text{IV}}\) 与 \(\beta_2^{\text{IV}}\) 的距离来进行。</p>
+<p>然而，异质效应假设下，不同工具定义不同顺从者组，故 \(\beta_1^{\text{IV}}\) 与 \(\beta_2^{\text{IV}}\) 即便两工具都有效也可能不同。因此被过度识别检验拒绝的工具未必无效。</p>
+<p>至此我们考虑了 IV 模型在异质处理效应下的简单情形：(1) 平均效应（顺从者）即 LATE；(2) 二值处理、单一二值工具；(3) 无协变量。下面放松这些假设。</p>
+</div>
+<div class="lang en">
+<p>The essential idea of an over-identifying test is that in a constant effect (\(\beta_i=\beta\) for all \(i\)) model, you should get the same estimate (subject to some sampling error) from different instruments. For example, suppose you have two instruments \(Z_1\) and \(Z_2\) and the corresponding Wald Estimands are \(\beta_1^{\text{IV}}\) and \(\beta_2^{\text{IV}}\). Then, under the constant effect assumption, ATE among any group of compliers are the ATE among the whole population, so we should have \(\beta_1^{\text{IV}}=\beta_2^{\text{IV}}\). Suppose we have confidence that \(Z_1\) is a valid instrument, then we can do the following test
+$$H_0:\ Z_2\text{ is valid},\qquad H_1:\ Z_2\text{ is not valid}$$
+by testing the distance between \(\beta_1^{\text{IV}}\) and \(\beta_2^{\text{IV}}\).</p>
+<p>However, under the heterogeneous effect assumption, different instruments define different groups of compliers, so \(\beta_1^{\text{IV}}\) and \(\beta_2^{\text{IV}}\) can be different when both instruments are valid. So, the instrument rejected by such an over-identifying test might not be invalid.</p>
+<p>So far we have considered an IV model with heterogeneous treatment effect in the simple case of: (1) average effects (for compliers): LATE; (2) binary treatment, and single binary instrument; (3) no covariates. Now we relax these assumptions.</p>
+</div>
+<h2 id="16-2-extension-1-counterfactual-distributions">16.2 Extension 1: Counterfactual Distributions</h2>
+<div class="lang zh">
+<p>Imbens 与 Rubin (1997) 表明，用 IV 可估计的不止顺从者的平均因果效应（LATE）。特别地，可恢复四组 agent 中结果的<strong>完整边际分布</strong>。先引入简记：\(n=\) 恒不取者（Never Taker）、\(a=\) 恒取者（Always Taker）、\(c=\) 顺从者（Complier）、\(d=\) 违抗者（Defier）。</p>
+<p>对 \(Z,D\) 的不同组合，已知下表（违抗者已被单调性排除）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>\(D=0\)</th>
+<th>\(D=1\)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>\(Z=0\)</td>
+<td>\(n,c\)</td>
+<td>\(a\)</td>
+</tr>
+<tr>
+<td>\(Z=1\)</td>
+<td>\(n\)</td>
+<td>\(a,c\)</td>
+</tr>
+</tbody>
+</table>
+<p>由 \(Z\) 随机，类型 \(a,n,c\) 的分布对每个 \(Z\) 值都相同。记 \(p_s\)（\(s\in\{a,n,c\}\)）为总体中类型 \(s\) 的比例，则上表蕴含
+$$p_a=\mathbb P(D=1\mid Z=0),\qquad p_n=\mathbb P(D=0\mid Z=1),\qquad p_c=1-p_a-p_n$$
+即：恒取者比例 = 在 \(Z=0\) 仍受处理的比例；恒不取者比例 = 在 \(Z=1\) 仍未处理的比例；顺从者比例由 1 减去这两者得到。</p>
+<p>利用此可算各组的边际分布，特别地
+$$f_{10}(y)=g_n(y)\tag{16.6}$$
+$$f_{01}(y)=g_a(y)\tag{16.7}$$
+$$f_{00}(y)=g_{a0}(y)\cdot\frac{p_c}{p_c+p_n}+g_n(y)\cdot\frac{p_n}{p_c+p_n}\tag{16.8}$$
+$$f_{11}(y)=g_{a1}(y)\cdot\frac{p_c}{p_c+p_a}+g_a(y)\cdot\frac{p_a}{p_c+p_a}\tag{16.9}$$
+其中：\(f_{zd}(y)\) 为 \(Z=z,D=d\) 中结果 \(y\) 的密度；\(g_n(y)\) 为恒不取者中 \(y\) 的密度；\(g_a(y)\) 为恒取者中 \(y\) 的密度；\(g_{a0}(y)\) 为<strong>未受处理顺从者</strong>中 \(y\) 的密度；\(g_{a1}(y)\) 为<strong>已受处理顺从者</strong>中 \(y\) 的密度。\(f_{00},f_{01},f_{10},f_{11},p_a,p_n,p_c\) 都可由数据用非参数方法直接估计，从而得到 \(g_n(y),g_a(y),g_{a0}(y),g_{a1}(y)\)——即恒不取者、恒取者、未处理顺从者、已处理顺从者的结果分布。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 16.5
+(16.6)、(16.7) 成立因随机分配下，\(Z=1\) 的恒不取者（或 \(Z=0\) 的恒取者）代表全总体的恒不取者（或恒取者）。(16.8)、(16.9) 由随机分配 + 贝叶斯规则得。</p>
+<p>[!tip] 注记 16.6
+\(g_n(y),g_a(y),g_{a0}(y),g_{a1}(y)\) 称<strong>反事实分布</strong>，因这四组人在给定 \(Z,D\) 实现后本不可能被直接识别。也可用这些估得的反事实分布检验工具有效性：有效工具不应生成带负值区域的密度。</p></div>
+</div>
+<div class="lang en">
+<p>Imbens &amp; Rubin (1997) show that we can use IV to estimate more than the average causal effect for compliers (LATE). In particular, we can recover the complete marginal distributions of the outcome among the four groups of agents. First, introduce shorthand notation: \(n=\) Never Taker, \(a=\) Always Taker, \(c=\) Complier, \(d=\) Defier.</p>
+<p>For the different combinations of \(Z\) and \(D\), we know the following (defiers ruled out by monotonicity):</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>\(D=0\)</th>
+<th>\(D=1\)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>\(Z=0\)</td>
+<td>\(n,c\)</td>
+<td>\(a\)</td>
+</tr>
+<tr>
+<td>\(Z=1\)</td>
+<td>\(n\)</td>
+<td>\(a,c\)</td>
+</tr>
+</tbody>
+</table>
+<p>Since \(Z\) is random, the distribution of types \(a,n,c\) is the same for each value of \(Z\). Denote \(p_s\) (\(s\in\{a,n,c\}\)) as the fraction of type \(s\) agent in the population; then the table implies
+$$p_a=\mathbb P(D=1\mid Z=0),\qquad p_n=\mathbb P(D=0\mid Z=1),\qquad p_c=1-p_a-p_n$$
+i.e. the share of always takers = the share of treated among those who get \(Z=0\); the share of never takers = the share of untreated among those who get \(Z=1\); the share of compliers by subtracting the sum of these two shares from 1.</p>
+<p>We can exploit this to calculate the marginal distributions for each of these groups, in particular
+$$f_{10}(y)=g_n(y)\tag{16.6}$$
+$$f_{01}(y)=g_a(y)\tag{16.7}$$
+$$f_{00}(y)=g_{a0}(y)\cdot\frac{p_c}{p_c+p_n}+g_n(y)\cdot\frac{p_n}{p_c+p_n}\tag{16.8}$$
+$$f_{11}(y)=g_{a1}(y)\cdot\frac{p_c}{p_c+p_a}+g_a(y)\cdot\frac{p_a}{p_c+p_a}\tag{16.9}$$
+where: \(f_{zd}(y)\) is the p.d.f. of outcome \(y\) among those \(Z=z,D=d\); \(g_n(y)\) is the p.d.f. of outcome \(y\) among never takers; \(g_a(y)\) is the p.d.f. of outcome \(y\) among always takers; \(g_{a0}(y)\) is the p.d.f. of outcome \(y\) among <strong>untreated compliers</strong>; \(g_{a1}(y)\) is the p.d.f. of outcome \(y\) among <strong>treated compliers</strong>. \(f_{00},f_{01},f_{10},f_{11},p_a,p_n,p_c\) can all be directly estimated using non-parametric methods from data, so we can obtain \(g_n(y),g_a(y),g_{a0}(y),g_{a1}(y)\), which are the outcome distributions of never takers, always takers, untreated compliers, and treated compliers respectively.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 16.5
+(16.6) and (16.7) are true because by random assignment, the never takers with \(Z=1\) (or always takers with \(Z=0\)) represents the whole group of never takers (or always takers). (16.8) and (16.9) by random assignment and Bayes' rule.</p>
+<p>[!tip] Remark 16.6
+\(g_n(y),g_a(y),g_{a0}(y),g_{a1}(y)\) are called counterfactual distributions because these four groups of people are impossible to be directly identified given \(Z\) and \(D\) are realized. We can also use these estimated counterfactual distributions to check on validity of instrument: a valid instrument should never generate p.d.f.'s with negative regions.</p></div>
+</div>
+<h2 id="16-3-extension-2-late-with-multiple-binary-instruments">16.3 Extension 2: LATE with Multiple Binary Instruments</h2>
+<h3 id="16-3-1-weighted-average-of-different-lates">16.3.1 Weighted Average of Different LATEs</h3>
+<div class="lang zh">
+<p>设有多于一个二值工具。例如两个二值工具，由 §16.1.3 的结果可估两个不同 LATE：对 \(j=1,2\)，
+$$\beta_j=\frac{\operatorname{Cov}(Y,Z_j)}{\operatorname{Cov}(D,Z_j)}=\mathbb E[Y_1-Y_0\mid\underbrace{D_{Z_j=1}-D_{Z_j=0}=1}_{\text{Complier to instrument }j}]$$
+实务中研究者常用 TSLS：首阶段回归
+$$D=\pi_1Z_1+\pi_2Z_2+\varepsilon$$
+（等价地 \(D=Z_1(1-Z_2)D_{1,0}+Z_2(1-Z_1)D_{0,1}+Z_1Z_2D_{1,1}+(1-Z_1)(1-Z_2)D_{0,0}\)。）用 \(\hat D=\pi_1Z_1+\pi_2Z_2\) 得 Wald 估计量
+$$\beta_{\text{TSLS}}=\frac{\operatorname{Cov}(Y,\hat D)}{\operatorname{Cov}(D,\hat D)}$$
+注意这给出
+$$\begin{aligned}\beta_{\text{TSLS}}&=\pi_1\frac{\operatorname{Cov}(Y,Z_1)}{\operatorname{Cov}(D,\hat D)}+\pi_2\frac{\operatorname{Cov}(Y,Z_2)}{\operatorname{Cov}(D,\hat D)}=\underbrace{\pi_1\frac{\operatorname{Cov}(D,Z_1)}{\operatorname{Cov}(D,\hat D)}}_{\equiv\psi}\frac{\operatorname{Cov}(Y,Z_1)}{\operatorname{Cov}(D,Z_1)}+\underbrace{\pi_2\frac{\operatorname{Cov}(D,Z_2)}{\operatorname{Cov}(D,\hat D)}}_{=1-\psi}\frac{\operatorname{Cov}(Y,Z_2)}{\operatorname{Cov}(D,Z_2)}\\&=\psi\beta_1+(1-\psi)\beta_2\end{aligned}$$
+其中
+$$\psi\equiv\pi_1\frac{\operatorname{Cov}(D,Z_1)}{\operatorname{Cov}(D,\hat D)}=\frac{\pi_1\operatorname{Cov}(D,Z_1)}{\pi_1\operatorname{Cov}(D,Z_1)+\pi_2\operatorname{Cov}(D,Z_2)}$$
+是 \(Z_1\) 的相对强度（即首阶段被 \(Z_1\) 推向处理的总体比例）。故 \(\beta_{\text{TSLS}}\) 是各工具特定 LATE 的加权平均。注意项 \(\operatorname{Cov}(D,Z_i)\) 表明与 \(D\) 协方差更高的工具被赋更高权重，即对推动更多人的工具加更高权重。</p>
+</div>
+<div class="lang en">
+<p>Suppose we have more than one binary instrument. For example, with two binary instruments, based on the result in §16.1.3, we can estimate two different LATEs: for \(j=1,2\),
+$$\beta_j=\frac{\operatorname{Cov}(Y,Z_j)}{\operatorname{Cov}(D,Z_j)}=\mathbb E[Y_1-Y_0\mid\underbrace{D_{Z_j=1}-D_{Z_j=0}=1}_{\text{Complier to instrument }j}]$$
+In practice, researchers often use the TSLS method, and do the first-stage regression
+$$D=\pi_1Z_1+\pi_2Z_2+\varepsilon$$
+(equivalently \(D=Z_1(1-Z_2)D_{1,0}+Z_2(1-Z_1)D_{0,1}+Z_1Z_2D_{1,1}+(1-Z_1)(1-Z_2)D_{0,0}\).) Then use \(\hat D=\pi_1Z_1+\pi_2Z_2\) to obtain the Wald estimand
+$$\beta_{\text{TSLS}}=\frac{\operatorname{Cov}(Y,\hat D)}{\operatorname{Cov}(D,\hat D)}$$
+Notice that this gives us
+$$\begin{aligned}\beta_{\text{TSLS}}&=\pi_1\frac{\operatorname{Cov}(Y,Z_1)}{\operatorname{Cov}(D,\hat D)}+\pi_2\frac{\operatorname{Cov}(Y,Z_2)}{\operatorname{Cov}(D,\hat D)}=\underbrace{\pi_1\frac{\operatorname{Cov}(D,Z_1)}{\operatorname{Cov}(D,\hat D)}}_{\equiv\psi}\frac{\operatorname{Cov}(Y,Z_1)}{\operatorname{Cov}(D,Z_1)}+\underbrace{\pi_2\frac{\operatorname{Cov}(D,Z_2)}{\operatorname{Cov}(D,\hat D)}}_{=1-\psi}\frac{\operatorname{Cov}(Y,Z_2)}{\operatorname{Cov}(D,Z_2)}\\&=\psi\beta_1+(1-\psi)\beta_2\end{aligned}$$
+where
+$$\psi\equiv\pi_1\frac{\operatorname{Cov}(D,Z_1)}{\operatorname{Cov}(D,\hat D)}=\frac{\pi_1\operatorname{Cov}(D,Z_1)}{\pi_1\operatorname{Cov}(D,Z_1)+\pi_2\operatorname{Cov}(D,Z_2)}$$
+is the relative strength of \(Z_1\) (i.e. the fraction of population moved towards treatment by \(Z_1\) in the first stage). So \(\beta_{\text{TSLS}}\) is the weighted average of the instrument-specific LATEs. Notice that the term \(\operatorname{Cov}(D,Z_i)\) means that higher weight is assigned to the instrument that has a high covariance with \(D\), i.e. we give a higher weight to the instrument that shifts more people around.</p>
+</div>
+<h3 id="16-3-2-monotonicity-assumption-for-multiple-binary-instruments">16.3.2 Monotonicity Assumption for Multiple Binary Instruments</h3>
+<div class="lang zh">
+<p>多个二值工具下单调性更难施加、更具限制性。多工具下单调性意味什么？直观地，从工具值的任一组合移到另一组合时，agents 应（在受/不受处理意义上）以弱一致的方向反应。精确地，对工具向量 \(\mathbf Z=(Z_1,\dots,Z_m)'\)，任意一对工具值 \(\mathbf z,\mathbf z'\)，要么 \(D_\mathbf z\ge D_{\mathbf z'}\) \(\forall i\)、要么 \(D_\mathbf z\le D_{\mathbf z'}\) \(\forall i\)。等价地，记 \(\mathbb Z_i=\{\mathbf z\in\mathbf Z:D_\mathbf z=1\}\) 为使个体 \(i\) 受处理的工具值集合，则对任意一对个体 \(i,j\)，要么 \(\mathbb Z_i\subseteq\mathbb Z_j\)、要么 \(\mathbb Z_j\subseteq\mathbb Z_i\)。</p>
+<div class="callout"><div class="callout-title">Important</div><p>例 16.1
+用随机效用模型说明多工具单调性如何易被违反。设 \(V(d,z)\) 为选 \(D=d\) 时（工具 \(Z=z\)）的间接效用，\(D_z=\arg\max_{d\in\{0,1\}}V(d,z)=\mathbf 1\{V_z\ge0\}\)，\(V_z\equiv V(1,z)-V(0,z)\) 为净间接效用。设定：\(D_{Z_1,Z_2}\in\{0,1\}\) 是否上大学；\(Z_1=1\) 受补贴、\(Z_1=0\) 无补贴；\(Z_2=1\) 住得离大学近、\(Z_2=0\) 住得远；\(D_{Z_1,Z_2}\) 对 \(Z_1,Z_2\) 都弱增。然而即便 \(D_{Z_1,Z_2}\) 对 \(Z_1,Z_2\) 都弱增，仍可能无单调性（见图示）。
+<strong>图示（无差异曲线图，已转述）：</strong> 横轴 \(z_1\)（补贴）、纵轴 \(z_2\)（邻近度）。画出个体 \(k\)、\(j\) 的无差异边界 \(\{z:V_k(z)=0\}\)、\(\{z:V_j(z)=0\}\)。当从点 $(0,1)$ 移到 $(1,0)$ 时，个体 \(k\) 会切换为<strong>不</strong>受处理、而个体 \(j\) 会切换为受处理——故两个体对 \(\mathbf z_1=(0,1)\to\mathbf z_2=(1,0)\) 的反应方向相反，单调性被违反。</p></div>
+</div>
+<div class="lang en">
+<p>Monotonicity becomes more difficult to impose and more restrictive with multiple binary instruments. What does monotonicity even mean with multiple instruments? Intuitively, monotonicity in the multiple binary instrument case means that moving from any combination of instrument values to another combination of instrument values, agents should respond (in terms of taking treatment or not) in a weakly same direction. Precisely, for the vector of instruments \(\mathbf Z=(Z_1,\dots,Z_m)'\), for any pair of values of \(\mathbf Z\), i.e. \(\mathbf z,\mathbf z'\), either \(D_\mathbf z\ge D_{\mathbf z'}\) for all \(i\) or \(D_\mathbf z\le D_{\mathbf z'}\) for all \(i\). Equivalently, denote the set of instrument values that makes individual \(i\) take treatment by \(\mathbb Z_i=\{\mathbf z\in\mathbf Z:D_\mathbf z=1\}\); then for any pair of individuals \(i\) and \(j\), either \(\mathbb Z_i\subseteq\mathbb Z_j\) or \(\mathbb Z_j\subseteq\mathbb Z_i\).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Example 16.1
+The following example demonstrates how monotonicity in the multiple binary instrument case can be easily violated. Consider the random utility model where \(V(d,z)\) is the indirect utility from choosing \(D=d\) when instrument \(Z=z\), and \(D_z=\arg\max_{d\in\{0,1\}}V(d,z)=\mathbf 1\{V_z\ge0\}\), with \(V_z\equiv V(1,z)-V(0,z)\) the net indirect utility. The set-up: \(D_{Z_1,Z_2}\in\{0,1\}\) is whether to attend college; \(Z_1=1\) means receiving a subsidy, \(Z_1=0\) no subsidy; \(Z_2=1\) means living close to college, \(Z_2=0\) living far; \(D_{Z_1,Z_2}\) is weakly increasing in both \(Z_1\) and \(Z_2\). However, even when \(D_{Z_1,Z_2}\) is weakly increasing in both \(Z_1\) and \(Z_2\), we might still don't have monotonicity (see the figure).
+<strong>Figure (indifference-curve plot, paraphrased):</strong> horizontal axis \(z_1\) (subsidy), vertical axis \(z_2\) (proximity). Draw the indifference boundaries \(\{z:V_k(z)=0\}\) and \(\{z:V_j(z)=0\}\) of individuals \(k\) and \(j\). When we move from point $(0,1)$ to $(1,0)\(, individual \)k$ switches to <strong>not</strong> take treatment while individual \(j\) switches to take treatment — so the two individuals differ in their response to \(\mathbf z_1=(0,1)\to\mathbf z_2=(1,0)\), and thus monotonicity is violated.</p></div>
+</div>
+<h2 id="16-4-extension-3-variable-treatment-intensity">16.4 Extension 3: Variable Treatment Intensity</h2>
+<h3 id="16-4-1-general-set-up-and-assumptions">16.4.1 General Set-up and Assumptions</h3>
+<div class="lang zh">
+<p>设处理在世界中按强度变化。假设处理 \(S\) 不再二值、而随其水平变化：
+$$S=\{0,1,2,\dots,J\}$$
+例如 \(S\) 可为受教育年数。定义按处理水平 \(S\) 索引的潜在结果 \(Y_s\)（\(s\in S\)），处理 \(S_Z\) 仍按工具值索引。二值工具情形（条件于 \(X=x\)）：
+$$\beta(x)=\frac{\mathbb E[Y\mid Z=1,X=x]-\mathbb E[Y\mid Z=0,X=x]}{\mathbb E[D\mid Z=1,X=x]-\mathbb E[D\mid Z=0,X=x]}=\mathbb E[Y_1-Y_0\mid D_1>D_0,X=x]$$
+$$S=S_1Z+S_0(1-Z)$$
+观测结果为
+$$Y=\sum_{s=0}^J Y_s\cdot\mathbf 1\{S=s\}=Y_0+\sum_{s=1}^J(Y_s-Y_{s-1})\cdot\mathbf 1\{S\ge s\}$$
+第 \(s\) 年受教育的平均效应为 \(\mathbb E[Y_s-Y_{s-1}]\)，共 \(J\) 个处理效应。假设：
+1. <strong>随机分配</strong>：\(Y_{s,z},S_z\perp Z\) \(\forall s,z\)。
+2. <strong>排除限制</strong>：\(Y_{s,z}=Y_s\)。
+3. <strong>单调性</strong>：\(S_1\ge S_0\) \(\forall i\) 或 \(S_1\le S_0\) \(\forall i\)。
+4. <strong>工具相关性</strong>：\(\mathbb E[S_1-S_0]\ne0\)。</p>
+</div>
+<div class="lang en">
+<p>Suppose in the world where treatment varies in intensity. Assume treatment \(S\) is no longer binary but varies in its level, i.e.
+$$S=\{0,1,2,\dots,J\}$$
+For example, the treatment \(S\) now can be the years of schooling. We can then define potential outcomes indexed by the level of treatment, i.e. \(Y_s\) for \(s\in S\), and potential treatments are as before indexed by the value of the instrument, i.e. \(S_Z\). In the case of binary instruments (conditional on \(X=x\)),
+$$\beta(x)=\frac{\mathbb E[Y\mid Z=1,X=x]-\mathbb E[Y\mid Z=0,X=x]}{\mathbb E[D\mid Z=1,X=x]-\mathbb E[D\mid Z=0,X=x]}=\mathbb E[Y_1-Y_0\mid D_1>D_0,X=x]$$
+$$S=S_1Z+S_0(1-Z)$$
+The observed outcome is
+$$Y=\sum_{s=0}^J Y_s\cdot\mathbf 1\{S=s\}=Y_0+\sum_{s=1}^J(Y_s-Y_{s-1})\cdot\mathbf 1\{S\ge s\}$$
+and the average effect of the \(s\)-th year of schooling is \(\mathbb E[Y_s-Y_{s-1}]\), with \(J\) different treatment effects. Assumptions:
+1. <strong>Random assignment</strong>: \(Y_{s,z},S_z\perp Z\) for all \(s,z\).
+2. <strong>Exclusion restriction</strong>: \(Y_{s,z}=Y_s\).
+3. <strong>Monotonicity</strong>: \(S_1\ge S_0\) for all \(i\) or \(S_1\le S_0\) for all \(i\).
+4. <strong>Instrument relevance</strong>: \(\mathbb E[S_1-S_0]\ne0\).</p>
+</div>
+<h3 id="16-4-2-example-of-three-levels-treatment">16.4.2 Example of Three Levels Treatment</h3>
+<div class="lang zh">
+<p>设 \(S=\{0,1,2\}\)、\(S_1\ge S_0\) \(\forall i\)。单调性 \(S_1\ge S_0\) 蕴含对 \(\forall s\in S\)，\(\mathbf 1\{S_1\ge s\}-\mathbf 1\{S_0\ge s\}\in\{0,1\}\)，故
+$$\mathbb P(\mathbf 1\{S_1\ge s\}>\mathbf 1\{S_0\ge s\})=\mathbb P(S_1\ge s>S_0)$$
+即若 \(\mathbb P(S_1\ge s>S_0)>0\)，则工具 \(Z\) 影响处理水平 \(s\) 的发生。特别地
+$$\mathbb E[S\mid Z=1]-\mathbb E[S\mid Z=0]=\mathbb E[S_1-S_0]=\mathbb P(S_1\ge1>S_0)\times1+\mathbb P(S_1\ge2>S_0)\times1=\mathbb P(S_1\ge1>S_0)+\mathbb P(S_1\ge2>S_0)$$
+工具相关性要求 \(\mathbb E[S\mid Z=1]-\mathbb E[S\mid Z=0]>0\)。结果 \(Y=Y_0+(Y_1-Y_0)\mathbf 1\{S\ge1\}+(Y_2-Y_1)\mathbf 1\{S\ge2\}\)。展开约简形式（把 \(Y\) 对工具 \(Z\) 直接回归）得
+$$\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]=\mathbb E[Y_1-Y_0\mid S_1\ge1>S_0]\mathbb P(S_1\ge1>S_0)+\mathbb E[Y_2-Y_1\mid S_1\ge2>S_0]\mathbb P(S_1\ge2>S_0)$$
+故 Wald 估计量
+$$\beta^{\text{IV}}=\sum_{s=1}^2\omega_s\mathbb E[Y_s-Y_{s-1}\mid S_1\ge s>S_0]\tag{16.10}$$
+$$\omega_s=\frac{\mathbb P(S_1\ge s>S_0)}{\sum_{j=1}^2\mathbb P(S_1\ge j>S_0)}$$</p>
+</div>
+<div class="lang en">
+<p>Suppose \(S=\{0,1,2\}\) and \(S_1\ge S_0\) for all \(i\). Monotonicity \(S_1\ge S_0\) implies that for all \(s\in S\), \(\mathbf 1\{S_1\ge s\}-\mathbf 1\{S_0\ge s\}\in\{0,1\}\), so that
+$$\mathbb P(\mathbf 1\{S_1\ge s\}>\mathbf 1\{S_0\ge s\})=\mathbb P(S_1\ge s>S_0)$$
+i.e. if \(\mathbb P(S_1\ge s>S_0)\) is greater than zero, then the instrument \(Z\) affects the incidence of treatment level \(s\). In particular
+$$\mathbb E[S\mid Z=1]-\mathbb E[S\mid Z=0]=\mathbb E[S_1-S_0]=\mathbb P(S_1\ge1>S_0)\times1+\mathbb P(S_1\ge2>S_0)\times1=\mathbb P(S_1\ge1>S_0)+\mathbb P(S_1\ge2>S_0)$$
+Instrument relevance requires \(\mathbb E[S\mid Z=1]-\mathbb E[S\mid Z=0]>0\). The outcome \(Y=Y_0+(Y_1-Y_0)\mathbf 1\{S\ge1\}+(Y_2-Y_1)\mathbf 1\{S\ge2\}\). Expanding the reduced form (regressing outcome \(Y\) directly on instrument \(Z\)) gives
+$$\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]=\mathbb E[Y_1-Y_0\mid S_1\ge1>S_0]\mathbb P(S_1\ge1>S_0)+\mathbb E[Y_2-Y_1\mid S_1\ge2>S_0]\mathbb P(S_1\ge2>S_0)$$
+which gives us the Wald estimand
+$$\beta^{\text{IV}}=\sum_{s=1}^2\omega_s\mathbb E[Y_s-Y_{s-1}\mid S_1\ge s>S_0]\tag{16.10}$$
+$$\omega_s=\frac{\mathbb P(S_1\ge s>S_0)}{\sum_{j=1}^2\mathbb P(S_1\ge j>S_0)}$$</p>
+</div>
+<h3 id="16-4-3-wald-estimand-in-general">16.4.3 Wald Estimand in General</h3>
+<div class="lang zh">
+<p>由与 (16.10) 完全相同的论证，一般 \(S=\{0,1,2,\dots,J\}\) 情形的 Wald 估计量为
+$$\beta^{\text{IV}}=\frac{\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]}{\mathbb E[S\mid Z=1]-\mathbb E[S\mid Z=0]}=\sum_{s=1}^J\omega_s\mathbb E[Y_s-Y_{s-1}\mid S_1\ge s>S_0]$$
+$$\omega_s=\frac{\mathbb P(S_1\ge s>S_0)}{\sum_{j=1}^J\mathbb P(S_1\ge j>S_0)}$$
+称之为<strong>平均因果反应（average causal response, ACR）</strong>。可估 \(\omega_s\)，因
+$$\begin{aligned}\mathbb P(S_1\ge s>S_0)&=\mathbb P(S_1\ge s,S_0<s)=\mathbb P(S_1\ge s,S_0<s)+\mathbb P(S_1\ge s,S_0\ge s)-\underbrace{\mathbb P(S_1\ge s,S_0\ge s)}_{\text{by monotonicity}=\mathbb P(S_0\ge s)}\\&=\mathbb P(S_1\ge s)-\mathbb P(S_0\ge s)\overset{\text{random}}{=}\underbrace{\mathbb P(S\ge s\mid Z=1)}_{\text{data}}-\underbrace{\mathbb P(S\ge s\mid Z=0)}_{\text{data}}\end{aligned}$$
+（第二行第三项由单调性 \(S_1\ge S_0\)，故 \(S_0\ge s\Rightarrow S_1\ge s\)。）</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记
+注意虽然 \(\omega_s\) 为正且和为 1，Wald 估计量却<strong>不是</strong>互斥子组效应的加权平均。事实上，\(\mathbb E[Y_s-Y_{s-1}\mid S_1\ge s>S_0]\) 对不同 \(s\) 可能涉及<strong>重叠</strong>的人群（如 \(S_1=3,S_0=0\) 者被计入 \(s=1,2,3\) 三次）。</p></div>
+</div>
+<div class="lang en">
+<p>By exactly the same argument as for (16.10), the Wald estimand in the general case where \(S=\{0,1,2,\dots,J\}\) is
+$$\beta^{\text{IV}}=\frac{\mathbb E[Y\mid Z=1]-\mathbb E[Y\mid Z=0]}{\mathbb E[S\mid Z=1]-\mathbb E[S\mid Z=0]}=\sum_{s=1}^J\omega_s\mathbb E[Y_s-Y_{s-1}\mid S_1\ge s>S_0]$$
+$$\omega_s=\frac{\mathbb P(S_1\ge s>S_0)}{\sum_{j=1}^J\mathbb P(S_1\ge j>S_0)}$$
+which we call the <strong>average causal response (ACR)</strong>. We can estimate \(\omega_s\) since
+$$\begin{aligned}\mathbb P(S_1\ge s>S_0)&=\mathbb P(S_1\ge s,S_0<s)=\mathbb P(S_1\ge s,S_0<s)+\mathbb P(S_1\ge s,S_0\ge s)-\underbrace{\mathbb P(S_1\ge s,S_0\ge s)}_{\text{by monotonicity}=\mathbb P(S_0\ge s)}\\&=\mathbb P(S_1\ge s)-\mathbb P(S_0\ge s)\overset{\text{random}}{=}\underbrace{\mathbb P(S\ge s\mid Z=1)}_{\text{data}}-\underbrace{\mathbb P(S\ge s\mid Z=0)}_{\text{data}}\end{aligned}$$
+(the third term in the second line uses monotonicity \(S_1\ge S_0\), so \(S_0\ge s\Rightarrow S_1\ge s\).)</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark
+Notice that although \(\omega_s\) is positive and sums up to 1, the Wald estimand is <strong>not</strong> a weighted average of effects of mutually exclusive subgroups of people. In fact, the effect \(\mathbb E[Y_s-Y_{s-1}\mid S_1\ge s>S_0]\) for different \(s\) may involve <strong>overlapping</strong> groups of people (e.g. the group whose \(S_1=3\) and \(S_0=0\) would be counted three times, in \(s=1,2,3\)).</p></div>
+</div>
+<h2 id="16-5-extension-4-covariates">16.5 Extension 4: Covariates</h2>
+<div class="lang zh">
+<p>本节聚焦二值处理、单一二值工具。多数非实验设定下无法论证无条件随机分配，而应论证条件于协变量 \(X\)（一般为向量）的独立性，即 \((Y_1,Y_0,D_1,D_0)\perp Z\mid X\)。</p>
+<h3 id="16-5-1-adjusted-assumptions">16.5.1 Adjusted Assumptions</h3>
+<p>对含协变量的模型，假设：
+- <strong>条件随机分配（或外生性）</strong>：\((Y_1,Y_0,D_1,D_0)\perp Z\mid X\)。即每个单元 \(X=x\) 内工具 \(Z\) 如随机分配般好。
+- <strong>相关性</strong>：\(\mathbb P(D=1\mid Z=1,X)\ne\mathbb P(D=1\mid Z=0,X)\)。即每个单元 \(X=x\) 内工具 \(Z\) 对处理概率有非零效应。
+- <strong>单调性</strong>：\(\mathbb P(D_1\ge D_0\mid X)=1\)。即每个单元 \(X=x\) 内工具同向影响处理选择。
+- <strong>重叠（Overlap）</strong>：\(\mathbb P(Z=1\mid X)\in(0,1)\)。即每个单元 \(X=x\) 内既有 \(Z=1\) 又有 \(Z=0\) 的人，使单元内 LATE\((x)\) 良定义。</p>
+<h3 id="16-5-2-stratified-lates">16.5.2 Stratified LATEs</h3>
+<p>分层 LATE \(\beta(x)\) 定义为
+$$\text{LATE}(x)\equiv\beta(x)=\frac{\mathbb E[Y\mid Z=1,X=x]-\mathbb E[Y\mid Z=0,X=x]}{\mathbb E[D\mid Z=1,X=x]-\mathbb E[D\mid Z=0,X=x]}=\mathbb E[Y_1-Y_0\mid D_1>D_0,X=x]\tag{16.11}$$
+这由 §16.1.3 命题 16.1 的证明在单元 \(X=x\) 内重做即得。</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 证明
+由条件随机分配，
+$$\mathbb E[Y\mid Z=1,X=x]-\mathbb E[Y\mid Z=0,X=x]=\mathbb E[Y_{D_1,1}\mid Z=1,X=x]-\mathbb E[Y_{D_0,0}\mid Z=0,X=x]\overset{\perp\mid X}{=}\mathbb E[Y_{D_1}-Y_{D_0}\mid X=x]\tag{16.12}$$
+用此结果与全期望律（在单元 \(X=x\) 内对四组分解、单调性排除违抗者），分子
+$$\mathbb E[Y\mid Z=1,X=x]-\mathbb E[Y\mid Z=0,X=x]=\mathbb E[Y_1-Y_0\mid\text{Complier},X=x]\mathbb P(D_1=1,D_0=0\mid X=x)\tag{16.13}$$
+分母 \(\mathbb E[D\mid Z=1,X=x]-\mathbb E[D\mid Z=0,X=x]\overset{\text{cond. random}}{=}\mathbb E[D_1-D_0\mid X=x]\overset{\text{mono}}{=}\mathbb P(D_1=1,D_0=0\mid X=x)\)（16.14）。相除即得 (16.11)。\(\blacksquare\)</p></div>
+<p>故可在每个单元 \(X=x\) 内识别 LATE\((x)=\beta(x)\)，再用非参数方法估之。</p>
+</div>
+<div class="lang en">
+<p>In this section we focus on binary treatment and single binary instrument. Under most non-experimental set-ups, we cannot justify unconditional random assignment. Instead, we would argue for independence conditional on covariates \(X\) (as a vector in general), i.e. \((Y_1,Y_0,D_1,D_0)\perp Z\mid X\).</p>
+<h3 id="16-5-1-adjusted-assumptions">16.5.1 Adjusted Assumptions</h3>
+<p>For the model with covariates, we assume:
+- <strong>Conditional random assignment (or exogeneity)</strong>: \((Y_1,Y_0,D_1,D_0)\perp Z\mid X\). This means in each cell \(X=x\), instrument \(Z\) is as good as randomly assigned.
+- <strong>Relevance</strong>: \(\mathbb P(D=1\mid Z=1,X)\ne\mathbb P(D=1\mid Z=0,X)\). This means in any cell \(X=x\), instrument \(Z\) has non-zero effect on people's probability of taking treatment.
+- <strong>Monotonicity</strong>: \(\mathbb P(D_1\ge D_0\mid X)=1\). This means in any cell \(X=x\), instrument affects people's probability of taking treatment in weakly same direction.
+- <strong>Overlap</strong>: \(\mathbb P(Z=1\mid X)\in(0,1)\). This means in any cell \(X=x\), we have people with both \(Z=1\) and \(Z=0\), so that the LATE\((x)\) within each cell is well-defined.</p>
+<h3 id="16-5-2-stratified-lates">16.5.2 Stratified LATEs</h3>
+<p>The stratified LATE \(\beta(x)\) is defined by
+$$\text{LATE}(x)\equiv\beta(x)=\frac{\mathbb E[Y\mid Z=1,X=x]-\mathbb E[Y\mid Z=0,X=x]}{\mathbb E[D\mid Z=1,X=x]-\mathbb E[D\mid Z=0,X=x]}=\mathbb E[Y_1-Y_0\mid D_1>D_0,X=x]\tag{16.11}$$
+which is proved by re-doing the proof of Proposition 16.1 in §16.1.3 within the cell \(X=x\).</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Proof
+By conditional random assignment,
+$$\mathbb E[Y\mid Z=1,X=x]-\mathbb E[Y\mid Z=0,X=x]=\mathbb E[Y_{D_1,1}\mid Z=1,X=x]-\mathbb E[Y_{D_0,0}\mid Z=0,X=x]\overset{\perp\mid X}{=}\mathbb E[Y_{D_1}-Y_{D_0}\mid X=x]\tag{16.12}$$
+Using this result and the law of total expectation (decompose into four groups within the cell \(X=x\), defiers ruled out by monotonicity), the numerator is
+$$\mathbb E[Y\mid Z=1,X=x]-\mathbb E[Y\mid Z=0,X=x]=\mathbb E[Y_1-Y_0\mid\text{Complier},X=x]\mathbb P(D_1=1,D_0=0\mid X=x)\tag{16.13}$$
+and the denominator \(\mathbb E[D\mid Z=1,X=x]-\mathbb E[D\mid Z=0,X=x]\overset{\text{cond. random}}{=}\mathbb E[D_1-D_0\mid X=x]\overset{\text{mono}}{=}\mathbb P(D_1=1,D_0=0\mid X=x)\) (16.14). Dividing gives (16.11). \(\blacksquare\)</p></div>
+<p>So we can identify LATE\((x)=\beta(x)\) within each cell \(X=x\), and then estimate \(\beta(x)\) by non-parametric methods.</p>
+</div>
+<h3 id="16-5-3-tsls-with-covariates">16.5.3 TSLS with Covariates</h3>
+<div class="lang zh">
+<p>离散 \(X\) 情形，\(X\) 只取 \(K\) 个有限离散值，可拆为 \(K\) 个二值虚拟变量。做如下 TSLS 回归
+$$Y=\beta D+\sum_x\alpha_x\cdot\mathbf 1\{X=x\}+e\tag{16.15}$$
+$$D=\pi_x Z+\gamma_x+u$$
+此设定假设结果 \(Y\) 中协变量 \(X\) 与处理 \(D\) 的效应可分离。Angrist 与 Imbens (1995) 表明
+$$\beta^{\text{TSLS}}=\mathbb E[\beta(x)\omega(x)]$$
+其中
+$$\omega(x)=\frac{\sigma_D^2(x)}{\mathbb E[\sigma_D^2(x)]}=\frac{\pi_x^2\sigma_Z^2(x)}{\mathbb E[\pi_x^2\sigma_Z^2(x)]}$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 证明
+由命题 4.1（FWL）：对 \(Y=\beta_1X_1+\beta_2X_2+u\) 有 \(\beta=\beta_2\)。考虑 TSLS 估计 \(\beta^{\text{TSLS}}\) 由 \(Y=\beta^{\text{TSLS}}\hat D+\sum_x\alpha_x\mathbf 1\{X=x\}+e\)（16.16）定义，\(\hat D=\pi_xZ+\gamma_x\)。令 \(\tilde D=\hat D-\mathbb E[\hat D\mid X]\)、\(\tilde Y=Y-\mathbb E[Y\mid X]\)，回归化为 \(\tilde Y=\tilde\beta\tilde D+u\)，\(\beta^{\text{TSLS}}=\tilde\beta\)。则
+$$\begin{aligned}\beta^{\text{TSLS}}=\tilde\beta&=\frac{\operatorname{Cov}(\tilde Y,\tilde D)}{\operatorname{Var}(\tilde D)}=\frac{\mathbb E[(Y-\mathbb E[Y\mid X])(\hat D-\mathbb E[\hat D\mid X])]}{\operatorname{Var}(\tilde D)}=\frac{\mathbb E[Y(\hat D-\mathbb E[\hat D\mid X])]}{\operatorname{Var}(\tilde D)}\\&=\frac{\mathbb E[\mathbb E[Y\mid X,\hat D](\hat D-\mathbb E[\hat D\mid X])]}{\operatorname{Var}(\tilde D)}=\frac{\mathbb E[(\hat D-\mathbb E[\hat D\mid X])\mathbb E[Y\mid Z,X]]}{\operatorname{Var}(\tilde D)}\end{aligned}$$
+用 §16.5.2 中 \(\mathbb E[Y\mid Z,X]=Z\cdot\text{LATE}(X)\cdot\pi_X+\mathbb E[Y\mid X,Z=0]\)（由 \(\mathbb E[Y\mid Z=1,X]-\mathbb E[Y\mid Z=0,X]=\text{LATE}(X)\cdot\pi_X\)），代入并整理（仿命题 15.1 的 FWL 论证）得
+$$\beta^{\text{TSLS}}=\frac{\mathbb E[\operatorname{Var}(\hat D\mid X)\text{LATE}(X)]}{\mathbb E[\operatorname{Var}(\hat D\mid X)]}$$
+又 \(\hat D=\pi_XZ+\gamma_X\) 故 \(\operatorname{Var}(\hat D\mid X)=\pi_X^2\operatorname{Var}(Z\mid X)=\pi_X^2\sigma_Z^2(X)\)，且 \(\hat D=\pi_XZ+\gamma_X=\mathbb E[D\mid X,Z]=\mathbb P(D=1\mid X,Z)\equiv p(X,Z)\)。故
+$$\beta^{\text{TSLS}}=\mathbb E\Big[\text{LATE}(X)\frac{\operatorname{Var}(p(X,Z)\mid X)}{\mathbb E[\operatorname{Var}(p(X,Z)\mid X)]}\Big]\tag{16.17}$$
+\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<p>In the discrete \(X\) case, \(X\) can only take \(K\) finite number of discrete values, so we can break it down to \(K\) binary dummy variables. Do the following TSLS regression
+$$Y=\beta D+\sum_x\alpha_x\cdot\mathbf 1\{X=x\}+e\tag{16.15}$$
+$$D=\pi_x Z+\gamma_x+u$$
+which assumes separability in the effect on outcome \(Y\) of covariates \(X\) and treatment \(D\). Angrist and Imbens (1995) show that
+$$\beta^{\text{TSLS}}=\mathbb E[\beta(x)\omega(x)]$$
+where
+$$\omega(x)=\frac{\sigma_D^2(x)}{\mathbb E[\sigma_D^2(x)]}=\frac{\pi_x^2\sigma_Z^2(x)}{\mathbb E[\pi_x^2\sigma_Z^2(x)]}$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Proof
+By Proposition 4.1 (FWL): for \(Y=\beta_1X_1+\beta_2X_2+u\) we have \(\beta=\beta_2\). Consider the TSLS estimator \(\beta^{\text{TSLS}}\) defined by \(Y=\beta^{\text{TSLS}}\hat D+\sum_x\alpha_x\mathbf 1\{X=x\}+e\) (16.16), \(\hat D=\pi_XZ+\gamma_X\). Define \(\tilde D=\hat D-\mathbb E[\hat D\mid X]\), \(\tilde Y=Y-\mathbb E[Y\mid X]\); the regression becomes \(\tilde Y=\tilde\beta\tilde D+u\), \(\beta^{\text{TSLS}}=\tilde\beta\). Then
+$$\begin{aligned}\beta^{\text{TSLS}}=\tilde\beta&=\frac{\operatorname{Cov}(\tilde Y,\tilde D)}{\operatorname{Var}(\tilde D)}=\frac{\mathbb E[(Y-\mathbb E[Y\mid X])(\hat D-\mathbb E[\hat D\mid X])]}{\operatorname{Var}(\tilde D)}=\frac{\mathbb E[Y(\hat D-\mathbb E[\hat D\mid X])]}{\operatorname{Var}(\tilde D)}\\&=\frac{\mathbb E[\mathbb E[Y\mid X,\hat D](\hat D-\mathbb E[\hat D\mid X])]}{\operatorname{Var}(\tilde D)}=\frac{\mathbb E[(\hat D-\mathbb E[\hat D\mid X])\mathbb E[Y\mid Z,X]]}{\operatorname{Var}(\tilde D)}\end{aligned}$$
+Using from §16.5.2 that \(\mathbb E[Y\mid Z,X]=Z\cdot\text{LATE}(X)\cdot\pi_X+\mathbb E[Y\mid X,Z=0]\) (from \(\mathbb E[Y\mid Z=1,X]-\mathbb E[Y\mid Z=0,X]=\text{LATE}(X)\cdot\pi_X\)), substituting and rearranging (mirroring the FWL argument of Proposition 15.1) gives
+$$\beta^{\text{TSLS}}=\frac{\mathbb E[\operatorname{Var}(\hat D\mid X)\text{LATE}(X)]}{\mathbb E[\operatorname{Var}(\hat D\mid X)]}$$
+Also \(\hat D=\pi_XZ+\gamma_X\) so \(\operatorname{Var}(\hat D\mid X)=\pi_X^2\operatorname{Var}(Z\mid X)=\pi_X^2\sigma_Z^2(X)\), and \(\hat D=\pi_XZ+\gamma_X=\mathbb E[D\mid X,Z]=\mathbb P(D=1\mid X,Z)\equiv p(X,Z)\). Hence
+$$\beta^{\text{TSLS}}=\mathbb E\Big[\text{LATE}(X)\frac{\operatorname{Var}(p(X,Z)\mid X)}{\mathbb E[\operatorname{Var}(p(X,Z)\mid X)]}\Big]\tag{16.17}$$
+\(\blacksquare\)</p></div>
+</div>
+<h3 id="16-5-4-abadie-s-2003-kappa">16.5.4 Abadie's (2003) \(\kappa\)</h3>
+<div class="lang zh">
+<p>Abadie (2003) 的 \(\kappa\) 是处理条件独立情形的更优雅方法。想法是只在顺从者上跑回归。虽顺从者不能被直接观测，仍可用顺从者的正确权重。Abadie 证明，二值 \(D,Z\) 情形，对任意函数 \(g(Y,X,D)\)，
+$$\mathbb E[g(Y,X,D)\mid\text{Complier}]=\frac{\mathbb E[\kappa\times g(Y,X,D)]}{\mathbb P(\text{Complier})}\tag{16.18}$$
+其中
+$$\kappa=1-\frac{D(1-Z)}{\mathbb P(Z=0\mid X)}-\frac{(1-D)Z}{\mathbb P(Z=1\mid X)}$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 证明（思路）
+把 (16.18) 右端按类型（顺从者/恒取者/恒不取者）的全期望展开，利用 \(D(1-Z)\) 只对 \(Z=0\) 的受处理者（恒取者）非零、\((1-D)Z\) 只对 \(Z=1\) 的未处理者（恒不取者）非零，再由条件随机分配把恒取者、恒不取者贡献抵消，仅留顺从者项，即得 (16.18)。同理可定义 \(\kappa_0,\kappa_1\)，并证 \(\mathbb E[g(Y_0,X,D=0)\mid\text{Complier}]=\frac{\mathbb E[\kappa_0\times g(Y,X,D=0)]}{\mathbb P(\text{Complier})}\)、\(\mathbb E[g(Y_1,X,D=1)\mid\text{Complier}]=\frac{\mathbb E[\kappa_1\times g(Y,X,D=1)]}{\mathbb P(\text{Complier})}\)。\(\blacksquare\)</p></div>
+<p><strong>用 Abadie 的 \(\kappa\)。</strong> 例如，对顺从者中的 OLS 回归 \(Y=\alpha D+X'\beta+\varepsilon\)，要解
+$$(\hat\alpha,\hat\beta)=\arg\max_{\alpha,\beta}\mathbb E\big[\underbrace{(Y-\alpha D-X'\beta)^2}_{\equiv g(Y,X,D)}\mid\text{Complier}\big]$$
+(16.18) 告诉我们即便不知谁是顺从者，仍能直接在顺从者中估 \((\hat\alpha,\hat\beta)\)：
+$$\mathbb E[(Y-\alpha D-X'\beta)^2\mid\text{Complier}]=\frac{\mathbb E[\kappa\times(Y-\alpha D-X'\beta)^2]}{\mathbb P(\text{Complier})}\Rightarrow(\hat\alpha,\hat\beta)=\arg\max_{\alpha,\beta}\mathbb E[\kappa\times(Y-\alpha D-X'\beta)^2]$$</p>
+</div>
+<div class="lang en">
+<p>Abadie's (2003) \(\kappa\) is a more elegant approach to the conditional independence case. The idea is to run regressions only on the compliers. Although compliers cannot be directly observed, we can still use the correct weights of compliers. Abadie showed that, in the case with binary \(D\) and \(Z\), for any function \(g(Y,X,D)\),
+$$\mathbb E[g(Y,X,D)\mid\text{Complier}]=\frac{\mathbb E[\kappa\times g(Y,X,D)]}{\mathbb P(\text{Complier})}\tag{16.18}$$
+where
+$$\kappa=1-\frac{D(1-Z)}{\mathbb P(Z=0\mid X)}-\frac{(1-D)Z}{\mathbb P(Z=1\mid X)}$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Proof (sketch)
+Expand the RHS of (16.18) by the law of total expectation over types (compliers/always-takers/never-takers); using that \(D(1-Z)\) is nonzero only for treated agents with \(Z=0\) (always takers) and \((1-D)Z\) only for untreated agents with \(Z=1\) (never takers), and conditional random assignment cancels the always-taker and never-taker contributions, leaving only the complier term, which gives (16.18). Similarly define \(\kappa_0,\kappa_1\) and prove \(\mathbb E[g(Y_0,X,D=0)\mid\text{Complier}]=\frac{\mathbb E[\kappa_0\times g(Y,X,D=0)]}{\mathbb P(\text{Complier})}\) and \(\mathbb E[g(Y_1,X,D=1)\mid\text{Complier}]=\frac{\mathbb E[\kappa_1\times g(Y,X,D=1)]}{\mathbb P(\text{Complier})}\). \(\blacksquare\)</p></div>
+<p><strong>Use Abadie's \(\kappa\).</strong> For example, for the OLS regression among compliers \(Y=\alpha D+X'\beta+\varepsilon\), we want to solve
+$$(\hat\alpha,\hat\beta)=\arg\max_{\alpha,\beta}\mathbb E\big[\underbrace{(Y-\alpha D-X'\beta)^2}_{\equiv g(Y,X,D)}\mid\text{Complier}\big]$$
+(16.18) tells us that we can estimate \((\hat\alpha,\hat\beta)\) directly among compliers even though we don't really know who the compliers are:
+$$\mathbb E[(Y-\alpha D-X'\beta)^2\mid\text{Complier}]=\frac{\mathbb E[\kappa\times(Y-\alpha D-X'\beta)^2]}{\mathbb P(\text{Complier})}\Rightarrow(\hat\alpha,\hat\beta)=\arg\max_{\alpha,\beta}\mathbb E[\kappa\times(Y-\alpha D-X'\beta)^2]$$</p>
+</div>
+<h2 id="16-6-extension-5-multiple-unordered-treatments">16.6 Extension 5: Multiple Unordered Treatments</h2>
+<div class="lang zh">
+<p>有时个体从多个值的处理中选择，但<strong>无序</strong>——区别于 §16.4 的有序多处理。例如多处理可为不同职业、教育类型、地点等，难以按对结果的效应强度排序。</p>
+<p><strong>三处理选择例。</strong> 设 \(D\in\{0,1,2\}\)。把无序 \(D\) 拆为两个二值处理变量 \(D_1,D_2\)，\(D_1=\mathbf 1\{D=1\}\)、\(D_2=\mathbf 1\{D=2\}\)。回归
+$$Y=\beta_0+\beta_1D_1+\beta_2D_2+\varepsilon$$
+等价地，定义 \(\Delta^1\equiv Y^1-Y^0\)、\(\Delta^2\equiv Y^2-Y^0\)，
+$$Y=Y^0+D_1(Y^1-Y^0)+D_2(Y^2-Y^0)=\underbrace{\mathbb E[Y^0]}_{=\beta_0}+\beta_1D_1+\beta_2D_2+\underbrace{Y_0-\mathbb E[Y^0]+(\Delta^1-\beta_1)D_1+(\Delta^2-\beta_2)D_2}_{=\varepsilon}$$
+工具 \(Z\in\{0,1,2\}\) 拆为 \(Z_1=\mathbf 1\{Z=1\}\)、\(Z_2=\mathbf 1\{Z=2\}\)。假设：
+1. <strong>排除</strong>：\(Y^{d,z}=Y^d\) \(\forall d,z\)。
+2. <strong>独立</strong>：\(Y^0,Y^1,Y^2,D^0,D^1,D^2\perp Z\)。
+3. <strong>秩条件</strong>：\(\operatorname{rank}(\mathbb E[ZD'])=3\)。
+4. <strong>单调性</strong>：\(D_1^1\ge D_1^0\) 且 \(D_2^2\ge D_2^0\)。</p>
+<p>排除 + 独立 = 外生性，即 \(\mathbb E[\varepsilon Z_1]=\mathbb E[\varepsilon Z_2]=\mathbb E[\varepsilon]=0\)。首阶段回归 \(D_1=\alpha_1+\gamma_1Z_1+\eta_1Z_2+v_1\)、\(D_2=\alpha_2+\gamma_2Z_1+\eta_2Z_2+v_2\)。由 \(\mathbb E[\varepsilon Z_1]=0\) 与 \(\mathbb E[\varepsilon Z_2]=0\) 分别得
+$$\mathbb E[D_1^1(\Delta^1-\beta_1)+D_2^1(\Delta^2-\beta_2)]=0\tag{16.19}$$
+$$\mathbb E[D_1^2(\Delta^1-\beta_1)+D_2^2(\Delta^2-\beta_2)]=0\tag{16.20}$$
+恒定效应假设下 \(\Delta^1,\Delta^2\) 为常数，则 (16.19)、(16.20) 给出 \(\beta_1=\Delta^1\)、\(\beta_2=\Delta^2\)。异质效应下，进一步假设 \(D_1^2=D_2^1=0\)（如各大学向基线领域 0 申请，但学生不能跨领域 1、2 申请，只能对基线领域 0 申请，对应 \(D_1^1=0\)、\(D_2^2=0\)），则
+$$\beta_1=\mathbb E[\Delta^1\mid D_1^1=1],\qquad\beta_2=\mathbb E[\Delta^2\mid D_2^2=1]$$
+即某子组的 LATE。</p>
+</div>
+<div class="lang en">
+<p>In some cases, individuals may choose from a treatment with multiple values but in an <strong>unordered</strong> manner, which is different from ordered multiple treatments discussed in §16.4. For example, multiple treatment could be the different occupations, education types and locations etc., which are hard to be ranked in terms of effect strength on outcome.</p>
+<p><strong>Example with 3 treatment choices.</strong> Suppose \(D\in\{0,1,2\}\). Break unordered \(D\) into two separate binary treatment variables \(D_1,D_2\) where \(D_1=\mathbf 1\{D=1\}\) and \(D_2=\mathbf 1\{D=2\}\). The regression
+$$Y=\beta_0+\beta_1D_1+\beta_2D_2+\varepsilon$$
+or equivalently, define \(\Delta^1\equiv Y^1-Y^0\) and \(\Delta^2\equiv Y^2-Y^0\),
+$$Y=Y^0+D_1(Y^1-Y^0)+D_2(Y^2-Y^0)=\underbrace{\mathbb E[Y^0]}_{=\beta_0}+\beta_1D_1+\beta_2D_2+\underbrace{Y_0-\mathbb E[Y^0]+(\Delta^1-\beta_1)D_1+(\Delta^2-\beta_2)D_2}_{=\varepsilon}$$
+The instrument \(Z\in\{0,1,2\}\) is replaced by \(Z_1=\mathbf 1\{Z=1\}\) and \(Z_2=\mathbf 1\{Z=2\}\). Assumptions:
+1. <strong>Exclusion</strong>: \(Y^{d,z}=Y^d\) for all \(d,z\).
+2. <strong>Independence</strong>: \(Y^0,Y^1,Y^2,D^0,D^1,D^2\perp Z\).
+3. <strong>Rank condition</strong>: \(\operatorname{rank}(\mathbb E[ZD'])=3\).
+4. <strong>Monotonicity</strong>: \(D_1^1\ge D_1^0\) and \(D_2^2\ge D_2^0\).</p>
+<p>Exclusion and independence together imply exogeneity, i.e. \(\mathbb E[\varepsilon Z_1]=\mathbb E[\varepsilon Z_2]=\mathbb E[\varepsilon]=0\). The first-stage regressions are \(D_1=\alpha_1+\gamma_1Z_1+\eta_1Z_2+v_1\), \(D_2=\alpha_2+\gamma_2Z_1+\eta_2Z_2+v_2\). From \(\mathbb E[\varepsilon Z_1]=0\) and \(\mathbb E[\varepsilon Z_2]=0\) respectively we get
+$$\mathbb E[D_1^1(\Delta^1-\beta_1)+D_2^1(\Delta^2-\beta_2)]=0\tag{16.19}$$
+$$\mathbb E[D_1^2(\Delta^1-\beta_1)+D_2^2(\Delta^2-\beta_2)]=0\tag{16.20}$$
+Under the constant effect assumption \(\Delta^1,\Delta^2\) are constants, so (16.19) and (16.20) give \(\beta_1=\Delta^1\), \(\beta_2=\Delta^2\). Under heterogeneous effects, further assume \(D_1^2=D_2^1=0\) (e.g. students apply to a baseline field 0 but can always apply to baseline field 0, which corresponds to \(D_1^1=0\) and \(D_2^2=0\)); then
+$$\beta_1=\mathbb E[\Delta^1\mid D_1^1=1],\qquad\beta_2=\mathbb E[\Delta^2\mid D_2^2=1]$$
+i.e. the LATE for some subgroup of people.</p>
+</div>
+<h2 id="16-7-extension-6-weak-instruments-and-many-instruments">16.7 Extension 6: Weak Instruments and Many Instruments</h2>
+<div class="lang zh">
+<p><strong>§16.7.1 弱工具。</strong> 工具变量若与所含内生回归元相关性小，则称<strong>弱</strong>。在潜在结果模型中，工具 \(Z\) 弱即首阶段回归 \(D=\alpha+\gamma Z+v\) 的 \(\gamma\approx0\)。弱工具是问题，因 Wald 估计量 \(\beta^{\text{IV}}=\frac{\operatorname{Cov}(Z,Y)}{\operatorname{Cov}(Z,D)}\) 的分母约为零，使 \(\beta^{\text{IV}}\) 极不稳定。
+- 检验弱工具：查首阶段回归的 \(F\) 统计量。
+- 若 \(F>10\)（或某阈值），按标准 IV/TSLS 方法继续。
+- 若 \(F<10\)：思考为何工具弱；若仍有理论上好的工具只是恰好弱，则报告<strong>弱工具稳健的置信集（weak-instrument-robust confidence sets）</strong>——它即便工具弱也给出正确覆盖、避免预检验偏差、避免因工具弱而丢弃好工具，且仍可能很有信息量。</p>
+<p><strong>§16.7.2 多工具。</strong> 面对弱工具问题时，人们常加更多工具来解决"弱"，但这引入另一问题：<strong>多工具（many instruments，或过度识别）</strong>。过度识别确是问题：当包含许多工具（或太强的工具），组合起来看几乎像内生回归元本身，外生性假设被破坏。可在 \(\beta^{\text{IV}}\approx\beta^{\text{OLS}}\) 时怀疑此问题。
+- 例：\(Y=\beta_0+\beta_1D+\varepsilon\)，\(D=\alpha+\gamma Z+v\)。工具 \(Z\) 用 \(D\) 的外生部分 \(\hat D=\alpha+\gamma Z\) 来无偏估 \(\beta_1\)。工具既不能太强、也不能太弱：太弱则 \(\hat D\) 方差大；太强则 \(\hat D\) 几乎与 \(D\) 相同，使 \(\hat D\) 也含某些内生部分。</p>
+</div>
+<div class="lang en">
+<p><strong>§16.7.1 Weak instruments.</strong> An instrumental variable is weak if its correlation with the included endogenous regressor is small. In the potential outcome model we are talking about, the instrument \(Z\) is weak if \(\gamma\approx0\) in the first-stage regression \(D=\alpha+\gamma Z+v\). A weak instrument is a problem because the denominator of the Wald estimand \(\beta^{\text{IV}}=\frac{\operatorname{Cov}(Z,Y)}{\operatorname{Cov}(Z,D)}\) would be approximately zero, which makes \(\beta^{\text{IV}}\) very volatile.
+- To identify a weak instrument: check the \(F\) statistic for the instrument in the first-stage regression.
+- If the \(F\) statistic exceeds 10 (or some other arbitrary number), proceed with the standard IV or TSLS methods.
+- If the \(F\) statistic is below 10: think hard to explain why the instrument is weak; if it's still a theoretically good instrument but just weak, then just report the <strong>weak-instrument-robust confidence sets</strong> — they give the correct coverage even when the instrument is weak, do not require screening on the first stage so avoid pretesting bias, avoid throwing away good instruments just because they are weak, and can still be very informative.</p>
+<p><strong>§16.7.2 Many instruments.</strong> When people are faced with the weak instrument problem, they may typically add in more instruments to solve the "weak", but it induces another problem: <strong>many instruments (or over-identifying)</strong>. Over-identifying is indeed a problem because when we are including many instruments (or too powerful an instrument), the instruments, combined together, look almost like the endogenous regressor, so the exogeneity assumption is broken. We may suspect this problem when \(\beta^{\text{IV}}\approx\beta^{\text{OLS}}\).
+- Example: \(Y=\beta_0+\beta_1D+\varepsilon\), \(D=\alpha+\gamma Z+v\). The instrument \(Z\) is using the exogenous part of \(D\), i.e. \(\hat D=\alpha+\gamma Z\), to unbiasedly estimate \(\beta_1\). The instrument can neither be too strong, nor too weak: if too weak, then the estimator \(\beta^{\text{IV}}\) or \(\beta^{\text{TSLS}}\) will have too large variance; if too strong, the \(\hat D\) will be almost the same as \(D\), which makes \(\hat D\) also contain some endogenous parts.</p>
+</div>
+<h2 id="16-8-conclusion">16.8 Conclusion</h2>
+<div class="lang zh">
+<ul>
+<li><strong>单一二值 \(D\)、单一二值 \(Z\) 情形</strong>：IV 估计量 \(\beta^{\text{IV}}\) 即 LATE，即顺从者对工具 \(Z\) 的 ATE；此 LATE 可与影响这些顺从者的政策干预相关。</li>
+<li><strong>多个二值 \(Z\)、单一二值 \(D\) 情形</strong>：\(\mathbf Z=(Z_1,\dots,Z_m)'\) 为向量，IV 不奏效（因 \(\mathbb E[\mathbf Z D]\) 不可逆）；改用 TSLS 估计 \(D=\alpha+\gamma'\mathbf Z+v\)、得 \(\hat D=\alpha+\gamma'\mathbf Z\)，再把 \(Y\) 对 \(\hat D\) 回归得 \(\beta^{\text{TSLS}}\) 无偏估 \(\beta_1\)。\(\beta^{\text{TSLS}}\) 难以直观解读，但实为各工具 \(Z_1,\dots,Z_m\) 顺从者组的 LATE 的加权平均。</li>
+<li><strong>有序多处理 \(S=\{0,1,\dots,J\}\)</strong>：Wald 估计量即<strong>平均因果反应（ACR）</strong>，\(\beta^{\text{IV}}=\sum_s\omega_s\mathbb E[Y_s-Y_{s-1}\mid S_1\ge s>S_0]\)。注意虽 \(\omega_s\) 为正且和为 1，ACR 不是互斥子组效应的加权平均（重叠组、被多次计入）。</li>
+<li><strong>无序多处理</strong>：拆为多个二值处理，至少用一个二值工具对应每个二值处理；恒定处理效应下 OLS 给无偏估、异质效应下 IV 给某子组的 LATE。</li>
+<li><strong>条件随机分配情形</strong>：先用非参数方法得分层 LATE \(\beta(x)\)；再用 TSLS 得分层 LATE 的加权平均（权重与单元内处理的局部方差有关），或用 Abadie (2003) 的 \(\kappa\) 在顺从者中跑 OLS。</li>
+</ul>
+<p><strong>用 IV 的一些通用建议：</strong>
+- 反向工程很有用：先用某工具构造估计量，再思考该 IV 的顺从者是谁、政策相关性。
+- 论证工具：论证 IV 的排除限制与独立性（需好的理论或逻辑依据）。
+  - 排除：为何 \(Z\) 只通过 \(D\) 影响 \(Y\)？\(Z\) 是否可能有别的渠道影响 \(Y\)（即违反排除）？
+  - 独立：\(Z\) 如何生成？\(Z\) 是否对 agents 如随机分配般好？若否，为条件独立要控制哪些协变量？跨 \(X=x\) 单元的加权平均分层 LATE 是什么意思？
+  - 解读谁是顺从者、论证政策相关性。
+- 检查工具：
+  - 总报告首阶段结果（讨论量级与符号是否如预期；报告 \(F\) 统计量、查工具是否弱；若弱，报告弱工具稳健置信集）。
+  - 检视约简形式回归（把 \(Y\) 对工具 \(Z\) 直接回归、不含内生回归元 \(D\)）：查量级与符号（约简形式回归中工具系数 $=$ \(D\) 对 \(Y\) 因果效应 \(\times\) 首阶段系数，故量级与符号合起来应与预期一致）。</p>
+</div>
+<div class="lang en">
+<ul>
+<li><strong>Single binary \(D\) and single binary \(Z\) case</strong>: the IV estimand \(\beta^{\text{IV}}\) is the LATE, i.e. the ATE among compliers to instrument \(Z\). This LATE could be relevant for a policy intervention that affects these compliers.</li>
+<li><strong>Multiple binary \(Z\)'s for a single binary \(D\) case</strong>: \(\mathbf Z=(Z_1,\dots,Z_m)'\) is a vector. IV won't work because \(\mathbb E[\mathbf Z D]\) is not invertible. We instead use TSLS to estimate \(D=\alpha+\gamma'\mathbf Z+v\) and obtain \(\hat D=\alpha+\gamma'\mathbf Z\), and then regress \(Y\) on \(\hat D\) to obtain an unbiased estimate of \(\beta_1\) in \(Y=\beta_0+\beta_1D+\varepsilon\). It's hard to intuitively interpret the \(\beta^{\text{TSLS}}\) here. But in fact, it is a weighted average of LATEs of compliers group to \(Z_1,\dots,Z_m\).</li>
+<li><strong>Ordered multiple treatment \(S=\{0,1,\dots,J\}\)</strong>: the Wald estimand is the <strong>average causal response (ACR)</strong>, \(\beta^{\text{IV}}=\sum_s\omega_s\mathbb E[Y_s-Y_{s-1}\mid S_1\ge s>S_0]\). Notice that although \(\omega_s\) is positive and sums up to 1, the Wald estimand is not a weighted average of effects of mutually exclusive subgroups of people (overlapping group, counted multiple times).</li>
+<li><strong>Unordered multiple treatment</strong>: break down the different values of treatments into several binary treatments, and use at least one binary instrument for each of these binary treatments. Under constant treatment effect assumption, OLS gives us the unbiased estimates; under heterogeneous effect assumption, IV gives us the LATE in some subgroup of people.</li>
+<li><strong>Conditional random assignment case</strong>: we can first obtain the stratified LATEs \(\beta(x)\) by non-parametric method; then we can either further use TSLS to obtain a weighted average of stratified LATEs \(\beta(x)\), where the weights are related to the local variance of treatment in the cell; or, we can use Abadie's (2003) \(\kappa\) to run OLS among the compliers group.</li>
+</ul>
+<p><strong>Some general advice on using IV:</strong>
+- Reverse engineering could be useful: start with an estimator with a particular IV, and then think about who the compliers are for that IV, and think about policy relevance of that estimation.
+- Motivate instruments: motivate exclusion and independence for the IV, which requires good theoretical or logical justification.
+  - exclusion: why does \(Z\) only affects \(Y\) through \(D\)? Is there any possibility that \(Z\) has other channels to affect \(Y\) (i.e. violates exclusion)?
+  - independence: how is \(Z\) generated? Is \(Z\) as good as randomly assigned to agents? If not, what could be the covariates to control for conditional independence and what the weighted average stratified LATEs across \(X=x\) cells mean?
+  - interpret who the compliers are and argue for policy relevance.
+- Check the instruments:
+  - Always report the first stage result (discuss whether or not the magnitude and signs are as expected; report \(F\) statistic on instruments and check whether the instruments are weak, and if so, report weak instrument robust confidence intervals).
+  - Inspect the reduced form regression (directly regress outcome \(Y\) on instruments \(Z\) without endogenous regressor \(D\)): check the magnitude and sign (the coefficient on instrument in reduced form regression is proportional to the causal effect of \(D\) on \(Y\) by the coefficient in the first stage, so the magnitude and sign put together should be consistent with expectation).</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#16-1-simple-case-heterogeneous-effects-under-binary-treatment-with-single-binary-iv">16.1 Simple Case: Heterogeneous Effects under Binary Treatment with Single Binary IV</a></li>
+          <li><a href="#16-1-1-set-up">16.1.1 Set-up</a></li>
+          <li><a href="#16-1-2-assumptions-for-iv">16.1.2 Assumptions for IV</a></li>
+          <li><a href="#16-1-3-wald-estimand-and-local-average-treatment-effect-late">16.1.3 Wald Estimand and Local Average Treatment Effect (LATE)</a></li>
+          <li><a href="#16-1-4-over-identifying-test-for-constant-effect-models">16.1.4 Over-identifying Test for Constant Effect Models</a></li>
+        <li><a href="#16-2-extension-1-counterfactual-distributions">16.2 Extension 1: Counterfactual Distributions</a></li>
+        <li><a href="#16-3-extension-2-late-with-multiple-binary-instruments">16.3 Extension 2: LATE with Multiple Binary Instruments</a></li>
+          <li><a href="#16-3-1-weighted-average-of-different-lates">16.3.1 Weighted Average of Different LATEs</a></li>
+          <li><a href="#16-3-2-monotonicity-assumption-for-multiple-binary-instruments">16.3.2 Monotonicity Assumption for Multiple Binary Instruments</a></li>
+        <li><a href="#16-4-extension-3-variable-treatment-intensity">16.4 Extension 3: Variable Treatment Intensity</a></li>
+          <li><a href="#16-4-1-general-set-up-and-assumptions">16.4.1 General Set-up and Assumptions</a></li>
+          <li><a href="#16-4-2-example-of-three-levels-treatment">16.4.2 Example of Three Levels Treatment</a></li>
+          <li><a href="#16-4-3-wald-estimand-in-general">16.4.3 Wald Estimand in General</a></li>
+        <li><a href="#16-5-extension-4-covariates">16.5 Extension 4: Covariates</a></li>
+          <li><a href="#16-5-1-adjusted-assumptions">16.5.1 Adjusted Assumptions</a></li>
+          <li><a href="#16-5-2-stratified-lates">16.5.2 Stratified LATEs</a></li>
+          <li><a href="#16-5-1-adjusted-assumptions">16.5.1 Adjusted Assumptions</a></li>
+          <li><a href="#16-5-2-stratified-lates">16.5.2 Stratified LATEs</a></li>
+          <li><a href="#16-5-3-tsls-with-covariates">16.5.3 TSLS with Covariates</a></li>
+          <li><a href="#16-5-4-abadie-s-2003-kappa">16.5.4 Abadie's (2003) \(\kappa\)</a></li>
+        <li><a href="#16-6-extension-5-multiple-unordered-treatments">16.6 Extension 5: Multiple Unordered Treatments</a></li>
+        <li><a href="#16-7-extension-6-weak-instruments-and-many-instruments">16.7 Extension 6: Weak Instruments and Many Instruments</a></li>
+        <li><a href="#16-8-conclusion">16.8 Conclusion</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

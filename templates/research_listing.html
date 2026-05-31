@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ section_title|default("Research") }} - Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=11">
+<link rel="stylesheet" href="/article.css?v=11">
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<h1>{{ section_title|default("Research") }}</h1>
+<a href="/" class="byline">By Jun He</a>
+
+{% set ns = namespace(journal='', count=0) %}
+{% for post in posts %}
+  {% if post.journal_label != ns.journal %}
+    {% if not loop.first %}</ul>{% endif %}
+    <h2 class="research-journal">{{ post.journal_label }}{% if post.journal_total > 3 %}<a class="journal-more" href="/research/journal/{{ post.journal_slug }}/">more</a>{% endif %}</h2>
+    <ul class="post-list">
+    {% set ns.journal = post.journal_label %}
+    {% set ns.count = 0 %}
+  {% endif %}
+  {% set ns.count = ns.count + 1 %}
+  {% if ns.count <= 3 %}
+  <li><a href="/{{ post.section|default('research') }}/{{ post.slug }}/">{% if post.date_tag %}<span class="post-list-venue">[{{ post.date_tag }}]</span> {% endif %}{% if post.title_en %}<span class="lang zh">{{ post.title }}</span><span class="lang en">{{ post.title_en }}</span>{% else %}{{ post.title }}{% endif %}</a><span class="post-list-date">{{ post.date_short }}</span></li>
+  {% endif %}
+  {% if loop.last %}</ul>{% endif %}
+{% endfor %}
+
+<script src="/theme.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

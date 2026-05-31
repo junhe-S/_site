@@ -28,7 +28,7 @@
     size-adjust: 104.86%;
   }
 </style>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/styles.css?v=11">
 </head>
 <body>
 
@@ -37,6 +37,7 @@
     <a href="/" class="nav-name">Jun He</a>
     <a href="/posts">Post</a>
     <a href="/research">Research</a>
+    <a href="/note">Note</a>
     <a href="/data">Data</a>
     <a href="/bergen">Bergen</a>
   </nav>
@@ -46,6 +47,14 @@
 <h1>Bergen</h1>
 <a href="/" class="byline">By Jun He</a>
 
+<div class="post-sort">
+  <label class="post-sort-label" for="sort-select">Sort by article year:</label>
+  <select id="sort-select" class="sort-select">
+    <option value="year-desc">Latest → Old</option>
+    <option value="year-asc">Old → Latest</option>
+  </select>
+</div>
+
 <ul class="post-list">
   
   <li><a href="/bergen/kong-harald-vestland-2026-05-26/">Kong Harald besøker Vestland</a><span class="post-list-date">May 2026</span></li>
@@ -53,5 +62,29 @@
 </ul>
 
 <script src="/theme.js"></script>
+<script>
+(function () {
+  const list = document.querySelector('.post-list');
+  if (!list) return;
+  // Article (journal) release year: first 4-digit number in the [venue] tag,
+  // falling back to the post date.
+  function yearOf(li) {
+    const v = li.querySelector('.post-list-venue');
+    let m = v && v.textContent.match(/\d{4}/);
+    if (m) return parseInt(m[0], 10);
+    const d = li.querySelector('.post-list-date');
+    m = d && d.textContent.match(/\d{4}/);
+    return m ? parseInt(m[0], 10) : 0;
+  }
+  function apply(mode) {
+    const arr = Array.from(list.children);
+    arr.sort((a, b) => mode === 'year-asc' ? yearOf(a) - yearOf(b) : yearOf(b) - yearOf(a));
+    arr.forEach(li => list.appendChild(li));
+  }
+  const sel = document.getElementById('sort-select');
+  apply(sel ? sel.value : 'year-desc');  // default: sort latest → old on load
+  if (sel) sel.addEventListener('change', () => apply(sel.value));
+})();
+</script>
 </body>
 </html>

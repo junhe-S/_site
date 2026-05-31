@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>25. Dynamic Factor Models – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>25. Dynamic Factor Models</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价</span><span class="lang en">Asset Pricing</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">动态因子模型</span><span class="lang en">Dynamic Factor Models</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">条件矩约束</span><span class="lang en">Conditional Moments</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">动态管理组合</span><span class="lang en">Managed Portfolio</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">随机贴现因子</span><span class="lang en">SDF</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本章把第 24 章的线性因子 GMM 推广到<strong>条件（动态）</strong>版本：SDF 的载荷 \(\mathbf b_t\)、因子均值 \(\boldsymbol\mu_{\mathbf f,t}\)、协方差 \(\boldsymbol\Sigma_{\mathbf f,t}\) 都<strong>随时间变化</strong>，且定价方程在<strong>任一时刻 \(t\) 条件成立</strong>（比第 24 章只假设无条件成立更强；由迭代期望律 LIE，条件成立 ⟹ 无条件成立）。核心要点：(1) <strong>可分性 (separability)</strong>——SDF 关于因子线性时，条件矩约束 (25.3) 左端可拆成"统计模型部分"与" \(\mathbf b_t\) 部分"分别处理（SDF 非线性则失效）；(2) <strong>动态管理组合</strong>——给条件矩约束乘上时间 \(t\) 变量 \(\mathbf h_t\) 得 \(\mathbb E_t[m^\star(\mathbf h_t\otimes\mathbf z_{t+1})]=\mathbf 0\) (25.4)，真正检验<strong>条件</strong>约束（不加 \(\mathbf h_t\) 则退化为无条件检验）；(3) <strong>化动态为静态</strong>——若假设 \(\mathbf b_t=\boldsymbol\phi_0+\boldsymbol\phi_h h_t\) 是可观测状态 \(h_t\) 的线性函数 (25.13)，则时变参数的动态 SDF (25.14) 退化为常参数的静态 SDF \(M_{t+1}=1-\boldsymbol\phi'(\mathbf g_{t+1}-\boldsymbol\mu_{\mathbf g})\) (25.16)，与 (24.7) 同形，第 24 章估计方法直接适用。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>This chapter generalizes Chapter 24's linear-factor GMM to a <strong>conditional (dynamic)</strong> version: the SDF loadings \(\mathbf b_t\), factor mean \(\boldsymbol\mu_{\mathbf f,t}\), and covariance \(\boldsymbol\Sigma_{\mathbf f,t}\) are all <strong>time-varying</strong>, and the pricing equation holds <strong>conditionally at any time \(t\)</strong> (stronger than Chapter 24's unconditional-only assumption; by the law of iterated expectations (LIE), conditional ⟹ unconditional). Key points: (1) <strong>separability</strong> — when the SDF is linear in factors, the LHS of the conditional moment restriction (25.3) splits into a "statistical-model part" and a "\(\mathbf b_t\) part" handled separately (fails if the SDF is nonlinear); (2) <strong>dynamically managed portfolio</strong> — multiplying the conditional restriction by a time-\(t\) variable \(\mathbf h_t\) gives \(\mathbb E_t[m^\star(\mathbf h_t\otimes\mathbf z_{t+1})]=\mathbf 0\) (25.4), truly testing the <strong>conditional</strong> restriction (without \(\mathbf h_t\) it degenerates to an unconditional test); (3) <strong>converting dynamic to static</strong> — assuming \(\mathbf b_t=\boldsymbol\phi_0+\boldsymbol\phi_h h_t\) is linear in an observable state \(h_t\) (25.13) degenerates the time-varying-parameter dynamic SDF (25.14) into a constant-parameter static SDF \(M_{t+1}=1-\boldsymbol\phi'(\mathbf g_{t+1}-\boldsymbol\mu_{\mathbf g})\) (25.16), of the same form as (24.7), so Chapter 24's estimation methods apply directly.</p></div>
+</div>
+<h2 id="25-1-setup">25.1 Setup</h2>
+<div class="lang zh">
+<p>沿用 §23.3 的超额收益空间 \(\mathcal Z_t\)（由 \(N\times1\) 向量 \(\mathbf z_t\) 张成）。由 (23.7) 启发，设<strong>条件</strong>线性 SDF (25.1)：</p>
+</div>
+<div class="lang en">
+<p>Following §23.3's excess return space \(\mathcal Z_t\) (spanned by the \(N\times1\) vector \(\mathbf z_t\)). Motivated by (23.7), suppose a <strong>conditional</strong> linear SDF (25.1):</p>
+</div>
+<p>$$m^\star_{t+1}=1-\mathbf b_t'(\mathbf f_{t+1}-\boldsymbol\mu_{\mathbf f,t})\tag{25.1}$$</p>
+<div class="lang zh">
+<p>\(\mathbf b_t\) 为 \(k\times1\) 待估；\(\mathbf f_t\) 为指定的 \(k\times1\) 可观测因子（不估计）；\(\boldsymbol\mu_{\mathbf f,t}=\mathbb E_t[\mathbf f_t]\) 为待估因子均值；\(\boldsymbol\Sigma_{\mathbf f,t}\) 为 \(\mathbf f_t\) 的方差-协方差矩阵。\(\mathbf b_t,\boldsymbol\mu_{\mathbf f,t},\boldsymbol\Sigma_{\mathbf f,t}\) 可时变、含于 \(t\) 时信息集 \(\mathcal F_t\)。</p>
+<p><strong>与第 24 章的关键差别</strong>：此处假设定价方程 (5.13) 在<strong>任一时刻 \(t\) 条件成立</strong>，而第 24 章只假设无条件成立。由迭代期望律 (LIE)，条件矩约束蕴含无条件版。关键是允许 \(\mathbf b_t,\boldsymbol\mu_{\mathbf f,t},\boldsymbol\Sigma_{\mathbf f,t}\) 时变（第 24 章皆常数）。不失一般性设因子 \(\mathbf f_t\) 可交易。</p>
+<h2 id="25-2-conditional-moment-restrictions">25.2 Conditional Moment Restrictions</h2>
+<h3 id="25-2-1-separability-by-linearity-in-stochastic-discount-factor">25.2.1 Separability by Linearity in Stochastic Discount Factor</h3>
+<p>由 (25.1)，条件矩约束 (25.2)：\(\mathbb E_t[m^\star_{t+1}\mathbf z_{t+1}]=\mathbf 0\)。代入 (25.1) 改写 (25.3)：</p>
+</div>
+<div class="lang en">
+<p>\(\mathbf b_t\) is \(k\times1\) to estimate; \(\mathbf f_t\) the specified \(k\times1\) observable factors (not estimated); \(\boldsymbol\mu_{\mathbf f,t}=\mathbb E_t[\mathbf f_t]\) the factor mean to estimate; \(\boldsymbol\Sigma_{\mathbf f,t}\) the variance-covariance matrix of \(\mathbf f_t\). \(\mathbf b_t,\boldsymbol\mu_{\mathbf f,t},\boldsymbol\Sigma_{\mathbf f,t}\) can be time-varying, in the time-\(t\) information set \(\mathcal F_t\).</p>
+<p><strong>Crucial difference from Chapter 24</strong>: here the pricing equation (5.13) holds <strong>conditionally at any time \(t\)</strong>, whereas Chapter 24 only assumes the unconditional version. By the law of iterated expectations (LIE), conditional moment restrictions imply the unconditional version. Crucially, we allow \(\mathbf b_t,\boldsymbol\mu_{\mathbf f,t},\boldsymbol\Sigma_{\mathbf f,t}\) to be time-varying (all constant in Chapter 24). Without loss of generality, assume factors \(\mathbf f_t\) are tradable.</p>
+<h2 id="25-2-conditional-moment-restrictions">25.2 Conditional Moment Restrictions</h2>
+<h3 id="25-2-1-separability-by-linearity-in-stochastic-discount-factor">25.2.1 Separability by Linearity in Stochastic Discount Factor</h3>
+<p>By (25.1), the conditional moment restriction (25.2): \(\mathbb E_t[m^\star_{t+1}\mathbf z_{t+1}]=\mathbf 0\). Substituting (25.1), rewrite (25.3):</p>
+</div>
+<p>$$\mathbb E_t\!\left[\mathbf z_{t+1}(\mathbf f_{t+1}-\boldsymbol\mu_{\mathbf f,t})'\right]\mathbf b_t=\mathbb E_t[\mathbf z_{t+1}]\tag{25.3}$$</p>
+<div class="lang zh">
+<p>(25.3) 左端可分成两部分：<strong>Part 1</strong> \(\mathbb E_t[\mathbf z_{t+1}(\mathbf f_{t+1}-\boldsymbol\mu_{\mathbf f,t})']\)（可用统计模型估）；<strong>Part 2</strong> \(\mathbf b_t\)（聚焦 \(\mathbf b_t\) 与底层状态变量的关系）。<strong>可分性 (separability)</strong> 有用，因两部分可用截然不同的方式处理。但若 SDF 关于因子非线性（无法等价改写为线性），可分性失效。</p>
+<h3 id="25-2-2-dynamically-managed-portfolio">25.2.2 Dynamically Managed Portfolio</h3>
+<p>为检验 (25.2)，给约束乘一个时间 \(t\) 变量向量 \(\mathbf h_t\) (25.4)：\(\mathbf h_t\otimes\mathbb E_t[m^\star_{t+1}\mathbf z_{t+1}]=\mathbf 0\Rightarrow\mathbb E_t[m^\star_{t+1}(\mathbf h_t\otimes\mathbf z_{t+1})]=\mathbf 0\)，\(\otimes\) 为 Kronecker 积（\(\mathbf h_t\otimes\mathbf z_{t+1}=(h_{1,t}\mathbf z_{t+1},\dots,h_{m,t}\mathbf z_{t+1})'\)）。</p>
+<ul>
+<li>若<strong>不加</strong> \(\mathbf h_t\)，条件约束 \(\mathbb E_t[m^\star\mathbf z_{t+1}]\) 由 LIE 退化为无条件 \(\mathbb E[m^\star\mathbf z_{t+1}]\)——即只检验无条件约束、隐含地把条件问题降为无条件。</li>
+<li>但<strong>加上</strong>时间 \(t\) 变量 \(\mathbf h_t\) 后，条件版 \(\mathbb E_t[m^\star(\mathbf h_t\otimes\mathbf z_{t+1})]=\mathbf 0\) <strong>不</strong>退化为无条件版，因 \(\mathbb E[m^\star(\mathbf h_t\otimes\mathbf z_{t+1})]=\mathbf 0\) 未必成立（除非条件版成立）。</li>
+</ul>
+<p>\(\mathbf h_t\otimes\mathbf z_{t+1}\) 可解释为<strong>动态管理组合 (dynamically managed portfolio)</strong>：组合权重 \(\mathbf h_t\) 每期调整，但该管理组合仍须每期被动态 SDF \(m^\star_{t+1}\) 定价，从而给 (25.4) 的动态矩约束以经济解释。</p>
+<h2 id="25-3-calculations">25.3 Calculations</h2>
+<p>与 §24.3 思路、代数完全相同，唯此处皆条件于时间 \(t\)。SDF 给 \(\mathbf z_t\) 定价 → \(\mathbb E_t[\mathbf z_{t+1}]=\boldsymbol\Sigma_{\mathbf z\mathbf f',t}\mathbf b_t\) (25.5)，\(\boldsymbol\Sigma_{\mathbf z\mathbf f',t}=\text{Cov}_t(\mathbf z_{t+1},\mathbf f_{t+1}')\)。定义 \(\boldsymbol\beta_t\equiv\boldsymbol\Sigma_{\mathbf z\mathbf f',t}\boldsymbol\Sigma_{\mathbf f,t}^{-1}\) (25.6)、\(\boldsymbol\lambda_t\equiv\boldsymbol\Sigma_{\mathbf f,t}\mathbf b_t\) (25.7)，得 beta 定价 (25.8)：</p>
+</div>
+<div class="lang en">
+<p>The LHS of (25.3) splits into two parts: <strong>Part 1</strong> \(\mathbb E_t[\mathbf z_{t+1}(\mathbf f_{t+1}-\boldsymbol\mu_{\mathbf f,t})']\) (estimable by statistical models); <strong>Part 2</strong> \(\mathbf b_t\) (focusing on the relationship between \(\mathbf b_t\) and underlying state variables). <strong>Separability</strong> is helpful since the two parts can be worked out in very different ways. But if the SDF is nonlinear in factors (cannot be equivalently rewritten as linear), separability fails.</p>
+<h3 id="25-2-2-dynamically-managed-portfolio">25.2.2 Dynamically Managed Portfolio</h3>
+<p>To test (25.2), multiply the restriction by a vector of time-\(t\) variables \(\mathbf h_t\) (25.4): \(\mathbf h_t\otimes\mathbb E_t[m^\star_{t+1}\mathbf z_{t+1}]=\mathbf 0\Rightarrow\mathbb E_t[m^\star_{t+1}(\mathbf h_t\otimes\mathbf z_{t+1})]=\mathbf 0\), \(\otimes\) the Kronecker product (\(\mathbf h_t\otimes\mathbf z_{t+1}=(h_{1,t}\mathbf z_{t+1},\dots,h_{m,t}\mathbf z_{t+1})'\)).</p>
+<ul>
+<li>If we <strong>don't add</strong> \(\mathbf h_t\), the conditional restriction \(\mathbb E_t[m^\star\mathbf z_{t+1}]\) reduces by LIE to the unconditional \(\mathbb E[m^\star\mathbf z_{t+1}]\) — only testing the unconditional restriction, implicitly degenerating the conditional problem to unconditional.</li>
+<li>But after <strong>adding</strong> the time-\(t\) variable \(\mathbf h_t\), the conditional version \(\mathbb E_t[m^\star(\mathbf h_t\otimes\mathbf z_{t+1})]=\mathbf 0\) does <strong>not</strong> degenerate to unconditional, because \(\mathbb E[m^\star(\mathbf h_t\otimes\mathbf z_{t+1})]=\mathbf 0\) does not necessarily hold (unless the conditional version holds).</li>
+</ul>
+<p>\(\mathbf h_t\otimes\mathbf z_{t+1}\) can be interpreted as a <strong>dynamically managed portfolio</strong>: the portfolio weights \(\mathbf h_t\) are adjusted every period \(t\), but the managed portfolio still must be priced by the dynamic SDF \(m^\star_{t+1}\) every period, giving an economic interpretation to the dynamic moment restrictions (25.4).</p>
+<h2 id="25-3-calculations">25.3 Calculations</h2>
+<p>The same idea and algebra as §24.3, except everything here is conditional on time \(t\). The SDF prices \(\mathbf z_t\) → \(\mathbb E_t[\mathbf z_{t+1}]=\boldsymbol\Sigma_{\mathbf z\mathbf f',t}\mathbf b_t\) (25.5), \(\boldsymbol\Sigma_{\mathbf z\mathbf f',t}=\text{Cov}_t(\mathbf z_{t+1},\mathbf f_{t+1}')\). Define \(\boldsymbol\beta_t\equiv\boldsymbol\Sigma_{\mathbf z\mathbf f',t}\boldsymbol\Sigma_{\mathbf f,t}^{-1}\) (25.6), \(\boldsymbol\lambda_t\equiv\boldsymbol\Sigma_{\mathbf f,t}\mathbf b_t\) (25.7), giving beta pricing (25.8):</p>
+</div>
+<p>$$\mathbb E_t[\mathbf z_{t+1}]=\boldsymbol\beta_t\boldsymbol\lambda_t\tag{25.8}$$</p>
+<div class="lang zh">
+<p>\(\boldsymbol\beta_t'=\boldsymbol\Sigma_{\mathbf f,t}^{-1}\boldsymbol\Sigma_{\mathbf f\mathbf z',t}\) 是把 \(\mathbf z_t-\boldsymbol\mu_{\mathbf z,t}\) 对 \(\mathbf f_t-\boldsymbol\mu_{\mathbf f,t}\) 回归的系数；\(\boldsymbol\lambda_t\) 为 \(t\) 时风险溢价。因 \(\mathbf f_t\) 也是超额收益，(25.8) 对 \(\mathbf z\to\mathbf f\) 成立（\(\boldsymbol\beta\to\mathbf I\)、\(\boldsymbol\lambda_t\) 不变），故 \(\mathbb E_t[\mathbf f_{t+1}]=\boldsymbol\lambda_t\)，即 \(\boldsymbol\mu_{\mathbf f,t}=\boldsymbol\lambda_t\) (25.9)。与 (25.8) 合得 (25.10)：\(\mathbb E_t[\mathbf z_{t+1}]=\boldsymbol\beta_t\boldsymbol\mu_{\mathbf f,t}\)，及 (25.11)：\(\mathbf z_{t+1}=\boldsymbol\beta_t\mathbf f_{t+1}+\boldsymbol\varepsilon_{t+1}\)。\(\boldsymbol\mu_{\mathbf f,t}=\boldsymbol\lambda_t\) 与 (25.7) 给 (25.12)：\(\mathbf b_t=\boldsymbol\Sigma_{\mathbf f,t}^{-1}\boldsymbol\mu_{\mathbf f,t}\)。</p>
+<h2 id="25-4-converting-dynamic-pricing-to-static-pricing">25.4 Converting Dynamic Pricing to Static Pricing</h2>
+<p>§25.3 的式子无需更多假设即一般成立。<strong>法一</strong>：直接用统计模型估条件矩、求解 \(\mathbb E_t[m^\star_{t+1}\mathbf z_{t+1}]=\mathbf 0\)。<strong>法二</strong>：对 \(\mathbf b_t\) (25.12) 再加一个假设，把动态定价退化为 §24.3 的静态定价。</p>
+<p><strong>假设 (25.13)</strong>：\(\mathbf b_t=\boldsymbol\phi_0+\boldsymbol\phi_h h_t\)，\(\boldsymbol\phi_0,\boldsymbol\phi_h\) 为 \(k\times1\) 不变常数，\(h_t\) 为 \(t\) 时标量状态变量。为简化只考虑单状态变量（不失一般性，可推广到多状态 \(\mathbf h_t\)）。须假设状态 \(h_t\) <strong>可观测</strong>（否则无法检验模型）。</p>
+<p>因超额收益的 SDF 可乘任一（时间 \(t\)）标量仍定价，故（与 (25.1) 一致）SDF (25.14)：\(M_{t+1}=k_t-\mathbf b_t'(\mathbf f_{t+1}-\boldsymbol\mu_{\mathbf f,t})\)，\(\mathbf b_t\) 是 (25.1) 中 \(\mathbf b_t\) 的再缩放版，\(k_t\) 定义为 (25.15)：</p>
+</div>
+<div class="lang en">
+<p>\(\boldsymbol\beta_t'=\boldsymbol\Sigma_{\mathbf f,t}^{-1}\boldsymbol\Sigma_{\mathbf f\mathbf z',t}\) is the coefficient of regressing \(\mathbf z_t-\boldsymbol\mu_{\mathbf z,t}\) on \(\mathbf f_t-\boldsymbol\mu_{\mathbf f,t}\); \(\boldsymbol\lambda_t\) is the time-\(t\) risk premium. Since \(\mathbf f_t\) are also excess returns, (25.8) holds with \(\mathbf z\to\mathbf f\) (\(\boldsymbol\beta\to\mathbf I\), \(\boldsymbol\lambda_t\) unchanged), so \(\mathbb E_t[\mathbf f_{t+1}]=\boldsymbol\lambda_t\), i.e. \(\boldsymbol\mu_{\mathbf f,t}=\boldsymbol\lambda_t\) (25.9). Combined with (25.8), (25.10): \(\mathbb E_t[\mathbf z_{t+1}]=\boldsymbol\beta_t\boldsymbol\mu_{\mathbf f,t}\), and (25.11): \(\mathbf z_{t+1}=\boldsymbol\beta_t\mathbf f_{t+1}+\boldsymbol\varepsilon_{t+1}\). \(\boldsymbol\mu_{\mathbf f,t}=\boldsymbol\lambda_t\) with (25.7) gives (25.12): \(\mathbf b_t=\boldsymbol\Sigma_{\mathbf f,t}^{-1}\boldsymbol\mu_{\mathbf f,t}\).</p>
+<h2 id="25-4-converting-dynamic-pricing-to-static-pricing">25.4 Converting Dynamic Pricing to Static Pricing</h2>
+<p>The expressions in §25.3 hold generally without further assumptions. <strong>Way 1</strong>: directly work on \(\mathbb E_t[m^\star_{t+1}\mathbf z_{t+1}]=\mathbf 0\) using statistical models for conditional moments. <strong>Way 2</strong>: make one more assumption on \(\mathbf b_t\) (25.12) to degenerate dynamic pricing into the static pricing of §24.3.</p>
+<p><strong>Assumption (25.13)</strong>: \(\mathbf b_t=\boldsymbol\phi_0+\boldsymbol\phi_h h_t\), \(\boldsymbol\phi_0,\boldsymbol\phi_h\) being \(k\times1\) constants, \(h_t\) a scalar state variable at \(t\). For simplicity, consider a single state variable (WLOG, extendable to multi-state \(\mathbf h_t\)). The state \(h_t\) must be assumed <strong>observable</strong> (else the model cannot be tested).</p>
+<p>Since the SDF for excess returns can be multiplied by any (time-\(t\)) scalar and still prices, (consistent with (25.1)) the SDF (25.14): \(M_{t+1}=k_t-\mathbf b_t'(\mathbf f_{t+1}-\boldsymbol\mu_{\mathbf f,t})\), where \(\mathbf b_t\) is a rescaled version of \(\mathbf b_t\) in (25.1), and \(k_t\) is defined by (25.15):</p>
+</div>
+<p>$$k_t=1-\boldsymbol\phi_0'(\boldsymbol\mu_{\mathbf f,t}-\boldsymbol\mu_{\mathbf f})-\boldsymbol\phi_h'\left(\boldsymbol\mu_{\mathbf f,t}h_t-\mathbb E[\boldsymbol\mu_{\mathbf f,t}h_t]\right)\tag{25.15}$$</p>
+<div class="lang zh">
+<p>\(\boldsymbol\mu_{\mathbf f}\) 为 \(\mathbf f_t\) 的无条件均值，\(\boldsymbol\mu_{\mathbf f,t}\) 为 \(\mathbf f_t\) 在 \(t\) 时的条件均值。记 \(\boldsymbol\phi=(\boldsymbol\phi_0',\boldsymbol\phi_h')'\)、\(\mathbf g_{t+1}=(\mathbf f_{t+1}',(\mathbf f_{t+1}h_t)')'\)、\(\boldsymbol\mu_{\mathbf g}=\mathbb E[\mathbf g_{t+1}]\)。把 (25.13) 代入 (25.14)，经代数化简得 (25.16)：</p>
+</div>
+<div class="lang en">
+<p>\(\boldsymbol\mu_{\mathbf f}\) is the unconditional mean of \(\mathbf f_t\), \(\boldsymbol\mu_{\mathbf f,t}\) the conditional mean at \(t\). Denote \(\boldsymbol\phi=(\boldsymbol\phi_0',\boldsymbol\phi_h')'\), \(\mathbf g_{t+1}=(\mathbf f_{t+1}',(\mathbf f_{t+1}h_t)')'\), \(\boldsymbol\mu_{\mathbf g}=\mathbb E[\mathbf g_{t+1}]\). Plugging (25.13) into (25.14), after algebra (25.16):</p>
+</div>
+<p>$$M_{t+1}=1-\boldsymbol\phi'(\mathbf g_{t+1}-\boldsymbol\mu_{\mathbf g})\tag{25.16}$$</p>
+<div class="lang zh">
+<p>(25.16) 含<strong>常数</strong> \(\boldsymbol\phi\) 与 \(\boldsymbol\mu_{\mathbf g}\)，与第 24 章 (24.7) <strong>完全同形</strong>。因此在关键假设 (25.13) 下，成功把时变参数的动态 SDF (25.14) 退化为常参数的静态 SDF (25.16)，第 24 章对 \(\boldsymbol\phi\)、\(\boldsymbol\mu_{\mathbf g}\) 的所有估计方法（GMM、Fama-MacBeth、检验、模型比较）在此直接适用。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>直觉
+动态因子模型的"魔法"在于：把因子 \(\mathbf f_{t+1}\) 与"因子 × 状态变量" \(\mathbf f_{t+1}h_t\) <strong>并列</strong>为新的扩展因子向量 \(\mathbf g_{t+1}\)，则时变载荷 \(\mathbf b_t=\boldsymbol\phi_0+\boldsymbol\phi_h h_t\) 被吸收进常数载荷 \(\boldsymbol\phi\)。\(\mathbf f_{t+1}h_t\) 正是 §25.2.2 的动态管理组合 \(\mathbf h_t\otimes\mathbf z_{t+1}\) 思想的体现。</p></div>
+</div>
+<div class="lang en">
+<p>(25.16) has <strong>constant</strong> \(\boldsymbol\phi\) and \(\boldsymbol\mu_{\mathbf g}\), of <strong>exactly the same form</strong> as Chapter 24's (24.7). So under the crucial assumption (25.13), we successfully degenerate the time-varying-parameter dynamic SDF (25.14) into the constant-parameter static SDF (25.16), and all of Chapter 24's estimation methods (GMM, Fama-MacBeth, testing, model comparison) for \(\boldsymbol\phi\) and \(\boldsymbol\mu_{\mathbf g}\) apply directly.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Intuition
+The "magic" of dynamic factor models: by placing the factor \(\mathbf f_{t+1}\) and the "factor × state variable" \(\mathbf f_{t+1}h_t\) <strong>side by side</strong> into a new augmented factor vector \(\mathbf g_{t+1}\), the time-varying loading \(\mathbf b_t=\boldsymbol\phi_0+\boldsymbol\phi_h h_t\) is absorbed into the constant loading \(\boldsymbol\phi\). The term \(\mathbf f_{t+1}h_t\) is precisely the embodiment of §25.2.2's dynamically managed portfolio \(\mathbf h_t\otimes\mathbf z_{t+1}\).</p></div>
+</div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Cochrane, J. H. (2005). <em>Asset Pricing</em> (Revised ed.). Princeton University Press.</li>
+<li>He, X. (2019a). <em>Econometrics Notes by Xindi He</em>.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#25-1-setup">25.1 Setup</a></li>
+        <li><a href="#25-2-conditional-moment-restrictions">25.2 Conditional Moment Restrictions</a></li>
+          <li><a href="#25-2-1-separability-by-linearity-in-stochastic-discount-factor">25.2.1 Separability by Linearity in Stochastic Discount Factor</a></li>
+        <li><a href="#25-2-conditional-moment-restrictions">25.2 Conditional Moment Restrictions</a></li>
+          <li><a href="#25-2-1-separability-by-linearity-in-stochastic-discount-factor">25.2.1 Separability by Linearity in Stochastic Discount Factor</a></li>
+          <li><a href="#25-2-2-dynamically-managed-portfolio">25.2.2 Dynamically Managed Portfolio</a></li>
+        <li><a href="#25-3-calculations">25.3 Calculations</a></li>
+          <li><a href="#25-2-2-dynamically-managed-portfolio">25.2.2 Dynamically Managed Portfolio</a></li>
+        <li><a href="#25-3-calculations">25.3 Calculations</a></li>
+        <li><a href="#25-4-converting-dynamic-pricing-to-static-pricing">25.4 Converting Dynamic Pricing to Static Pricing</a></li>
+        <li><a href="#25-4-converting-dynamic-pricing-to-static-pricing">25.4 Converting Dynamic Pricing to Static Pricing</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

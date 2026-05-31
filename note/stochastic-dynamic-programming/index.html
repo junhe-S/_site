@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11. Stochastic Dynamic Programming – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>11. Stochastic Dynamic Programming</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">宏观经济学</span><span class="lang en">Macroeconomics</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">随机动态规划</span><span class="lang en">Stochastic Dynamic Programming</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">马尔可夫过程</span><span class="lang en">Markov Process</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Feller性质</span><span class="lang en">Feller Property</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">贝尔曼方程</span><span class="lang en">Bellman Equation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">平稳分布</span><span class="lang en">Stationary Distribution</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">学习笔记</span><span class="lang en">Study Note</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p><strong>本章主题：随机动态规划。</strong> 把外生随机冲击 \(z\) 作为额外状态变量加入，设 \(\{z_t\}\) 为一阶马尔可夫过程。<strong>§11.1 随机冲击</strong>：离散状态空间——马尔可夫矩阵 \(Q=[q_{i,j}]\)（\(\sum_j q_{i,j}=1\)，高阶可化为一阶）；连续状态空间——转移密度 \(q(z,z')=\partial Q(z,z')/\partial z'\)、\(\int q\,dz'=1\)、<strong>定义 11.1 Feller 性质</strong>（算子 \(M\) 把连续函数映到连续函数）。<strong>§11.2 问题</strong>：状态 \(S=(x,z)\)；<strong>贝尔曼方程</strong> \(V(x,z)=\max_{y\in\Gamma(x,z)}\{F(x,z,y)+\beta\int V(y,z')q(z,z')dz'\}\)；\(V\)/\(g\) 关于 \(x\) 与 \(z\) 的单调性、凹性、可微性（逐 \(z\) 固定）；\(z\) i.i.d. 时 \(g\) 关于 \(z\) 递增；替代贝尔曼方程（\(x'=\phi(x,y,z)\)）；<strong>稳态 = \(S(x,z)\) 的平稳分布</strong>（依赖 \(g\) 与 \(Q\)、需遍历集）；包络条件 \(V_x=F_x\)、<strong>欧拉方程</strong> \(-F_y(x,y,z)=\beta\int F_y(y,y',z')q(z,z')dz'\)。</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p><strong>Chapter theme: stochastic dynamic programming.</strong> Add an exogenous stochastic shock \(z\) as an additional state variable, assuming \(\{z_t\}\) is a first-order Markov process. <strong>§11.1 Stochastic shock</strong>: discrete state space — the Markov matrix \(Q=[q_{i,j}]\) (\(\sum_j q_{i,j}=1\), higher-order can be reduced to first-order); continuous state space — transition density \(q(z,z')=\partial Q(z,z')/\partial z'\), \(\int q\,dz'=1\), <strong>Definition 11.1 the Feller property</strong> (the operator \(M\) maps continuous functions to continuous functions). <strong>§11.2 The problem</strong>: state \(S=(x,z)\); the <strong>Bellman equation</strong> \(V(x,z)=\max_{y\in\Gamma(x,z)}\{F(x,z,y)+\beta\int V(y,z')q(z,z')dz'\}\); monotonicity, concavity, differentiability of \(V\)/\(g\) in \(x\) and in \(z\) (for each fixed \(z\)); \(g\) increasing in \(z\) when \(z\) is i.i.d.; the alternative Bellman equation (\(x'=\phi(x,y,z)\)); the <strong>steady state = the stationary distribution of \(S(x,z)\)</strong> (involving \(g\) and \(Q\), needs an ergodic set); the envelope condition \(V_x=F_x\), the <strong>Euler equation</strong> \(-F_y(x,y,z)=\beta\int F_y(y,y',z')q(z,z')dz'\).</p></div>
+</div>
+<div class="lang zh">
+<p>在随机动态规划问题中，可把外生随机冲击 \(z\) 作为额外状态变量加入。这里设 \(\{z_t\}\) 是一阶马尔可夫过程。</p>
+<h2 id="11-1-stochastic-shock">11.1 Stochastic Shock</h2>
+<p>外生随机冲击 \(z\) 可以两种方式加入。</p>
+<p><strong>11.1.1 离散状态空间与马尔可夫矩阵</strong></p>
+<p>冲击 \(z\) 可取 \(n\) 个值，即 \(z\in Z=\{z_1,z_2,\dots,z_n\}\)。可把转移描述为<strong>马尔可夫矩阵 \(Q\)</strong>：
+$$Q=\begin{bmatrix}q_{1,1}&q_{1,2}&\cdots&q_{1,n}\\q_{2,1}&q_{2,2}&\cdots&q_{2,n}\\\vdots&\vdots&\vdots&\vdots\\q_{n,1}&q_{n,2}&\cdots&q_{n,n}\end{bmatrix}$$
+其中 \(q_{i,j}\) 是当前期为 \(z_i\)、下一期为 \(z_j\) 的概率。注意
+$$\sum_{j=1}^n q_{i,j}=1\quad\text{for }i=1,2,\dots,n$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记（高阶 → 一阶马尔可夫）
+即便 \(\{z_t\}\) 是高阶马尔可夫过程，也仍可将其转换为一阶马尔可夫过程。考虑二阶马尔可夫过程 \(z_{t+2}=\theta_1 z_{t+1}+\theta_2 z_t+\varepsilon_{t+2}\)，\(\varepsilon_{t+2}\sim\mathcal N(0,\sigma^2)\)。定义 \(A=\begin{bmatrix}\theta_1&\theta_2\\1&0\end{bmatrix}\)、\(x_t=\begin{pmatrix}z_{t+1}\\z_t\end{pmatrix}\)、\(\epsilon_t=\begin{pmatrix}\varepsilon_{t+1}\\0\end{pmatrix}\)，则
+$$\begin{pmatrix}z_{t+2}\\z_{t+1}\end{pmatrix}=\begin{bmatrix}\theta_1&\theta_2\\1&0\end{bmatrix}\begin{pmatrix}z_{t+1}\\z_t\end{pmatrix}+\begin{pmatrix}\varepsilon_{t+2}\\0\end{pmatrix}$$
+即 \(x_{t+1}=Ax_t+\epsilon_{t+1}\)，是一阶马尔可夫过程（马尔可夫过程的正式定义见 §42）。</p></div>
+</div>
+<div class="lang en">
+<p>In the stochastic Dynamic Programming problem, we can add an exogenous stochastic shock \(z\) as an additional state variable. Here we assume \(\{z_t\}\) is a first-order Markov process.</p>
+<h2 id="11-1-stochastic-shock">11.1 Stochastic Shock</h2>
+<p>The exogenous stochastic shock \(z\) can be added in the following two ways.</p>
+<p><strong>11.1.1 Discrete state space and Markov matrix</strong></p>
+<p>The shock can take \(n\) possible values, i.e. \(z\in Z=\{z_1,z_2,\dots,z_n\}\). We can describe the transition as a <strong>Markov matrix \(Q\)</strong> such that
+$$Q=\begin{bmatrix}q_{1,1}&q_{1,2}&\cdots&q_{1,n}\\q_{2,1}&q_{2,2}&\cdots&q_{2,n}\\\vdots&\vdots&\vdots&\vdots\\q_{n,1}&q_{n,2}&\cdots&q_{n,n}\end{bmatrix}$$
+where \(q_{i,j}\) is the probability of having \(z_j\) in the next period given \(z_i\) in this period. Note that
+$$\sum_{j=1}^n q_{i,j}=1\quad\text{for }i=1,2,\dots,n$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark (higher-order → first-order Markov)
+Note that even if \(\{z_t\}\) is a higher-order Markov process, we can still transform it into a first-order Markov process. Consider a second-order Markov process \(z_{t+2}=\theta_1 z_{t+1}+\theta_2 z_t+\varepsilon_{t+2}\) with \(\varepsilon_{t+2}\sim\mathcal N(0,\sigma^2)\). Define \(A=\begin{bmatrix}\theta_1&\theta_2\\1&0\end{bmatrix}\), \(x_t=\begin{pmatrix}z_{t+1}\\z_t\end{pmatrix}\) and \(\epsilon_t=\begin{pmatrix}\varepsilon_{t+1}\\0\end{pmatrix}\), then
+$$\begin{pmatrix}z_{t+2}\\z_{t+1}\end{pmatrix}=\begin{bmatrix}\theta_1&\theta_2\\1&0\end{bmatrix}\begin{pmatrix}z_{t+1}\\z_t\end{pmatrix}+\begin{pmatrix}\varepsilon_{t+2}\\0\end{pmatrix}$$
+i.e. \(x_{t+1}=Ax_t+\epsilon_{t+1}\), which is a first-order Markov process (see the formal definition of Markov process in §42).</p></div>
+</div>
+<div class="lang zh">
+<p><strong>11.1.2 连续状态空间与 Feller 性质</strong></p>
+<p>冲击取连续统的值，即 \(z\in Z=[\underline z,\bar z]\)。可把转移描述为函数 \(Q(z,z')\)、带密度
+$$q(z,z')=\frac{\partial Q(z,z')}{\partial z'}$$
+其中 \(z\) 是当前期冲击、\(z'\) 是下一期冲击。\(q(z,z')\) 具有性质
+$$\int_{\underline z}^{\bar z}q(z,z')dz'=1$$
+（对应离散情形的 \(\sum_{j=1}^n q_{i,j}=1\)）。设对每个 \(z'\in Z\)，\(q(z,z')\) 关于第一个参数 \(z\) 连续。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 11.1
+注意我们总会假设 \(q(z,z')\) 关于第二个参数 \(z'\) 连续（因为想要连续密度）。但这里还假设 \(q(z,z')\) 关于第一个参数 \(z\) 连续，意即若当前冲击 \(z\) 变一点点，则下一期冲击 \(z'\) 的整个密度函数也移动一点点。这对多数经济问题是合理的。</p></div>
+<p>该假设保证：若 \(h(z)\) 关于 \(z\) 连续，则
+$$(Mh)(z)=\int_{\underline z}^{\bar z}h(z')q(z,z')dz'$$
+关于 \(z\) 连续。若这对每个连续函数 \(h\) 都成立，则称之为 \(Q\) 的 <strong>Feller 性质</strong>。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 11.1（Feller 性质 Feller Property）
+给定 \((Z,Q)\)，对 \(z\in Z\)、\(q(z,z')=\dfrac{\partial Q(z,z')}{\partial z'}\)，定义算子 \(M\) 使
+$$(Mh)(z)=\mathbb E(h(z')\mid z)=\int_{\underline z}^{\bar z}h(z')q(z,z')dz'\quad\text{for }\forall z$$
+若 \(M\) 把任意连续函数 \(h\) 映到连续函数 \(Mh\)，则称 \(Q\) 具有 <strong>Feller 性质</strong>。</p></div>
+</div>
+<div class="lang en">
+<p><strong>11.1.2 Continuous state space and the Feller property</strong></p>
+<p>The shock can have a continuum of values, i.e. \(z\in Z=[\underline z,\bar z]\). We can describe the transition as a function \(Q(z,z')\) with density
+$$q(z,z')=\frac{\partial Q(z,z')}{\partial z'}$$
+where \(z\) is the current period shock and \(z'\) is the next period shock. \(q(z,z')\) has the property that
+$$\int_{\underline z}^{\bar z}q(z,z')dz'=1$$
+(which corresponds to \(\sum_{j=1}^n q_{i,j}=1\) in the discrete case). Assume that for each \(z'\in Z\), \(q(z,z')\) is continuous in its first argument \(z\).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 11.1
+Note that we always assume that \(q(z,z')\) is continuous in its second argument \(z'\) because we want a continuous density. But here we also assume that \(q(z,z')\) is continuous in its first argument \(z\), which means that if the current shock \(z\) changes a little bit, then the whole density function for the next-period shock \(z'\) moves a little bit. Such an assumption is reasonable for most economic problems.</p></div>
+<p>This assumption insures that if \(h(z)\) is continuous in \(z\), then
+$$(Mh)(z)=\int_{\underline z}^{\bar z}h(z')q(z,z')dz'$$
+is continuous in \(z\). If this is true for every continuous function \(h\), then this is called the <strong>Feller property</strong> of \(Q\).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 11.1 (Feller Property)
+Given \((Z,Q)\), for \(z\in Z\) and \(q(z,z')=\dfrac{\partial Q(z,z')}{\partial z'}\), define an operator \(M\) such that
+$$(Mh)(z)=\mathbb E(h(z')\mid z)=\int_{\underline z}^{\bar z}h(z')q(z,z')dz'\quad\text{for }\forall z$$
+If \(M\) maps any continuous function \(h\) to a continuous function \(Mh\), then \(Q\) is called to have the <strong>Feller property</strong>.</p></div>
+</div>
+<h2 id="11-2-the-problem">11.2 The Problem</h2>
+<div class="lang zh">
+<p>现在状态变量为 \(S=(x,z)\)。</p>
+<p><strong>11.2.1 贝尔曼方程</strong></p>
+<p>这类问题的典型贝尔曼方程可设为
+$$V(x,z)=\max_{y\in\Gamma(x,z)}\left\{F(x,z,y)+\beta\int_{\underline z}^{\bar z}V(y,z')q(z,z')dz'\right\}$$
+其中 \(\Gamma(x,z)\) 是 \(y\) 的可行集、\(x\) 是内生状态变量、\(z\) 是外生冲击状态变量。</p>
+<p><strong>11.2.2 假设与性质</strong></p>
+<p><strong>\(V\) 良定（存在性与唯一性）</strong>：与确定性情形相同的要求成立，注意要求需对每个固定 \(z\) 满足。</p>
+<p><strong>\(V\) 与 \(g\) 作为 \(x\) 的函数的性质：</strong>
+- <strong>(1) \(V\) 关于 \(x\) 的单调性</strong>：要求 1：\(\Gamma(x,z)\) 对每个固定 \(z\) 关于 \(x\) 单调（\(x'\ge x\Rightarrow\Gamma(x,z)\subseteq\Gamma(x',z)\)）。要求 2：\(F(x,y,z)\) 对每个固定 \(z\) 关于 \(x\) 弱递增。若 \(F(x,y,z)\) 对每个固定 \(z\) 关于 \(x\) 严格递增，则 \(V\) 严格递增。
+- <strong>(2) \(V\) 关于 \(x\) 的凹性</strong>：要求 1：\(F(x,y,z)\) 对每个固定 \(z\) 关于 \((x,y)\) 弱凹。若 \(F\) 对每个固定 \(z\) 关于 \(x\) 严格凹，则 \(V\) 严格凹。要求 2：\(\Gamma(x,z)\) 对每个固定 \(z\) 作为对应凸。
+- <strong>(3) \(V\) 在 \(\hat x\) 处的可微性</strong>：要求 1：\(X\subseteq\mathbb R^n\) 凸集。要求 2：\(V\) 凹。要求 3：\(\hat x\in\text{int}(X)\)。要求 4：\(g(\hat x,z)\in\text{int}(\Gamma(\hat x,z))\)。要求 5：\(F\) 对每个固定 \(z\) 关于 \(x\) 可微。
+- <strong>(4) \(g\) 的性质</strong>：若 \(V(x,z)\) 对每个固定 \(z\) 关于 \(x\) 严格凹，则 \(g(x,z)\) 对每个固定 \(z\) 是单值函数（非对应）且关于 \(x\) 连续。若 \(F(x,z,y)\) 对每个固定 \(z\) 关于 \((x,y)\)（严格）凹，则 \(g(x,z)\) 对每个固定 \(z\) 关于 \(x\)（严格）递增。</p>
+</div>
+<div class="lang en">
+<p>Now we have the state variable as \(S=(x,z)\).</p>
+<p><strong>11.2.1 Bellman equation</strong></p>
+<p>A typical Bellman equation for this type of problem can be set up as
+$$V(x,z)=\max_{y\in\Gamma(x,z)}\left\{F(x,z,y)+\beta\int_{\underline z}^{\bar z}V(y,z')q(z,z')dz'\right\}$$
+where \(\Gamma(x,z)\) is the feasible set for \(y\), \(x\) is the endogenous state variable and \(z\) is the exogenous shock state variable.</p>
+<p><strong>11.2.2 Assumptions and Properties</strong></p>
+<p><strong>\(V\) is well-defined (existence and uniqueness)</strong>: the same requirements hold as in the deterministic case. Note that the requirements should be satisfied at each fixed \(z\).</p>
+<p><strong>Properties of \(V\) and \(g\) as a function of \(x\):</strong>
+- <strong>(1) Monotonicity of \(V\) in \(x\)</strong>: Requirement 1: \(\Gamma(x,z)\) is monotone in \(x\) for each fixed \(z\) (i.e. \(x'\ge x\Rightarrow\Gamma(x,z)\subseteq\Gamma(x',z)\)). Requirement 2: \(F(x,y,z)\) weakly increasing in \(x\) for each fixed \(z\). If \(F(x,y,z)\) is strictly increasing in \(x\) for each fixed \(z\), then \(V\) is strictly increasing.
+- <strong>(2) Concavity of \(V\) in \(x\)</strong>: Requirement 1: \(F(x,y,z)\) weakly concave in \((x,y)\) for each fixed \(z\). If \(F\) is strictly concave in \(x\) for each fixed \(z\), then \(V\) is strictly concave. Requirement 2: \(\Gamma(x,z)\) is convex as a correspondence for each fixed \(z\).
+- <strong>(3) Differentiability of \(V\) at \(\hat x\)</strong>: Requirement 1: \(X\subseteq\mathbb R^n\) is a convex set. Requirement 2: \(V\) is concave. Requirement 3: \(\hat x\in\text{int}(X)\). Requirement 4: \(g(\hat x,z)\in\text{int}(\Gamma(\hat x,z))\). Requirement 5: \(F\) is differentiable in \(x\) for each fixed \(z\).
+- <strong>(4) Property of \(g\)</strong>: If \(V(x,z)\) is strictly concave in \(x\) for each fixed \(z\), then \(g(x,z)\) is a single valued function (not a correspondence) and continuous in \(x\) for each fixed \(z\). If \(F(x,z,y)\) is (strictly) concave in \((x,y)\) for each fixed \(z\), then \(g(x,z)\) is (strictly) increasing in \(x\) for each fixed \(z\).</p>
+</div>
+<div class="lang zh">
+<p><strong>\(V\) 与 \(g\) 作为 \(z\) 的函数的性质：</strong>
+- <strong>(1) \(V\) 关于 \(z\) 的单调性</strong>：要求 1：\(\Gamma(x,z)\) 对所有 \(x\) 关于 \(z\) 单调（\(\hat z\ge z\Rightarrow\Gamma(x,z)\subseteq\Gamma(x,\hat z)\) 对 \(\forall x\)）。要求 2：\(F(x,y,z)\) 关于 \(z\) 弱递增。若 \(F(x,y,z)\) 关于 \(z\) 严格递增，则 \(V\) 关于 \(z\) 严格递增。要求 3：算子 \(M\) 把（关于 \(z\)）递增的函数 \(V(x,z)\) 映到（关于 \(z\)）递增的函数 \((Mh)(x,z)=\int_{\underline z}^{\bar z}V(x,z')q(z,z')dz'\)。
+- <strong>(2) \(g\) 关于 \(z\) 的单调性</strong>：若 \(z\) 是 i.i.d. 的，则在假设 \(F_y(x,z,y)\) 关于 \(z\) 递增时，\(g(x,z)\) 对所有 \(x\) 关于 \(z\) 递增。回忆贝尔曼方程
+$$V(x,z)=\max_{y\in\Gamma(x,z)}\left\{F(x,z,y)+\beta\int_{\underline z}^{\bar z}V(y,z')q(z,z')dz'\right\}$$
+考虑关于 \(y\) 的一阶条件
+$$-F_y(x,z,y)=\beta\int_{\underline z}^{\bar z}V_y(y,z')q(z,z')dz'$$
+若 \(z\) 是 i.i.d. 的，可把一阶条件重写为
+$$-F_y(x,z,y)=\beta\int_{\underline z}^{\bar z}V_y(y,z')\pi(z')dz'$$
+其中 \(\pi(z')\) 是无条件密度。注意此时 LHS 随 \(z\) 减小、RHS 不随 \(z\) 变化，故与之前同样的逻辑成立、可用图示论证 \(g(x,z)\) 关于 \(z\) 递增。但若 \(z\) 不是 i.i.d. 的，则除非对 \(\beta\int V_y(y,z')q(z,z')dz'\) 关于 \(z\) 的变化方向做进一步假设，否则不会有此性质。</p>
+<p><strong>11.2.3 替代贝尔曼方程</strong></p>
+<p>也可把贝尔曼方程表述为
+$$V(x,z)=\max_{y\in\Gamma(x,z)}\left\{F(x,y,z)+\beta\int_{\underline z}^{\bar z}V\big(\underbrace{\phi(x,y,z)}_{\equiv x'},z'\big)q(z,z')dz'\right\}$$
+其中 \(y\) 不是下一期状态变量本身，但可通过函数 \(\phi(x,y,z)\) 影响下一期状态变量 \(x'\) 的值。</p>
+<p><strong>11.2.4 稳态</strong></p>
+<p>随机规划的稳态与确定性情形不同。这里稳态是 \(S(x,z)\) 的<strong>平稳分布（stationary distribution）</strong>，其转移函数涉及 \(g\) 与 \(Q\)。为使系统收敛到稳态，假设 \(\{z_t\}\) 过程有唯一遍历集、带平稳分布、且系统收敛到它。</p>
+<p><strong>11.2.5 包络条件与欧拉方程</strong></p>
+<p><strong>包络条件。</strong> 对贝尔曼方程
+$$V(x,z)=\max_{y\in\Gamma(x,z)}\left\{F(x,y,z)+\beta\int_{\underline z}^{\bar z}V(y,z')q(z,z')dz'\right\}$$
+每个固定 \(z\) 的包络条件为
+$$V_x(x,z)=F_x(x,y,z)$$
+<strong>欧拉方程。</strong> 合并包络条件
+$$V_y(y,z')=F_y(y,y',z')$$
+与一阶条件
+$$-F_y(x,y,z)=\beta\int_{\underline z}^{\bar z}V_y(y,z')q(z,z')dz'$$
+得欧拉方程
+$$-F_y(x,y,z)=\beta\int_{\underline z}^{\bar z}F_y(y,y',z')q(z,z')dz'$$</p>
+</div>
+<div class="lang en">
+<p><strong>Properties of \(V\) and \(g\) as a function of \(z\):</strong>
+- <strong>(1) Monotonicity of \(V\) in \(z\)</strong>: Requirement 1: \(\Gamma(x,z)\) is monotone in \(z\) for all \(x\) (i.e. \(\hat z\ge z\Rightarrow\Gamma(x,z)\subseteq\Gamma(x,\hat z)\) for \(\forall x\)). Requirement 2: \(F(x,y,z)\) weakly increasing in \(z\). If \(F(x,y,z)\) is strictly increasing in \(z\), then \(V\) is strictly increasing in \(z\). Requirement 3: the operator \(M\) maps an increasing (in \(z\)) function \(V(x,z)\) to an increasing (in \(z\)) function \((Mh)(x,z)=\int_{\underline z}^{\bar z}V(x,z')q(z,z')dz'\).
+- <strong>(2) Monotonicity of \(g\) in \(z\)</strong>: If \(z\)'s are i.i.d., then \(g(x,z)\) is increasing in \(z\) for all \(x\) if we assume \(F_y(x,z,y)\) is increasing in \(z\). Recall the Bellman equation
+$$V(x,z)=\max_{y\in\Gamma(x,z)}\left\{F(x,z,y)+\beta\int_{\underline z}^{\bar z}V(y,z')q(z,z')dz'\right\}$$
+Consider the f.o.c. w.r.t. \(y\):
+$$-F_y(x,z,y)=\beta\int_{\underline z}^{\bar z}V_y(y,z')q(z,z')dz'$$
+If \(z\)'s are i.i.d., then we can rewrite the f.o.c. as
+$$-F_y(x,z,y)=\beta\int_{\underline z}^{\bar z}V_y(y,z')\pi(z')dz'$$
+where \(\pi(z')\) is the unconditional density. Note that the LHS decreases in \(z\) and the RHS doesn't change with \(z\), so the same logic as before follows and we can use the graph argument to show that \(g(x,z)\) is increasing in \(z\). But if \(z\)'s are not i.i.d., then we won't have this property unless we make further assumptions on the direction of change of \(\beta\int V_y(y,z')q(z,z')dz'\) in \(z\).</p>
+<p><strong>11.2.3 Alternative Bellman equation</strong></p>
+<p>Instead, we can formulate the Bellman equation as follows
+$$V(x,z)=\max_{y\in\Gamma(x,z)}\left\{F(x,y,z)+\beta\int_{\underline z}^{\bar z}V\big(\underbrace{\phi(x,y,z)}_{\equiv x'},z'\big)q(z,z')dz'\right\}$$
+where \(y\) is not the next-period state variable itself, but can affect the value of next-period state variable \(x'\) through the function \(\phi(x,y,z)\).</p>
+<p><strong>11.2.4 The steady state</strong></p>
+<p>The steady state for stochastic programming is not the same as the deterministic case. Here the steady state is a <strong>stationary distribution</strong> for \(S(x,z)\) whose transition function involves \(g\) and \(Q\). For the system to converge to the steady state, we assume the \(\{z_t\}\) process has a unique ergodic set with a stationary distribution and the system converges to it.</p>
+<p><strong>11.2.5 Envelop condition and Euler Equation</strong></p>
+<p><strong>Envelop Condition.</strong> For the Bellman equation
+$$V(x,z)=\max_{y\in\Gamma(x,z)}\left\{F(x,y,z)+\beta\int_{\underline z}^{\bar z}V(y,z')q(z,z')dz'\right\}$$
+the envelop condition for each fixed \(z\) is
+$$V_x(x,z)=F_x(x,y,z)$$
+<strong>Euler Equation.</strong> Combining the Envelop Condition
+$$V_y(y,z')=F_y(y,y',z')$$
+and the f.o.c. that
+$$-F_y(x,y,z)=\beta\int_{\underline z}^{\bar z}V_y(y,z')q(z,z')dz'$$
+we have the Euler Equation
+$$-F_y(x,y,z)=\beta\int_{\underline z}^{\bar z}F_y(y,y',z')q(z,z')dz'$$</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#11-1-stochastic-shock">11.1 Stochastic Shock</a></li>
+        <li><a href="#11-1-stochastic-shock">11.1 Stochastic Shock</a></li>
+        <li><a href="#11-2-the-problem">11.2 The Problem</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

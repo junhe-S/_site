@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>暗黑森林里的「过路费」：抢跑、MEV 与区块链上那场没谈拢的分赃 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>暗黑森林里的「过路费」：抢跑、MEV 与区块链上那场没谈拢的分赃</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2025 JFE]</span> Maximal Extractable Value and Allocative Inefficiencies in Public Blockchains</div>
+        <div class="paper-source-authors"><a href="/research/author/agostino-capponi/">Agostino Capponi</a>, <a href="/research/author/ruizhe-jia/">Ruizhe Jia</a>, <a href="/research/author/kanye-ye-wang/">Kanye Ye Wang</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>May 31, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">市场设计</span>
+        
+        
+        
+        
+        <span class="tag">区块链</span>
+        
+        
+        
+        
+        <span class="tag">MEV</span>
+        
+        
+        
+        
+        <span class="tag">博弈论</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Capponi, Jia &amp; Wang (2025, <em>Journal of Financial Economics</em>)</strong>：公链的结算层天生纵容「系统性抢跑」，把本该高效的区块空间配置搞得一塌糊涂；私有交易池（如 Flashbots）本可以修好它、提升福利，但因为<strong>验证者不愿放弃抢跑带来的租金（即 MEV）</strong>，市场只能停在一个「部分采用」的低效均衡上——抢跑没消失，福利没拉满。作者用一个三阶段博弈把这件事讲透，再用以太坊 Flashbots 的数据一一验证。</p></div>
+<h2 id="1">1 一笔交易，为什么会在「光天化日」下被抢走</h2>
+<p>先讲一个让传统金融从业者难以置信的场景。</p>
+<p>你在去中心化交易所（如 Uniswap）上挂了一笔买单，想用以太币换某个代币。这笔交易在被打包进区块、最终确认之前，会先广播到一个所有人都能看见的「内存池」（mempool）里。于是，一个守在那里的机器人看到了你：它抢在你前面买入同一个代币（把价格推高），等你的单子成交（价格被进一步推高），它再立刻卖出——一买一卖之间，它把本属于你的价差揣进了自己兜里。你支付了「滑点」（slippage），它赚走了利润。这就是所谓的<strong>三明治攻击（sandwich attack）</strong>，是<strong>抢跑（frontrunning）</strong>最常见的一种形态。</p>
+<p>这不是个别现象。作者统计了 2020 年 5 月到 2022 年 9 月、所有经由 Uniswap V2 路由合约的以太币交易：在 <code>4,150,440</code> 个相关区块里，<code>2,621,819</code> 个（<code>63%</code>）含有「可被抢跑」的交易，<code>610,710</code> 个（<code>14.7%</code>）含有已确认的三明治攻击。平均每次成功攻击，攻击者毛收入约 <code>0.108</code> 以太币；受害者累计损失超过 <code>130,000</code> 以太币，按当时约 \$2000/枚折算，约合 <strong>\$2.2 亿</strong>。</p>
+<p>这在传统金融里几乎是不可想象的。证券交易所有「时间优先」原则，有受监管的中介，有防止抢先交易的红线。可在公链上，这套秩序统统失效了。为什么？作者一针见血地指出两个根因：</p>
+<p><strong>第一，去中心化结构无法强制执行「时间优先」。</strong> 交易能不能被打包、按什么顺序打包，完全由验证者（validator）说了算——而验证者通常只认一个东西：<strong>手续费谁出得高</strong>（Buterin, 2015; Nakamoto, 2008）。第二，去中心化和匿名又要求交易必须<strong>全网广播</strong>，于是你的待处理交易在被打包前就「裸奔」在公共内存池里，谁都能看见、谁都能抢（Daian et al., 2020）。</p>
+<p>加密圈有个很传神的比喻：以太坊是一片「暗黑森林」（dark forest）——你的每一笔交易都像森林里点燃的一支火把，立刻招来掠食者。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>这里有个关键概念要先说清。验证者从「打包、排序、夹塞、剔除」交易里榨取的、超出正常区块奖励和手续费的那部分价值，叫做<strong>最大可提取价值（Maximal Extractable Value, MEV）</strong>。它最早叫「矿工可提取价值」（Miner Extractable Value），后来发现这块肥肉可以在结算层的多方之间分配，才改了名。MEV 是本文的「主角」——它既是抢跑的利润来源，也是后面那场「分赃没谈拢」的症结所在。</p></div>
+<h2 id="2">2 真正的代价：不是被偷的钱，而是被搞乱的「分配」</h2>
+<p>接着，一个自然的问题是：抢跑的危害，难道就是那 \$2.2 亿被偷走的钱吗？</p>
+<p>如果只是财富从受害者转移到攻击者，那还只是个「分配公平」问题。但作者要讲的，是一件更深、也更经济学的事——抢跑制造了严重的<strong>配置无效率（allocative inefficiency）</strong>。区块空间是稀缺资源，本该留给「估值最高、最该被执行」的交易。可抢跑把这套配置逻辑彻底搅乱了，而且是通过三条环环相扣的机制：</p>
+<p><strong>机制一：高昂的抢跑成本，把边际用户挡在门外。</strong> 一个可被抢跑的用户，预期到自己会被夹,干脆就不发交易了——于是一些本来很有价值的交易，被排除在区块之外。</p>
+<p><strong>机制二：攻击者凭空消耗区块空间。</strong> 攻击者的抢跑交易本身<strong>不创造任何社会价值</strong>，它只是把财富从受害者那里搬运过来，却实打实地占用了宝贵的区块空间。</p>
+<p><strong>机制三：错配被进一步放大。</strong> 那些本该装下「被排除的高价值交易」的空间，结果被估值更低的「不可抢跑交易」填满了。</p>
+<p>把这三条放在一起看，结论就很扎心：抢跑不只是「劫富」，它是在系统性地把区块空间<strong>配给了错误的人</strong>。作者用一张示意图把「有效配置」和「无效配置」两种情景画在了一起。</p>
+<div class="article-image"><img alt="Figure 3: Blockchain space allocation under efficient and inefficient scenarios" src="assets/figure-3.png" /></div>
+<p><em>Figure 3: Blockchain space allocation under efficient and inefficient scenarios</em></p>
+<div class="callout"><div class="callout-title">Note</div><p>这正是这篇论文相比早期文献最重要的视角转换。在此之前，大家盯着的是「抢跑让谁亏了钱」；本文盯着的是「抢跑让区块空间配错了人」。从「财富转移」到「配置效率」，问题的性质变了。</p></div>
+<h2 id="3">3 一个本可以修好它的工具：私有交易池</h2>
+<p>然后，故事出现了一线转机。</p>
+<p>既然抢跑的根源是交易在公共内存池里「裸奔」，那一个直觉的解法就是：<strong>别让它裸奔</strong>。这就是<strong>私有交易池（private pool）</strong> 的思路——用户把交易直接、私密地发给验证者，绕开公共内存池，攻击者根本看不见，自然也就无从抢起。以太坊上的 <strong>Flashbots</strong> 就是这样一个把用户和验证者直连的私密通道。</p>
+<p>到这里，似乎皆大欢喜：技术现成、能挡抢跑、能提升福利。可作者笔锋一转，抛出了真正的核心问题：<strong>技术摆在那儿，凭什么大家就会去用它？</strong></p>
+<p>具体而言：验证者愿意放弃抢跑的租金吗？用户有动力转去私有池吗？私有池真能消除抢跑、提升整体福利吗?</p>
+<p>这才是本文的「文眼」。私有池的故事，从一个技术问题，变成了一个<strong>激励相容（incentive compatibility）</strong>的问题。</p>
+<h2 id="4">4 模型：一场三阶段的博弈</h2>
+<p>为了把激励问题讲透，作者搭了一个<strong>序贯博弈（sequential game）</strong>模型，三类玩家，三个阶段。</p>
+<ul>
+<li><strong>验证者（validators）</strong>：一组同质的验证者，先决定把自己的「验证算力」在公共池和私有池之间怎么分配。</li>
+<li><strong>用户（users）</strong>：一个连续统的「可抢跑用户」（在公共池里会被攻击）+ 一个连续统的「不可抢跑用户」，他们对交易的估值各不相同，要在公共池和私有池之间二选一。</li>
+<li><strong>攻击者（attackers）</strong>：在最后阶段，竞相抢跑那些走公共池的交易。</li>
+</ul>
+<p>阶段顺序是：<strong>验证者先动 → 用户再选 → 攻击者最后抢</strong>。我们用逆向归纳来解。</p>
+<h3 id="4-1">4.1 私有池里的「执行风险」与攻击者的「真实出价」</h3>
+<p>私有池不是没有代价的。如果一个验证者没有监控私有池，那么发到私有池的交易就有可能不被打包——这就是<strong>执行风险（execution risk）</strong>。作者给出的关键设定是：交易不被执行的概率，正比于<strong>没有</strong>分配给私有池监控的那部分验证算力。设 \(\theta\) 为投入私有池监控的验证算力占比（也就是私有池的「采用率」），则</p>
+<p>$$
+\Pr(\text{non-execution}) \;=\; 1-\theta .
+$$</p>
+<p>直觉很清楚：监控私有池的算力越多（\(\theta\) 越大），你的私密交易越可能被某个验证者捡起来打包，执行风险越低。</p>
+<p>那攻击者呢？聪明的攻击者会<strong>两边下注</strong>：用私有池来锁定执行优先权，同时也往公共池发一份，以降低不被执行的风险。而真正关键的一步在于——在私有池里，攻击者面对的是一个<strong>密封一价拍卖（sealed-bid first-price auction）</strong>。在这种格式下，攻击者会<strong>报出自己对抢跑机会的真实估值</strong>，于是它的全部潜在收益，统统转移给了验证者：</p>
+<p>$$
+\text{bid}_A \;=\; v_A \quad\Longrightarrow\quad \frac{\text{cost}}{\text{revenue}} \;\to\; 1 .
+$$</p>
+<p>这个「成本收益比趋于 1」是后面要重点检验的实证预测。</p>
+<h3 id="4-2">4.2 用户的权衡与验证者的两难</h3>
+<p>可抢跑用户的决策，是在两种风险之间权衡：<strong>留在公共池被抢跑</strong> vs. <strong>去私有池但可能不被执行</strong>。验证者采用率 \(\theta\) 越高（执行风险越低）、公共池里的抢跑成本越高，用户就越倾向于私有池。</p>
+<p>而验证者的两难，才是整篇论文的「心脏」。把更多算力投向私有池，对验证者有<strong>两个正向渠道</strong>：(i) 寻求保护的用户带来的需求增加，(ii) 通过攻击者的「真实出价」榨取租金。但同时有一个<strong>负向渠道</strong>：私有池采用率上升会降低执行风险，把用户从公共池吸走，从而<strong>减少了总需求、压低了手续费、削弱了攻击者之间的竞争</strong>，反而拉低验证者的总收益。</p>
+<p>我把验证者的收益分解写成下面这个最核心的式子（捕捉的正是上面这三股力量）：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\Pi_V(\theta) = \cssId{a1}{D(\theta)} \;+\; \cssId{a2}{R_A(\theta)} \;-\; \cssId{a3}{C(\theta)}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>来自用户的区块空间需求与手续费收入，随采用率 θ 变化</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>通过私有池「真实出价」从攻击者处榨取的全部抢跑租金</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>采用率上升后总需求萎缩、抢跑机会减少带来的间接损失</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>均衡就藏在这三项的拉锯里。当验证者对「再多投一点算力到私有池」感到<strong>无所谓</strong>时，内部解出现：</p>
+<p>$$
+\frac{\partial \Pi_V(\theta)}{\partial \theta}\bigg|_{\theta=\theta^\*} = 0 .
+$$</p>
+<h3 id="4-3-vs">4.3 两种均衡：全采用 vs. 部分采用</h3>
+<p>求解的结论非常漂亮，而且取决于一个关键变量——<strong>抢跑风险的高低</strong>：</p>
+<ul>
+<li><strong>抢跑风险高</strong>时，存在唯一的、<strong>全采用（full adoption）</strong>子博弈完美均衡：可抢跑用户被「赶」进私有池，验证者发现把算力留在公共池毫无意义，于是 \(\theta^\*=1\)。这时区块空间配置是<strong>有效的</strong>，抢跑被彻底消除，高价值交易不再被排除。</li>
+<li><strong>抢跑风险中等</strong>时，却只能得到唯一的、<strong>部分采用（partial adoption）</strong>均衡：\(0<\theta^\*<1\)。部分采用引入了执行风险，使得一些可抢跑用户<strong>明知会被夹，仍然留在公共池</strong>。此时验证者恰好对「多投算力到私有池」无所谓——直接收益正好被「区块奖励总量下降」的间接损失抵消。这个均衡是<strong>低效的</strong>：抢跑摩擦没被消除，区块空间被浪费，高价值交易仍被排除在外。</li>
+</ul>
+<div class="callout"><div class="callout-title">Warning</div><p>注意这个反转：私有池技术明明能修好系统，但市场的内生激励，偏偏把它停在了一个「修了一半」的地方。这不是技术不行，是<strong>分赃没谈拢</strong>。</p></div>
+<h2 id="5-hold-up">5 这其实是一个古老的故事：敲竹杠（hold-up）</h2>
+<p>但真正关键的洞察在于——作者指出，这种「采用不到位」的失败，本质上就是产业组织里那个经典的<strong>敲竹杠问题（hold-up problem）</strong>。</p>
+<p>监控私有池的好处，主要落在<strong>可抢跑用户</strong>头上（他们免于被夹）；可付出算力成本、还要放弃 MEV 租金的，却是<strong>验证者</strong>。受益方和投入方不是同一拨人，于是投入方的激励天然不足——这正是 Williamson (1979) 笔下「专用性投资因事后无法被补偿而投资不足」的翻版。</p>
+<p>那怎么破？作者给出的解法同样经典：<strong>一份事前的合约</strong>。让可抢跑用户<strong>事前承诺</strong>，额外付给验证者一笔费用，作为「在私有池里执行我交易」的报酬。这样就重新对齐了激励，把均衡推回唯一的、社会有效的全采用。技术上，这靠的是<strong>预签名交易（pre-signed transactions）</strong>——用户把签好名的交易发进私有池，从而绕开了传统双边交易里那种「事后可以反悔、承诺不可信」的老大难。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>「用一个可信的事前承诺，去治好事后激励错配」——这个套路在金融与产业组织里反复出现。比如把柠檬市场治好的，未必是更多信息，而是中间商「先把货买下来」的承诺（关于这一点，可参见<a href="/research/committing-to-trade-a-theory-of-intermediation/">《承诺去交易：为什么「先卖给中间商」反而能治好柠檬市场》</a>）。区块链只是给这个老故事，换了一身代码做的新衣服。</p></div>
+<h2 id="6">6 数据：以太坊真的停在了「部分采用」上吗</h2>
+<p>理论讲完，于是该让数据说话了。作者构造了一个把「交易级抢跑信息 + 内存池数据 + 区块级统计」拼在一起的数据集，围绕 Flashbots 检验了模型的三个核心预测。</p>
+<p><strong>预测一（部分采用）：成立。</strong> Flashbots 上线、经过一段初始调整期后，私有池采用率稳定在 <strong><code>50%</code>–<code>60%</code></strong> 之间——既没归零，也没到 100%，正是模型预言的「部分采用」内部解。</p>
+<div class="article-image"><img alt="Figure 4: Flashbots private pool adoption rate: For each day, we calculate the adoption" src="assets/figure-4.png" /></div>
+<p><em>Figure 4: Flashbots private pool adoption rate: For each day, we calculate the adoption</em></p>
+<p><strong>预测二（验证者赚得更多）：成立。</strong> 作者利用两大以太坊矿池<strong>错峰采用</strong> Flashbots 这一点，做了<strong>双重差分（difference-in-differences, DiD）</strong>。结果：率先采用的 Spark Pool，相比对照矿池 Ethermine，采用后<strong>每个区块多赚 <code>0.066</code> 以太币</strong>。进一步的<strong>三重差分（triple difference）</strong>确认，这部分增量来自<strong>私有区块</strong>——印证了「私有区块比公共区块给矿工带来更高收益」。</p>
+<div class="article-image"><img alt="Figure 6: Average revenue for treated (Spark Pool) and control (Ethermine) miners before and after Flashbots adoption. The graph shows centered moving" src="assets/figure-6.png" /></div>
+<p><em>Figure 6: Average revenue for treated (Spark Pool) and control (Ethermine) miners before and after Flashbots adoption. The graph shows centered moving</em></p>
+<p><strong>预测三（用户对抢跑风险敏感）：成立。</strong> 预期抢跑成本越高的用户，越倾向用私有池。量级上，预期损失每增加 <code>1</code> 以太币，使用私有池的概率上升 <strong><code>0.35</code>–<code>0.41</code></strong>。</p>
+<p><strong>预测四（成本收益比趋于 1）：成立。</strong> 经由私有池的抢跑攻击，其成本收益比迅速集中到 <strong>1 附近</strong>——回归显示，经 Flashbots 提交的三明治交易，成本收益比要高出 <strong><code>12.4</code> 个百分点</strong>。这正对应密封一价拍卖下「攻击者把全部租金让渡给验证者」的预测。</p>
+<p>四个预测，四个「成立」。模型和数据严丝合缝地咬在了一起。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这篇论文放回它所在的脉络里，会看得更清楚。</p>
+<p>最上游，是 <strong>Roth (2008)</strong> 总结的市场设计思想：一个有效的市场，需要足够的「厚度」、能克服「拥堵」、并且对参与者「安全」（Roth et al., 2004; Roth &amp; Xing, 1997）。本文恰恰是把这套原则搬到了公链的交易提交机制上——只不过区块链有个传统市场没有的麻烦：你<strong>没法禁止某些行为（比如抢跑），也没法强迫大家加入新机制（比如私有池）</strong>。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>中游，是区块链经济学自己长出来的几条线。一条是<strong>交易费市场与挖矿</strong>：Easley, O'Hara &amp; Basu (2019) 研究比特币手续费的演化，Biais et al. (2019) 分析分叉激励。一条是<strong>MEV 与抢跑的实证刻画</strong>：Daian et al. (2020) 的「Flash Boys 2.0」把抢跑、MEV 与共识不稳定第一次系统性地摆上台面，Auer et al. (2022) 给出了 MEV 规模的估计，Park (2023) 剖析了自动做市商里的三明治攻击。还有一条是<strong>协议层的解法</strong>：Canidio &amp; Danos (2024) 提出「承诺—揭示」协议，从底层协议去防抢跑。</p>
+<p>本文站在哪儿？它不动协议，而是盯住<strong>结算层</strong>里一个<strong>已经被部署的现成方案</strong>——私有池，问一个别人没正面回答的问题：它会不会被充分采用，福利含义到底如何。和作者自己更早的 Capponi, Jia &amp; Wang (2023a)（聚焦私有池对价格发现、对知情交易者的影响）相比，本文把镜头拉到了<strong>整体福利与区块空间的配置效率</strong>上。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：私有池既然能挡抢跑，为什么验证者不全力拥抱它，非要停在 50%–60%？</strong></p>
+<blockquote>
+<p>因为对验证者而言，私有池是把「双刃剑」。一方面它带来用户需求和攻击者的真实出价租金；另一方面，采用率越高、执行风险越低，用户越会离开公共池，结果是总需求、手续费和攻击者竞争一起萎缩。在中等抢跑风险下，这两股力量在某个内部 \(\theta^\*\) 上恰好抵消，验证者于是「无所谓再多投」——部分采用就是这么钉死的。</p>
+</blockquote>
+<p><strong>Q：这跟普通的「敲竹杠」到底像在哪儿？</strong></p>
+<blockquote>
+<p>受益方（可抢跑用户）和投入方（验证者）不是同一拨人，投入方事后拿不到应得补偿，于是事前投资不足。这正是 Williamson (1979) 的专用性投资敲竹杠。区别只是：传统场景靠长期合约或纵向一体化来解，本文靠<strong>预签名交易</strong>这种「天然可信的事前承诺」来解，反而比传统双边交易更好办。</p>
+</blockquote>
+<p><strong>Q：DiD 里 Spark Pool 多赚的 0.066 以太币，会不会只是它本来就更强、而非 Flashbots 的功劳？</strong></p>
+<blockquote>
+<p>作者用三重差分把这个增量进一步归因到了<strong>私有区块</strong>而非矿池整体。也就是说，多赚的钱来自「同一个矿工的私有区块 vs. 公共区块」这层对比，而不是「Spark vs. Ethermine」这层。这让「是 Flashbots 在起作用」的解释更站得住。当然，错峰采用是否真的外生（会不会强矿池才先采用），仍是读者应当存疑的地方。</p>
+</blockquote>
+<p><strong>Q：「成本收益比趋于 1」为什么重要？</strong></p>
+<blockquote>
+<p>它是私有池拍卖格式的「指纹」。密封一价拍卖下，攻击者最优策略是报真实估值，于是租金全数流向验证者，成本逼近收益。数据里 <code>12.4</code> 个百分点的上移，等于在说「攻击者赚到的，几乎全被验证者拿走了」——MEV 的归宿，从攻击者悄悄换成了验证者。</p>
+</blockquote>
+<p><strong>Q：消除了抢跑，是不是就万事大吉、社会福利最优了？</strong></p>
+<blockquote>
+<p>没那么简单。全采用消除了抢跑摩擦、修好了配置效率，但 MEV 租金并没有凭空消失，只是从攻击者转移到了验证者手里。福利改善主要来自「不再排除高价值交易、不再浪费区块空间」这块配置效率，而不是分配上的均贫富。</p>
+</blockquote>
+<p><strong>Q：2022 年 9 月以太坊上线 PBS 之后，这套结论还成立吗？</strong></p>
+<blockquote>
+<p>作者明确提示，提议者—构建者分离（proposer-builder separation, PBS）让私有池市场更碎片化，新的私有池不断出现、构建者之间竞争加剧。本文的样本主要落在 PBS 之前，结论刻画的是那个相对集中的阶段；PBS 之后的多方竞争如何改写激励，是个开放问题。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. PBS 之后的「私有池竞争」如何重新分配 MEV？</strong>
+- 【经济故事】本文是「验证者 vs. 用户」的纵向分赃；PBS 把构建者拉了进来，变成多层、多方的横向竞争。竞争加剧理论上会把租金从验证者手里再挤出来一部分——挤给谁？用户、构建者，还是消散为效率？
+- 【可行性】中。链上数据公开可得，PBS 前后是天然的断点；难点在于给「构建者市场结构」找到干净的外生变动来做识别。</p>
+<p><strong>2. 把「抢跑→配置无效率」的框架搬到公司债的「交易前信息泄露」上。</strong>
+- 【经济故事】公司债是场外（OTC）报价市场，大额询价同样会泄露意图、招来抢先交易，本质上也是一种「内存池裸奔」。私有池之于链上，类似 RFQ（request-for-quote）的私密化之于债市——它会不会同样停在某个低效的「部分采用」上？
+- 【可行性】中。可用 TRACE 加交易商层面数据刻画信息泄露与执行成本；识别上可借助报价平台规则变更，但「私密化程度」难以直接观测，需要代理变量。（与债市流动性的关联，可对照<a href="/research/institutional-corporate-bond-pricing/">《谁在持有这张债券，决定了它的价格》</a>的视角。）</p>
+<p><strong>3. 「外资持有人」会不会系统性地更容易被抢跑？</strong>
+- 【经济故事】跨境、跨时区的参与者往往在信息和基础设施上处于劣势，更可能成为抢跑或交易前信息泄露的「猎物」。如果链上/跨市场的抢跑损失在不同类型持有人之间分布不均，那它就是一种隐性的「外资税」。
+- 【可行性】低到中。链上钱包难以可靠映射到「外资」身份；若退而求其次用跨市场（如 A/H、ADR）数据近似，则需要把抢跑损失从其他价差成分里干净地剥离出来。</p>
+<p><strong>4. 「合约式解法」在现实里能不能真的落地、被采用？</strong>
+- 【经济故事】本文证明了「用户事前付费承诺」能恢复全采用，但这本身又是一个采用问题——谁先签、网络效应如何、会不会又卡在另一个部分采用上？理论解和现实落地之间，往往还隔着一层。
+- 【可行性】中。可把不同私有池/中继的费用合约设计做成横截面，看采用率与合约条款的关系；近似实验或可借助某个中继上线「付费优先」功能的时点。</p>
+<h2 id="9">9 参考文献</h2>
+<blockquote>
+<p>我的判断：这篇论文最漂亮的地方，是把一个看似纯技术的「抢跑/MEV」现象，干净利落地翻译成了经济学家熟悉的两件事——<strong>配置效率</strong>与<strong>敲竹杠</strong>，并且给出了一个理论预测被四项独立实证一一验证的闭环。它真正的贡献不在于「发现了抢跑」（那早有人做），而在于指出<strong>私有池的失败不是技术失败，而是激励失败</strong>，并给出了可落地的合约解。</p>
+<p>对识别，我有两点保留。其一，DiD/三重差分依赖两大矿池「错峰采用」的近似外生性，但强矿池为何先采用、采用时点是否与其他冲击重合，文中需要更多排除性证据。其二，样本主要落在 PBS 之前那个相对集中的阶段，外推到今天碎片化、构建者主导的市场要谨慎。后续我最想看到的，是把这套「配置效率」框架接到 PBS 之后的多方竞争上，以及——更贴近我自己的兴趣——把「交易前信息泄露导致配置无效率」的逻辑，搬到公司债等 OTC 市场里去检验。</p>
+</blockquote>
+<ul>
+<li>Auer, R., Frost, J., &amp; Pastor, J. M. V. (2022). <em>Miners as Intermediaries: Extractable Value and Market Manipulation in Crypto and DeFi</em>. BIS Bulletins 58, Bank for International Settlements.</li>
+<li>Biais, B., Bisière, C., Bouvard, M., &amp; Casamatta, C. (2019). The Blockchain Folk Theorem. <em>Review of Financial Studies</em> 32(5), 1662–1715.</li>
+<li>Buterin, V. (2015). <em>A Next Generation Smart Contract &amp; Decentralized Application Platform</em>. Ethereum White Paper.</li>
+<li>Canidio, A., &amp; Danos, V. (2024). Commitment against Front-running Attacks. <em>Management Science</em> 70(7), 4429–4440.</li>
+<li>Capponi, A., Jia, R., &amp; Wang, Y. (2023a). Blockchain Private Pools and Price Discovery. <em>AEA Papers and Proceedings</em> 113, 253–256.</li>
+<li>Daian, P., Goldfeder, S., Kell, T., Li, Y., Zhao, X., Bentov, I., Breidenbach, L., &amp; Juels, A. (2020). Flash Boys 2.0: Frontrunning in Decentralized Exchanges, Miner Extractable Value, and Consensus Instability. <em>2020 IEEE Symposium on Security and Privacy (SP)</em>, 910–927.</li>
+<li>Easley, D., O'Hara, M., &amp; Basu, S. (2019). From Mining to Markets: The Evolution of Bitcoin Transaction Fees. <em>Journal of Financial Economics</em> 134(1), 91–109.</li>
+<li>Park, A. (2023). The Conceptual Flaws of Decentralized Automated Market Making. <em>Management Science</em> 69(11), 6417–7150.</li>
+<li>Roth, A. E. (2008). What Have We Learned from Market Design? <em>Economic Journal</em> 118(527), 285–310.</li>
+<li>Roth, A. E., Sönmez, T., &amp; Ünver, M. U. (2004). Kidney Exchange. <em>Quarterly Journal of Economics</em> 119(2), 457–488.</li>
+<li>Torres, C. F., Camino, R., et al. (2021). Frontrunner Jones and the Raiders of the Dark Forest: An Empirical Study of Frontrunning on the Ethereum Blockchain. <em>30th USENIX Security Symposium</em>, 1343–1359.</li>
+<li>Williamson, O. E. (1979). Transaction-Cost Economics: The Governance of Contractual Relations. <em>Journal of Law and Economics</em> 22(2), 233–261.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一笔交易，为什么会在「光天化日」下被抢走</a></li>
+        <li><a href="#2">2 真正的代价：不是被偷的钱，而是被搞乱的「分配」</a></li>
+        <li><a href="#3">3 一个本可以修好它的工具：私有交易池</a></li>
+        <li><a href="#4">4 模型：一场三阶段的博弈</a></li>
+          <li><a href="#4-1">4.1 私有池里的「执行风险」与攻击者的「真实出价」</a></li>
+          <li><a href="#4-2">4.2 用户的权衡与验证者的两难</a></li>
+          <li><a href="#4-3-vs">4.3 两种均衡：全采用 vs. 部分采用</a></li>
+        <li><a href="#5-hold-up">5 这其实是一个古老的故事：敲竹杠（hold-up）</a></li>
+        <li><a href="#6">6 数据：以太坊真的停在了「部分采用」上吗</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#9">9 参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>
