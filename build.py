@@ -744,8 +744,8 @@ def render_post(md_path, no_exec=False, data_chapters=None):
         for c in siblings:
             p = c.get("part", "")
             if not data_nav or data_nav[-1]["part"] != p:
-                data_nav.append({"part": p, "items": []})
-            data_nav[-1]["items"].append(
+                data_nav.append({"part": p, "chapters": []})
+            data_nav[-1]["chapters"].append(
                 {"title": c["title"], "url": c["url"], "current": c["url"] == cur_url}
             )
         idx = next((i for i, c in enumerate(siblings) if c["url"] == cur_url), None)
