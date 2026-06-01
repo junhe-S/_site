@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Replicating Fama–French Factors</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,205 @@
       
     </div>
 
-    <p>Building the SMB and HML factors from scratch is both a useful skill and a test of whether you can reproduce a canonical result — a microcosm of the replication challenges in empirical finance.</p>
-<h2 id="the-construction">The construction</h2>
-<p>The Fama–French recipe combines a double sort on size and book-to-market. Stocks split into two size groups and three value groups, giving six portfolios. <strong>SMB</strong> (small minus big) averages the small portfolios minus the big ones; <strong>HML</strong> (high minus low) averages the high book-to-market portfolios minus the low ones. The construction deliberately neutralizes each factor with respect to the other.</p>
-<h2 id="details-that-matter">Details that matter</h2>
-<p>Faithful replication hinges on specifics: NYSE breakpoints (not all-stock breakpoints), the June rebalancing convention, the correct accounting lag so book equity is known when portfolios form, and consistent value weighting. Each is a place where a reasonable-looking shortcut shifts the factor.</p>
-<h2 id="checking-the-replication">Checking the replication</h2>
-<p>The test is to correlate your home-grown factors with the published series. A high correlation confirms the pipeline is sound; a gap points back to one of the construction details. Getting close — but rarely identical — is itself an honest lesson about how sensitive these benchmarks are to implementation.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>This chapter reconstructs the SMB and HML factors from scratch, following the Fama–French recipe, then checks the home-grown factors against the published series. It is a stress test of the whole data pipeline: the construction details (NYSE breakpoints, June rebalancing, accounting lags) are exactly where replications drift. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+</code></pre>
+</div>
+<h2 id="data-preparation">Data preparation</h2>
+<p>We load returns, the accounting variables needed for the factors (book equity, operating profitability, investment), and the published SMB/HML to compare against.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt;
+  select(permno, gvkey, date, ret_excess, mktcap, mktcap_lag, exchange) |&gt;
+  collect()
+
+compustat &lt;- tbl(tidy_finance, &quot;compustat&quot;) |&gt;
+  select(gvkey, datadate, be, op, inv) |&gt;
+  collect()
+
+factors_ff3_monthly &lt;- tbl(tidy_finance, &quot;factors_ff3_monthly&quot;) |&gt;
+  select(date, smb, hml) |&gt;
+  collect()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+
+crsp_monthly = pd.read_sql_query(
+  &quot;SELECT permno, gvkey, date, ret_excess, mktcap, mktcap_lag, exchange FROM crsp_monthly&quot;,
+  tidy_finance, parse_dates={&quot;date&quot;})
+
+compustat = pd.read_sql_query(
+  &quot;SELECT gvkey, datadate, be, op, inv FROM compustat&quot;,
+  tidy_finance, parse_dates={&quot;datadate&quot;})
+
+factors_ff3_monthly = pd.read_sql_query(
+  &quot;SELECT date, smb, hml FROM factors_ff3_monthly&quot;,
+  tidy_finance, parse_dates={&quot;date&quot;})
+</code></pre>
+</div>
+<h2 id="sorting-variables-and-the-timing-convention">Sorting variables and the timing convention</h2>
+<p>The Fama–French timing is precise: size is market equity in <strong>June</strong> of year <em>t</em>; book-to-market uses book equity from the fiscal year ending in <em>t−1</em> divided by market equity from <strong>December</strong> of <em>t−1</em>. Portfolios are formed in June and held for twelve months. Encoding these <code>sorting_date</code>s correctly is the crux of the replication.</p>
+<div class="code-r">
+<pre><code class="language-r">size &lt;- crsp_monthly |&gt;
+  filter(month(date) == 6) |&gt;
+  mutate(sorting_date = date %m+% months(1)) |&gt;
+  select(permno, exchange, sorting_date, size = mktcap)
+
+market_equity &lt;- crsp_monthly |&gt;
+  filter(month(date) == 12) |&gt;
+  mutate(sorting_date = date %m+% months(7)) |&gt;
+  select(permno, gvkey, sorting_date, me = mktcap)
+
+book_to_market &lt;- compustat |&gt;
+  mutate(sorting_date = ymd(str_c(year(datadate) + 1, &quot;0701&quot;))) |&gt;
+  select(gvkey, sorting_date, be) |&gt;
+  inner_join(market_equity, join_by(gvkey, sorting_date)) |&gt;
+  mutate(bm = be / me) |&gt;
+  select(permno, sorting_date, me, bm)
+
+sorting_variables &lt;- size |&gt;
+  inner_join(book_to_market, join_by(permno, sorting_date)) |&gt;
+  drop_na() |&gt;
+  distinct(permno, sorting_date, .keep_all = TRUE)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">size = (crsp_monthly
+  .query(&quot;date.dt.month == 6&quot;)
+  .assign(sorting_date=lambda x: x[&quot;date&quot;] + pd.DateOffset(months=1))
+  .rename(columns={&quot;mktcap&quot;: &quot;size&quot;})
+  .get([&quot;permno&quot;, &quot;exchange&quot;, &quot;sorting_date&quot;, &quot;size&quot;]))
+
+market_equity = (crsp_monthly
+  .query(&quot;date.dt.month == 12&quot;)
+  .assign(sorting_date=lambda x: x[&quot;date&quot;] + pd.DateOffset(months=7))
+  .rename(columns={&quot;mktcap&quot;: &quot;me&quot;})
+  .get([&quot;permno&quot;, &quot;gvkey&quot;, &quot;sorting_date&quot;, &quot;me&quot;]))
+
+book_to_market = (compustat
+  .assign(sorting_date=lambda x: pd.to_datetime(
+    (x[&quot;datadate&quot;].dt.year + 1).astype(str) + &quot;0701&quot;, format=&quot;%Y%m%d&quot;))
+  .get([&quot;gvkey&quot;, &quot;sorting_date&quot;, &quot;be&quot;])
+  .merge(market_equity, how=&quot;inner&quot;, on=[&quot;gvkey&quot;, &quot;sorting_date&quot;])
+  .assign(bm=lambda x: x[&quot;be&quot;] / x[&quot;me&quot;])
+  .get([&quot;permno&quot;, &quot;sorting_date&quot;, &quot;me&quot;, &quot;bm&quot;]))
+
+sorting_variables = (size
+  .merge(book_to_market, how=&quot;inner&quot;, on=[&quot;permno&quot;, &quot;sorting_date&quot;])
+  .dropna()
+  .drop_duplicates(subset=[&quot;permno&quot;, &quot;sorting_date&quot;]))
+</code></pre>
+</div>
+<h2 id="nyse-breakpoints">NYSE breakpoints</h2>
+<p>The sorting helper computes breakpoints using <strong>only NYSE stocks</strong> — a defining Fama–French choice that prevents the many small NASDAQ stocks from dominating the cutoffs. Size splits at the median (2 groups); book-to-market splits at the 30th and 70th percentiles (3 groups).</p>
+<div class="code-r">
+<pre><code class="language-r">assign_portfolio &lt;- function(data, sorting_variable, percentiles, exchanges) {
+  breakpoints &lt;- data |&gt;
+    filter(exchange %in% exchanges) |&gt;
+    pull({{ sorting_variable }}) |&gt;
+    quantile(probs = percentiles, na.rm = TRUE, names = FALSE)
+  data |&gt;
+    mutate(portfolio = findInterval(
+      pick(everything()) |&gt; pull({{ sorting_variable }}),
+      breakpoints, all.inside = TRUE)) |&gt;
+    pull(portfolio)
+}
+
+portfolios &lt;- sorting_variables |&gt;
+  group_by(sorting_date) |&gt;
+  mutate(
+    portfolio_size = assign_portfolio(pick(everything()), size, c(0, 0.5, 1), c(&quot;NYSE&quot;)),
+    portfolio_bm = assign_portfolio(pick(everything()), bm, c(0, 0.3, 0.7, 1), c(&quot;NYSE&quot;))
+  ) |&gt;
+  select(permno, gvkey, sorting_date, portfolio_size, portfolio_bm)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def assign_portfolio(data, sorting_variable, percentiles, exchanges):
+    breakpoints = (data
+      .query(&quot;exchange in @exchanges&quot;)
+      .get(sorting_variable)
+      .quantile(percentiles, interpolation=&quot;linear&quot;))
+    breakpoints.iloc[0] = -np.inf
+    breakpoints.iloc[breakpoints.size - 1] = np.inf
+    return pd.cut(
+      data[sorting_variable], bins=breakpoints,
+      labels=range(1, breakpoints.size), include_lowest=True, right=False)
+
+portfolios = (sorting_variables
+  .groupby(&quot;sorting_date&quot;)
+  .apply(lambda x: x.assign(
+      portfolio_size=assign_portfolio(x, &quot;size&quot;, [0, 0.5, 1], [&quot;NYSE&quot;]),
+      portfolio_bm=assign_portfolio(x, &quot;bm&quot;, [0, 0.3, 0.7, 1], [&quot;NYSE&quot;])))
+  .reset_index(drop=True)
+  .get([&quot;permno&quot;, &quot;gvkey&quot;, &quot;sorting_date&quot;, &quot;portfolio_size&quot;, &quot;portfolio_bm&quot;]))
+</code></pre>
+</div>
+<h2 id="building-smb-and-hml">Building SMB and HML</h2>
+<p>The six size×value portfolios give the factors. <strong>SMB</strong> averages the small portfolios minus the big ones; <strong>HML</strong> averages the high book-to-market portfolios minus the low ones. Each portfolio return is value-weighted; the factor is constructed so it is roughly neutral to the other dimension.</p>
+<div class="code-r">
+<pre><code class="language-r">portfolios &lt;- portfolios |&gt;
+  inner_join(crsp_monthly, join_by(permno, gvkey, closest(sorting_date &lt;= date))) |&gt;
+  filter(date &lt; sorting_date %m+% months(12))
+
+factors_replicated &lt;- portfolios |&gt;
+  group_by(portfolio_size, portfolio_bm, date) |&gt;
+  summarize(ret = weighted.mean(ret_excess, mktcap_lag), .groups = &quot;drop&quot;) |&gt;
+  group_by(date) |&gt;
+  summarize(
+    smb_replicated = mean(ret[portfolio_size == 1]) - mean(ret[portfolio_size == 2]),
+    hml_replicated = mean(ret[portfolio_bm == 3]) - mean(ret[portfolio_bm == 1])
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">portfolios = (portfolios
+  .merge(crsp_monthly, how=&quot;inner&quot;, on=[&quot;permno&quot;, &quot;gvkey&quot;])
+  .query(&quot;(date &gt;= sorting_date) &amp; (date &lt; sorting_date + pd.DateOffset(months=12))&quot;))
+
+factors_replicated = (portfolios
+  .groupby([&quot;portfolio_size&quot;, &quot;portfolio_bm&quot;, &quot;date&quot;])
+  .apply(lambda x: np.average(x[&quot;ret_excess&quot;], weights=x[&quot;mktcap_lag&quot;]))
+  .reset_index(name=&quot;ret&quot;)
+  .groupby(&quot;date&quot;)
+  .apply(lambda x: pd.Series({
+    &quot;smb_replicated&quot;: x.loc[x[&quot;portfolio_size&quot;] == 1, &quot;ret&quot;].mean() - x.loc[x[&quot;portfolio_size&quot;] == 2, &quot;ret&quot;].mean(),
+    &quot;hml_replicated&quot;: x.loc[x[&quot;portfolio_bm&quot;] == 3, &quot;ret&quot;].mean() - x.loc[x[&quot;portfolio_bm&quot;] == 1, &quot;ret&quot;].mean()
+  }))
+  .reset_index())
+</code></pre>
+</div>
+<h2 id="evaluating-the-replication">Evaluating the replication</h2>
+<p>The test regresses the published factor on the replicated one: a slope near one and a high R² mean the pipeline is faithful. The replication usually gets very close but rarely identical — itself an honest measure of how sensitive these benchmarks are to implementation.</p>
+<div class="code-r">
+<pre><code class="language-r">test &lt;- factors_replicated |&gt;
+  inner_join(factors_ff3_monthly, join_by(date)) |&gt;
+  mutate(across(c(smb_replicated, hml_replicated), ~ round(., 4)))
+
+summary(lm(smb ~ smb_replicated, data = test))
+summary(lm(hml ~ hml_replicated, data = test))
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import statsmodels.formula.api as smf
+
+test = (factors_replicated
+  .merge(factors_ff3_monthly, how=&quot;inner&quot;, on=&quot;date&quot;))
+
+smf.ols(&quot;smb ~ smb_replicated&quot;, data=test).fit().summary()
+smf.ols(&quot;hml ~ hml_replicated&quot;, data=test).fit().summary()
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +371,11 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-construction">The construction</a></li>
-        <li><a href="#details-that-matter">Details that matter</a></li>
-        <li><a href="#checking-the-replication">Checking the replication</a></li>
+        <li><a href="#data-preparation">Data preparation</a></li>
+        <li><a href="#sorting-variables-and-the-timing-convention">Sorting variables and the timing convention</a></li>
+        <li><a href="#nyse-breakpoints">NYSE breakpoints</a></li>
+        <li><a href="#building-smb-and-hml">Building SMB and HML</a></li>
+        <li><a href="#evaluating-the-replication">Evaluating the replication</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +385,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
