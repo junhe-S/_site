@@ -55,6 +55,8 @@
       <p class="data-part">Prerequisites</p>
       <ul>
         
+        <li><a href="/data/tidy-finance/preface/">Preface</a></li>
+        
         <li><a href="/data/tidy-finance/setting-up-your-environment/">Setting Up Your Environment</a></li>
         
         <li><a href="/data/tidy-finance/the-tidyfinance-package/">The tidyfinance Package</a></li>
@@ -139,6 +141,8 @@
         
         <li><a href="/data/tidy-finance/clean-enhanced-trace/">Cleaning Enhanced TRACE</a></li>
         
+        <li><a href="/data/tidy-finance/proofs/">Proofs</a></li>
+        
       </ul>
       
     </nav>
@@ -148,6 +152,8 @@
     <div class="article-header">
       <h1>Working with Stock Returns</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +162,224 @@
       
     </div>
 
-    <p>Returns, not prices, are the natural unit of analysis: they are roughly comparable across stocks and over time, and they are what asset-pricing theory speaks about.</p>
-<h2 id="simple-vs-log-returns">Simple vs. log returns</h2>
-<p>A simple return over one period is the price change plus any dividend, divided by the starting price. A log return is the natural log of the gross return. Log returns add cleanly across time — the log return over a year is the sum of the monthly log returns — which makes them convenient for compounding and modelling. Simple returns aggregate cleanly across assets in a portfolio. Knowing which property you need tells you which to use.</p>
-<h2 id="building-a-return-series">Building a return series</h2>
-<p>From a panel of prices, sort within each stock by date, compute period-over-period returns, and be careful at the edges: the first observation per stock has no prior price, and gaps (missing days, delistings) must not be silently treated as zero returns.</p>
-<h2 id="stylized-facts">Stylized facts</h2>
-<p>Daily return distributions are not normal. Two robust regularities stand out: <strong>fat tails</strong> — extreme moves happen far more often than a normal distribution predicts — and <strong>volatility clustering</strong> — large moves tend to follow large moves, so turbulent and calm periods come in stretches. Simple summary statistics and a few plots (histograms, rolling volatility) make these visible and motivate much of the modelling that follows.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>This first hands-on chapter sets up the workflow used everywhere later: download price data, turn it into returns, and visualize it. The code uses the <code>tidyfinance</code> helper package, which wraps common downloads (here, from Yahoo Finance) behind a single <code>download_data</code> call in both languages. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(scales)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import tidyfinance as tf
+</code></pre>
+</div>
+<h2 id="downloading-data">Downloading data</h2>
+<p>We start with daily prices for a single symbol — Apple (<code>AAPL</code>) — over roughly two decades. The download returns a tidy data frame with one row per symbol-day: the date, trading <code>volume</code>, the open/high/low/close prices, and an <code>adjusted</code> close. The adjusted close corrects for stock splits and dividends, so it reflects the return an investor holding the stock would actually have earned; it is the series to use for return calculations.</p>
+<div class="code-r">
+<pre><code class="language-r">prices &lt;- download_data(
+  type = &quot;stock_prices&quot;,
+  symbols = &quot;AAPL&quot;,
+  start_date = &quot;2000-01-01&quot;,
+  end_date = &quot;2024-12-31&quot;
+)
+prices
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">prices = tf.download_data(
+    domain=&quot;stock_prices&quot;,
+    symbols=&quot;AAPL&quot;,
+    start_date=&quot;2000-01-01&quot;,
+    end_date=&quot;2023-12-31&quot;
+)
+prices.head().round(3)
+</code></pre>
+</div>
+<p>Plotting the adjusted close over time gives the familiar long-run price path. The grammar-of-graphics style — <code>ggplot2</code> in R, <code>plotnine</code> in Python — maps a column to each visual aesthetic (date to the x-axis, adjusted price to the y-axis) and builds the chart in layers.</p>
+<div class="code-r">
+<pre><code class="language-r">prices |&gt;
+  ggplot(aes(x = date, y = adjusted_close)) +
+  geom_line() +
+  labs(
+    x = NULL, y = NULL,
+    title = &quot;Apple stock prices between beginning of 2000 and end of 2024&quot;
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">apple_prices_figure = (
+    ggplot(prices, aes(y=&quot;adjusted_close&quot;, x=&quot;date&quot;))
+    + geom_line()
+    + labs(x=&quot;&quot;, y=&quot;&quot;, title=&quot;Apple stock prices from 2000 to 2023&quot;)
+)
+apple_prices_figure.show()
+</code></pre>
+</div>
+<h2 id="computing-returns">Computing returns</h2>
+<p>Returns, not prices, are the unit of analysis: they are comparable across stocks and over time. A simple return is the adjusted price divided by the previous day's, minus one. Sorting by date first guarantees <code>lag</code>/<code>pct_change</code> compares the right rows; the first observation has no predecessor, so we drop the resulting missing value.</p>
+<div class="code-r">
+<pre><code class="language-r">returns &lt;- prices |&gt;
+  arrange(date) |&gt;
+  mutate(ret = adjusted_close / lag(adjusted_close) - 1) |&gt;
+  select(symbol, date, ret) |&gt;
+  drop_na(ret)
+returns
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">returns = (prices
+    .sort_values(&quot;date&quot;)
+    .assign(ret=lambda x: x[&quot;adjusted_close&quot;].pct_change())
+    .get([&quot;symbol&quot;, &quot;date&quot;, &quot;ret&quot;])
+    .dropna()
+)
+returns
+</code></pre>
+</div>
+<p>A histogram of daily returns shows their distribution, with a dashed line at the 5% quantile — a quick read on tail risk. Daily equity returns are famously fat-tailed: extreme days occur far more often than a normal distribution would predict.</p>
+<div class="code-r">
+<pre><code class="language-r">quantile_05 &lt;- quantile(returns$ret, probs = 0.05)
+returns |&gt;
+  ggplot(aes(x = ret)) +
+  geom_histogram(bins = 100) +
+  geom_vline(aes(xintercept = quantile_05), linetype = &quot;dashed&quot;) +
+  labs(x = NULL, y = NULL,
+       title = &quot;Distribution of daily Apple stock returns&quot;) +
+  scale_x_continuous(labels = percent)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">from mizani.formatters import percent_format
+
+quantile_05 = returns[&quot;ret&quot;].quantile(0.05)
+apple_returns_figure = (
+    ggplot(returns, aes(x=&quot;ret&quot;))
+    + geom_histogram(bins=100)
+    + geom_vline(aes(xintercept=quantile_05), linetype=&quot;dashed&quot;)
+    + labs(x=&quot;&quot;, y=&quot;&quot;, title=&quot;Distribution of daily Apple stock returns&quot;)
+    + scale_x_continuous(labels=percent_format())
+)
+apple_returns_figure.show()
+</code></pre>
+</div>
+<p>Summary statistics — mean, standard deviation, min, max — quantify the same picture, and computing them year by year shows how volatility changes over time.</p>
+<div class="code-r">
+<pre><code class="language-r">returns |&gt;
+  summarize(across(
+    ret,
+    list(daily_mean = mean, daily_sd = sd, daily_min = min, daily_max = max)
+  ))
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">pd.DataFrame(returns[&quot;ret&quot;].describe()).round(3).T
+</code></pre>
+</div>
+<h2 id="scaling-up-to-many-stocks">Scaling up to many stocks</h2>
+<p>The real workflow operates on a cross-section. We pull the current constituents of an index — the Dow Jones Industrial Average — then download prices for all of them at once by passing the vector of symbols. This is the pattern that generalizes to thousands of stocks.</p>
+<div class="code-r">
+<pre><code class="language-r">symbols &lt;- download_data(
+  type = &quot;constituents&quot;,
+  index = &quot;Dow Jones Industrial Average&quot;
+)
+symbols
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">symbols = tf.download_data(
+    domain=&quot;constituents&quot;,
+    index=&quot;Dow Jones Industrial Average&quot;
+)
+</code></pre>
+</div>
+<div class="code-r">
+<pre><code class="language-r">prices_daily &lt;- download_data(
+  type = &quot;stock_prices&quot;,
+  symbols = symbols$symbol,
+  start_date = &quot;2000-01-01&quot;,
+  end_date = &quot;2024-12-31&quot;
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">prices_daily = tf.download_data(
+    domain=&quot;stock_prices&quot;,
+    symbols=symbols[&quot;symbol&quot;].tolist(),
+    start_date=&quot;2000-01-01&quot;,
+    end_date=&quot;2023-12-31&quot;
+)
+</code></pre>
+</div>
+<p>Because the data is tidy, the same plotting call handles the whole panel; mapping <code>symbol</code> to color draws one line per stock, and the legend is suppressed since the shape, not the names, is the point. Computing returns now groups by <code>symbol</code> so each stock's lag stays within its own series.</p>
+<div class="code-r">
+<pre><code class="language-r">returns_daily &lt;- prices_daily |&gt;
+  group_by(symbol) |&gt;
+  mutate(ret = adjusted_close / lag(adjusted_close) - 1) |&gt;
+  select(symbol, date, ret) |&gt;
+  drop_na(ret)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">returns_daily = (prices_daily
+    .assign(ret=lambda x: x.groupby(&quot;symbol&quot;)[&quot;adjusted_close&quot;].pct_change())
+    .get([&quot;symbol&quot;, &quot;date&quot;, &quot;ret&quot;])
+    .dropna(subset=&quot;ret&quot;)
+)
+</code></pre>
+</div>
+<h2 id="different-frequencies">Different frequencies</h2>
+<p>Daily data is often aggregated to a lower frequency. To get monthly returns, floor each date to the start of its month, then compound the daily returns within each month — the product of one-plus-returns, minus one. Comparing the daily and monthly return distributions for one stock shows how aggregation thins the tails.</p>
+<div class="code-r">
+<pre><code class="language-r">returns_monthly &lt;- returns_daily |&gt;
+  mutate(date = floor_date(date, &quot;month&quot;)) |&gt;
+  group_by(symbol, date) |&gt;
+  summarize(ret = prod(1 + ret) - 1, .groups = &quot;drop&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">returns_monthly = (returns_daily
+    .assign(date=returns_daily[&quot;date&quot;].dt.to_period(&quot;M&quot;).dt.to_timestamp())
+    .groupby([&quot;symbol&quot;, &quot;date&quot;], as_index=False)
+    .agg(ret=(&quot;ret&quot;, lambda x: np.prod(1 + x) - 1))
+)
+</code></pre>
+</div>
+<h2 id="other-forms-of-aggregation">Other forms of aggregation</h2>
+<p>The same split-apply-combine logic answers other questions. Aggregate daily dollar trading volume, for instance, sums <code>volume * adjusted_close</code> across stocks per day — and plotting today's against yesterday's reveals strong persistence in market activity.</p>
+<div class="code-r">
+<pre><code class="language-r">trading_volume &lt;- prices_daily |&gt;
+  group_by(date) |&gt;
+  summarize(trading_volume = sum(volume * adjusted_close))
+
+trading_volume |&gt;
+  ggplot(aes(x = date, y = trading_volume)) +
+  geom_line() +
+  labs(x = NULL, y = NULL,
+       title = &quot;Aggregate daily trading volume&quot;) +
+  scale_y_continuous(labels = unit_format(unit = &quot;B&quot;, scale = 1e-9))
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">trading_volume = (prices_daily
+    .assign(trading_volume=lambda x: (x[&quot;volume&quot;] * x[&quot;adjusted_close&quot;]) / 1e9)
+    .groupby(&quot;date&quot;)[&quot;trading_volume&quot;]
+    .sum()
+    .reset_index()
+)
+
+trading_volume_figure = (
+    ggplot(trading_volume, aes(x=&quot;date&quot;, y=&quot;trading_volume&quot;))
+    + geom_line()
+    + labs(x=&quot;&quot;, y=&quot;&quot;,
+           title=&quot;Aggregate daily trading volume in billion USD&quot;)
+)
+trading_volume_figure.show()
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +394,11 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#simple-vs-log-returns">Simple vs. log returns</a></li>
-        <li><a href="#building-a-return-series">Building a return series</a></li>
-        <li><a href="#stylized-facts">Stylized facts</a></li>
+        <li><a href="#downloading-data">Downloading data</a></li>
+        <li><a href="#computing-returns">Computing returns</a></li>
+        <li><a href="#scaling-up-to-many-stocks">Scaling up to many stocks</a></li>
+        <li><a href="#different-frequencies">Different frequencies</a></li>
+        <li><a href="#other-forms-of-aggregation">Other forms of aggregation</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +408,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
