@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Factor Selection via Machine Learning</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,123 @@
       
     </div>
 
-    <p>Hundreds of characteristics have been proposed as return predictors — the "factor zoo." Machine-learning methods offer a disciplined way to choose among many correlated candidates rather than testing them one at a time.</p>
-<h2 id="the-high-dimensional-problem">The high-dimensional problem</h2>
-<p>With many predictors, ordinary regression overfits: it fits noise, and coefficients become unstable when predictors are correlated. The task is to select a parsimonious set that predicts out of sample, not just in sample.</p>
-<h2 id="penalized-regression">Penalized regression</h2>
-<p>The <strong>lasso</strong> adds a penalty on the absolute size of coefficients, which shrinks many to exactly zero — performing variable selection automatically. <strong>Ridge</strong> shrinks coefficients toward zero without eliminating them, taming collinearity; the <strong>elastic net</strong> blends the two. The penalty strength is a tuning parameter chosen by cross-validation.</p>
-<h2 id="honest-evaluation">Honest evaluation</h2>
-<p>The discipline that makes this work is out-of-sample validation: tune on a training period, evaluate on data the model never saw, and respect the time ordering so the future never leaks into the past. Selecting factors this way confronts the zoo directly — keeping the predictors that earn their place and discarding the rest.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>With hundreds of candidate predictors — the "factor zoo" — ordinary regression overfits. This chapter uses penalized regression (lasso, ridge, elastic net) to select among many correlated characteristics, tuned by time-series cross-validation so the evaluation respects the arrow of time. The R code uses <code>tidymodels</code> + <code>glmnet</code>; the Python uses <code>scikit-learn</code>. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(tidymodels)
+library(glmnet)
+library(timetk)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+from sklearn.linear_model import Lasso, ElasticNet
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import TimeSeriesSplit, GridSearchCV
+</code></pre>
+</div>
+<h2 id="data-preparation">Data preparation</h2>
+<p>We build a panel of stock returns joined to many factor candidates — the Fama–French and q-factors plus macro predictors — with next month's excess return as the target.</p>
+<div class="code-r">
+<pre><code class="language-r">factors_ff3_monthly &lt;- tbl(tidy_finance, &quot;factors_ff3_monthly&quot;) |&gt; collect()
+factors_ff5_monthly &lt;- tbl(tidy_finance, &quot;factors_ff5_monthly&quot;) |&gt; collect()
+factors_q_monthly &lt;- tbl(tidy_finance, &quot;factors_q_monthly&quot;) |&gt; collect()
+macro_predictors &lt;- tbl(tidy_finance, &quot;macro_predictors&quot;) |&gt; collect()
+
+data &lt;- factors_ff5_monthly |&gt;
+  left_join(factors_q_monthly, join_by(date)) |&gt;
+  left_join(macro_predictors, join_by(date)) |&gt;
+  mutate(ret_excess_lead = lead(mkt_excess)) |&gt;
+  drop_na()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+
+factors_ff5_monthly = pd.read_sql_query(&quot;SELECT * FROM factors_ff5_monthly&quot;, tidy_finance, parse_dates={&quot;date&quot;})
+factors_q_monthly = pd.read_sql_query(&quot;SELECT * FROM factors_q_monthly&quot;, tidy_finance, parse_dates={&quot;date&quot;})
+macro_predictors = pd.read_sql_query(&quot;SELECT * FROM macro_predictors&quot;, tidy_finance, parse_dates={&quot;date&quot;})
+
+data = (factors_ff5_monthly
+  .merge(factors_q_monthly, how=&quot;left&quot;, on=&quot;date&quot;)
+  .merge(macro_predictors, how=&quot;left&quot;, on=&quot;date&quot;)
+  .assign(ret_excess_lead=lambda x: x[&quot;mkt_excess&quot;].shift(-1))
+  .dropna())
+</code></pre>
+</div>
+<h2 id="a-preprocessing-recipe">A preprocessing recipe</h2>
+<p>Before fitting, predictors are standardized (so the penalty treats them comparably) and can be interacted (characteristics × macro predictors, letting premia vary with the macro state). Bundling preprocessing with the model in a workflow/pipeline guarantees identical transforms in training and validation — no leakage.</p>
+<div class="code-r">
+<pre><code class="language-r">rec &lt;- recipe(ret_excess_lead ~ ., data = data) |&gt;
+  step_rm(date) |&gt;
+  step_interact(terms = ~ contains(&quot;factor&quot;):contains(&quot;macro&quot;)) |&gt;
+  step_normalize(all_predictors()) |&gt;
+  step_center(ret_excess_lead, skip = TRUE)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">from sklearn.compose import ColumnTransformer
+
+predictors = [c for c in data.columns if c not in [&quot;date&quot;, &quot;ret_excess_lead&quot;]]
+X = data[predictors]
+y = data[&quot;ret_excess_lead&quot;]
+
+preprocessor = ColumnTransformer([(&quot;scale&quot;, StandardScaler(), predictors)])
+</code></pre>
+</div>
+<h2 id="the-lasso">The lasso</h2>
+<p>The lasso adds an L1 penalty that drives many coefficients to exactly zero — performing variable selection automatically (<code>mixture = 1</code> is pure lasso; lower values blend in ridge, giving the elastic net). The penalty strength is left as a tuning parameter.</p>
+<div class="code-r">
+<pre><code class="language-r">lasso_spec &lt;- linear_reg(penalty = tune(), mixture = 1) |&gt;
+  set_engine(&quot;glmnet&quot;)
+
+lm_fit &lt;- workflow() |&gt;
+  add_recipe(rec) |&gt;
+  add_model(lasso_spec)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">pipeline = Pipeline([(&quot;preprocess&quot;, preprocessor), (&quot;lasso&quot;, Lasso())])
+</code></pre>
+</div>
+<h2 id="time-series-cross-validation">Time-series cross-validation</h2>
+<p>The penalty is tuned by cross-validation that never lets the future inform the past: each fold trains on an initial window and validates on the months immediately after. Sweeping a grid of penalties and choosing the lowest out-of-sample RMSE selects the model; the fitted lasso keeps only the factors that earn their place and zeroes the rest.</p>
+<div class="code-r">
+<pre><code class="language-r">data_folds &lt;- time_series_cv(
+  data = data, date_var = date,
+  initial = &quot;5 years&quot;, assess = &quot;48 months&quot;,
+  cumulative = FALSE, slice_limit = 20
+)
+
+lasso_tune &lt;- lm_fit |&gt;
+  tune_grid(
+    resamples = data_folds,
+    grid = grid_regular(penalty(), levels = 20),
+    metrics = metric_set(rmse)
+  )
+
+autoplot(lasso_tune)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">data_folds = TimeSeriesSplit(n_splits=20, test_size=48)
+param_grid = {&quot;lasso__alpha&quot;: np.logspace(-4, 0, 20)}
+
+lasso_tune = GridSearchCV(
+    pipeline, param_grid=param_grid,
+    cv=data_folds, scoring=&quot;neg_root_mean_squared_error&quot;
+)
+lasso_tune.fit(X, y)
+
+print(lasso_tune.best_params_)
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +289,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-high-dimensional-problem">The high-dimensional problem</a></li>
-        <li><a href="#penalized-regression">Penalized regression</a></li>
-        <li><a href="#honest-evaluation">Honest evaluation</a></li>
+        <li><a href="#data-preparation">Data preparation</a></li>
+        <li><a href="#a-preprocessing-recipe">A preprocessing recipe</a></li>
+        <li><a href="#the-lasso">The lasso</a></li>
+        <li><a href="#time-series-cross-validation">Time-series cross-validation</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +302,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
