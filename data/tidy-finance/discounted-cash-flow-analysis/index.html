@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Discounted Cash Flow Analysis</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,86 @@
       
     </div>
 
-    <p>A discounted cash flow (DCF) valuation estimates what an asset is worth from first principles: the present value of the cash it will generate.</p>
-<h2 id="the-mechanics">The mechanics</h2>
-<p>Three ingredients: a forecast of future free cash flows, a discount rate that reflects their risk and the time value of money, and a terminal value capturing everything beyond the explicit forecast horizon. Discounting each future cash flow back to today and summing gives the intrinsic value estimate.</p>
-<h2 id="the-discount-rate">The discount rate</h2>
-<p>The discount rate is usually a weighted average cost of capital — blending the cost of equity (often from a CAPM-style estimate) and the after-tax cost of debt by their weights in the capital structure. Small changes here move the valuation a lot, which is why DCF outputs should always be stress-tested.</p>
-<h2 id="sensitivity">Sensitivity</h2>
-<p>Because the terminal value often dominates and the inputs are uncertain, a DCF is best read as a range, not a point. Varying the growth rate and discount rate over plausible bounds shows how much of the answer is assumption versus signal — a healthy corrective to false precision.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>A discounted cash flow (DCF) valuation estimates intrinsic value as the present value of future free cash flows. This chapter pulls a firm's statements, computes free cash flow, projects it forward at a historical growth rate, and discounts it back. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(scales)
+library(fmpapi)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+from plotnine import *
+from mizani.formatters import percent_format, comma_format
+from fmpapi import fmp_get
+</code></pre>
+</div>
+<h2 id="free-cash-flow-from-the-statements">Free cash flow from the statements</h2>
+<p>Free cash flow combines items across the income statement and balance sheet, so we download both for one firm (here Amazon). From the income statement we keep revenue, operating income, taxes, and depreciation &amp; amortization — the building blocks of free cash flow.</p>
+<div class="code-r">
+<pre><code class="language-r">symbol &lt;- &quot;AMZN&quot;
+
+income_statement &lt;- fmp_get(
+  resource = &quot;income-statement&quot;, symbol = symbol,
+  params = list(period = &quot;annual&quot;, limit = 5)
+) |&gt;
+  select(
+    symbol, calendar_year, revenue, operating_income,
+    income_tax_expense, income_before_tax, depreciation_and_amortization
+  )
+
+balance_sheet &lt;- fmp_get(
+  resource = &quot;balance-sheet-statement&quot;, symbol = symbol,
+  params = list(period = &quot;annual&quot;, limit = 5)
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">symbol = &quot;AMZN&quot;
+
+income_statement = fmp_get(
+  resource=&quot;income-statement&quot;, symbol=symbol,
+  params={&quot;period&quot;: &quot;annual&quot;, &quot;limit&quot;: 5},
+  to_pandas=True
+).get([
+  &quot;symbol&quot;, &quot;calendar_year&quot;, &quot;revenue&quot;, &quot;operating_income&quot;,
+  &quot;income_tax_expense&quot;, &quot;income_before_tax&quot;, &quot;depreciation_and_amortization&quot;
+])
+
+balance_sheet = fmp_get(
+  resource=&quot;balance-sheet-statement&quot;, symbol=symbol,
+  params={&quot;period&quot;: &quot;annual&quot;, &quot;limit&quot;: 5},
+  to_pandas=True
+)
+</code></pre>
+</div>
+<h2 id="forecasting-future-cash-flows">Forecasting future cash flows</h2>
+<p>To project cash flows we need a growth rate. A simple, transparent choice is the compound annual growth rate (CAGR) over the observed history — the geometric average growth between the first and last year. Applying it to the latest free cash flow gives the forecast path.</p>
+<div class="code-r">
+<pre><code class="language-r">cagr &lt;- function(x) {
+  (x[length(x)] / x[1])^(1 / (length(x) - 1)) - 1
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def cagr(x):
+  return (x.iloc[-1] / x.iloc[0])**(1 / (len(x) - 1)) - 1
+</code></pre>
+</div>
+<h2 id="discounting">Discounting</h2>
+<p>The discount rate is the weighted average cost of capital (WACC). Here it is set as a fixed input for the valuation; in practice it blends the cost of equity (e.g. from a CAPM estimate) and the after-tax cost of debt by their capital-structure weights. Discounting each projected free cash flow by <code>(1 + wacc)</code> raised to its horizon, and summing, gives the present value — the DCF estimate of intrinsic value. Because the answer is sensitive to both the growth rate and the WACC, it is best read as a range.</p>
+<div class="code-r">
+<pre><code class="language-r">wacc &lt;- 0.10
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">wacc = 0.10
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +252,9 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-mechanics">The mechanics</a></li>
-        <li><a href="#the-discount-rate">The discount rate</a></li>
-        <li><a href="#sensitivity">Sensitivity</a></li>
+        <li><a href="#free-cash-flow-from-the-statements">Free cash flow from the statements</a></li>
+        <li><a href="#forecasting-future-cash-flows">Forecasting future cash flows</a></li>
+        <li><a href="#discounting">Discounting</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +264,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {

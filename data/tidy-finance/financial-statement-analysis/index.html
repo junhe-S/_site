@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Financial Statement Analysis</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,140 @@
       
     </div>
 
-    <p>Accounting data describes the firm behind the stock. Turning raw statement items into comparable ratios is what lets you compare firms of very different sizes and industries.</p>
-<h2 id="the-statements">The statements</h2>
-<p>Three statements carry the information: the <strong>balance sheet</strong> (a snapshot of assets, liabilities, and equity), the <strong>income statement</strong> (revenues and expenses over a period), and the <strong>cash flow statement</strong> (where cash actually moved). Empirical work draws on items from all three.</p>
-<h2 id="ratios">Ratios</h2>
-<p>Raw dollar figures are not comparable across firms, so we scale them. Profitability ratios (e.g. return on assets, operating margin), leverage ratios (debt to assets), and valuation ratios (book-to-market, earnings yield) each normalize a statement item by another, producing measures that travel across the cross-section.</p>
-<h2 id="why-it-matters-here">Why it matters here</h2>
-<p>These ratios become the <strong>firm characteristics</strong> that the asset-pricing chapters sort and regress on. Book-to-market, profitability, and investment, for instance, are the building blocks of the factor models later in the book — so careful, consistent construction here pays off downstream.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>This chapter pulls firm fundamentals — balance sheet, income statement, and cash flow statement — and turns raw statement items into comparable figures. The code uses the <code>fmpapi</code> package (Financial Modeling Prep) to fetch statements. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(scales)
+library(fmpapi)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+from fmpapi import fmp_get
+from plotnine import *
+from mizani.formatters import percent_format
+</code></pre>
+</div>
+<h2 id="the-three-statements">The three statements</h2>
+<p>Each statement is one API call. The <strong>balance sheet</strong> is a snapshot of assets, liabilities, and equity; we request the last five annual filings for a single firm.</p>
+<div class="code-r">
+<pre><code class="language-r">fmp_get(
+  resource = &quot;balance-sheet-statement&quot;,
+  symbol = &quot;MSFT&quot;,
+  params = list(period = &quot;annual&quot;, limit = 5)
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">fmp_get(
+  resource=&quot;balance-sheet-statement&quot;,
+  symbol=&quot;MSFT&quot;,
+  params={&quot;period&quot;: &quot;annual&quot;, &quot;limit&quot;: 5},
+  to_pandas=True
+)
+</code></pre>
+</div>
+<p>The <strong>income statement</strong> reports revenues and expenses over the period.</p>
+<div class="code-r">
+<pre><code class="language-r">fmp_get(
+  resource = &quot;income-statement&quot;,
+  symbol = &quot;MSFT&quot;,
+  params = list(period = &quot;annual&quot;, limit = 5)
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">fmp_get(
+  resource=&quot;income-statement&quot;,
+  symbol=&quot;MSFT&quot;,
+  params={&quot;period&quot;: &quot;annual&quot;, &quot;limit&quot;: 5},
+  to_pandas=True
+)
+</code></pre>
+</div>
+<p>The <strong>cash flow statement</strong> records where cash actually moved.</p>
+<div class="code-r">
+<pre><code class="language-r">fmp_get(
+  resource = &quot;cash-flow-statement&quot;,
+  symbol = &quot;MSFT&quot;,
+  params = list(period = &quot;annual&quot;, limit = 5)
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">fmp_get(
+  resource=&quot;cash-flow-statement&quot;,
+  symbol=&quot;MSFT&quot;,
+  params={&quot;period&quot;: &quot;annual&quot;, &quot;limit&quot;: 5},
+  to_pandas=True
+)
+</code></pre>
+</div>
+<h2 id="downloading-a-cross-section">Downloading a cross-section</h2>
+<p>To work with more than one firm, we loop the same call over a sample of symbols and stack the results — <code>map_df</code> in R, a list comprehension fed to <code>pd.concat</code> in Python. The same <code>params</code> (annual, last five years) apply to all three statement types.</p>
+<div class="code-r">
+<pre><code class="language-r">sample &lt;- c(
+  &quot;AAPL&quot;, &quot;MSFT&quot;, &quot;GOOGL&quot;, &quot;AMZN&quot;, &quot;TSLA&quot;, &quot;NVDA&quot;, &quot;META&quot;, &quot;NFLX&quot;, &quot;DIS&quot;, &quot;NKE&quot;,
+  &quot;WMT&quot;, &quot;KO&quot;, &quot;JPM&quot;, &quot;BAC&quot;, &quot;V&quot;, &quot;XOM&quot;, &quot;CVX&quot;, &quot;JNJ&quot;, &quot;PFE&quot;, &quot;INTC&quot;,
+  &quot;AMD&quot;, &quot;SBUX&quot;, &quot;BABA&quot;, &quot;UBER&quot;, &quot;CSCO&quot;
+)
+
+params &lt;- list(period = &quot;annual&quot;, limit = 5)
+
+balance_sheet_statements &lt;- sample |&gt;
+  map_df(\(x) fmp_get(resource = &quot;balance-sheet-statement&quot;, symbol = x, params = params))
+
+income_statements &lt;- sample |&gt;
+  map_df(\(x) fmp_get(resource = &quot;income-statement&quot;, symbol = x, params = params))
+
+cash_flow_statements &lt;- sample |&gt;
+  map_df(\(x) fmp_get(resource = &quot;cash-flow-statement&quot;, symbol = x, params = params))
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">sample = [
+  &quot;AAPL&quot;, &quot;MSFT&quot;, &quot;GOOGL&quot;, &quot;AMZN&quot;, &quot;TSLA&quot;, &quot;NVDA&quot;, &quot;META&quot;, &quot;NFLX&quot;, &quot;DIS&quot;, &quot;NKE&quot;,
+  &quot;WMT&quot;, &quot;KO&quot;, &quot;JPM&quot;, &quot;BAC&quot;, &quot;V&quot;, &quot;XOM&quot;, &quot;CVX&quot;, &quot;JNJ&quot;, &quot;PFE&quot;, &quot;INTC&quot;,
+  &quot;AMD&quot;, &quot;SBUX&quot;, &quot;BABA&quot;, &quot;UBER&quot;, &quot;CSCO&quot;
+]
+
+params = {&quot;period&quot;: &quot;annual&quot;, &quot;limit&quot;: 5}
+
+balance_sheet_statements = pd.concat(
+  [fmp_get(resource=&quot;balance-sheet-statement&quot;, symbol=x, params=params, to_pandas=True) for x in sample],
+  ignore_index=True
+)
+
+income_statements = pd.concat(
+  [fmp_get(resource=&quot;income-statement&quot;, symbol=x, params=params, to_pandas=True) for x in sample],
+  ignore_index=True
+)
+
+cash_flow_statements = pd.concat(
+  [fmp_get(resource=&quot;cash-flow-statement&quot;, symbol=x, params=params, to_pandas=True) for x in sample],
+  ignore_index=True
+)
+</code></pre>
+</div>
+<h2 id="working-with-the-statements">Working with the statements</h2>
+<p>Because the data is tidy, selecting and filtering is routine: here we pull one firm's total assets and liabilities by year. The same selection logic extends to building the ratios (profitability, leverage, valuation) that the asset-pricing chapters use as firm characteristics.</p>
+<div class="code-r">
+<pre><code class="language-r">balance_sheet_statements |&gt;
+  filter(symbol == &quot;MSFT&quot;) |&gt;
+  select(symbol, calendar_year, total_assets, total_liabilities)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">(balance_sheet_statements
+  .query(&quot;symbol == 'MSFT'&quot;)
+  .get([&quot;symbol&quot;, &quot;calendar_year&quot;, &quot;total_assets&quot;, &quot;total_liabilities&quot;])
+)
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +306,9 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-statements">The statements</a></li>
-        <li><a href="#ratios">Ratios</a></li>
-        <li><a href="#why-it-matters-here">Why it matters here</a></li>
+        <li><a href="#the-three-statements">The three statements</a></li>
+        <li><a href="#downloading-a-cross-section">Downloading a cross-section</a></li>
+        <li><a href="#working-with-the-statements">Working with the statements</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +318,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {

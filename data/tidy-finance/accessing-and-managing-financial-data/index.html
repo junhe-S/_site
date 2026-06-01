@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Accessing and Managing Financial Data</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,147 @@
       
     </div>
 
-    <p>Once a project uses more than one dataset, how you store and retrieve data becomes as important as the analysis. A little discipline here keeps later chapters fast and reproducible.</p>
-<h2 id="open-source-datasets">Open-source datasets</h2>
-<p>Many of the series an empirical project needs are free: the Fama–French factors and the risk-free rate, the q-factors, momentum, and a range of macro series. Scripting these downloads — rather than clicking through a website — means the data pipeline is documented and repeatable.</p>
-<h2 id="a-local-database">A local database</h2>
-<p>Rather than re-downloading or juggling CSV files, store cleaned data in a local database (SQLite is enough for most work). The database becomes the single source of truth: each script reads exactly the table it needs and writes results back, and large panels load far faster than from flat files.</p>
-<h2 id="tidy-storage">Tidy storage</h2>
-<p>Keep tables in tidy form — one row per observation, consistent keys (identifier and date) — so that joining returns to characteristics to factors is a routine operation. The upfront cost of a clean schema is repaid every time you run an analysis on top of it.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>This chapter sets up the data backbone: download the open-source datasets the book reuses, then store them in a local SQLite database so later chapters load fast and reproducibly. The downloads assume a <code>start_date</code> and <code>end_date</code> have been defined. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import tidyfinance as tf
+</code></pre>
+</div>
+<h2 id="fama-french-factors">Fama–French factors</h2>
+<p>The Fama–French factors (market, size, value, and the risk-free rate) are a single named download. These are the benchmark factors used throughout the asset-pricing chapters.</p>
+<div class="code-r">
+<pre><code class="language-r">factors_ff3_monthly &lt;- download_data(
+  type = &quot;factors_ff_3_monthly&quot;,
+  start_date = start_date,
+  end_date = end_date
+)
+factors_ff3_monthly
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">factors_ff3_monthly = tf.download_data(
+  domain=&quot;factors_ff_3_monthly&quot;,
+  start_date=start_date,
+  end_date=end_date
+)
+factors_ff3_monthly
+</code></pre>
+</div>
+<h2 id="q-factors-and-macro-predictors">q-factors and macro predictors</h2>
+<p>The Hou–Xue–Zhang q-factors are an alternative factor set, downloaded the same way.</p>
+<div class="code-r">
+<pre><code class="language-r">factors_q_monthly &lt;- download_data(
+  type = &quot;factors_q5_monthly&quot;,
+  start_date = start_date,
+  end_date = end_date
+)
+factors_q_monthly
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">factors_q_monthly = tf.download_data(
+  domain=&quot;factors_q5_monthly&quot;,
+  start_date=start_date,
+  end_date=end_date
+)
+factors_q_monthly
+</code></pre>
+</div>
+<p>Goyal–Welch macro predictors (for return-predictability work) come from the same interface.</p>
+<div class="code-r">
+<pre><code class="language-r">macro_predictors &lt;- download_data(
+  type = &quot;macro_predictors_monthly&quot;,
+  start_date = start_date,
+  end_date = end_date
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">macro_predictors = tf.download_data(
+  domain=&quot;macro_predictors_monthly&quot;,
+  start_date=start_date,
+  end_date=end_date
+)
+</code></pre>
+</div>
+<h2 id="other-macroeconomic-data-fred">Other macroeconomic data (FRED)</h2>
+<p>Arbitrary FRED series — here the consumer price index — are available by passing the series code, which is handy for deflating nominal quantities.</p>
+<div class="code-r">
+<pre><code class="language-r">cpi_monthly &lt;- download_data(
+  type = &quot;fred&quot;,
+  series = &quot;CPIAUCNS&quot;,
+  start_date = start_date,
+  end_date = end_date
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">cpi_monthly = tf.download_data(
+  domain=&quot;fred&quot;,
+  series=&quot;CPIAUCNS&quot;,
+  start_date=start_date,
+  end_date=end_date
+)
+</code></pre>
+</div>
+<h2 id="setting-up-a-database">Setting up a database</h2>
+<p>Rather than re-downloading each session, we persist everything in a local SQLite file — the single source of truth for later chapters.</p>
+<div class="code-r">
+<pre><code class="language-r">library(RSQLite)
+library(dbplyr)
+
+tidy_finance &lt;- dbConnect(
+  SQLite(),
+  &quot;data/tidy_finance_r.sqlite&quot;,
+  extended_types = TRUE
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import sqlite3
+
+tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+</code></pre>
+</div>
+<h2 id="writing-and-reading-tables">Writing and reading tables</h2>
+<p>Writing a table persists it (overwriting any prior version); reading it back pulls it into memory. This write-once, read-many pattern is how every subsequent chapter gets its inputs.</p>
+<div class="code-r">
+<pre><code class="language-r">factors_ff3_monthly |&gt;
+  dbWriteTable(
+    conn = tidy_finance,
+    name = &quot;factors_ff3_monthly&quot;,
+    value = _,
+    overwrite = TRUE
+  )
+
+tidy_finance |&gt;
+  dbReadTable(&quot;factors_ff3_monthly&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">(factors_ff3_monthly
+  .to_sql(name=&quot;factors_ff3_monthly&quot;,
+    con=tidy_finance,
+    if_exists=&quot;replace&quot;,
+    index=False
+  )
+)
+
+pd.read_sql_query(
+  sql=&quot;SELECT * FROM factors_ff3_monthly&quot;,
+  con=tidy_finance,
+  parse_dates={&quot;date&quot;}
+)
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +313,11 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#open-source-datasets">Open-source datasets</a></li>
-        <li><a href="#a-local-database">A local database</a></li>
-        <li><a href="#tidy-storage">Tidy storage</a></li>
+        <li><a href="#fama-french-factors">Fama–French factors</a></li>
+        <li><a href="#q-factors-and-macro-predictors">q-factors and macro predictors</a></li>
+        <li><a href="#other-macroeconomic-data-fred">Other macroeconomic data (FRED)</a></li>
+        <li><a href="#setting-up-a-database">Setting up a database</a></li>
+        <li><a href="#writing-and-reading-tables">Writing and reading tables</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +327,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
