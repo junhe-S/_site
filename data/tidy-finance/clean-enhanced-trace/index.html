@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Cleaning Enhanced TRACE</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,35 @@
       
     </div>
 
-    <p>The Enhanced TRACE feed of corporate-bond transactions is not analysis-ready as delivered. A careful cleaning routine is needed to turn the raw message log into a series of genuine, executed trades.</p>
-<h2 id="why-cleaning-is-needed">Why cleaning is needed</h2>
-<p>The raw data is a record of messages, not final trades. It includes reports that were later <strong>cancelled</strong>, <strong>corrected</strong>, or <strong>reversed</strong>, as well as duplicates from the two-sided reporting of inter-dealer trades. Taking the feed at face value double-counts volume and contaminates prices.</p>
-<h2 id="the-steps">The steps</h2>
-<p>Cleaning proceeds by matching and removing the messages that undo or amend earlier ones: drop trades flagged as cancellations and the originals they cancel, apply corrections, remove reversals, and collapse the duplicate dealer reports of a single trade into one record. Filters on price and size remove obvious errors.</p>
-<h2 id="the-result">The result</h2>
-<p>What remains is a clean panel of executed corporate-bond trades — price, size, time, and side — suitable for computing yields, spreads, and liquidity measures. Because the procedure is intricate and easy to get subtly wrong, it is documented as a standalone routine that other analyses can reuse.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>The Enhanced TRACE feed of corporate-bond transactions is not analysis-ready as delivered: it is a record of messages, including reports that were later cancelled, corrected, or reversed, plus duplicate reports of inter-dealer trades. This appendix gives the routine that turns the raw feed into a clean series of executed trades. The <code>tidyfinance</code> package exposes it as a single function; the steps below are what it does. Use the <strong>R | Python</strong> toggle to switch.</p>
+<h2 id="the-one-call-version">The one-call version</h2>
+<div class="code-r">
+<pre><code class="language-r">trace_enhanced &lt;- download_data(
+  type = &quot;wrds_trace_enhanced&quot;,
+  cusips = cusips,
+  start_date = start_date,
+  end_date = end_date
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">trace_enhanced = tf.download_data(
+    domain=&quot;wrds&quot;, dataset=&quot;trace_enhanced&quot;,
+    cusips=cusips, start_date=start_date, end_date=end_date
+)
+</code></pre>
+</div>
+<h2 id="what-the-cleaning-does">What the cleaning does</h2>
+<p>The procedure matches and removes the messages that undo or amend earlier ones, in order:</p>
+<ul>
+<li><strong>Trade cancellations and corrections</strong> — drop trades flagged as cancellations (and the originals they cancel), then apply corrections so each trade reflects its final terms.</li>
+<li><strong>Reversals</strong> — remove trades later reversed, along with the reversing record.</li>
+<li><strong>Agency / double-counted trades</strong> — collapse the two-sided reports of a single inter-dealer trade into one record, so volume is not double-counted.</li>
+<li><strong>Filters</strong> — drop trades with implausible prices or sizes, and (for the book's filtering step) require a minimum number of trades per bond-day.</li>
+</ul>
+<p>What remains is a clean panel of executed corporate-bond trades — price, size, time, and side — suitable for computing yields, spreads, and liquidity measures. Because the logic is intricate and easy to get subtly wrong, it is packaged as a standalone routine that the <a href="/data/tidy-finance/trace-and-fisd/">TRACE and FISD</a> chapter and the bond research chapters reuse.</p>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +201,8 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#why-cleaning-is-needed">Why cleaning is needed</a></li>
-        <li><a href="#the-steps">The steps</a></li>
-        <li><a href="#the-result">The result</a></li>
+        <li><a href="#the-one-call-version">The one-call version</a></li>
+        <li><a href="#what-the-cleaning-does">What the cleaning does</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +212,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
