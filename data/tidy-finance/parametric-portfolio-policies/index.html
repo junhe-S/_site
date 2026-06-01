@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Parametric Portfolio Policies</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,158 @@
       
     </div>
 
-    <p>Parametric portfolio policies sidestep the hardest part of mean–variance optimization — estimating expected returns and a huge covariance matrix — by modelling portfolio weights directly as a function of firm characteristics.</p>
-<h2 id="the-idea">The idea</h2>
-<p>Instead of estimating inputs and then optimizing, start from a benchmark (say, value weights) and tilt each stock's weight up or down according to its characteristics — size, value, momentum. The tilt is linear in the characteristics, governed by a small number of coefficients.</p>
-<h2 id="estimating-the-tilts">Estimating the tilts</h2>
-<p>The coefficients are chosen to maximize the investor's expected utility of the resulting portfolio return, estimated directly over the sample. Because only a handful of parameters are estimated — one per characteristic, not one per stock — the approach scales to large universes and avoids the instability of estimating thousands of moments.</p>
-<h2 id="why-it-appeals">Why it appeals</h2>
-<p>The method, due to Brandt, Santa-Clara, and Valkanov, is parsimonious and interpretable: a positive coefficient on a characteristic says "tilt toward stocks with more of it." It connects the asset-pricing evidence on characteristics directly to an implementable portfolio, without ever forming an explicit covariance matrix.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>Parametric portfolio policies (Brandt, Santa-Clara, and Valkanov) sidestep estimating expected returns and a huge covariance matrix by modelling portfolio weights directly as a function of firm characteristics. Start from a benchmark weight and tilt it by characteristics (momentum, size); estimate the tilt coefficients by maximizing investor utility. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(scales)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+from scipy.optimize import minimize
+</code></pre>
+</div>
+<h2 id="data-and-characteristics">Data and characteristics</h2>
+<p>We load the monthly panel (excluding financials) and build the two sorting characteristics — lagged size (market cap) and momentum (the market cap 13 months prior serves to construct the momentum signal). These are the inputs the weights will tilt on.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt;
+  filter(industry != &quot;Finance&quot;) |&gt;
+  select(permno, date, ret_excess, mktcap, mktcap_lag) |&gt;
+  collect()
+
+crsp_monthly_lags &lt;- crsp_monthly |&gt;
+  transmute(permno, date_13 = date %m+% months(13), mktcap)
+
+data_portfolios &lt;- crsp_monthly |&gt;
+  inner_join(crsp_monthly_lags,
+    join_by(permno, date == date_13), suffix = c(&quot;&quot;, &quot;_13&quot;)) |&gt;
+  mutate(
+    momentum_lag = mktcap_lag / mktcap_13,
+    size_lag = log(mktcap_lag)
+  ) |&gt;
+  drop_na()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+
+crsp_monthly = (pd.read_sql_query(
+    &quot;SELECT permno, date, industry, ret_excess, mktcap, mktcap_lag FROM crsp_monthly&quot;,
+    tidy_finance, parse_dates={&quot;date&quot;})
+  .query(&quot;industry != 'Finance'&quot;)
+  .drop(columns=[&quot;industry&quot;]))
+
+crsp_monthly_lags = (crsp_monthly
+  .assign(date_13=lambda x: x[&quot;date&quot;] + pd.DateOffset(months=13))
+  .get([&quot;permno&quot;, &quot;date_13&quot;, &quot;mktcap&quot;])
+  .rename(columns={&quot;mktcap&quot;: &quot;mktcap_13&quot;, &quot;date_13&quot;: &quot;date&quot;}))
+
+data_portfolios = (crsp_monthly
+  .merge(crsp_monthly_lags, how=&quot;inner&quot;, on=[&quot;permno&quot;, &quot;date&quot;])
+  .assign(
+    momentum_lag=lambda x: x[&quot;mktcap_lag&quot;] / x[&quot;mktcap_13&quot;],
+    size_lag=lambda x: np.log(x[&quot;mktcap_lag&quot;]))
+  .dropna())
+</code></pre>
+</div>
+<h2 id="computing-tilted-weights">Computing tilted weights</h2>
+<p>The policy starts from a benchmark weight (value weights) and adds a tilt that is linear in the cross-sectionally standardized characteristics, scaled by <code>1/n</code> and the parameter vector <code>theta</code>. A positive <code>theta</code> on a characteristic means "overweight stocks with more of it."</p>
+<div class="code-r">
+<pre><code class="language-r">compute_portfolio_weights &lt;- function(theta, data, value_weighting = TRUE) {
+  data |&gt;
+    group_by(date) |&gt;
+    mutate(
+      n = n(),
+      relative_mktcap = mktcap_lag / sum(mktcap_lag),
+      characteristic_momentum = (momentum_lag - mean(momentum_lag)) / sd(momentum_lag),
+      characteristic_size = (size_lag - mean(size_lag)) / sd(size_lag),
+      weight_tilt = (1 / n) * (
+        theta[&quot;momentum_lag&quot;] * characteristic_momentum +
+          theta[&quot;size_lag&quot;] * characteristic_size
+      ),
+      weight = if_else(value_weighting, relative_mktcap, 1 / n) + weight_tilt
+    ) |&gt;
+    ungroup()
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def compute_portfolio_weights(theta, data, value_weighting=True):
+    def per_date(g):
+        n = len(g)
+        rel = g[&quot;mktcap_lag&quot;] / g[&quot;mktcap_lag&quot;].sum()
+        c_mom = (g[&quot;momentum_lag&quot;] - g[&quot;momentum_lag&quot;].mean()) / g[&quot;momentum_lag&quot;].std()
+        c_size = (g[&quot;size_lag&quot;] - g[&quot;size_lag&quot;].mean()) / g[&quot;size_lag&quot;].std()
+        tilt = (1 / n) * (theta[0] * c_mom + theta[1] * c_size)
+        base = rel if value_weighting else 1 / n
+        return g.assign(weight=base + tilt)
+    return data.groupby(&quot;date&quot;, group_keys=False).apply(per_date)
+</code></pre>
+</div>
+<h2 id="the-utility-objective">The utility objective</h2>
+<p>We evaluate a weight vector by the investor's average realized utility (here CRRA / power utility of the portfolio return). The optimizer minimizes the negative of this — only a handful of parameters (one per characteristic), so it scales to thousands of stocks without estimating any covariance matrix.</p>
+<div class="code-r">
+<pre><code class="language-r">power_utility &lt;- function(r, gamma = 5) {
+  (1 + r)^(1 - gamma) / (1 - gamma)
+}
+
+compute_objective_function &lt;- function(theta, data, value_weighting = TRUE) {
+  weights &lt;- compute_portfolio_weights(theta, data, value_weighting)
+  obj &lt;- weights |&gt;
+    group_by(date) |&gt;
+    summarize(portfolio_return = weighted.mean(ret_excess, weight)) |&gt;
+    summarize(obj = -mean(power_utility(portfolio_return))) |&gt;
+    pull(obj)
+  obj
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def power_utility(r, gamma=5):
+    return (1 + r)**(1 - gamma) / (1 - gamma)
+
+def compute_objective_function(theta, data, value_weighting=True):
+    weights = compute_portfolio_weights(theta, data, value_weighting)
+    portfolio_returns = (weights
+      .groupby(&quot;date&quot;)
+      .apply(lambda g: np.average(g[&quot;ret_excess&quot;], weights=g[&quot;weight&quot;])))
+    return -power_utility(portfolio_returns).mean()
+</code></pre>
+</div>
+<h2 id="optimizing-the-tilt-parameters">Optimizing the tilt parameters</h2>
+<p>A general-purpose optimizer (Nelder–Mead) finds the <code>theta</code> that maximizes expected utility. The resulting coefficients are directly interpretable: their sign and size say how strongly to tilt toward momentum and away from (or toward) size.</p>
+<div class="code-r">
+<pre><code class="language-r">theta &lt;- c(momentum_lag = 1.5, size_lag = 1.5)
+
+optimal_theta &lt;- optim(
+  par = theta,
+  fn = compute_objective_function,
+  data = data_portfolios,
+  value_weighting = TRUE,
+  method = &quot;Nelder-Mead&quot;
+)
+
+optimal_theta$par
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">theta_init = np.array([1.5, 1.5])
+
+optimal_theta = minimize(
+    fun=compute_objective_function,
+    x0=theta_init,
+    args=(data_portfolios, True),
+    method=&quot;Nelder-Mead&quot;
+)
+
+optimal_theta.x
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +324,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-idea">The idea</a></li>
-        <li><a href="#estimating-the-tilts">Estimating the tilts</a></li>
-        <li><a href="#why-it-appeals">Why it appeals</a></li>
+        <li><a href="#data-and-characteristics">Data and characteristics</a></li>
+        <li><a href="#computing-tilted-weights">Computing tilted weights</a></li>
+        <li><a href="#the-utility-objective">The utility objective</a></li>
+        <li><a href="#optimizing-the-tilt-parameters">Optimizing the tilt parameters</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +337,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
