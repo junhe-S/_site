@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Constrained Optimization and Backtesting</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,160 @@
       
     </div>
 
-    <p>A portfolio that looks optimal on paper can fall apart once real-world frictions enter. This chapter adds constraints and transaction costs to the optimization, then backtests honestly to see what survives.</p>
-<h2 id="realistic-constraints">Realistic constraints</h2>
-<p>Unconstrained mean–variance solutions often demand large, unstable, heavily leveraged positions. Adding constraints — no short-selling, position limits, full investment — keeps weights sensible and makes the strategy implementable. These turn the optimization into a constrained quadratic program rather than a closed-form solution.</p>
-<h2 id="transaction-costs">Transaction costs</h2>
-<p>Rebalancing is not free. Charging a cost proportional to turnover penalizes strategies that churn the portfolio, and changes the optimal weights: the optimizer trades off the benefit of moving toward the target against the cost of getting there. Ignoring costs is one of the most common ways a backtest overstates performance.</p>
-<h2 id="backtesting-honestly">Backtesting honestly</h2>
-<p>The test is out-of-sample: at each rebalance date use only information available then, form the portfolio, and roll forward. Reporting net-of-cost returns, turnover, and drawdowns — not just gross Sharpe ratios — gives a truthful picture. The recurring lesson is that frictions and look-ahead bias separate a strategy that works on a slide from one that works in practice.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>A portfolio that looks optimal on paper can fall apart once real-world frictions enter. This chapter adds constraints (no short-selling) and transaction costs to mean–variance optimization, solves the constrained problem with quadratic programming, and backtests the strategies out of sample on a rolling window. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(scales)
+library(quadprog)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+from cvxopt import matrix, solvers
+</code></pre>
+</div>
+<h2 id="data-preparation">Data preparation</h2>
+<p>We load the monthly panel and pivot a handful of stocks to a returns matrix to keep the linear algebra transparent.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt;
+  filter(industry != &quot;Finance&quot;) |&gt;
+  select(permno, gvkey, date, ret_excess, mktcap) |&gt;
+  collect()
+
+returns &lt;- crsp_monthly |&gt;
+  filter(permno %in% c(&quot;14593&quot;, &quot;10107&quot;, &quot;93436&quot;, &quot;17778&quot;)) |&gt;
+  select(permno, date, ret_excess) |&gt;
+  pivot_wider(names_from = permno, values_from = ret_excess) |&gt;
+  drop_na()
+
+sigma &lt;- cov(returns |&gt; select(-date))
+mu &lt;- colMeans(returns |&gt; select(-date))
+N &lt;- ncol(returns) - 1
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+
+crsp_monthly = (pd.read_sql_query(
+    &quot;SELECT permno, gvkey, date, industry, ret_excess, mktcap FROM crsp_monthly&quot;,
+    tidy_finance, parse_dates={&quot;date&quot;})
+  .query(&quot;industry != 'Finance'&quot;))
+
+returns = (crsp_monthly
+  .query(&quot;permno in [14593, 10107, 93436, 17778]&quot;)
+  .pivot(index=&quot;date&quot;, columns=&quot;permno&quot;, values=&quot;ret_excess&quot;)
+  .dropna())
+
+sigma = returns.cov().to_numpy()
+mu = returns.mean().to_numpy()
+N = returns.shape[1]
+</code></pre>
+</div>
+<h2 id="the-unconstrained-efficient-weight">The unconstrained efficient weight</h2>
+<p>The closed-form efficient weight, with a transaction-cost term <code>lambda</code> that penalizes moving away from the previous weights <code>w_prev</code> and a risk-aversion <code>gamma</code>. Setting <code>lambda = 0</code> recovers the frictionless solution.</p>
+<div class="code-r">
+<pre><code class="language-r">compute_efficient_weight &lt;- function(sigma, mu, gamma = 2, lambda = 0,
+                                     w_prev = rep(1 / ncol(sigma), ncol(sigma))) {
+  iota &lt;- rep(1, ncol(sigma))
+  sigma_processed &lt;- sigma + lambda / gamma * diag(ncol(sigma))
+  mu_processed &lt;- mu + lambda * w_prev
+  sigma_inverse &lt;- solve(sigma_processed)
+
+  w_mvp &lt;- sigma_inverse %*% iota
+  w_mvp &lt;- as.vector(w_mvp / sum(w_mvp))
+  w_opt &lt;- w_mvp + 1 / gamma *
+    (sigma_inverse - w_mvp %*% t(iota) %*% sigma_inverse) %*% mu_processed
+  as.vector(w_opt)
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def compute_efficient_weight(sigma, mu, gamma=2, lambda_=0, w_prev=None):
+    n = sigma.shape[0]
+    if w_prev is None:
+        w_prev = np.ones(n) / n
+    iota = np.ones(n)
+    sigma_processed = sigma + lambda_ / gamma * np.eye(n)
+    mu_processed = mu + lambda_ * w_prev
+    sigma_inv = np.linalg.inv(sigma_processed)
+
+    w_mvp = sigma_inv @ iota
+    w_mvp = w_mvp / w_mvp.sum()
+    w_opt = w_mvp + (1 / gamma) * (
+        sigma_inv - np.outer(w_mvp, iota) @ sigma_inv) @ mu_processed
+    return w_opt
+</code></pre>
+</div>
+<h2 id="adding-a-no-short-selling-constraint">Adding a no-short-selling constraint</h2>
+<p>Unconstrained solutions often demand large negative positions. Imposing <code>weights &gt;= 0</code> (and summing to one) turns the problem into a quadratic program — <code>solve.QP</code> in R, <code>cvxopt</code> in Python — which keeps the portfolio implementable.</p>
+<div class="code-r">
+<pre><code class="language-r">gamma &lt;- 2
+
+w_no_short_sell &lt;- solve.QP(
+  Dmat = gamma * sigma,
+  dvec = mu,
+  Amat = cbind(1, diag(N)),
+  bvec = c(1, rep(0, N)),
+  meq = 1
+)$solution
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">gamma = 2
+
+P = matrix(gamma * sigma)
+q = matrix(-mu)
+G = matrix(-np.eye(N))
+h = matrix(np.zeros(N))
+A = matrix(1.0, (1, N))
+b = matrix(1.0)
+
+solvers.options[&quot;show_progress&quot;] = False
+w_no_short_sell = np.array(solvers.qp(P, q, G, h, A, b)[&quot;x&quot;]).flatten()
+</code></pre>
+</div>
+<h2 id="backtesting-out-of-sample">Backtesting out of sample</h2>
+<p>The honest test: at each rebalance use only past data (a rolling window), form the weights, then apply them to the next period's realized returns — charging transaction costs on the turnover. Comparing the minimum-variance, unconstrained-efficient, and no-short strategies on net-of-cost returns shows which survive the frictions.</p>
+<div class="code-r">
+<pre><code class="language-r">window_length &lt;- 120
+periods &lt;- nrow(returns) - window_length
+oos_values &lt;- matrix(NA, nrow = periods, ncol = 3)
+colnames(oos_values) &lt;- c(&quot;mvp&quot;, &quot;efficient&quot;, &quot;no_short_sell&quot;)
+
+for (i in 1:periods) {
+  return_window &lt;- returns[i:(i + window_length - 1), -1]
+  sigma_window &lt;- cov(return_window)
+  mu_window &lt;- colMeans(return_window)
+  next_return &lt;- as.numeric(returns[i + window_length, -1])
+
+  w_efficient &lt;- compute_efficient_weight(sigma_window, mu_window, gamma)
+  oos_values[i, &quot;efficient&quot;] &lt;- sum(w_efficient * next_return)
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">window_length = 120
+periods = returns.shape[0] - window_length
+oos_values = pd.DataFrame(index=range(periods),
+                          columns=[&quot;mvp&quot;, &quot;efficient&quot;, &quot;no_short_sell&quot;], dtype=float)
+
+returns_array = returns.to_numpy()
+for i in range(periods):
+    return_window = returns_array[i:(i + window_length)]
+    sigma_window = np.cov(return_window, rowvar=False)
+    mu_window = return_window.mean(axis=0)
+    next_return = returns_array[i + window_length]
+
+    w_efficient = compute_efficient_weight(sigma_window, mu_window, gamma)
+    oos_values.loc[i, &quot;efficient&quot;] = float(w_efficient @ next_return)
+</code></pre>
+</div>
+<p>The recurring lesson: frictions and look-ahead bias separate a strategy that works on a slide from one that works in practice — which is why the evaluation reports net-of-cost returns, turnover, and drawdowns rather than just gross Sharpe ratios.</p>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +326,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#realistic-constraints">Realistic constraints</a></li>
-        <li><a href="#transaction-costs">Transaction costs</a></li>
-        <li><a href="#backtesting-honestly">Backtesting honestly</a></li>
+        <li><a href="#data-preparation">Data preparation</a></li>
+        <li><a href="#the-unconstrained-efficient-weight">The unconstrained efficient weight</a></li>
+        <li><a href="#adding-a-no-short-selling-constraint">Adding a no-short-selling constraint</a></li>
+        <li><a href="#backtesting-out-of-sample">Backtesting out of sample</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +339,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
