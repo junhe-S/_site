@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>TRACE and FISD</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,129 @@
       
     </div>
 
-    <p>Corporate-bond research rests on two datasets: TRACE for transactions and Mergent FISD for bond characteristics. Together they let you study prices, yields, and liquidity in the bond market.</p>
-<h2 id="trace">TRACE</h2>
-<p>TRACE reports over-the-counter corporate-bond trades — price, volume, time, and side. The raw feed is messy: it contains cancellations, corrections, and reversals that must be removed before the data reflects actual executed trades. Cleaning is involved enough that it gets its own appendix treatment.</p>
-<h2 id="fisd">FISD</h2>
-<p>Mergent FISD describes the bonds themselves: issue and issuer identifiers, maturity, coupon, offering amount and date, and rating history. These static characteristics are what you join onto the transaction data to compute, say, yields relative to maturity or spreads by credit quality.</p>
-<h2 id="putting-them-together">Putting them together</h2>
-<p>Matching TRACE trades to FISD characteristics by bond identifier yields an analysis-ready transaction panel. For readers without WRDS access, the bond pseudo-data appendix mimics this structure so the downstream code still runs.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>Corporate-bond research rests on two datasets: Mergent FISD for bond characteristics and TRACE for transactions. This chapter downloads both from WRDS, filters FISD to a clean universe of US corporate bonds, and pulls TRACE trades for those bonds. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(dbplyr)
+library(RPostgres)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+from sqlalchemy import create_engine
+</code></pre>
+</div>
+<h2 id="connecting-to-wrds">Connecting to WRDS</h2>
+<p>Both datasets live on WRDS, reached over an authenticated PostgreSQL connection (credentials kept out of the code, in environment variables).</p>
+<div class="code-r">
+<pre><code class="language-r">wrds &lt;- dbConnect(
+  Postgres(),
+  host = &quot;wrds-pgdata.wharton.upenn.edu&quot;,
+  dbname = &quot;wrds&quot;, port = 9737, sslmode = &quot;require&quot;,
+  user = Sys.getenv(&quot;WRDS_USER&quot;),
+  password = Sys.getenv(&quot;WRDS_PASSWORD&quot;)
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import os
+connection_string = (
+    &quot;postgresql+psycopg2://&quot;
+    f&quot;{os.getenv('WRDS_USER')}:{os.getenv('WRDS_PASSWORD')}&quot;
+    &quot;@wrds-pgdata.wharton.upenn.edu:9737/wrds&quot;
+)
+wrds = create_engine(connection_string, pool_pre_ping=True)
+</code></pre>
+</div>
+<h2 id="bond-characteristics-from-fisd">Bond characteristics from FISD</h2>
+<p>We query Mergent FISD for the bond master, keeping only US corporate, non-convertible, fixed-coupon, dollar-denominated bonds — the standard analysis universe. The filters drop the many special bond types that would contaminate yield comparisons.</p>
+<div class="code-r">
+<pre><code class="language-r">fisd_query &lt;- &quot;
+  SELECT complete_cusip, maturity, offering_amt, offering_date,
+         dated_date, interest_frequency, coupon, last_interest_date,
+         issue_id, issuer_id, sic_code
+  FROM fisd.fisd_mergedissue
+  WHERE security_level = 'SEN'
+    AND (slob = 'N' OR slob IS NULL)
+    AND security_pledge IS NULL
+    AND (asset_backed = 'N' OR asset_backed IS NULL)
+    AND (defeased = 'N' OR defeased IS NULL)
+    AND bond_type IN ('CDEB','CMTN','CMTZ','CZ','USBN')
+    AND (pay_in_kind != 'Y' OR pay_in_kind IS NULL)
+    AND (yankee = 'N' OR yankee IS NULL)
+    AND (canadian = 'N' OR canadian IS NULL)
+    AND foreign_currency = 'N'
+    AND coupon_type IN ('F')
+    AND (convertible = 'N' OR convertible IS NULL)
+    AND (exchangeable = 'N' OR exchangeable IS NULL)
+&quot;
+
+fisd &lt;- dbGetQuery(wrds, fisd_query)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">fisd_query = &quot;&quot;&quot;
+  SELECT complete_cusip, maturity, offering_amt, offering_date,
+         dated_date, interest_frequency, coupon, last_interest_date,
+         issue_id, issuer_id, sic_code
+  FROM fisd.fisd_mergedissue
+  WHERE security_level = 'SEN'
+    AND (slob = 'N' OR slob IS NULL)
+    AND (asset_backed = 'N' OR asset_backed IS NULL)
+    AND (defeased = 'N' OR defeased IS NULL)
+    AND bond_type IN ('CDEB','CMTN','CMTZ','CZ','USBN')
+    AND coupon_type IN ('F')
+    AND foreign_currency = 'N'
+    AND (convertible = 'N' OR convertible IS NULL)
+&quot;&quot;&quot;
+
+fisd = pd.read_sql_query(fisd_query, con=wrds)
+</code></pre>
+</div>
+<h2 id="linking-issuers-and-saving">Linking issuers and saving</h2>
+<p>FISD's issuer table adds the issuer's industry and domicile, joined on <code>issuer_id</code>. The cleaned master is stored locally for reuse by the bond chapters.</p>
+<div class="code-r">
+<pre><code class="language-r">fisd &lt;- download_data(type = &quot;wrds_fisd&quot;)
+write_parquet(fisd, &quot;data-r/fisd.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">fisd = tf.download_data(domain=&quot;wrds&quot;, dataset=&quot;fisd&quot;)
+fisd.to_parquet(&quot;data-python/fisd.parquet&quot;)
+</code></pre>
+</div>
+<h2 id="bond-transactions-from-trace">Bond transactions from TRACE</h2>
+<p>We pull Enhanced TRACE trades for the FISD CUSIPs. The raw feed needs cleaning (cancellations, corrections, reversals) — handled by the helper download here, and detailed in the <em>Cleaning Enhanced TRACE</em> appendix. The result is a transaction panel of price, volume, and yield per trade.</p>
+<div class="code-r">
+<pre><code class="language-r">cusips &lt;- unique(fisd$complete_cusip)
+
+trace_enhanced &lt;- download_data(
+  type = &quot;wrds_trace_enhanced&quot;,
+  cusips = cusips,
+  start_date = &quot;2014-01-01&quot;,
+  end_date = &quot;2016-11-30&quot;
+)
+
+write_parquet(trace_enhanced, &quot;data-r/trace_enhanced.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">cusips = list(fisd[&quot;complete_cusip&quot;].unique())
+
+trace_enhanced = tf.download_data(
+    domain=&quot;wrds&quot;, dataset=&quot;trace_enhanced&quot;,
+    cusips=cusips, start_date=&quot;2014-01-01&quot;, end_date=&quot;2016-11-30&quot;
+)
+
+trace_enhanced.to_parquet(&quot;data-python/trace_enhanced.parquet&quot;)
+</code></pre>
+</div>
+<p>For readers without WRDS access, the <a href="/data/tidy-finance/bond-pseudo-data/">bond pseudo-data appendix</a> generates tables with this same structure so the downstream code still runs.</p>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +295,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#trace">TRACE</a></li>
-        <li><a href="#fisd">FISD</a></li>
-        <li><a href="#putting-them-together">Putting them together</a></li>
+        <li><a href="#connecting-to-wrds">Connecting to WRDS</a></li>
+        <li><a href="#bond-characteristics-from-fisd">Bond characteristics from FISD</a></li>
+        <li><a href="#linking-issuers-and-saving">Linking issuers and saving</a></li>
+        <li><a href="#bond-transactions-from-trace">Bond transactions from TRACE</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +308,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
