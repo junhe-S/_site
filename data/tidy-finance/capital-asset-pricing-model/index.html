@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Capital Asset Pricing Model</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,277 @@
       
     </div>
 
-    <p>The CAPM is the first equilibrium theory of expected returns: in a world where everyone holds mean–variance efficient portfolios, only co-movement with the market is rewarded.</p>
-<h2 id="beta">Beta</h2>
-<p>A stock's beta measures how its excess return moves with the market's excess return — formally, the covariance of the two divided by the market's variance. Empirically it is the slope from regressing the stock's excess return on the market's excess return. Beta above one means the stock amplifies market moves; below one means it dampens them.</p>
+    <p>The CAPM extends mean–variance theory to equilibrium: when every investor holds efficient portfolios and can also borrow or lend at a risk-free rate, only an asset's co-movement with the market portfolio is rewarded. This chapter builds the tangency portfolio, derives the security market line, and estimates CAPM alphas and betas by regression. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(scales)
+library(ggrepel)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import tidyfinance as tf
+from plotnine import *
+from mizani.formatters import percent_format
+</code></pre>
+</div>
+<h2 id="asset-returns-and-volatilities">Asset returns and volatilities</h2>
+<p>As in the previous chapter, we use the Dow Jones constituents: download prices, keep stocks with full history, and form monthly returns.</p>
+<div class="code-r">
+<pre><code class="language-r">symbols &lt;- download_data(
+  type = &quot;constituents&quot;,
+  index = &quot;Dow Jones Industrial Average&quot;
+)
+
+prices_daily &lt;- download_data(
+  type = &quot;stock_prices&quot;, symbol = symbols$symbol,
+  start_date = &quot;2000-01-01&quot;, end_date = &quot;2024-12-31&quot;
+) |&gt;
+  select(symbol, date, adjusted_close)
+
+prices_daily &lt;- prices_daily |&gt;
+  group_by(symbol) |&gt;
+  mutate(n = n()) |&gt;
+  ungroup() |&gt;
+  filter(n == max(n)) |&gt;
+  select(-n)
+
+returns_monthly &lt;- prices_daily |&gt;
+  mutate(date = floor_date(date, &quot;month&quot;)) |&gt;
+  group_by(symbol, date) |&gt;
+  summarize(price = last(adjusted_close), .groups = &quot;drop_last&quot;) |&gt;
+  mutate(ret = price / lag(price) - 1) |&gt;
+  drop_na(ret) |&gt;
+  select(-price)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">symbols = tf.download_data(
+    domain=&quot;constituents&quot;, index=&quot;Dow Jones Industrial Average&quot;
+)
+
+prices_daily = tf.download_data(
+    domain=&quot;stock_prices&quot;, symbols=symbols[&quot;symbol&quot;].tolist(),
+    start_date=&quot;2000-01-01&quot;, end_date=&quot;2023-12-31&quot;
+)
+
+prices_daily = (prices_daily
+    .groupby(&quot;symbol&quot;)
+    .apply(lambda x: x.assign(counts=x[&quot;adjusted_close&quot;].dropna().count()))
+    .reset_index(drop=True)
+    .query(&quot;counts == counts.max()&quot;)
+)
+
+returns_monthly = (prices_daily
+    .assign(date=prices_daily[&quot;date&quot;].dt.to_period(&quot;M&quot;).dt.to_timestamp())
+    .groupby([&quot;symbol&quot;, &quot;date&quot;], as_index=False)
+    .agg(adjusted_close=(&quot;adjusted_close&quot;, &quot;last&quot;))
+    .assign(ret=lambda x: x.groupby(&quot;symbol&quot;)[&quot;adjusted_close&quot;].pct_change())
+)
+</code></pre>
+</div>
+<h2 id="the-tangency-portfolio-and-the-risk-free-asset">The tangency portfolio and the risk-free asset</h2>
+<p>Introducing a risk-free asset changes the opportunity set: the efficient frontier becomes a straight line from the risk-free rate through one special risky portfolio, the <strong>tangency portfolio</strong>. We proxy the risk-free rate with the 13-week T-bill (<code>^IRX</code>), converting its annualized yield to a monthly rate.</p>
+<div class="code-r">
+<pre><code class="language-r">risk_free_monthly &lt;- download_data(
+  type = &quot;stock_prices&quot;, symbol = &quot;^IRX&quot;,
+  start_date = &quot;2019-10-01&quot;, end_date = &quot;2024-09-30&quot;
+) |&gt;
+  mutate(risk_free = (1 + adjusted_close / 100)^(1 / 12) - 1) |&gt;
+  select(date, risk_free) |&gt;
+  drop_na()
+
+rf &lt;- mean(risk_free_monthly$risk_free)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">risk_free_monthly = (
+    tf.download_data(&quot;stock_prices&quot;, symbols=&quot;^IRX&quot;,
+                     start_date=&quot;2019-10-01&quot;, end_date=&quot;2024-09-30&quot;)
+    .assign(risk_free=lambda x: (1 + x[&quot;adjusted_close&quot;] / 100)**(1/12) - 1)
+    .dropna()
+)
+
+rf = risk_free_monthly[&quot;risk_free&quot;].mean()
+</code></pre>
+</div>
+<p>The tangency weights are the inverse covariance matrix times the vector of excess returns, renormalized. Its Sharpe ratio — excess return over volatility — is the slope of the efficient frontier and, by construction, the maximum attainable.</p>
+<div class="code-r">
+<pre><code class="language-r">assets &lt;- returns_monthly |&gt;
+  group_by(symbol) |&gt;
+  summarise(mu = mean(ret), sigma = sd(ret))
+
+sigma &lt;- returns_monthly |&gt;
+  pivot_wider(names_from = symbol, values_from = ret) |&gt;
+  select(-date) |&gt;
+  cov()
+
+mu &lt;- returns_monthly |&gt;
+  group_by(symbol) |&gt;
+  summarise(mu = mean(ret)) |&gt;
+  pull(mu)
+
+w_tan &lt;- solve(sigma) %*% (mu - rf)
+w_tan &lt;- w_tan / sum(w_tan)
+
+mu_w &lt;- as.numeric(t(w_tan) %*% mu)
+sigma_w &lt;- as.numeric(sqrt(t(w_tan) %*% sigma %*% w_tan))
+sharpe_ratio &lt;- (mu_w - rf) / sigma_w
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">assets = (returns_monthly
+    .groupby(&quot;symbol&quot;, as_index=False)
+    .agg(mu=(&quot;ret&quot;, &quot;mean&quot;), sigma=(&quot;ret&quot;, &quot;std&quot;))
+)
+
+sigma = (returns_monthly
+    .pivot(index=&quot;date&quot;, columns=&quot;symbol&quot;, values=&quot;ret&quot;)
+    .cov()
+)
+
+mu = returns_monthly.groupby(&quot;symbol&quot;)[&quot;ret&quot;].mean().values
+
+w_tan = np.linalg.solve(sigma, mu - rf)
+w_tan = w_tan / np.sum(w_tan)
+
+mu_w = w_tan.T @ mu
+sigma_w = np.sqrt(w_tan.T @ sigma @ w_tan)
+sharpe_ratio = (mu_w - rf) / sigma_w
+</code></pre>
+</div>
 <h2 id="the-security-market-line">The security market line</h2>
-<p>The CAPM's prediction is a straight line: expected excess return equals beta times the market risk premium. Risk that can be diversified away earns no premium; only the non-diversifiable, market-related part of risk is priced. Plotting average returns against betas across stocks gives an empirical version of this line.</p>
-<h2 id="estimation-and-caveats">Estimation and caveats</h2>
-<p>Beta is estimated over a rolling window, and the choice of window length and return frequency matters. The CAPM is also the model the data most famously pushes back on — the empirical relation between beta and average return is much flatter than theory predicts — which is exactly what motivates the multi-factor models in later chapters.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+<p>Each asset's beta is its covariance with the tangency portfolio divided by that portfolio's variance. The CAPM's central equation says expected excess return is linear in beta, with slope equal to the market (tangency) risk premium — the <strong>security market line</strong>.</p>
+<div class="code-r">
+<pre><code class="language-r">betas &lt;- (sigma %*% w_tan) / as.numeric(t(w_tan) %*% sigma %*% w_tan)
+assets &lt;- assets |&gt; mutate(beta = betas)
+
+price_of_risk &lt;- as.numeric(t(w_tan) %*% mu - rf)
+
+assets |&gt;
+  ggplot(aes(x = beta, y = mu)) +
+  geom_point() +
+  geom_abline(intercept = rf, slope = price_of_risk) +
+  scale_y_continuous(labels = percent) +
+  labs(x = &quot;Beta&quot;, y = &quot;Expected return&quot;, title = &quot;Security market line&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">betas = (sigma @ w_tan) / (w_tan.T @ sigma @ w_tan)
+assets[&quot;beta&quot;] = betas.values
+
+price_of_risk = float(w_tan.T @ mu - rf)
+
+assets_figure = (
+    ggplot(assets, aes(x=&quot;beta&quot;, y=&quot;mu&quot;))
+    + geom_point()
+    + geom_abline(intercept=rf, slope=price_of_risk)
+    + scale_y_continuous(labels=percent_format())
+    + labs(x=&quot;Beta&quot;, y=&quot;Expected return&quot;, title=&quot;Security market line&quot;)
+)
+assets_figure.show()
+</code></pre>
+</div>
+<h2 id="estimating-alpha-and-beta-by-regression">Estimating alpha and beta by regression</h2>
+<p>In equilibrium the tangency portfolio is the market portfolio, so empirically the CAPM is a regression of each asset's excess return on the market's excess return: the slope is beta, the intercept is <strong>alpha</strong> (risk-adjusted performance, which should be zero if the CAPM holds). We use the Fama–French market factor as the market proxy, and run one regression per stock via nested/ grouped data.</p>
+<div class="code-r">
+<pre><code class="language-r">factors &lt;- download_data(
+  type = &quot;factors_ff_5_2x3_monthly&quot;,
+  start_date = &quot;2000-01-01&quot;, end_date = &quot;2024-09-30&quot;
+) |&gt;
+  select(date, mkt_excess, risk_free)
+
+returns_excess_monthly &lt;- returns_monthly |&gt;
+  left_join(factors, join_by(date)) |&gt;
+  mutate(ret_excess = ret - risk_free) |&gt;
+  select(symbol, date, ret_excess, mkt_excess)
+
+estimate_capm &lt;- function(data) {
+  fit &lt;- lm(&quot;ret_excess ~ mkt_excess&quot;, data = data)
+  tibble(
+    coefficient = c(&quot;alpha&quot;, &quot;beta&quot;),
+    estimate = coefficients(fit),
+    t_statistic = summary(fit)$coefficients[, &quot;t value&quot;]
+  )
+}
+
+capm_results &lt;- returns_excess_monthly |&gt;
+  nest(data = -symbol) |&gt;
+  mutate(capm = map(data, estimate_capm)) |&gt;
+  unnest(capm) |&gt;
+  select(symbol, coefficient, estimate, t_statistic)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import statsmodels.formula.api as smf
+
+factors = tf.download_data(
+    domain=&quot;famafrench&quot;,
+    dataset=&quot;F-F_Research_Data_5_Factors_2x3&quot;,
+    start_date=&quot;2000-01-01&quot;, end_date=&quot;2024-09-30&quot;,
+)
+
+returns_excess_monthly = (returns_monthly
+    .merge(factors, on=&quot;date&quot;, how=&quot;left&quot;)
+    .assign(ret_excess=lambda x: x[&quot;ret&quot;] - x[&quot;risk_free&quot;])
+)
+
+def estimate_capm(data):
+    model = smf.ols(&quot;ret_excess ~ mkt_excess&quot;, data=data).fit()
+    return pd.DataFrame({
+        &quot;coefficient&quot;: [&quot;alpha&quot;, &quot;beta&quot;],
+        &quot;estimate&quot;: model.params.values,
+        &quot;t_statistic&quot;: model.tvalues.values,
+    })
+
+capm_results = (returns_excess_monthly
+    .groupby(&quot;symbol&quot;, group_keys=True)
+    .apply(estimate_capm)
+    .reset_index()
+)
+</code></pre>
+</div>
+<p>Plotting the estimated alphas, colored by statistical significance, is the standard read on the cross-section: under the CAPM almost none should be significantly different from zero.</p>
+<div class="code-r">
+<pre><code class="language-r">capm_results |&gt;
+  filter(coefficient == &quot;alpha&quot;) |&gt;
+  mutate(is_significant = abs(t_statistic) &gt;= 1.96) |&gt;
+  ggplot(aes(x = estimate, y = fct_reorder(symbol, estimate),
+             fill = is_significant)) +
+  geom_col() +
+  scale_x_continuous(labels = percent) +
+  labs(x = &quot;Estimated asset alphas&quot;, y = NULL,
+       fill = &quot;Significant at 95%?&quot;,
+       title = &quot;Estimated CAPM alphas for Dow index constituents&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">alphas = (capm_results
+    .query(&quot;coefficient == 'alpha'&quot;)
+    .assign(is_significant=lambda x: np.abs(x[&quot;t_statistic&quot;]) &gt;= 1.96)
+)
+alphas[&quot;symbol&quot;] = pd.Categorical(
+    alphas[&quot;symbol&quot;],
+    categories=alphas.sort_values(&quot;estimate&quot;)[&quot;symbol&quot;], ordered=True
+)
+
+alphas_figure = (
+    ggplot(alphas, aes(y=&quot;estimate&quot;, x=&quot;symbol&quot;, fill=&quot;is_significant&quot;))
+    + geom_col()
+    + scale_y_continuous(labels=percent_format())
+    + coord_flip()
+    + labs(x=&quot;Estimated asset alphas&quot;, y=&quot;&quot;, fill=&quot;Significant at 95%?&quot;,
+           title=&quot;Estimated CAPM alphas for Dow index constituents&quot;)
+)
+alphas_figure.show()
+</code></pre>
+</div>
+<h2 id="shortcomings-and-extensions">Shortcomings and extensions</h2>
+<p>The CAPM rarely survives the data cleanly: the true market portfolio is unobservable, betas drift over time, and documented anomalies (size, value) show systematic market risk alone does not explain returns. These failures motivate the multi-factor models — Fama–French three- and five-factor, Carhart momentum — that the later asset-pricing chapters build and test.</p>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +443,11 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#beta">Beta</a></li>
+        <li><a href="#asset-returns-and-volatilities">Asset returns and volatilities</a></li>
+        <li><a href="#the-tangency-portfolio-and-the-risk-free-asset">The tangency portfolio and the risk-free asset</a></li>
         <li><a href="#the-security-market-line">The security market line</a></li>
-        <li><a href="#estimation-and-caveats">Estimation and caveats</a></li>
+        <li><a href="#estimating-alpha-and-beta-by-regression">Estimating alpha and beta by regression</a></li>
+        <li><a href="#shortcomings-and-extensions">Shortcomings and extensions</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +457,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {

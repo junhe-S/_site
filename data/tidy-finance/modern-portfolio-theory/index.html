@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Modern Portfolio Theory</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,220 @@
       
     </div>
 
-    <p>Markowitz's insight is that risk is a property of the portfolio, not of individual assets in isolation: because returns move together imperfectly, combining them can reduce risk without giving up return.</p>
-<h2 id="the-inputs">The inputs</h2>
-<p>The mean–variance framework needs two estimates: a vector of expected returns and the covariance matrix of returns. Both are estimated from historical data, and both are noisy — a recurring theme is that the covariance matrix is more stable and easier to estimate well than expected returns.</p>
+    <p>Markowitz's mean–variance framework is the foundation of quantitative portfolio choice: given expected returns and a covariance matrix, it finds the portfolios that deliver the most return per unit of risk. This chapter builds the efficient frontier numerically for the Dow Jones constituents. Use the <strong>R | Python</strong> toggle to switch languages.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(scales)
+library(ggrepel)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import tidyfinance as tf
+from plotnine import *
+from mizani.formatters import percent_format
+</code></pre>
+</div>
+<h2 id="the-asset-universe">The asset universe</h2>
+<p>We download the index constituents and their daily prices, keep only stocks with a full history (so the covariance matrix is balanced), then aggregate to monthly returns. Each stock's mean return and volatility summarize its risk–return profile.</p>
+<div class="code-r">
+<pre><code class="language-r">symbols &lt;- download_data(
+  type = &quot;constituents&quot;,
+  index = &quot;Dow Jones Industrial Average&quot;
+)
+
+prices_daily &lt;- download_data(
+  type = &quot;stock_prices&quot;,
+  symbol = symbols$symbol,
+  start_date = &quot;2000-01-01&quot;,
+  end_date = &quot;2024-12-31&quot;
+)
+
+prices_daily &lt;- prices_daily |&gt;
+  group_by(symbol) |&gt;
+  mutate(n = n()) |&gt;
+  ungroup() |&gt;
+  filter(n == max(n)) |&gt;
+  select(-n)
+
+returns_monthly &lt;- prices_daily |&gt;
+  mutate(date = floor_date(date, &quot;month&quot;)) |&gt;
+  group_by(symbol, date) |&gt;
+  summarize(price = last(adjusted_close), .groups = &quot;drop_last&quot;) |&gt;
+  mutate(ret = price / lag(price) - 1) |&gt;
+  drop_na(ret) |&gt;
+  select(-price)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">symbols = tf.download_data(
+    domain=&quot;constituents&quot;, index=&quot;Dow Jones Industrial Average&quot;
+)
+
+prices_daily = tf.download_data(
+    domain=&quot;stock_prices&quot;,
+    symbols=symbols[&quot;symbol&quot;].tolist(),
+    start_date=&quot;2000-01-01&quot;,
+    end_date=&quot;2023-12-31&quot;,
+)
+
+prices_daily = (prices_daily
+    .groupby(&quot;symbol&quot;)
+    .apply(lambda x: x.assign(counts=x[&quot;adjusted_close&quot;].dropna().count()))
+    .reset_index(drop=True)
+    .query(&quot;counts == counts.max()&quot;)
+)
+
+returns_monthly = (prices_daily
+    .assign(date=lambda x: x[&quot;date&quot;].dt.to_period(&quot;M&quot;).dt.to_timestamp())
+    .groupby([&quot;symbol&quot;, &quot;date&quot;], as_index=False)
+    .agg(adjusted_close=(&quot;adjusted_close&quot;, &quot;last&quot;))
+    .assign(ret=lambda x: x.groupby(&quot;symbol&quot;)[&quot;adjusted_close&quot;].pct_change())
+)
+</code></pre>
+</div>
+<p>The two inputs the optimizer needs are the vector of mean returns and the covariance matrix. We get the covariance by pivoting returns to wide form (one column per stock) and calling <code>cov</code>.</p>
+<div class="code-r">
+<pre><code class="language-r">assets &lt;- returns_monthly |&gt;
+  group_by(symbol) |&gt;
+  summarize(mu = mean(ret), sigma = sd(ret))
+
+returns_wide &lt;- returns_monthly |&gt;
+  pivot_wider(names_from = symbol, values_from = ret)
+
+sigma &lt;- returns_wide |&gt;
+  select(-date) |&gt;
+  cov()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">assets = (returns_monthly
+    .groupby(&quot;symbol&quot;, as_index=False)
+    .agg(mu=(&quot;ret&quot;, &quot;mean&quot;), sigma=(&quot;ret&quot;, &quot;std&quot;))
+)
+
+returns_wide = returns_monthly.pivot(
+    index=&quot;date&quot;, columns=&quot;symbol&quot;, values=&quot;ret&quot;
+).reset_index()
+
+sigma = returns_wide.drop(columns=[&quot;date&quot;]).cov()
+</code></pre>
+</div>
+<h2 id="the-minimum-variance-portfolio">The minimum-variance portfolio</h2>
+<p>The minimum-variance portfolio (MVP) ignores expected returns entirely — it just minimizes variance subject to the weights summing to one. Its closed form is the inverse covariance matrix times a vector of ones, renormalized so the weights sum to one.</p>
+<div class="code-r">
+<pre><code class="language-r">iota &lt;- rep(1, dim(sigma)[1])
+sigma_inv &lt;- solve(sigma)
+omega_mvp &lt;- as.vector(sigma_inv %*% iota) /
+  as.numeric(t(iota) %*% sigma_inv %*% iota)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">iota = np.ones(sigma.shape[0])
+sigma_inv = np.linalg.inv(sigma.values)
+omega_mvp = (sigma_inv @ iota) / (iota @ sigma_inv @ iota)
+</code></pre>
+</div>
+<p>With the weights in hand, the MVP's expected return and volatility are simple quadratic forms — its location is the leftmost tip of the frontier.</p>
+<div class="code-r">
+<pre><code class="language-r">mu &lt;- assets$mu
+summary_mvp &lt;- tibble(
+  mu = as.numeric(t(omega_mvp) %*% mu),
+  sigma = as.numeric(sqrt(t(omega_mvp) %*% sigma %*% omega_mvp)),
+  type = &quot;Minimum-Variance Portfolio&quot;
+)
+summary_mvp
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">mu = assets[&quot;mu&quot;].values
+mu_mvp = omega_mvp @ mu
+sigma_mvp = np.sqrt(omega_mvp @ sigma.values @ omega_mvp)
+summary_mvp = pd.DataFrame(
+    {&quot;mu&quot;: [mu_mvp], &quot;sigma&quot;: [sigma_mvp],
+     &quot;type&quot;: [&quot;Minimum-Variance Portfolio&quot;]}
+)
+summary_mvp
+</code></pre>
+</div>
+<h2 id="efficient-portfolios">Efficient portfolios</h2>
+<p>To trace the frontier we need a second efficient portfolio — say the one that achieves the highest single-stock mean return at least variance. Its weights have a closed form built from three scalars (C, D, E) that summarize the covariance structure, with a Lagrange multiplier <code>lambda_tilde</code> controlling how far we move from the MVP toward higher return.</p>
+<div class="code-r">
+<pre><code class="language-r">mu_bar &lt;- max(assets$mu)
+C &lt;- as.numeric(t(iota) %*% sigma_inv %*% iota)
+D &lt;- as.numeric(t(iota) %*% sigma_inv %*% mu)
+E &lt;- as.numeric(t(mu) %*% sigma_inv %*% mu)
+lambda_tilde &lt;- as.numeric(2 * (mu_bar - D / C) / (E - D^2 / C))
+omega_efp &lt;- as.vector(
+  omega_mvp + lambda_tilde / 2 * (sigma_inv %*% mu - D * omega_mvp)
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">mu_bar = assets[&quot;mu&quot;].max()
+C = iota @ sigma_inv @ iota
+D = iota @ sigma_inv @ mu
+E = mu @ sigma_inv @ mu
+lambda_tilde = 2 * (mu_bar - D / C) / (E - (D**2) / C)
+omega_efp = omega_mvp + (lambda_tilde / 2) * (sigma_inv @ mu - D * omega_mvp)
+</code></pre>
+</div>
 <h2 id="the-efficient-frontier">The efficient frontier</h2>
-<p>For every target return there is a portfolio that achieves it with the least variance; tracing these out gives the efficient frontier. Two portfolios anchor it: the <strong>minimum-variance portfolio</strong>, which ignores expected returns entirely, and — once a risk-free asset exists — the <strong>tangency portfolio</strong>, which maximizes the Sharpe ratio. Every efficient portfolio with a risk-free asset is a mix of the risk-free asset and the tangency portfolio.</p>
-<h2 id="diversification">Diversification</h2>
-<p>The covariance terms, not the individual variances, drive portfolio risk as the number of assets grows. This is the formal statement of "don't put all your eggs in one basket": adding imperfectly correlated assets lowers portfolio variance, and the benefit is largest when correlations are low.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+<p>The two-fund separation theorem says every efficient portfolio is a combination of two efficient portfolios. So sweeping a mixing weight <code>a</code> over the MVP and the efficient portfolio traces the entire frontier — for each <code>a</code> we record the portfolio's mean and volatility.</p>
+<div class="code-r">
+<pre><code class="language-r">efficient_frontier &lt;- tibble(
+  a = seq(from = -1, to = 2, by = 0.01)
+) |&gt;
+  mutate(
+    omega = map(a, \(x) x * omega_efp + (1 - x) * omega_mvp),
+    mu = map_dbl(omega, \(x) t(x) %*% mu),
+    sigma = map_dbl(omega, \(x) sqrt(t(x) %*% sigma %*% x))
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">efficient_frontier = (
+    pd.DataFrame({&quot;a&quot;: np.arange(-1, 2.01, 0.01)})
+    .assign(omega=lambda x: x[&quot;a&quot;].map(
+        lambda a: a * omega_efp + (1 - a) * omega_mvp))
+    .assign(
+        mu=lambda x: x[&quot;omega&quot;].map(lambda w: w @ mu),
+        sigma=lambda x: x[&quot;omega&quot;].map(lambda w: np.sqrt(w @ sigma @ w)),
+    )
+)
+</code></pre>
+</div>
+<p>Plotting mean against volatility draws the frontier's hyperbola. Overlaying the individual stocks shows the diversification gain: the frontier sits well to the left of any single stock — the same expected return for less risk.</p>
+<div class="code-r">
+<pre><code class="language-r">efficient_frontier |&gt;
+  ggplot(aes(x = sigma, y = mu)) +
+  geom_point() +
+  geom_point(data = assets, aes(x = sigma, y = mu)) +
+  scale_x_continuous(labels = percent) +
+  scale_y_continuous(labels = percent) +
+  labs(
+    x = &quot;Volatility&quot;, y = &quot;Expected return&quot;,
+    title = &quot;Efficient frontier for Dow Jones index constituents&quot;
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">frontier_figure = (
+    ggplot(efficient_frontier, aes(x=&quot;sigma&quot;, y=&quot;mu&quot;))
+    + geom_point()
+    + geom_point(data=assets, mapping=aes(x=&quot;sigma&quot;, y=&quot;mu&quot;))
+    + scale_x_continuous(labels=percent_format())
+    + scale_y_continuous(labels=percent_format())
+    + labs(x=&quot;Volatility&quot;, y=&quot;Expected return&quot;,
+           title=&quot;Efficient frontier for Dow Jones index constituents&quot;)
+)
+frontier_figure.show()
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +386,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-inputs">The inputs</a></li>
+        <li><a href="#the-asset-universe">The asset universe</a></li>
+        <li><a href="#the-minimum-variance-portfolio">The minimum-variance portfolio</a></li>
+        <li><a href="#efficient-portfolios">Efficient portfolios</a></li>
         <li><a href="#the-efficient-frontier">The efficient frontier</a></li>
-        <li><a href="#diversification">Diversification</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +399,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
