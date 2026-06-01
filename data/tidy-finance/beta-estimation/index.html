@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Beta Estimation</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,174 @@
       
     </div>
 
-    <p>Estimating market betas for thousands of stocks over decades is the first genuinely large-scale computation in the empirical workflow, and a good test of doing rolling calculations efficiently.</p>
-<h2 id="the-regression">The regression</h2>
-<p>A stock's beta is the slope from regressing its excess return on the market's excess return over an estimation window. Conceptually simple; the work is in doing it repeatedly — one regression per stock per month, on a rolling window of past returns.</p>
-<h2 id="rolling-windows-and-frequency">Rolling windows and frequency</h2>
-<p>Two choices shape the estimates. <strong>Window length</strong> trades off responsiveness against precision: a short window adapts to changing risk but is noisy; a long window is stable but stale. <strong>Data frequency</strong> matters too — daily data gives many observations per window but introduces microstructure noise, while monthly data is cleaner but sparser. Comparing daily- and monthly-based betas shows how much these choices move the answer.</p>
-<h2 id="doing-it-at-scale">Doing it at scale</h2>
-<p>The computational lesson is to structure the rolling regression so it runs efficiently across a large panel — grouping by stock, applying the window calculation in a vectorized way rather than looping naively — so that the full cross-section estimates in reasonable time.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>This chapter estimates CAPM market betas for the whole CRSP cross-section, using rolling-window regressions of excess returns on the market factor. It is the first computation that runs over thousands of stocks, so the emphasis is on doing the rolling regression efficiently. Code reads the panel built in earlier chapters from the local database. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(scales)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+from statsmodels.regression.rolling import RollingOLS
+import statsmodels.formula.api as smf
+</code></pre>
+</div>
+<h2 id="beta-from-monthly-returns">Beta from monthly returns</h2>
+<p>We load the monthly CRSP panel and the market factor, join them, and run a single CAPM regression for one stock to fix ideas: the slope on <code>mkt_excess</code> is that stock's beta over the full sample.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt;
+  select(permno, date, industry, ret_excess) |&gt;
+  collect()
+
+factors_ff3_monthly &lt;- tbl(tidy_finance, &quot;factors_ff3_monthly&quot;) |&gt;
+  select(date, mkt_excess) |&gt;
+  collect()
+
+crsp_monthly &lt;- crsp_monthly |&gt;
+  left_join(factors_ff3_monthly, join_by(date))
+
+fit &lt;- lm(ret_excess ~ mkt_excess,
+  data = crsp_monthly |&gt; filter(permno == &quot;14593&quot;))
+summary(fit)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+
+crsp_monthly = (pd.read_sql_query(
+    sql=&quot;SELECT permno, date, industry, ret_excess FROM crsp_monthly&quot;,
+    con=tidy_finance, parse_dates={&quot;date&quot;})
+  .dropna()
+)
+
+factors_ff3_monthly = pd.read_sql_query(
+  sql=&quot;SELECT date, mkt_excess FROM factors_ff3_monthly&quot;,
+  con=tidy_finance, parse_dates={&quot;date&quot;}
+)
+
+crsp_monthly = crsp_monthly.merge(factors_ff3_monthly, how=&quot;left&quot;, on=&quot;date&quot;)
+
+model_beta = smf.ols(
+    formula=&quot;ret_excess ~ mkt_excess&quot;,
+    data=crsp_monthly.query(&quot;permno == 14593&quot;)
+).fit()
+model_beta.summary()
+</code></pre>
+</div>
+<h2 id="rolling-window-estimation">Rolling-window estimation</h2>
+<p>A single full-sample beta hides time variation. We instead estimate beta on a rolling window — here 60 months, requiring at least 48 observations. In R this is wrapped in a small <code>estimate_capm</code> helper called by <code>slide_period_vec</code>; in Python <code>RollingOLS</code> does the rolling fit directly.</p>
+<div class="code-r">
+<pre><code class="language-r">estimate_capm &lt;- function(data, min_obs = 1) {
+  if (nrow(data) &lt; min_obs) {
+    beta &lt;- as.numeric(NA)
+  } else {
+    fit &lt;- lm(ret_excess ~ mkt_excess, data = data)
+    beta &lt;- as.numeric(coefficients(fit)[2])
+  }
+  beta
+}
+
+roll_capm_estimation &lt;- function(data, months, min_obs) {
+  data &lt;- data |&gt; arrange(date)
+  betas &lt;- slide_period_vec(
+    .x = data, .i = data$date, .period = &quot;month&quot;,
+    .f = ~ estimate_capm(., min_obs),
+    .before = months - 1, .complete = FALSE
+  )
+  tibble(date = unique(data$date), beta = betas)
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">window_size = 60
+min_obs = 48
+
+def roll_capm_estimation(data, window_size, min_obs):
+    data = data.sort_values(&quot;date&quot;)
+    result = (RollingOLS.from_formula(
+        formula=&quot;ret_excess ~ mkt_excess&quot;,
+        data=data, window=window_size,
+        min_nobs=min_obs, missing=&quot;drop&quot;)
+      .fit()
+      .params.get(&quot;mkt_excess&quot;)
+    )
+    result.index = data.index
+    return result
+</code></pre>
+</div>
+<h2 id="estimation-across-the-cross-section">Estimation across the cross-section</h2>
+<p>Applying the rolling estimator to every stock is a grouped operation: nest each stock's data, map the rolling function over it, and unnest. The result is a <code>permno</code>–<code>date</code>–<code>beta_monthly</code> panel of time-varying betas.</p>
+<div class="code-r">
+<pre><code class="language-r">beta_monthly &lt;- crsp_monthly |&gt;
+  nest(data = c(date, ret_excess, mkt_excess)) |&gt;
+  mutate(beta = map(
+    data, ~ roll_capm_estimation(., months = 60, min_obs = 48)
+  )) |&gt;
+  unnest(c(beta)) |&gt;
+  select(permno, date, beta_monthly = beta) |&gt;
+  drop_na()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">beta_monthly = (crsp_monthly
+  .groupby(&quot;permno&quot;)
+  .apply(lambda x: x.assign(
+      beta=roll_capm_estimation(x, window_size, min_obs)))
+  .reset_index(drop=True)
+  .dropna()
+  .rename(columns={&quot;beta&quot;: &quot;beta_monthly&quot;})
+)
+</code></pre>
+</div>
+<h2 id="beta-from-daily-returns">Beta from daily returns</h2>
+<p>The same machinery runs on daily data, with a shorter window (three months, minimum 50 daily observations). Daily betas use far more observations per window but carry microstructure noise; comparing them with the monthly estimates shows how the frequency choice moves the answer.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_daily &lt;- tbl(tidy_finance, &quot;crsp_daily&quot;) |&gt;
+  select(permno, date, ret_excess) |&gt;
+  collect()
+
+factors_ff3_daily &lt;- tbl(tidy_finance, &quot;factors_ff3_daily&quot;) |&gt;
+  select(date, mkt_excess) |&gt;
+  collect()
+
+beta_daily &lt;- crsp_daily |&gt;
+  left_join(factors_ff3_daily, join_by(date)) |&gt;
+  nest(data = c(date, ret_excess, mkt_excess)) |&gt;
+  mutate(beta = map(
+    data, ~ roll_capm_estimation(., months = 3, min_obs = 50)
+  )) |&gt;
+  unnest(c(beta)) |&gt;
+  select(permno, date, beta_daily = beta) |&gt;
+  drop_na()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">crsp_daily = pd.read_sql_query(
+  sql=&quot;SELECT permno, date, ret_excess FROM crsp_daily&quot;,
+  con=tidy_finance, parse_dates={&quot;date&quot;}
+)
+
+factors_ff3_daily = pd.read_sql_query(
+  sql=&quot;SELECT date, mkt_excess FROM factors_ff3_daily&quot;,
+  con=tidy_finance, parse_dates={&quot;date&quot;}
+)
+
+beta_daily = (crsp_daily
+  .merge(factors_ff3_daily, how=&quot;left&quot;, on=&quot;date&quot;)
+  .groupby(&quot;permno&quot;)
+  .apply(lambda x: x.assign(
+      beta=roll_capm_estimation(x, window_size=60, min_obs=50)))
+  .reset_index(drop=True)
+  .dropna()
+  .rename(columns={&quot;beta&quot;: &quot;beta_daily&quot;})
+)
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +340,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-regression">The regression</a></li>
-        <li><a href="#rolling-windows-and-frequency">Rolling windows and frequency</a></li>
-        <li><a href="#doing-it-at-scale">Doing it at scale</a></li>
+        <li><a href="#beta-from-monthly-returns">Beta from monthly returns</a></li>
+        <li><a href="#rolling-window-estimation">Rolling-window estimation</a></li>
+        <li><a href="#estimation-across-the-cross-section">Estimation across the cross-section</a></li>
+        <li><a href="#beta-from-daily-returns">Beta from daily returns</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +353,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
