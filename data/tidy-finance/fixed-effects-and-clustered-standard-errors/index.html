@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Fixed Effects and Clustered Standard Errors</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,142 @@
       
     </div>
 
-    <p>Panel data — many firms observed over many periods — needs regression tools that respect its structure. Fixed effects control for unobserved heterogeneity; clustered standard errors get the inference right.</p>
-<h2 id="fixed-effects">Fixed effects</h2>
-<p>A firm fixed effect absorbs everything about a firm that is constant over time (its industry, its business model), so the coefficient of interest is identified from variation <em>within</em> the firm. A time fixed effect absorbs whatever is common to all firms in a period (the macro environment). Including both — two-way fixed effects — strips out both unchanging firm traits and common shocks, leaving the idiosyncratic variation that usually carries the causal content.</p>
+    <p>This chapter covers the panel-regression mechanics that make firm-level inference honest: fixed effects to absorb unobserved heterogeneity, and clustered standard errors to handle correlated residuals. The running example is a corporate-investment regression (investment on cash flow and Tobin's Q). The code uses <code>fixest</code> in R and <code>linearmodels</code> in Python. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(fixest)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+import linearmodels as lm
+</code></pre>
+</div>
+<h2 id="building-the-investment-panel">Building the investment panel</h2>
+<p>We construct the regression variables from Compustat: <strong>investment</strong> (capex over lagged assets), <strong>cash flows</strong> (operating cash flow over lagged assets), and <strong>Tobin's Q</strong> (market value of assets over book assets). The dependent variable is next year's investment, so the regressors are properly predetermined.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt; collect()
+compustat &lt;- tbl(tidy_finance, &quot;compustat&quot;) |&gt; collect()
+
+data_investment &lt;- compustat |&gt;
+  mutate(date = floor_date(ymd(datadate), &quot;month&quot;)) |&gt;
+  left_join(
+    compustat |&gt; select(gvkey, year, at_lag = at) |&gt; mutate(year = year + 1),
+    join_by(gvkey, year)
+  ) |&gt;
+  mutate(investment = capx / at_lag, cash_flows = oancf / at_lag) |&gt;
+  group_by(gvkey) |&gt;
+  mutate(investment_lead = lead(investment)) |&gt;
+  ungroup() |&gt;
+  left_join(crsp_monthly |&gt; select(gvkey, date, mktcap), join_by(gvkey, date)) |&gt;
+  mutate(tobins_q = (mktcap + at - be - txdb) / at) |&gt;
+  select(gvkey, year, investment_lead, cash_flows, tobins_q) |&gt;
+  drop_na()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+crsp_monthly = pd.read_sql_query(&quot;SELECT * FROM crsp_monthly&quot;, tidy_finance, parse_dates={&quot;date&quot;})
+compustat = pd.read_sql_query(&quot;SELECT * FROM compustat&quot;, tidy_finance, parse_dates={&quot;datadate&quot;})
+
+data_investment = (compustat
+  .assign(date=lambda x: x[&quot;datadate&quot;].dt.to_period(&quot;M&quot;).dt.to_timestamp())
+  .merge(compustat.get([&quot;gvkey&quot;, &quot;year&quot;, &quot;at&quot;])
+    .rename(columns={&quot;at&quot;: &quot;at_lag&quot;})
+    .assign(year=lambda x: x[&quot;year&quot;] + 1),
+    how=&quot;left&quot;, on=[&quot;gvkey&quot;, &quot;year&quot;])
+  .assign(
+    investment=lambda x: x[&quot;capx&quot;] / x[&quot;at_lag&quot;],
+    cash_flows=lambda x: x[&quot;oancf&quot;] / x[&quot;at_lag&quot;])
+  .sort_values([&quot;gvkey&quot;, &quot;year&quot;])
+  .assign(investment_lead=lambda x: x.groupby(&quot;gvkey&quot;)[&quot;investment&quot;].shift(-1))
+  .merge(crsp_monthly.get([&quot;gvkey&quot;, &quot;date&quot;, &quot;mktcap&quot;]), how=&quot;left&quot;, on=[&quot;gvkey&quot;, &quot;date&quot;])
+  .assign(tobins_q=lambda x: (x[&quot;mktcap&quot;] + x[&quot;at&quot;] - x[&quot;be&quot;] - x[&quot;txdb&quot;]) / x[&quot;at&quot;])
+  .get([&quot;gvkey&quot;, &quot;year&quot;, &quot;investment_lead&quot;, &quot;cash_flows&quot;, &quot;tobins_q&quot;])
+  .dropna())
+</code></pre>
+</div>
+<h2 id="winsorizing">Winsorizing</h2>
+<p>Accounting ratios have extreme outliers that can dominate a regression. Winsorizing caps each variable at its 1st and 99th percentiles — a standard, transparent way to limit the influence of a few extreme firm-years without dropping them.</p>
+<div class="code-r">
+<pre><code class="language-r">winsorize &lt;- function(x, cut) {
+  x &lt;- replace(x, x &gt; quantile(x, 1 - cut, na.rm = TRUE), quantile(x, 1 - cut, na.rm = TRUE))
+  x &lt;- replace(x, x &lt; quantile(x, cut, na.rm = TRUE), quantile(x, cut, na.rm = TRUE))
+  x
+}
+
+data_investment &lt;- data_investment |&gt;
+  mutate(across(c(investment_lead, cash_flows, tobins_q), ~ winsorize(., 0.01)))
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def winsorize(x, cut):
+    tmp = x.copy()
+    upper = np.nanquantile(x, 1 - cut)
+    lower = np.nanquantile(x, cut)
+    tmp[tmp &gt; upper] = upper
+    tmp[tmp &lt; lower] = lower
+    return tmp
+
+data_investment = data_investment.assign(
+  investment_lead=lambda x: winsorize(x[&quot;investment_lead&quot;], 0.01),
+  cash_flows=lambda x: winsorize(x[&quot;cash_flows&quot;], 0.01),
+  tobins_q=lambda x: winsorize(x[&quot;tobins_q&quot;], 0.01))
+</code></pre>
+</div>
+<h2 id="ols-then-fixed-effects">OLS, then fixed effects</h2>
+<p>We start with pooled OLS, then add firm fixed effects (identifying the effect from within-firm variation), then add year fixed effects too (absorbing common shocks). The <code>| gvkey</code> and <code>| gvkey + year</code> syntax in <code>fixest</code> makes the progression compact; <code>linearmodels</code> does the same via entity/time effects.</p>
+<div class="code-r">
+<pre><code class="language-r">model_ols &lt;- feols(investment_lead ~ cash_flows + tobins_q, data = data_investment)
+
+model_fe_firm &lt;- feols(
+  investment_lead ~ cash_flows + tobins_q | gvkey, data = data_investment)
+
+model_fe_firmyear &lt;- feols(
+  investment_lead ~ cash_flows + tobins_q | gvkey + year, data = data_investment)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">data_panel = data_investment.set_index([&quot;gvkey&quot;, &quot;year&quot;])
+
+model_ols = lm.PanelOLS.from_formula(
+    &quot;investment_lead ~ cash_flows + tobins_q + 1&quot;, data=data_panel).fit()
+
+model_fe_firm = lm.PanelOLS.from_formula(
+    &quot;investment_lead ~ cash_flows + tobins_q + EntityEffects&quot;, data=data_panel).fit()
+
+model_fe_firmyear = lm.PanelOLS.from_formula(
+    &quot;investment_lead ~ cash_flows + tobins_q + EntityEffects + TimeEffects&quot;,
+    data=data_panel).fit()
+</code></pre>
+</div>
 <h2 id="clustered-standard-errors">Clustered standard errors</h2>
-<p>Residuals in a firm panel are correlated: across time within a firm (persistence) and across firms within a period (common shocks). Treating observations as independent badly understates standard errors. Clustering — by firm, by time, or both (two-way) — allows for these correlations and produces honest confidence intervals.</p>
-<h2 id="in-practice">In practice</h2>
-<p>The two tools are complementary: fixed effects address bias from omitted, fixed confounders; clustering addresses inference given dependence. Most modern panel regressions in finance report both, and the choice of clustering dimension follows the suspected correlation structure of the residuals.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+<p>Residuals are correlated within firms (over time) and within periods (across firms), so naive standard errors are too small. Clustering — by firm, and then by firm and year (two-way) — allows for these dependencies and yields honest confidence intervals. The choice of clustering dimension follows the suspected correlation structure.</p>
+<div class="code-r">
+<pre><code class="language-r">model_cluster_firm &lt;- feols(
+  investment_lead ~ cash_flows + tobins_q | gvkey + year,
+  vcov = ~gvkey, data = data_investment)
+
+model_cluster_firmyear &lt;- feols(
+  investment_lead ~ cash_flows + tobins_q | gvkey + year,
+  vcov = ~ gvkey + year, data = data_investment)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">model_cluster_firm = lm.PanelOLS.from_formula(
+    &quot;investment_lead ~ cash_flows + tobins_q + EntityEffects + TimeEffects&quot;,
+    data=data_panel).fit(cov_type=&quot;clustered&quot;, cluster_entity=True)
+
+model_cluster_firmyear = lm.PanelOLS.from_formula(
+    &quot;investment_lead ~ cash_flows + tobins_q + EntityEffects + TimeEffects&quot;,
+    data=data_panel).fit(cov_type=&quot;clustered&quot;, cluster_entity=True, cluster_time=True)
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +308,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#fixed-effects">Fixed effects</a></li>
+        <li><a href="#building-the-investment-panel">Building the investment panel</a></li>
+        <li><a href="#winsorizing">Winsorizing</a></li>
+        <li><a href="#ols-then-fixed-effects">OLS, then fixed effects</a></li>
         <li><a href="#clustered-standard-errors">Clustered standard errors</a></li>
-        <li><a href="#in-practice">In practice</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +321,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
