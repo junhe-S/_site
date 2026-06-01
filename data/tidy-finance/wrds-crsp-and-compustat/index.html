@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>WRDS, CRSP, and Compustat</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,198 @@
       
     </div>
 
-    <p>CRSP and Compustat, accessed through WRDS, are the backbone datasets of empirical equity research. Building a clean, merged panel from them is a rite of passage — and a place where small mistakes propagate into every later result.</p>
-<h2 id="crsp">CRSP</h2>
-<p>CRSP provides stock-market data: prices, returns, shares outstanding, and trading volume, along with identifiers and exchange/delisting information. Two details matter a great deal — adjusting returns for <strong>delisting</strong> (ignoring them biases results upward) and computing <strong>market capitalization</strong> consistently as price times shares outstanding.</p>
-<h2 id="compustat">Compustat</h2>
-<p>Compustat provides accounting fundamentals from firm financial statements. The key timing concern is that accounting data is only known after a reporting lag, so you must <strong>lag fundamentals</strong> appropriately before matching them to returns — otherwise you use information that was not yet public, a classic look-ahead bias.</p>
-<h2 id="merging-into-a-panel">Merging into a panel</h2>
-<p>The two databases use different identifiers, so a linking table bridges CRSP's <code>permno</code> and Compustat's <code>gvkey</code>. The result is a firm-month panel of returns, market cap, and characteristics — the dataset that the asset-pricing chapters sort, regress, and form portfolios on.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>CRSP and Compustat, accessed through WRDS, are the backbone datasets of empirical equity research. This chapter connects to WRDS, downloads and cleans CRSP stock data and Compustat fundamentals, and merges them into the firm-month panel that anchors the empirical chapters. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(arrow)
+library(dbplyr)
+library(RPostgres)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import tidyfinance as tf
+from sqlalchemy import create_engine
+</code></pre>
+</div>
+<h2 id="accessing-wrds">Accessing WRDS</h2>
+<p>WRDS is a PostgreSQL server; we connect with credentials stored in environment variables (never in code).</p>
+<div class="code-r">
+<pre><code class="language-r">wrds &lt;- dbConnect(
+  Postgres(),
+  host = &quot;wrds-pgdata.wharton.upenn.edu&quot;,
+  dbname = &quot;wrds&quot;, port = 9737, sslmode = &quot;require&quot;,
+  user = Sys.getenv(&quot;WRDS_USER&quot;),
+  password = Sys.getenv(&quot;WRDS_PASSWORD&quot;)
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import os
+connection_string = (
+    &quot;postgresql+psycopg2://&quot;
+    f&quot;{os.getenv('WRDS_USER')}:{os.getenv('WRDS_PASSWORD')}&quot;
+    &quot;@wrds-pgdata.wharton.upenn.edu:9737/wrds&quot;
+)
+wrds = create_engine(connection_string, pool_pre_ping=True)
+</code></pre>
+</div>
+<h2 id="downloading-and-preparing-crsp">Downloading and preparing CRSP</h2>
+<p>We pull monthly stock data joined to the security-info history, filtering to US common equity on the three major exchanges. Two cleaning steps matter most: computing <strong>market cap</strong> as price × shares outstanding, and building a one-month <strong>lagged</strong> market cap (the weighting variable for value-weighted portfolios).</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- download_data(
+  type = &quot;wrds_crsp_monthly&quot;,
+  start_date = start_date,
+  end_date = end_date
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">crsp_monthly = tf.download_data(
+    domain=&quot;wrds&quot;, dataset=&quot;crsp_monthly&quot;,
+    start_date=start_date, end_date=end_date
+)
+</code></pre>
+</div>
+<p>Under the hood, <code>download_data</code> runs a SQL query against <code>crsp.msf_v2</code> and the security-info history, then maps exchange and industry codes and computes returns in excess of the risk-free rate. The manual version makes the steps explicit:</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- crsp_monthly |&gt;
+  mutate(
+    mktcap = shrout * prc / 10^6,
+    mktcap = na_if(mktcap, 0)
+  )
+
+mktcap_lag &lt;- crsp_monthly |&gt;
+  mutate(date = date %m+% months(1)) |&gt;
+  select(permno, date, mktcap_lag = mktcap)
+
+crsp_monthly &lt;- crsp_monthly |&gt;
+  left_join(mktcap_lag, join_by(permno, date)) |&gt;
+  mutate(
+    exchange = case_when(
+      primaryexch == &quot;N&quot; ~ &quot;NYSE&quot;,
+      primaryexch == &quot;A&quot; ~ &quot;AMEX&quot;,
+      primaryexch == &quot;Q&quot; ~ &quot;NASDAQ&quot;,
+      .default = &quot;Other&quot;
+    )
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">crsp_monthly = (crsp_monthly
+    .assign(mktcap=lambda x: (x[&quot;shrout&quot;] * x[&quot;altprc&quot;] / 1e6).replace(0, np.nan)))
+
+mktcap_lag = (crsp_monthly
+    .assign(date=lambda x: x[&quot;date&quot;] + pd.DateOffset(months=1))
+    .get([&quot;permno&quot;, &quot;date&quot;, &quot;mktcap&quot;])
+    .rename(columns={&quot;mktcap&quot;: &quot;mktcap_lag&quot;}))
+
+def assign_exchange(p):
+    return {&quot;N&quot;: &quot;NYSE&quot;, &quot;A&quot;: &quot;AMEX&quot;, &quot;Q&quot;: &quot;NASDAQ&quot;}.get(p, &quot;Other&quot;)
+
+crsp_monthly = (crsp_monthly
+    .merge(mktcap_lag, how=&quot;left&quot;, on=[&quot;permno&quot;, &quot;date&quot;])
+    .assign(exchange=lambda x: x[&quot;primaryexch&quot;].apply(assign_exchange)))
+</code></pre>
+</div>
+<h2 id="excess-returns-and-the-industry-mapping">Excess returns and the industry mapping</h2>
+<p>Joining the Fama–French risk-free rate gives excess returns; the SIC code maps to a coarse industry label used throughout the book.</p>
+<div class="code-r">
+<pre><code class="language-r">factors_ff3_monthly &lt;- read_parquet(&quot;data-r/factors_ff3_monthly.parquet&quot;) |&gt;
+  select(date, risk_free)
+
+crsp_monthly &lt;- crsp_monthly |&gt;
+  left_join(factors_ff3_monthly, join_by(date)) |&gt;
+  mutate(ret_excess = ret - risk_free) |&gt;
+  select(-risk_free) |&gt;
+  drop_na(ret_excess, mktcap, mktcap_lag)
+
+write_parquet(crsp_monthly, &quot;data-r/crsp_monthly.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">factors_ff3_monthly = pd.read_parquet(
+    &quot;data-python/factors_ff3_monthly.parquet&quot;)[[&quot;date&quot;, &quot;risk_free&quot;]]
+
+crsp_monthly = (crsp_monthly
+    .merge(factors_ff3_monthly, how=&quot;left&quot;, on=&quot;date&quot;)
+    .assign(ret_excess=lambda x: x[&quot;ret&quot;] - x[&quot;risk_free&quot;])
+    .drop(columns=[&quot;risk_free&quot;])
+    .dropna(subset=[&quot;ret_excess&quot;, &quot;mktcap&quot;, &quot;mktcap_lag&quot;]))
+
+crsp_monthly.to_parquet(&quot;data-python/crsp_monthly.parquet&quot;)
+</code></pre>
+</div>
+<h2 id="preparing-compustat">Preparing Compustat</h2>
+<p>Compustat's <code>funda</code> table gives accounting fundamentals. The two derived quantities used most are <strong>book equity</strong> (<code>be</code>, from the standard coalesce of stockholders' equity definitions) and <strong>operating profitability</strong> (<code>op</code>); we also keep the latest filing per firm-year and build a lagged total-assets for the investment characteristic.</p>
+<div class="code-r">
+<pre><code class="language-r">compustat_annual &lt;- download_data(
+  type = &quot;wrds_compustat_annual&quot;,
+  start_date = start_date,
+  end_date = end_date
+)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">compustat_annual = tf.download_data(
+    domain=&quot;wrds&quot;, dataset=&quot;compustat_annual&quot;,
+    start_date=start_date, end_date=end_date
+)
+</code></pre>
+</div>
+<div class="code-r">
+<pre><code class="language-r">compustat_annual &lt;- compustat_annual |&gt;
+  mutate(
+    be = coalesce(seq, ceq + pstk, at - lt) +
+      coalesce(txditc, txdb + itcb, 0) -
+      coalesce(pstkrv, pstkl, pstk, 0),
+    be = if_else(be &lt;= 0, NA, be),
+    op = (sale - coalesce(cogs, 0) - coalesce(xsga, 0) - coalesce(xint, 0)) / be
+  ) |&gt;
+  mutate(year = year(datadate)) |&gt;
+  group_by(gvkey, year) |&gt;
+  filter(datadate == max(datadate)) |&gt;
+  ungroup()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">compustat_annual = (compustat_annual
+    .assign(
+        be=lambda x: (
+            x[&quot;seq&quot;].combine_first(x[&quot;ceq&quot;] + x[&quot;pstk&quot;]).combine_first(x[&quot;at&quot;] - x[&quot;lt&quot;])
+            + x[&quot;txditc&quot;].combine_first(x[&quot;txdb&quot;] + x[&quot;itcb&quot;]).fillna(0)
+            - x[&quot;pstkrv&quot;].combine_first(x[&quot;pstkl&quot;]).combine_first(x[&quot;pstk&quot;]).fillna(0)))
+    .assign(be=lambda x: x[&quot;be&quot;].where(x[&quot;be&quot;] &gt; 0, np.nan))
+    .assign(op=lambda x: (
+        (x[&quot;sale&quot;] - x[&quot;cogs&quot;].fillna(0) - x[&quot;xsga&quot;].fillna(0) - x[&quot;xint&quot;].fillna(0)) / x[&quot;be&quot;]))
+    .assign(year=lambda x: x[&quot;datadate&quot;].dt.year)
+    .sort_values(&quot;datadate&quot;)
+    .groupby([&quot;gvkey&quot;, &quot;year&quot;]).tail(1))
+</code></pre>
+</div>
+<h2 id="merging-crsp-with-compustat">Merging CRSP with Compustat</h2>
+<p>The two databases use different identifiers, bridged by the CCM linking table (<code>permno</code> ↔ <code>gvkey</code>, valid within link dates). Joining it onto CRSP attaches each stock-month to its accounting <code>gvkey</code>, producing the firm-month panel the empirical chapters build on.</p>
+<div class="code-r">
+<pre><code class="language-r">ccm_links &lt;- download_data(type = &quot;wrds_ccm_links&quot;)
+
+crsp_monthly &lt;- crsp_monthly |&gt;
+  left_join(ccm_links, join_by(permno, date))
+
+write_parquet(crsp_monthly, &quot;data-r/crsp_monthly.parquet&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">ccm_links = tf.download_data(domain=&quot;wrds&quot;, dataset=&quot;ccm_links&quot;)
+
+crsp_monthly = crsp_monthly.merge(ccm_links, how=&quot;left&quot;, on=[&quot;permno&quot;, &quot;date&quot;])
+crsp_monthly.to_parquet(&quot;data-python/crsp_monthly.parquet&quot;)
+</code></pre>
+</div>
+<p>A useful sanity check is the share of securities that successfully match to a book-equity value over time, by exchange — coverage is far higher for NYSE/Compustat-followed firms, a selection effect worth keeping in mind.</p>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +364,11 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#crsp">CRSP</a></li>
-        <li><a href="#compustat">Compustat</a></li>
-        <li><a href="#merging-into-a-panel">Merging into a panel</a></li>
+        <li><a href="#accessing-wrds">Accessing WRDS</a></li>
+        <li><a href="#downloading-and-preparing-crsp">Downloading and preparing CRSP</a></li>
+        <li><a href="#excess-returns-and-the-industry-mapping">Excess returns and the industry mapping</a></li>
+        <li><a href="#preparing-compustat">Preparing Compustat</a></li>
+        <li><a href="#merging-crsp-with-compustat">Merging CRSP with Compustat</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +378,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
