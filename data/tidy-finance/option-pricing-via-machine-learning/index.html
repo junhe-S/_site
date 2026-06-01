@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Option Pricing via Machine Learning</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,161 @@
       
     </div>
 
-    <p>Machine learning can approximate an option-pricing function: given inputs like moneyness, maturity, and volatility, a flexible model learns to output a price. It is a clean setting because a known benchmark exists to judge the model against.</p>
-<h2 id="the-setup">The setup</h2>
-<p>Generate or collect a dataset of option characteristics paired with prices, then train a model to map inputs to price. Because the Black–Scholes formula (or a richer model) gives a ground-truth price, you can measure exactly how well the learned surrogate does.</p>
-<h2 id="models">Models</h2>
-<p>A regression with engineered features captures the broad shape; a <strong>neural network</strong> can learn the nonlinearities of the pricing surface more flexibly, at the cost of more tuning and less transparency. Comparing them illustrates the usual trade-off between flexibility and interpretability.</p>
-<h2 id="why-surrogates-are-useful">Why surrogates are useful</h2>
-<p>A trained surrogate evaluates far faster than re-solving a pricing model, which matters when prices are needed millions of times — for risk calculations or calibration. The chapter's value is as much pedagogical as practical: it shows how to train, tune, and honestly evaluate an ML model against a known answer.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>Machine learning can approximate an option-pricing function: given inputs like moneyness, maturity, and volatility, a model learns to output a price. It is a clean teaching setting because the Black–Scholes formula provides a known ground truth to judge the learned surrogate against. This chapter generates a Black–Scholes dataset and fits neural networks and a random forest to it. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+library(keras3)
+library(hardhat)
+library(tidymodels)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+from sklearn.neural_network import MLPRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+</code></pre>
+</div>
+<h2 id="the-black-scholes-benchmark">The Black–Scholes benchmark</h2>
+<p>The ground truth is the closed-form Black–Scholes price. We define it as a function so we can label any combination of inputs with its true price.</p>
+<div class="code-r">
+<pre><code class="language-r">black_scholes_price &lt;- function(S, K, r, vola, T) {
+  d1 &lt;- (log(S / K) + (r + vola^2 / 2) * T) / (vola * sqrt(T))
+  d2 &lt;- d1 - vola * sqrt(T)
+  S * pnorm(d1) - K * exp(-r * T) * pnorm(d2)
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">from scipy.stats import norm
+
+def black_scholes_price(S, K, r, vola, T):
+    d1 = (np.log(S / K) + (r + vola**2 / 2) * T) / (vola * np.sqrt(T))
+    d2 = d1 - vola * np.sqrt(T)
+    return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+</code></pre>
+</div>
+<h2 id="generating-the-training-data">Generating the training data</h2>
+<p>We build a grid over the five inputs (spot, strike, rate, volatility, maturity), price each point with Black–Scholes, then add a little noise to mimic "observed" market prices the model must learn from.</p>
+<div class="code-r">
+<pre><code class="language-r">set.seed(2023)
+
+option_prices &lt;- expand_grid(
+  S = seq(40, 60, 5),
+  K = seq(20, 90, 5),
+  r = seq(0, 0.05, 0.01),
+  vola = seq(0.01, 0.3, 0.01),
+  T = seq(3 / 12, 2, 1 / 12)
+) |&gt;
+  mutate(
+    black_scholes = map_dbl(
+      seq_len(n()),
+      \(i) black_scholes_price(S[i], K[i], r[i], vola[i], T[i])
+    ),
+    observed_price = map_dbl(black_scholes, \(x) x + rnorm(1, sd = 0.15))
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">rng = np.random.default_rng(2023)
+
+grid = np.array(np.meshgrid(
+    np.arange(40, 61, 5), np.arange(20, 91, 5),
+    np.arange(0, 0.051, 0.01), np.arange(0.01, 0.31, 0.01),
+    np.arange(3/12, 2.01, 1/12)
+)).T.reshape(-1, 5)
+
+option_prices = pd.DataFrame(grid, columns=[&quot;S&quot;, &quot;K&quot;, &quot;r&quot;, &quot;vola&quot;, &quot;T&quot;])
+option_prices[&quot;black_scholes&quot;] = black_scholes_price(
+    option_prices[&quot;S&quot;], option_prices[&quot;K&quot;], option_prices[&quot;r&quot;],
+    option_prices[&quot;vola&quot;], option_prices[&quot;T&quot;])
+option_prices[&quot;observed_price&quot;] = (
+    option_prices[&quot;black_scholes&quot;] + rng.normal(0, 0.15, len(option_prices)))
+</code></pre>
+</div>
+<h2 id="train-test-split-and-preprocessing">Train/test split and preprocessing</h2>
+<p>We hold out a test set, and standardize the inputs so the neural network trains well. The recipe/pipeline keeps the preprocessing tied to the model.</p>
+<div class="code-r">
+<pre><code class="language-r">split &lt;- initial_split(option_prices, prop = 0.8)
+
+rec &lt;- recipe(observed_price ~ S + K + r + vola + T, data = training(split)) |&gt;
+  step_normalize(all_predictors())
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">X = option_prices[[&quot;S&quot;, &quot;K&quot;, &quot;r&quot;, &quot;vola&quot;, &quot;T&quot;]]
+y = option_prices[&quot;observed_price&quot;]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2023)
+</code></pre>
+</div>
+<h2 id="models-neural-networks-and-a-random-forest">Models: neural networks and a random forest</h2>
+<p>A single-hidden-layer network captures the broad pricing surface; a deeper network learns its nonlinearities more flexibly; a random forest is a non-parametric alternative. Comparing them illustrates the flexibility-vs-interpretability trade-off — and, since the truth is known, exactly how close each gets.</p>
+<div class="code-r">
+<pre><code class="language-r">nnet_model &lt;- mlp(epochs = 250, hidden_units = 10) |&gt;
+  set_mode(&quot;regression&quot;) |&gt;
+  set_engine(&quot;keras&quot;, verbose = 0)
+
+deeplearning_model &lt;- mlp(epochs = 250, hidden_units = c(10, 10, 10)) |&gt;
+  set_mode(&quot;regression&quot;) |&gt;
+  set_engine(&quot;keras&quot;, verbose = 0)
+
+rf_model &lt;- rand_forest(trees = 50, min_n = 2000) |&gt;
+  set_mode(&quot;regression&quot;) |&gt;
+  set_engine(&quot;ranger&quot;)
+
+nnet_fit &lt;- workflow() |&gt;
+  add_recipe(rec) |&gt;
+  add_model(nnet_model) |&gt;
+  fit(training(split))
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">nnet_model = Pipeline([
+    (&quot;scale&quot;, StandardScaler()),
+    (&quot;mlp&quot;, MLPRegressor(hidden_layer_sizes=(10,), max_iter=250, random_state=2023))
+])
+
+deeplearning_model = Pipeline([
+    (&quot;scale&quot;, StandardScaler()),
+    (&quot;mlp&quot;, MLPRegressor(hidden_layer_sizes=(10, 10, 10), max_iter=250, random_state=2023))
+])
+
+rf_model = RandomForestRegressor(n_estimators=50, min_samples_leaf=2000, random_state=2023)
+
+nnet_model.fit(X_train, y_train)
+deeplearning_model.fit(X_train, y_train)
+rf_model.fit(X_train, y_train)
+</code></pre>
+</div>
+<h2 id="evaluation-against-the-benchmark">Evaluation against the benchmark</h2>
+<p>Predicting on the held-out set and comparing to the true Black–Scholes prices measures how well each surrogate learned the function. The practical payoff: a trained surrogate evaluates far faster than re-solving the pricing model, which matters when prices are needed millions of times for risk or calibration.</p>
+<div class="code-r">
+<pre><code class="language-r">predictions &lt;- bind_cols(
+  testing(split),
+  nnet = predict(nnet_fit, testing(split))$.pred
+) |&gt;
+  mutate(error = nnet - black_scholes)
+
+predictions |&gt;
+  summarize(rmse = sqrt(mean(error^2)))
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">predictions = X_test.copy()
+predictions[&quot;black_scholes&quot;] = black_scholes_price(
+    X_test[&quot;S&quot;], X_test[&quot;K&quot;], X_test[&quot;r&quot;], X_test[&quot;vola&quot;], X_test[&quot;T&quot;])
+predictions[&quot;nnet&quot;] = nnet_model.predict(X_test)
+predictions[&quot;error&quot;] = predictions[&quot;nnet&quot;] - predictions[&quot;black_scholes&quot;]
+
+np.sqrt((predictions[&quot;error&quot;]**2).mean())
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +327,11 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-setup">The setup</a></li>
-        <li><a href="#models">Models</a></li>
-        <li><a href="#why-surrogates-are-useful">Why surrogates are useful</a></li>
+        <li><a href="#the-black-scholes-benchmark">The Black–Scholes benchmark</a></li>
+        <li><a href="#generating-the-training-data">Generating the training data</a></li>
+        <li><a href="#train-test-split-and-preprocessing">Train/test split and preprocessing</a></li>
+        <li><a href="#models-neural-networks-and-a-random-forest">Models: neural networks and a random forest</a></li>
+        <li><a href="#evaluation-against-the-benchmark">Evaluation against the benchmark</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +341,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
