@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Univariate Portfolio Sorts</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,188 @@
       
     </div>
 
-    <p>The portfolio sort is the workhorse of empirical asset pricing: a simple, transparent way to ask whether a characteristic predicts returns, without imposing a functional form.</p>
-<h2 id="the-procedure">The procedure</h2>
-<p>Each period, rank stocks on a characteristic (say, size or book-to-market) and group them into portfolios — typically deciles — by breakpoints. Compute each portfolio's return for the next period, then average over time. Done monthly and chained together, this yields a return series for each portfolio.</p>
-<h2 id="weighting">Weighting</h2>
-<p>How you weight stocks within a portfolio matters. <strong>Equal weighting</strong> gives every stock the same influence and tilts toward small firms; <strong>value weighting</strong> weights by market cap and better reflects an investable portfolio. Reporting both is good practice, since conclusions can differ.</p>
-<h2 id="the-long-short-spread">The long–short spread</h2>
-<p>The headline result is the spread portfolio: long the top group, short the bottom. Its average return tests whether the characteristic is compensated, and regressing the spread on the market gives its <strong>CAPM alpha</strong> — the part of the return the market factor cannot explain. A significant alpha is the signature of an anomaly.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>The portfolio sort is the workhorse of empirical asset pricing: rank stocks on a characteristic, group them, and test whether the groups earn different returns. This chapter sorts on market beta, builds a long–short spread, and evaluates its CAPM alpha — then generalizes the procedure to any number of portfolios. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+import statsmodels.formula.api as smf
+</code></pre>
+</div>
+<h2 id="data-preparation">Data preparation</h2>
+<p>We pull the monthly returns panel, the market factor, and the betas estimated in the previous chapter from the local database.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt;
+  select(permno, date, ret_excess, mktcap_lag) |&gt;
+  collect()
+
+factors_ff3_monthly &lt;- tbl(tidy_finance, &quot;factors_ff3_monthly&quot;) |&gt;
+  select(date, mkt_excess) |&gt;
+  collect()
+
+beta &lt;- tbl(tidy_finance, &quot;beta&quot;) |&gt;
+  select(permno, date, beta_monthly) |&gt;
+  collect()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+
+crsp_monthly = pd.read_sql_query(
+  sql=&quot;SELECT permno, date, ret_excess, mktcap_lag FROM crsp_monthly&quot;,
+  con=tidy_finance, parse_dates={&quot;date&quot;}
+)
+
+factors_ff3_monthly = pd.read_sql_query(
+  sql=&quot;SELECT date, mkt_excess FROM factors_ff3_monthly&quot;,
+  con=tidy_finance, parse_dates={&quot;date&quot;}
+)
+
+beta = pd.read_sql_query(
+  sql=&quot;SELECT permno, date, beta_monthly FROM beta&quot;,
+  con=tidy_finance, parse_dates={&quot;date&quot;}
+)
+</code></pre>
+</div>
+<h2 id="sorting-by-market-beta">Sorting by market beta</h2>
+<p>The crucial timing step: we <strong>lag</strong> beta by one month so the sort uses only information available before the return period — no look-ahead. Then each month we split stocks at the median beta into "low" and "high" portfolios and compute each portfolio's <strong>value-weighted</strong> return (weighting by lagged market cap).</p>
+<div class="code-r">
+<pre><code class="language-r">beta_lag &lt;- beta |&gt;
+  mutate(date = date %m+% months(1)) |&gt;
+  select(permno, date, beta_lag = beta_monthly) |&gt;
+  drop_na()
+
+data_for_sorts &lt;- crsp_monthly |&gt;
+  inner_join(beta_lag, join_by(permno, date))
+
+beta_portfolios &lt;- data_for_sorts |&gt;
+  group_by(date) |&gt;
+  mutate(
+    breakpoint = median(beta_lag),
+    portfolio = case_when(
+      beta_lag &lt;= breakpoint ~ &quot;low&quot;,
+      beta_lag &gt; breakpoint ~ &quot;high&quot;
+    )
+  ) |&gt;
+  group_by(portfolio, date) |&gt;
+  summarize(ret = weighted.mean(ret_excess, mktcap_lag), .groups = &quot;drop&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">beta_lag = (beta
+  .assign(date=lambda x: x[&quot;date&quot;] + pd.DateOffset(months=1))
+  .get([&quot;permno&quot;, &quot;date&quot;, &quot;beta_monthly&quot;])
+  .rename(columns={&quot;beta_monthly&quot;: &quot;beta_lag&quot;})
+  .dropna()
+)
+
+data_for_sorts = crsp_monthly.merge(beta_lag, how=&quot;inner&quot;, on=[&quot;permno&quot;, &quot;date&quot;])
+
+beta_portfolios = (data_for_sorts
+  .groupby(&quot;date&quot;)
+  .apply(lambda x: x.assign(
+      portfolio=pd.cut(
+        x[&quot;beta_lag&quot;],
+        bins=[-np.inf, x[&quot;beta_lag&quot;].median(), np.inf],
+        labels=[&quot;low&quot;, &quot;high&quot;])))
+  .reset_index(drop=True)
+  .groupby([&quot;portfolio&quot;, &quot;date&quot;])
+  .apply(lambda x: np.average(x[&quot;ret_excess&quot;], weights=x[&quot;mktcap_lag&quot;]))
+  .reset_index(name=&quot;ret&quot;)
+)
+</code></pre>
+</div>
+<h2 id="performance-evaluation">Performance evaluation</h2>
+<p>The long–short spread goes long the high-beta portfolio and short the low-beta one. Regressing the spread on a constant tests whether its average return is significantly different from zero.</p>
+<div class="code-r">
+<pre><code class="language-r">beta_longshort &lt;- beta_portfolios |&gt;
+  pivot_wider(names_from = portfolio, values_from = ret) |&gt;
+  mutate(long_short = high - low)
+
+model_fit &lt;- lm(long_short ~ 1, data = beta_longshort)
+summary(model_fit)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">beta_longshort = (beta_portfolios
+  .pivot_table(index=&quot;date&quot;, columns=&quot;portfolio&quot;, values=&quot;ret&quot;)
+  .reset_index()
+  .assign(long_short=lambda x: x[&quot;high&quot;] - x[&quot;low&quot;])
+)
+
+model_fit = smf.ols(&quot;long_short ~ 1&quot;, data=beta_longshort).fit()
+model_fit.summary()
+</code></pre>
+</div>
+<h2 id="a-reusable-sorting-function">A reusable sorting function</h2>
+<p>Two portfolios is the simplest case. To generalize to deciles (or any number), we compute breakpoints from the sorting variable's quantiles and assign each stock to the interval it falls in. This <code>assign_portfolio</code> helper reappears throughout the asset-pricing chapters.</p>
+<div class="code-r">
+<pre><code class="language-r">assign_portfolio &lt;- function(data, sorting_variable, n_portfolios) {
+  breakpoints &lt;- data |&gt;
+    pull({{ sorting_variable }}) |&gt;
+    quantile(
+      probs = seq(0, 1, length.out = n_portfolios + 1),
+      na.rm = TRUE, names = FALSE
+    )
+  data |&gt;
+    mutate(portfolio = findInterval(
+      pick(everything()) |&gt; pull({{ sorting_variable }}),
+      breakpoints, all.inside = TRUE
+    )) |&gt;
+    pull(portfolio)
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def assign_portfolio(data, sorting_variable, n_portfolios):
+    breakpoints = np.quantile(
+        data[sorting_variable].dropna(),
+        np.linspace(0, 1, n_portfolios + 1),
+        method=&quot;linear&quot;
+    )
+    assigned = pd.cut(
+        data[sorting_variable], bins=breakpoints,
+        labels=range(1, n_portfolios + 1), include_lowest=True
+    )
+    return assigned
+</code></pre>
+</div>
+<h2 id="capm-alphas-across-portfolios">CAPM alphas across portfolios</h2>
+<p>Regressing each portfolio's return on the market factor decomposes it into a beta (market exposure) and an alpha (the part the market cannot explain). A monotone pattern in alphas across the sorted portfolios is the signature of a priced characteristic.</p>
+<div class="code-r">
+<pre><code class="language-r">beta_portfolios_summary &lt;- beta_portfolios |&gt;
+  group_by(portfolio) |&gt;
+  summarize(
+    alpha = as.numeric(lm(ret ~ 1 + mkt_excess)$coefficients[1]),
+    beta = as.numeric(lm(ret ~ 1 + mkt_excess)$coefficients[2]),
+    ret = mean(ret)
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def estimate_portfolio_capm(data):
+    fit = smf.ols(&quot;ret ~ 1 + mkt_excess&quot;, data=data).fit()
+    return pd.Series({
+        &quot;alpha&quot;: fit.params[&quot;Intercept&quot;],
+        &quot;beta&quot;: fit.params[&quot;mkt_excess&quot;],
+        &quot;ret&quot;: data[&quot;ret&quot;].mean()
+    })
+
+beta_portfolios_summary = (beta_portfolios
+  .merge(factors_ff3_monthly, how=&quot;left&quot;, on=&quot;date&quot;)
+  .groupby(&quot;portfolio&quot;)
+  .apply(estimate_portfolio_capm)
+  .reset_index()
+)
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +354,11 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-procedure">The procedure</a></li>
-        <li><a href="#weighting">Weighting</a></li>
-        <li><a href="#the-long-short-spread">The long–short spread</a></li>
+        <li><a href="#data-preparation">Data preparation</a></li>
+        <li><a href="#sorting-by-market-beta">Sorting by market beta</a></li>
+        <li><a href="#performance-evaluation">Performance evaluation</a></li>
+        <li><a href="#a-reusable-sorting-function">A reusable sorting function</a></li>
+        <li><a href="#capm-alphas-across-portfolios">CAPM alphas across portfolios</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +368,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
