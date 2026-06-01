@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Value and Bivariate Sorts</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,158 @@
       
     </div>
 
-    <p>Extending the sort to two characteristics at once lets you study one effect while holding another fixed — essential when characteristics are correlated, as size and value are.</p>
-<h2 id="the-value-premium">The value premium</h2>
-<p>Value stocks — high book-to-market — have historically earned more than growth stocks. A single sort on book-to-market documents this, but because value firms also tend to be smaller, a univariate result could be picking up size instead.</p>
-<h2 id="independent-vs-conditional-sorts">Independent vs. conditional sorts</h2>
-<p>Two designs disentangle them. An <strong>independent</strong> double sort ranks on size and on value separately and intersects the groups, producing portfolios at every size–value combination. A <strong>conditional</strong> (sequential) sort ranks on the first characteristic, then ranks on the second within each first-stage group. Independent sorts keep the two dimensions symmetric; conditional sorts guarantee balanced cells along the controlling dimension.</p>
-<h2 id="reading-the-grid">Reading the grid</h2>
-<p>The resulting grid of portfolios shows whether the value premium survives within size groups — that is, whether value is compensated beyond what size already explains. Averaging the value spread across size bins gives a size-controlled estimate of the value effect, the logic that leads directly into factor construction.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>This chapter sorts on two characteristics at once — size and book-to-market — to study the value premium while controlling for size. It builds the book-to-market ratio with careful accounting lags, then forms portfolios with both independent and dependent (sequential) double sorts. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+</code></pre>
+</div>
+<h2 id="data-preparation">Data preparation</h2>
+<p>We need both market data (CRSP) and accounting fundamentals (Compustat), plus the market factor.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt; collect()
+compustat &lt;- tbl(tidy_finance, &quot;compustat&quot;) |&gt; collect()
+factors_ff3_monthly &lt;- tbl(tidy_finance, &quot;factors_ff3_monthly&quot;) |&gt; collect()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+
+crsp_monthly = pd.read_sql_query(
+  &quot;SELECT * FROM crsp_monthly&quot;, tidy_finance, parse_dates={&quot;date&quot;})
+compustat = pd.read_sql_query(
+  &quot;SELECT * FROM compustat&quot;, tidy_finance, parse_dates={&quot;datadate&quot;})
+factors_ff3_monthly = pd.read_sql_query(
+  &quot;SELECT * FROM factors_ff3_monthly&quot;, tidy_finance, parse_dates={&quot;date&quot;})
+</code></pre>
+</div>
+<h2 id="the-book-to-market-ratio">The book-to-market ratio</h2>
+<p>Book equity comes from Compustat; market equity from CRSP. The timing is the delicate part: book equity is matched to market data with a six-month lag (<code>sorting_date</code>), so portfolios formed in mid-year use accounting data that was already public. This avoids look-ahead bias and follows the Fama–French convention.</p>
+<div class="code-r">
+<pre><code class="language-r">be &lt;- compustat |&gt;
+  select(gvkey, datadate, be) |&gt;
+  drop_na() |&gt;
+  mutate(date = floor_date(ymd(datadate), &quot;month&quot;))
+
+me &lt;- crsp_monthly |&gt;
+  mutate(sorting_date = date %m+% months(1)) |&gt;
+  select(permno, gvkey, sorting_date, me = mktcap)
+
+bm &lt;- be |&gt;
+  inner_join(crsp_monthly, join_by(gvkey, date)) |&gt;
+  mutate(bm = be / mktcap,
+         sorting_date = date %m+% months(6),
+         comp_date = date) |&gt;
+  select(permno, gvkey, sorting_date, comp_date, bm)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">be = (compustat
+  .get([&quot;gvkey&quot;, &quot;datadate&quot;, &quot;be&quot;])
+  .dropna()
+  .assign(date=lambda x: pd.to_datetime(x[&quot;datadate&quot;]).dt.to_period(&quot;M&quot;).dt.to_timestamp())
+)
+
+me = (crsp_monthly
+  .assign(sorting_date=lambda x: x[&quot;date&quot;] + pd.DateOffset(months=1))
+  .rename(columns={&quot;mktcap&quot;: &quot;me&quot;})
+  .get([&quot;permno&quot;, &quot;gvkey&quot;, &quot;sorting_date&quot;, &quot;me&quot;])
+)
+
+bm = (be
+  .merge(crsp_monthly, how=&quot;inner&quot;, on=[&quot;gvkey&quot;, &quot;date&quot;])
+  .assign(
+    bm=lambda x: x[&quot;be&quot;] / x[&quot;mktcap&quot;],
+    sorting_date=lambda x: x[&quot;date&quot;] + pd.DateOffset(months=6),
+    comp_date=lambda x: x[&quot;date&quot;])
+  .get([&quot;permno&quot;, &quot;gvkey&quot;, &quot;sorting_date&quot;, &quot;comp_date&quot;, &quot;bm&quot;])
+)
+</code></pre>
+</div>
+<h2 id="independent-sorts">Independent sorts</h2>
+<p>An independent double sort ranks stocks on size and on book-to-market separately, then intersects the groups, giving a portfolio at every size–value combination. The value premium is the average return spread between high and low book-to-market, averaged across size groups.</p>
+<div class="code-r">
+<pre><code class="language-r">data_for_sorts &lt;- crsp_monthly |&gt;
+  left_join(bm, join_by(permno, gvkey, date == sorting_date)) |&gt;
+  left_join(me, join_by(permno, gvkey, date == sorting_date))
+
+value_portfolios &lt;- data_for_sorts |&gt;
+  group_by(date) |&gt;
+  mutate(
+    portfolio_bm = assign_portfolio(pick(everything()), bm, n_portfolios = 5),
+    portfolio_me = assign_portfolio(pick(everything()), me, n_portfolios = 5)
+  ) |&gt;
+  group_by(date, portfolio_bm, portfolio_me) |&gt;
+  summarize(ret = weighted.mean(ret_excess, mktcap_lag), .groups = &quot;drop&quot;)
+
+value_premium &lt;- value_portfolios |&gt;
+  group_by(date, portfolio_bm) |&gt;
+  summarize(ret = mean(ret), .groups = &quot;drop&quot;) |&gt;
+  group_by(date) |&gt;
+  summarize(value_premium =
+    ret[portfolio_bm == max(portfolio_bm)] -
+    ret[portfolio_bm == min(portfolio_bm)])
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">data_for_sorts = (crsp_monthly
+  .merge(bm, how=&quot;left&quot;,
+         left_on=[&quot;permno&quot;, &quot;gvkey&quot;, &quot;date&quot;],
+         right_on=[&quot;permno&quot;, &quot;gvkey&quot;, &quot;sorting_date&quot;])
+  .merge(me, how=&quot;left&quot;,
+         left_on=[&quot;permno&quot;, &quot;gvkey&quot;, &quot;date&quot;],
+         right_on=[&quot;permno&quot;, &quot;gvkey&quot;, &quot;sorting_date&quot;])
+)
+
+value_portfolios = (data_for_sorts
+  .groupby(&quot;date&quot;)
+  .apply(lambda x: x.assign(
+      portfolio_bm=assign_portfolio(x, &quot;bm&quot;, 5),
+      portfolio_me=assign_portfolio(x, &quot;me&quot;, 5)))
+  .reset_index(drop=True)
+  .groupby([&quot;date&quot;, &quot;portfolio_bm&quot;, &quot;portfolio_me&quot;])
+  .apply(lambda x: np.average(x[&quot;ret_excess&quot;], weights=x[&quot;mktcap_lag&quot;]))
+  .reset_index(name=&quot;ret&quot;)
+)
+</code></pre>
+</div>
+<h2 id="dependent-sorts">Dependent sorts</h2>
+<p>A dependent (sequential) sort ranks first on size, then ranks on book-to-market <em>within</em> each size group. This guarantees a balanced number of stocks along the controlling dimension, which matters when the two characteristics are correlated.</p>
+<div class="code-r">
+<pre><code class="language-r">value_portfolios &lt;- data_for_sorts |&gt;
+  group_by(date) |&gt;
+  mutate(portfolio_me = assign_portfolio(pick(everything()), me, n_portfolios = 5)) |&gt;
+  group_by(date, portfolio_me) |&gt;
+  mutate(portfolio_bm = assign_portfolio(pick(everything()), bm, n_portfolios = 5)) |&gt;
+  group_by(date, portfolio_bm, portfolio_me) |&gt;
+  summarize(ret = weighted.mean(ret_excess, mktcap_lag), .groups = &quot;drop&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">value_portfolios = (data_for_sorts
+  .groupby(&quot;date&quot;)
+  .apply(lambda x: x.assign(
+      portfolio_me=assign_portfolio(x, &quot;me&quot;, 5)))
+  .reset_index(drop=True)
+  .groupby([&quot;date&quot;, &quot;portfolio_me&quot;])
+  .apply(lambda x: x.assign(
+      portfolio_bm=assign_portfolio(x, &quot;bm&quot;, 5)))
+  .reset_index(drop=True)
+  .groupby([&quot;date&quot;, &quot;portfolio_bm&quot;, &quot;portfolio_me&quot;])
+  .apply(lambda x: np.average(x[&quot;ret_excess&quot;], weights=x[&quot;mktcap_lag&quot;]))
+  .reset_index(name=&quot;ret&quot;)
+)
+</code></pre>
+</div>
+<p>The two designs usually give similar value premia; the comparison is itself the lesson, since the choice between them is one more researcher degree of freedom. The size–value grid built here is exactly the structure the next chapter uses to construct the Fama–French SMB and HML factors.</p>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +324,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-value-premium">The value premium</a></li>
-        <li><a href="#independent-vs-conditional-sorts">Independent vs. conditional sorts</a></li>
-        <li><a href="#reading-the-grid">Reading the grid</a></li>
+        <li><a href="#data-preparation">Data preparation</a></li>
+        <li><a href="#the-book-to-market-ratio">The book-to-market ratio</a></li>
+        <li><a href="#independent-sorts">Independent sorts</a></li>
+        <li><a href="#dependent-sorts">Dependent sorts</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +337,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
