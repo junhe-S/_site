@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Size Sorts and p-Hacking</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,193 @@
       
     </div>
 
-    <p>Sorting on firm size recovers the classic size effect — but the chapter's deeper lesson is methodological: how many defensible choices stand between raw data and a published result.</p>
-<h2 id="the-size-effect">The size effect</h2>
-<p>Sorting stocks by market capitalization and forming a small-minus-big spread historically produced a positive average return. It is one of the oldest documented anomalies, and a natural first sort because size is cleanly measured.</p>
-<h2 id="researcher-degrees-of-freedom">Researcher degrees of freedom</h2>
-<p>The same hypothesis can be tested many ways: which exchange's breakpoints to use, whether to weight equally or by value, how to filter penny stocks or financials, which sample period to study. Each choice is defensible, yet together they form a garden of forking paths. Trying combinations until one is significant is <strong>p-hacking</strong>, even when no single step feels dishonest.</p>
-<h2 id="guarding-against-it">Guarding against it</h2>
-<p>The defenses are transparency and robustness: report results across reasonable specifications rather than the most flattering one, decide the design before seeing the outcome, and treat a finding that survives only one particular combination of choices with suspicion. A real effect should be visible under many sensible setups.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>This chapter sorts on firm size and uses the exercise to show how many defensible choices stand between raw data and a published number. By wrapping portfolio construction in a function with switches for breakpoints, exchange filters, and weighting, we can see how the "size premium" moves across specifications — a hands-on lesson in p-hacking and researcher degrees of freedom. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+</code></pre>
+</div>
+<h2 id="data-preparation">Data preparation</h2>
+<p>We load the full monthly CRSP panel and the market factor.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt;
+  collect()
+
+factors_ff3_monthly &lt;- tbl(tidy_finance, &quot;factors_ff3_monthly&quot;) |&gt;
+  select(date, mkt_excess) |&gt;
+  collect()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+
+crsp_monthly = pd.read_sql_query(
+  sql=&quot;SELECT * FROM crsp_monthly&quot;, con=tidy_finance, parse_dates={&quot;date&quot;}
+)
+
+factors_ff3_monthly = pd.read_sql_query(
+  sql=&quot;SELECT date, mkt_excess FROM factors_ff3_monthly&quot;,
+  con=tidy_finance, parse_dates={&quot;date&quot;}
+)
+</code></pre>
+</div>
+<h2 id="the-size-distribution">The size distribution</h2>
+<p>Market cap is extremely skewed — a handful of giant firms dominate. Looking at the top quantiles of market cap each month makes the concentration concrete and motivates why the weighting scheme matters so much.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly |&gt;
+  group_by(date) |&gt;
+  summarize(
+    top01 = quantile(mktcap, 0.99),
+    top05 = quantile(mktcap, 0.95),
+    top10 = quantile(mktcap, 0.90),
+    top25 = quantile(mktcap, 0.75)
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">(crsp_monthly
+  .groupby(&quot;date&quot;)
+  .apply(lambda x: x[&quot;mktcap&quot;].quantile([0.99, 0.95, 0.90, 0.75]))
+)
+</code></pre>
+</div>
+<h2 id="flexible-breakpoints">Flexible breakpoints</h2>
+<p>We generalize the sorting helper to accept arbitrary percentile breakpoints, then form size portfolios on lagged market cap. Using all-stock vs. NYSE-only breakpoints is one of the choices that quietly changes the result, because the size distribution is so skewed.</p>
+<div class="code-r">
+<pre><code class="language-r">assign_portfolio &lt;- function(data, sorting_variable, percentiles) {
+  breakpoints &lt;- data |&gt;
+    pull({{ sorting_variable }}) |&gt;
+    quantile(probs = percentiles, na.rm = TRUE, names = FALSE)
+  data |&gt;
+    mutate(portfolio = findInterval(
+      pick(everything()) |&gt; pull({{ sorting_variable }}),
+      breakpoints, all.inside = TRUE
+    )) |&gt;
+    pull(portfolio)
+}
+
+returns_size &lt;- crsp_monthly |&gt;
+  group_by(date) |&gt;
+  mutate(portfolio = assign_portfolio(
+    data = pick(everything()),
+    sorting_variable = mktcap_lag,
+    percentiles = seq(0, 1, 0.2)
+  )) |&gt;
+  group_by(portfolio, date) |&gt;
+  summarize(ret = weighted.mean(ret_excess, mktcap_lag), .groups = &quot;drop&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def assign_portfolio(data, sorting_variable, percentiles):
+    breakpoints = np.quantile(
+        data[sorting_variable].dropna(), percentiles, method=&quot;linear&quot;
+    )
+    return pd.cut(
+        data[sorting_variable], bins=breakpoints,
+        labels=range(1, len(breakpoints)), include_lowest=True
+    )
+
+returns_size = (crsp_monthly
+  .groupby(&quot;date&quot;)
+  .apply(lambda x: x.assign(
+      portfolio=assign_portfolio(x, &quot;mktcap_lag&quot;, np.arange(0, 1.2, 0.2))))
+  .reset_index(drop=True)
+  .groupby([&quot;portfolio&quot;, &quot;date&quot;])
+  .apply(lambda x: np.average(x[&quot;ret_excess&quot;], weights=x[&quot;mktcap_lag&quot;]))
+  .reset_index(name=&quot;ret&quot;)
+)
+</code></pre>
+</div>
+<h2 id="one-function-many-specifications">One function, many specifications</h2>
+<p>The heart of the chapter: a function that computes the size premium given the number of portfolios, which exchanges to use for breakpoints, and whether to weight equally or by value. Each argument is a defensible modelling choice — and sweeping over them shows how much the headline premium depends on decisions that rarely make it into a paper's main text.</p>
+<div class="code-r">
+<pre><code class="language-r">compute_portfolio_returns &lt;- function(n_portfolios = 10,
+                                      exchanges = c(&quot;NYSE&quot;, &quot;NASDAQ&quot;, &quot;AMEX&quot;),
+                                      value_weighted = TRUE,
+                                      data = crsp_monthly) {
+  data |&gt;
+    group_by(date) |&gt;
+    mutate(portfolio = assign_portfolio(
+      data = pick(everything()),
+      sorting_variable = mktcap_lag,
+      percentiles = seq(0, 1, length.out = n_portfolios + 1)
+    )) |&gt;
+    ungroup() |&gt;
+    group_by(portfolio, date) |&gt;
+    summarize(
+      ret = if_else(value_weighted,
+        weighted.mean(ret_excess, mktcap_lag), mean(ret_excess)),
+      .groups = &quot;drop&quot;
+    ) |&gt;
+    group_by(portfolio) |&gt;
+    summarize(ret = mean(ret)) |&gt;
+    summarize(size_premium = ret[portfolio == min(portfolio)] -
+      ret[portfolio == max(portfolio)])
+}
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">def compute_portfolio_returns(n_portfolios=10,
+                              exchanges=[&quot;NYSE&quot;, &quot;NASDAQ&quot;, &quot;AMEX&quot;],
+                              value_weighted=True,
+                              data=crsp_monthly):
+    returns = (data
+      .groupby(&quot;date&quot;)
+      .apply(lambda x: x.assign(
+          portfolio=assign_portfolio(
+            x, &quot;mktcap_lag&quot;, np.linspace(0, 1, n_portfolios+1))))
+      .reset_index(drop=True)
+      .groupby([&quot;portfolio&quot;, &quot;date&quot;])
+      .apply(lambda x:
+        np.average(x[&quot;ret_excess&quot;], weights=x[&quot;mktcap_lag&quot;])
+        if value_weighted else x[&quot;ret_excess&quot;].mean())
+      .reset_index(name=&quot;ret&quot;)
+      .groupby(&quot;portfolio&quot;)[&quot;ret&quot;].mean()
+    )
+    return returns.iloc[0] - returns.iloc[-1]
+</code></pre>
+</div>
+<h2 id="sweeping-the-garden-of-forking-paths">Sweeping the garden of forking paths</h2>
+<p>Building a grid over all the switches and evaluating the premium for each combination produces a distribution of "results" from the same hypothesis. Seeing how widely the premium ranges — sometimes significant, sometimes not — is the chapter's punchline: a finding that survives only one particular combination of choices deserves suspicion. The defense is reporting across specifications, not cherry-picking.</p>
+<div class="code-r">
+<pre><code class="language-r">p_hacking_setup &lt;- expand_grid(
+  n_portfolios = c(2, 5, 10),
+  exchanges = list(c(&quot;NYSE&quot;), c(&quot;NYSE&quot;, &quot;NASDAQ&quot;, &quot;AMEX&quot;)),
+  value_weighted = c(TRUE, FALSE),
+  data = list(crsp_monthly)
+)
+
+p_hacking_results &lt;- p_hacking_setup |&gt;
+  mutate(size_premium = pmap_dbl(
+    list(n_portfolios, exchanges, value_weighted, data),
+    compute_portfolio_returns
+  ))
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">from itertools import product
+
+p_hacking_setup = list(product(
+    [2, 5, 10],
+    [[&quot;NYSE&quot;], [&quot;NYSE&quot;, &quot;NASDAQ&quot;, &quot;AMEX&quot;]],
+    [True, False],
+))
+
+p_hacking_results = pd.DataFrame([
+    {&quot;n_portfolios&quot;: n, &quot;exchanges&quot;: e, &quot;value_weighted&quot;: vw,
+     &quot;size_premium&quot;: compute_portfolio_returns(n, e, vw)}
+    for n, e, vw in p_hacking_setup
+])
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +359,11 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-size-effect">The size effect</a></li>
-        <li><a href="#researcher-degrees-of-freedom">Researcher degrees of freedom</a></li>
-        <li><a href="#guarding-against-it">Guarding against it</a></li>
+        <li><a href="#data-preparation">Data preparation</a></li>
+        <li><a href="#the-size-distribution">The size distribution</a></li>
+        <li><a href="#flexible-breakpoints">Flexible breakpoints</a></li>
+        <li><a href="#one-function-many-specifications">One function, many specifications</a></li>
+        <li><a href="#sweeping-the-garden-of-forking-paths">Sweeping the garden of forking paths</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +373,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
