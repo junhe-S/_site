@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Fama–MacBeth Regressions</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,160 @@
       
     </div>
 
-    <p>The Fama–MacBeth procedure estimates how characteristics are priced in the cross-section while handling the awkward correlation structure of panel returns.</p>
-<h2 id="two-steps">Two steps</h2>
-<p>First, for each time period, run a cross-sectional regression of returns on the characteristics (or betas) of all stocks. This produces a time series of slope coefficients — one estimate of each risk premium per period. Second, average those coefficients over time; the average is the estimated premium, and its variation over time delivers the standard error.</p>
-<h2 id="why-this-works">Why this works</h2>
-<p>Running it period by period sidesteps the cross-sectional correlation of contemporaneous returns: each period's regression is one observation, and inference comes from how the estimates vary across periods. The resulting standard errors are robust to cross-sectional dependence in a way a single pooled regression would not be.</p>
-<h2 id="refinements">Refinements</h2>
-<p>Common adjustments include using pre-estimated betas as regressors (a generated-regressor issue to be aware of), and applying Newey–West corrections to the time series of coefficients when they are autocorrelated. The output — a premium and a t-statistic per characteristic — is the standard way cross-sectional pricing results are reported.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>The Fama–MacBeth procedure estimates how characteristics are priced in the cross-section while handling the correlation structure of panel returns. Run a cross-sectional regression each period, then average the coefficients over time — the average is the risk premium and its time-series variation gives the standard error. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(tidyfinance)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import sqlite3
+import statsmodels.formula.api as smf
+</code></pre>
+</div>
+<h2 id="data-preparation">Data preparation</h2>
+<p>We assemble a panel of returns plus characteristics: beta (from the beta chapter), book-to-market, and log market cap. The characteristics are lagged six months and forward-filled so that the regression predicting next month's return uses only past information.</p>
+<div class="code-r">
+<pre><code class="language-r">crsp_monthly &lt;- tbl(tidy_finance, &quot;crsp_monthly&quot;) |&gt; collect()
+compustat &lt;- tbl(tidy_finance, &quot;compustat&quot;) |&gt; collect()
+beta &lt;- tbl(tidy_finance, &quot;beta&quot;) |&gt; collect()
+
+characteristics &lt;- compustat |&gt;
+  mutate(date = floor_date(ymd(datadate), &quot;month&quot;)) |&gt;
+  left_join(crsp_monthly, join_by(gvkey, date)) |&gt;
+  left_join(beta, join_by(permno, date)) |&gt;
+  mutate(
+    bm = be / mktcap,
+    sorting_date = date %m+% months(6),
+    log_mktcap = log(mktcap)
+  ) |&gt;
+  select(permno, sorting_date, beta = beta_monthly, bm, log_mktcap) |&gt;
+  drop_na()
+
+data_fama_macbeth &lt;- crsp_monthly |&gt;
+  left_join(characteristics, join_by(permno, date == sorting_date)) |&gt;
+  group_by(permno) |&gt;
+  arrange(date) |&gt;
+  fill(c(beta, bm, log_mktcap), .direction = &quot;down&quot;) |&gt;
+  ungroup() |&gt;
+  left_join(
+    crsp_monthly |&gt;
+      select(permno, date, ret_excess_lead = ret_excess) |&gt;
+      mutate(date = date %m-% months(1)),
+    join_by(permno, date)
+  ) |&gt;
+  select(permno, date, ret_excess_lead, beta, log_mktcap, bm) |&gt;
+  drop_na()
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">tidy_finance = sqlite3.connect(database=&quot;data/tidy_finance_python.sqlite&quot;)
+crsp_monthly = pd.read_sql_query(&quot;SELECT * FROM crsp_monthly&quot;, tidy_finance, parse_dates={&quot;date&quot;})
+compustat = pd.read_sql_query(&quot;SELECT * FROM compustat&quot;, tidy_finance, parse_dates={&quot;datadate&quot;})
+beta = pd.read_sql_query(&quot;SELECT * FROM beta&quot;, tidy_finance, parse_dates={&quot;date&quot;})
+
+characteristics = (compustat
+  .assign(date=lambda x: x[&quot;datadate&quot;].dt.to_period(&quot;M&quot;).dt.to_timestamp())
+  .merge(crsp_monthly, how=&quot;left&quot;, on=[&quot;gvkey&quot;, &quot;date&quot;])
+  .merge(beta, how=&quot;left&quot;, on=[&quot;permno&quot;, &quot;date&quot;])
+  .assign(
+    bm=lambda x: x[&quot;be&quot;] / x[&quot;mktcap&quot;],
+    sorting_date=lambda x: x[&quot;date&quot;] + pd.DateOffset(months=6),
+    log_mktcap=lambda x: np.log(x[&quot;mktcap&quot;]))
+  .get([&quot;permno&quot;, &quot;sorting_date&quot;, &quot;beta_monthly&quot;, &quot;bm&quot;, &quot;log_mktcap&quot;])
+  .rename(columns={&quot;beta_monthly&quot;: &quot;beta&quot;, &quot;sorting_date&quot;: &quot;date&quot;})
+  .dropna())
+
+data_fama_macbeth = (crsp_monthly
+  .merge(characteristics, how=&quot;left&quot;, on=[&quot;permno&quot;, &quot;date&quot;])
+  .sort_values([&quot;permno&quot;, &quot;date&quot;])
+  .groupby(&quot;permno&quot;)
+  .apply(lambda x: x.assign(
+    beta=x[&quot;beta&quot;].ffill(), bm=x[&quot;bm&quot;].ffill(), log_mktcap=x[&quot;log_mktcap&quot;].ffill()))
+  .reset_index(drop=True))
+
+data_fama_macbeth = (data_fama_macbeth
+  .merge(crsp_monthly.get([&quot;permno&quot;, &quot;date&quot;, &quot;ret_excess&quot;])
+    .rename(columns={&quot;ret_excess&quot;: &quot;ret_excess_lead&quot;})
+    .assign(date=lambda x: x[&quot;date&quot;] - pd.DateOffset(months=1)),
+    how=&quot;left&quot;, on=[&quot;permno&quot;, &quot;date&quot;])
+  .get([&quot;permno&quot;, &quot;date&quot;, &quot;ret_excess_lead&quot;, &quot;beta&quot;, &quot;log_mktcap&quot;, &quot;bm&quot;])
+  .dropna())
+</code></pre>
+</div>
+<h2 id="step-one-cross-sectional-regressions">Step one: cross-sectional regressions</h2>
+<p>For each month, regress next month's excess return on the characteristics across all stocks. This yields a time series of slope coefficients — one estimate of each characteristic's premium per period.</p>
+<div class="code-r">
+<pre><code class="language-r">risk_premiums &lt;- data_fama_macbeth |&gt;
+  nest(data = -date) |&gt;
+  mutate(estimates = map(
+    data,
+    ~ tidy(lm(ret_excess_lead ~ beta + log_mktcap + bm, data = .x))
+  )) |&gt;
+  unnest(estimates)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">risk_premiums = (data_fama_macbeth
+  .groupby(&quot;date&quot;)
+  .apply(lambda x: smf.ols(
+      formula=&quot;ret_excess_lead ~ beta + log_mktcap + bm&quot;, data=x
+    ).fit().params)
+  .reset_index()
+)
+</code></pre>
+</div>
+<h2 id="step-two-time-series-aggregation">Step two: time-series aggregation</h2>
+<p>The premium for each characteristic is the time-series average of its period-by-period coefficients; the t-statistic is that mean divided by its standard error, which comes from how the estimates vary across periods. Because the coefficients can be autocorrelated, a Newey–West correction is the standard refinement.</p>
+<div class="code-r">
+<pre><code class="language-r">price_of_risk &lt;- risk_premiums |&gt;
+  group_by(factor = term) |&gt;
+  summarize(
+    risk_premium = mean(estimate) * 100,
+    t_statistic = mean(estimate) / sd(estimate) * sqrt(n())
+  )
+
+regressions_for_newey_west &lt;- risk_premiums |&gt;
+  select(date, factor = term, estimate) |&gt;
+  nest(data = c(date, estimate)) |&gt;
+  mutate(
+    model = map(data, ~ lm(estimate ~ 1, .)),
+    mean = map(model, tidy)
+  )
+
+price_of_risk_newey_west &lt;- regressions_for_newey_west |&gt;
+  mutate(newey_west_se = map_dbl(model, ~ sqrt(NeweyWest(.)))) |&gt;
+  unnest(mean) |&gt;
+  mutate(t_statistic_newey_west = estimate / newey_west_se) |&gt;
+  select(factor, risk_premium = estimate, t_statistic_newey_west)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">price_of_risk = (risk_premiums
+  .melt(id_vars=&quot;date&quot;, var_name=&quot;factor&quot;, value_name=&quot;estimate&quot;)
+  .groupby(&quot;factor&quot;)
+  .apply(lambda x: pd.Series({
+    &quot;risk_premium&quot;: x[&quot;estimate&quot;].mean() * 100,
+    &quot;t_statistic&quot;: x[&quot;estimate&quot;].mean() / x[&quot;estimate&quot;].std() * np.sqrt(len(x))
+  }))
+  .reset_index())
+
+def newey_west_tstat(x):
+    fit = smf.ols(&quot;estimate ~ 1&quot;, data=x).fit(
+        cov_type=&quot;HAC&quot;, cov_kwds={&quot;maxlags&quot;: 6})
+    return fit.params[&quot;Intercept&quot;] / fit.bse[&quot;Intercept&quot;]
+
+price_of_risk_newey_west = (risk_premiums
+  .melt(id_vars=&quot;date&quot;, var_name=&quot;factor&quot;, value_name=&quot;estimate&quot;)
+  .groupby(&quot;factor&quot;)
+  .apply(newey_west_tstat)
+  .reset_index(name=&quot;t_statistic_newey_west&quot;))
+</code></pre>
+</div>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +326,9 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#two-steps">Two steps</a></li>
-        <li><a href="#why-this-works">Why this works</a></li>
-        <li><a href="#refinements">Refinements</a></li>
+        <li><a href="#data-preparation">Data preparation</a></li>
+        <li><a href="#step-one-cross-sectional-regressions">Step one: cross-sectional regressions</a></li>
+        <li><a href="#step-two-time-series-aggregation">Step two: time-series aggregation</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +338,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
