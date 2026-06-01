@@ -148,6 +148,8 @@
     <div class="article-header">
       <h1>Difference-in-Differences</h1>
       
+      <div class="code-toggle-wrap"><button type="button" class="code-toggle" aria-label="Toggle code language" onclick="toggleCodeLang()">R | Python</button></div>
+      
       
       <div class="article-meta">
         <span>Jun He</span>
@@ -156,14 +158,200 @@
       
     </div>
 
-    <p>Difference-in-differences (DiD) is the most widely used quasi-experimental design in empirical finance: it estimates a treatment effect by comparing how outcomes change for a treated group versus a control group around an event.</p>
-<h2 id="the-idea">The idea</h2>
-<p>Take the change in the outcome for the treated group before vs. after the event, and subtract the change over the same window for an untreated control group. The second difference nets out any trend common to both groups, isolating the part of the change attributable to the treatment.</p>
-<h2 id="the-key-assumption">The key assumption</h2>
-<p>DiD rests on <strong>parallel trends</strong>: absent the treatment, the two groups would have evolved similarly. This is not testable directly, but its plausibility is supported by checking that the groups moved together <em>before</em> the event — a pre-trend analysis. A clean pre-period and a sharp break at the event are what make the design credible.</p>
-<h2 id="implementation-and-cautions">Implementation and cautions</h2>
-<p>In practice DiD is run as a two-way fixed-effects regression with an interaction of treatment and post-period indicators, standard errors clustered at the unit level. Recent econometrics has flagged pitfalls when treatment is staggered across units at different times — the simple two-way specification can mislead — so staggered designs call for the newer estimators built to handle them.</p>
-<p><em>Study notes following the Tidy Finance curriculum.</em></p>
+    <p>Difference-in-differences (DiD) estimates a treatment effect by comparing how outcomes change for a treated group versus a control group around an event. This chapter applies it to corporate bonds around the 2015 Paris Agreement: do the yields of bonds issued by polluting firms move differently afterward? It builds the bond panel, runs a two-way fixed-effects DiD, and checks parallel trends with an event study. Use the <strong>R | Python</strong> toggle to switch.</p>
+<div class="code-r">
+<pre><code class="language-r">library(tidyverse)
+library(arrow)
+library(fixest)
+library(broom)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import linearmodels as lm
+</code></pre>
+</div>
+<h2 id="data-preparation">Data preparation</h2>
+<p>We load bond characteristics (FISD) and transactions (TRACE), set the treatment date to the Paris Agreement, and flag bonds from polluting industries (by two-digit SIC code) as the treatment group. Bonds need at least a year to maturity so the post-period is meaningful.</p>
+<div class="code-r">
+<pre><code class="language-r">fisd &lt;- read_parquet(&quot;data-r/fisd.parquet&quot;) |&gt;
+  select(complete_cusip, maturity, offering_amt, sic_code) |&gt;
+  drop_na()
+
+trace_enhanced &lt;- open_dataset(&quot;data-r/trace_enhanced&quot;) |&gt;
+  select(cusip_id, trd_exctn_dt, rptd_pr, entrd_vol_qt, yld_pt) |&gt;
+  collect() |&gt;
+  drop_na()
+
+treatment_date &lt;- ymd(&quot;2015-12-12&quot;)
+polluting_industries &lt;- c(49, 13, 45, 29, 28, 33, 40, 20, 26, 42, 10, 53, 32, 99, 37)
+
+bonds &lt;- fisd |&gt;
+  filter(offering_amt &gt; 0) |&gt;
+  mutate(
+    time_to_maturity = as.numeric(maturity - treatment_date) / 365,
+    sic_code = as.integer(substr(sic_code, 1, 2)),
+    log_offering_amt = log(offering_amt)
+  ) |&gt;
+  filter(time_to_maturity &gt;= 1) |&gt;
+  select(cusip_id = complete_cusip, time_to_maturity, log_offering_amt, sic_code) |&gt;
+  mutate(polluter = sic_code %in% polluting_industries)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">fisd = pd.read_parquet(&quot;data-python/fisd.parquet&quot;)[
+    [&quot;complete_cusip&quot;, &quot;maturity&quot;, &quot;offering_amt&quot;, &quot;sic_code&quot;]].dropna()
+
+trace_enhanced = pd.read_parquet(&quot;data-python/trace_enhanced.parquet&quot;)[
+    [&quot;cusip_id&quot;, &quot;trd_exctn_dt&quot;, &quot;rptd_pr&quot;, &quot;entrd_vol_qt&quot;, &quot;yld_pt&quot;]].dropna()
+
+treatment_date = pd.Timestamp(&quot;2015-12-12&quot;)
+polluting_industries = [49, 13, 45, 29, 28, 33, 40, 20, 26, 42, 10, 53, 32, 99, 37]
+
+bonds = (fisd
+  .query(&quot;offering_amt &gt; 0&quot;)
+  .assign(
+    time_to_maturity=lambda x: (x[&quot;maturity&quot;] - treatment_date).dt.days / 365,
+    sic_code=lambda x: x[&quot;sic_code&quot;].astype(str).str[:2].astype(int),
+    log_offering_amt=lambda x: np.log(x[&quot;offering_amt&quot;]))
+  .query(&quot;time_to_maturity &gt;= 1&quot;)
+  .rename(columns={&quot;complete_cusip&quot;: &quot;cusip_id&quot;})
+  .assign(polluter=lambda x: x[&quot;sic_code&quot;].isin(polluting_industries))
+  .get([&quot;cusip_id&quot;, &quot;time_to_maturity&quot;, &quot;log_offering_amt&quot;, &quot;polluter&quot;]))
+</code></pre>
+</div>
+<h2 id="building-the-bond-month-panel">Building the bond-month panel</h2>
+<p>We aggregate trades to a bond-month panel of volume-weighted average yields (requiring at least five trades a day for reliability), join the bond characteristics, and define <code>post_period</code> and the DiD interaction <code>treated</code> = polluter × post.</p>
+<div class="code-r">
+<pre><code class="language-r">trace_aggregated &lt;- trace_enhanced |&gt;
+  filter(rptd_pr &gt; 25) |&gt;
+  group_by(cusip_id, trd_exctn_dt) |&gt;
+  summarize(
+    avg_yield = weighted.mean(yld_pt, entrd_vol_qt * rptd_pr),
+    trades = n(), .groups = &quot;drop&quot;
+  ) |&gt;
+  drop_na(avg_yield) |&gt;
+  filter(trades &gt;= 5) |&gt;
+  mutate(date = floor_date(trd_exctn_dt, &quot;month&quot;)) |&gt;
+  group_by(cusip_id, date) |&gt;
+  slice_max(trd_exctn_dt) |&gt;
+  ungroup() |&gt;
+  select(cusip_id, date, avg_yield)
+
+bonds_panel &lt;- bonds |&gt;
+  inner_join(trace_aggregated, join_by(cusip_id), multiple = &quot;all&quot;) |&gt;
+  drop_na() |&gt;
+  mutate(
+    post_period = date &gt;= floor_date(treatment_date, &quot;months&quot;),
+    treated = polluter &amp; post_period
+  )
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">trace_aggregated = (trace_enhanced
+  .query(&quot;rptd_pr &gt; 25&quot;)
+  .assign(weight=lambda x: x[&quot;entrd_vol_qt&quot;] * x[&quot;rptd_pr&quot;])
+  .groupby([&quot;cusip_id&quot;, &quot;trd_exctn_dt&quot;])
+  .apply(lambda x: pd.Series({
+    &quot;avg_yield&quot;: np.average(x[&quot;yld_pt&quot;], weights=x[&quot;weight&quot;]),
+    &quot;trades&quot;: len(x)}))
+  .reset_index()
+  .query(&quot;trades &gt;= 5&quot;)
+  .assign(date=lambda x: x[&quot;trd_exctn_dt&quot;].dt.to_period(&quot;M&quot;).dt.to_timestamp())
+  .sort_values(&quot;trd_exctn_dt&quot;)
+  .groupby([&quot;cusip_id&quot;, &quot;date&quot;]).tail(1)
+  .get([&quot;cusip_id&quot;, &quot;date&quot;, &quot;avg_yield&quot;]))
+
+bonds_panel = (bonds
+  .merge(trace_aggregated, how=&quot;inner&quot;, on=&quot;cusip_id&quot;)
+  .dropna()
+  .assign(
+    post_period=lambda x: x[&quot;date&quot;] &gt;= treatment_date.replace(day=1),
+    treated=lambda x: x[&quot;polluter&quot;] &amp; (x[&quot;date&quot;] &gt;= treatment_date.replace(day=1))))
+</code></pre>
+</div>
+<h2 id="the-did-regression">The DiD regression</h2>
+<p>The estimate is the coefficient on <code>treated</code>, run two ways: a pooled regression with controls, and a two-way fixed-effects version with bond and month fixed effects (which absorb time-invariant bond traits and common monthly shocks). A negative coefficient would say polluters' yields rose less — or fell — relative to others after Paris.</p>
+<div class="code-r">
+<pre><code class="language-r">model_without_fe &lt;- feols(
+  avg_yield ~ treated + post_period + polluter +
+    log_offering_amt + time_to_maturity,
+  vcov = &quot;iid&quot;, data = bonds_panel
+)
+
+model_with_fe &lt;- feols(
+  avg_yield ~ treated | cusip_id + date,
+  vcov = &quot;iid&quot;, data = bonds_panel
+)
+
+etable(model_without_fe, model_with_fe, coefstat = &quot;tstat&quot;, digits = 3)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">model_without_fe = lm.PanelOLS.from_formula(
+    &quot;avg_yield ~ 1 + treated + post_period + polluter + log_offering_amt + time_to_maturity&quot;,
+    data=bonds_panel.set_index([&quot;cusip_id&quot;, &quot;date&quot;])
+).fit()
+
+model_with_fe = lm.PanelOLS.from_formula(
+    &quot;avg_yield ~ treated + EntityEffects + TimeEffects&quot;,
+    data=bonds_panel.set_index([&quot;cusip_id&quot;, &quot;date&quot;])
+).fit()
+
+print(model_without_fe.summary)
+print(model_with_fe.summary)
+</code></pre>
+</div>
+<h2 id="visualizing-parallel-trends">Visualizing parallel trends</h2>
+<p>The credibility of DiD rests on parallel pre-trends. An event-study specification interacts the polluter flag with each month (relative to treatment), so plotting those coefficients with confidence bands shows whether treated and control bonds tracked together before the event and diverged after. A flat, near-zero pre-period is the visual test.</p>
+<div class="code-r">
+<pre><code class="language-r">model_without_fe_time &lt;- feols(
+  avg_yield ~ polluter + date:polluter + time_to_maturity + log_offering_amt,
+  vcov = &quot;iid&quot;,
+  data = bonds_panel |&gt; mutate(date = factor(date))
+)
+
+model_without_fe_coefs &lt;- tidy(model_without_fe_time) |&gt;
+  filter(str_detect(term, &quot;date&quot;)) |&gt;
+  mutate(
+    date = ymd(substr(term, nchar(term) - 9, nchar(term))),
+    treatment = str_detect(term, &quot;TRUE&quot;),
+    ci_up = estimate + qnorm(0.975) * std.error,
+    ci_low = estimate + qnorm(0.025) * std.error
+  )
+
+model_without_fe_coefs |&gt;
+  ggplot(aes(date, color = treatment, shape = treatment)) +
+  geom_vline(aes(xintercept = floor_date(treatment_date, &quot;month&quot;)), linetype = &quot;dashed&quot;) +
+  geom_hline(aes(yintercept = 0), linetype = &quot;dashed&quot;) +
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_up), alpha = 0.5) +
+  geom_point(aes(y = estimate)) +
+  labs(x = NULL, y = &quot;Yield&quot;, color = &quot;Polluter?&quot;, shape = &quot;Polluter?&quot;,
+       title = &quot;Polluters respond stronger to Paris Agreement than green firms&quot;)
+</code></pre>
+</div>
+<div class="code-py">
+<pre><code class="language-python">bonds_panel_event = bonds_panel.copy()
+bonds_panel_event[&quot;rel_month&quot;] = (
+    (bonds_panel_event[&quot;date&quot;].dt.year - treatment_date.year) * 12
+    + (bonds_panel_event[&quot;date&quot;].dt.month - treatment_date.month))
+
+event_dummies = pd.get_dummies(bonds_panel_event[&quot;rel_month&quot;], prefix=&quot;rel&quot;)
+event_data = pd.concat(
+    [bonds_panel_event, event_dummies.mul(bonds_panel_event[&quot;polluter&quot;], axis=0)], axis=1)
+
+terms = [c for c in event_dummies.columns if c != &quot;rel_0&quot;]
+model_event = lm.PanelOLS.from_formula(
+    &quot;avg_yield ~ &quot; + &quot; + &quot;.join(terms) + &quot; + EntityEffects + TimeEffects&quot;,
+    data=event_data.set_index([&quot;cusip_id&quot;, &quot;date&quot;])
+).fit(cov_type=&quot;clustered&quot;, cluster_entity=True)
+print(model_event.summary)
+</code></pre>
+</div>
+<p>A caution the chapter stresses: when treatment is staggered across units at different times, the simple two-way fixed-effects estimator can be biased, and newer estimators built for staggered adoption should be used instead.</p>
+<hr />
+<p><em>Study notes following the <a href="https://www.tidy-finance.org">Tidy Finance</a> curriculum by Scheuch, Voigt, Weiss, and Frey. Prose is my own; the R/Python code is reproduced from the book's open-source source, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</em></p>
 
     
     <nav class="chapter-nav">
@@ -178,9 +366,10 @@
     <nav>
       <h4>On this page</h4>
       <ul>
-        <li><a href="#the-idea">The idea</a></li>
-        <li><a href="#the-key-assumption">The key assumption</a></li>
-        <li><a href="#implementation-and-cautions">Implementation and cautions</a></li>
+        <li><a href="#data-preparation">Data preparation</a></li>
+        <li><a href="#building-the-bond-month-panel">Building the bond-month panel</a></li>
+        <li><a href="#the-did-regression">The DiD regression</a></li>
+        <li><a href="#visualizing-parallel-trends">Visualizing parallel trends</a></li>
       </ul>
     </nav>
   </aside>
@@ -190,7 +379,7 @@
 
 
 <script src="/theme.js"></script>
-
+<script src="/code-toggle.js"></script>
 
 <script>
   window.MathJax = {
