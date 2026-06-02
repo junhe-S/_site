@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10. GMM in Explicit Discount Factor Models – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>10. GMM in Explicit Discount Factor Models</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">广义矩估计</span><span class="lang en">GMM</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">矩条件</span><span class="lang en">Moment Conditions</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">定价误差</span><span class="lang en">Pricing Errors</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">谱密度矩阵</span><span class="lang en">Spectral Density Matrix</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">过度识别检验</span><span class="lang en">JT Test</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>10. GMM in Explicit Discount Factor Models</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+Part II 转向<strong>估计与评价</strong>：先估自由参数（如 \(m=\beta(c_{t+1}/c_t)^{-\gamma}\) 中的 \(\beta,\gamma\)，或 \(m=b'f\) 中的 \(b\)），再判断模型好坏。本章（Cochrane 第 10 章，Part II 开篇）讲 <strong>GMM（广义矩估计）</strong>——它与贴现因子表述天然契合，因为只需用<strong>样本矩</strong>替代总体矩。基本思路极简单：模型预测 \(E(p_t)=E(m_{t+1}x_{t+1})\)，那就让两个样本均值尽量接近，由此估参数；再为估计量与定价误差给出<strong>分布理论</strong>，从而检验"定价误差是否大到不像运气"。§10.1 配方（Hansen-Singleton 1982）；§10.2 解读（矩 = 定价误差 = Jensen's alpha；一阶/二阶估计如 OLS/GLS；\(S^{-1}\) 为何最优；\(J_T\) 检验）；§10.3 应用（工具变量、平稳性、单位选择）。</p></p></div>
+</div>
+<div class="lang en">
+<h1>10. GMM in Explicit Discount Factor Models</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+Part II turns to <strong>estimation and evaluation</strong>: first estimate the free parameters (e.g. \(\beta,\gamma\) in \(m=\beta(c_{t+1}/c_t)^{-\gamma}\), or \(b\) in \(m=b'f\)), then judge the model. This chapter (Cochrane Ch 10, the opener of Part II) covers <strong>GMM (Generalized Method of Moments)</strong> — a natural fit for the discount-factor formulation, since we just replace population moments with <strong>sample moments</strong>. The basic idea is very simple: the model predicts \(E(p_t)=E(m_{t+1}x_{t+1})\), so make the two sample averages as close as possible to estimate parameters; then derive a <strong>distribution theory</strong> for the estimates and the pricing errors, to test whether the errors are "too big to be luck." §10.1 the recipe (Hansen-Singleton 1982); §10.2 interpretation (moments = pricing errors = Jensen's alpha; first/second stage like OLS/GLS; why \(S^{-1}\) is optimal; the \(J_T\) test); §10.3 applying it (instruments, stationarity, choice of units).</p></p></div>
+</div>
+<div class="lang zh">
+<h2 id="10-1-the-recipe">10.1 配方 / The Recipe</h2>
+<p>任何资产定价模型都蕴含 \(E(p_t)=E(m_{t+1}(b)x_{t+1})\)，写成 \(E(\cdot)=0\) 形式即<strong>矩条件</strong>：</p>
+</div>
+<div class="lang en">
+<h2 id="10-1-the-recipe">10.1 The Recipe</h2>
+<p>Any asset pricing model implies \(E(p_t)=E(m_{t+1}(b)x_{t+1})\); written in \(E(\cdot)=0\) form these are the <strong>moment conditions</strong>:</p>
+</div>
+<p>$$E\bigl[m_{t+1}(b)x_{t+1}-p_t\bigr]=0.\tag{10.4}$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>GMM 配方（Hansen-Singleton 1982） / The GMM recipe
+<span class="lang zh"><strong>定义</strong>：误差 \(u_{t+1}(b)\equiv m_{t+1}(b)x_{t+1}-p_t\)；样本均值 \(g_T(b)\equiv E_T[u_t(b)]\)（\(E_T(\cdot)=\tfrac1T\sum_{t=1}^T(\cdot)\)）；谱密度矩阵 \(S\equiv\sum_{j=-\infty}^{\infty}E[u_t(b)u_{t-j}(b)']\)。<br><strong>估计</strong>：\(\hat b_2=\arg\min_b\ g_T(b)'S^{-1}g_T(b)\)。<br><strong>标准误</strong>：\(\operatorname{var}(\hat b_2)=\tfrac1T(d'S^{-1}d)^{-1}\)，\(d\equiv\partial g_T(b)/\partial b\)。<br><strong>模型检验（过度识别约束）</strong>：\(TJ_T=T\min_b[g_T(b)'S^{-1}g_T(b)]\sim\chi^2(\#\text{moments}-\#\text{params})\)。</span><span class="lang en"><strong>Definitions</strong>: errors \(u_{t+1}(b)\equiv m_{t+1}(b)x_{t+1}-p_t\); sample mean \(g_T(b)\equiv E_T[u_t(b)]\) (with \(E_T(\cdot)=\tfrac1T\sum_{t=1}^T(\cdot)\)); spectral density matrix \(S\equiv\sum_{j=-\infty}^{\infty}E[u_t(b)u_{t-j}(b)']\).<br><strong>Estimate</strong>: \(\hat b_2=\arg\min_b\ g_T(b)'S^{-1}g_T(b)\).<br><strong>Standard errors</strong>: \(\operatorname{var}(\hat b_2)=\tfrac1T(d'S^{-1}d)^{-1}\), \(d\equiv\partial g_T(b)/\partial b\).<br><strong>Test of the model (overidentifying restrictions)</strong>: \(TJ_T=T\min_b[g_T(b)'S^{-1}g_T(b)]\sim\chi^2(\#\text{moments}-\#\text{parameters})\).</span></p></p></div>
+<div class="lang zh">
+<p>具体流程：<strong>一阶估计</strong> \(\hat b_1=\arg\min_b g_T(b)'Wg_T(b)\)，\(W\) 任取（常取 \(W=I\)），此估计已是<strong>一致且渐近正态</strong>的——你常常可以、也应该在此止步。用 \(\hat b_1\) 构造 \(S\) 的估计，再做<strong>二阶估计</strong> \(\hat b_2=\arg\min_b g_T(b)'S^{-1}g_T(b)\)，它<strong>一致、渐近正态、且渐近有效</strong>（在所有"把 \(g_T\) 的线性组合置零"的估计量中方差最小）。标准误可用于检验参数是否为零（\(\hat b_i/\sqrt{\operatorname{var}(\hat b)_{ii}}\sim N(0,1)\)）。</p>
+<h2 id="10-2-gmm-interpreting-the-gmm-procedure">10.2 解读 GMM / Interpreting the GMM Procedure</h2>
+</div>
+<div class="lang en">
+<p>The flow: a <strong>first-stage estimate</strong> \(\hat b_1=\arg\min_b g_T(b)'Wg_T(b)\) for an arbitrary \(W\) (often \(W=I\)), already <strong>consistent and asymptotically normal</strong> — you can and often should stop here. Use \(\hat b_1\) to construct an estimate of \(S\), then a <strong>second-stage estimate</strong> \(\hat b_2=\arg\min_b g_T(b)'S^{-1}g_T(b)\), which is <strong>consistent, asymptotically normal, and asymptotically efficient</strong> (smallest variance among all estimators that set linear combinations of \(g_T\) to zero). The standard errors test whether parameters are zero (\(\hat b_i/\sqrt{\operatorname{var}(\hat b)_{ii}}\sim N(0,1)\)).</p>
+<h2 id="10-2-interpreting-the-gmm-procedure">10.2 Interpreting the GMM Procedure</h2>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>矩就是定价误差 = Jensen's alpha / The moments are pricing errors = Jensen's alpha
+<span class="lang zh">每个矩 \(g_T(b)=E_T[m_{t+1}(b)x_{t+1}]-E_T[p_t]\) 就是<strong>实际价格与预测价格之差</strong>，即定价误差。在期望收益语言里它正比于实际与预测收益之差——即 Jensen's alpha：\(g(b)=E(mR^e)=\tfrac1{R^f}(\text{actual}-\text{predicted})=\tfrac1{R^f}\alpha_i\)。还有什么比"选参数使预测价格尽量贴近实际、再看残余定价误差有多大"更自然呢？</span><span class="lang en">Each moment \(g_T(b)=E_T[m_{t+1}(b)x_{t+1}]-E_T[p_t]\) is the difference between actual and predicted price — the pricing error. In expected-return language it is proportional to the actual-minus-predicted return, i.e. Jensen's alpha: \(g(b)=E(mR^e)=\tfrac1{R^f}(\text{actual}-\text{predicted mean return})=\tfrac1{R^f}\alpha_i\). What could be more natural than picking parameters so predicted prices are as close as possible to actual, then judging the model by how big the leftover errors are?</span></p></p></div>
+<div class="lang zh">
+<p><strong>一阶估计。</strong> 矩条件（收益乘工具）通常多于参数（否则理论与事实一样多就空洞了），无法令每个 \(g_T=0\)，故最小化二次型 \(\min_b g_T(b)'Wg_T(b)\)。\(W=I\) 时对称对待所有资产、即最小化平方定价误差之和。\(g_T(b)\) 可能非线性，需数值搜索，但局部二次故通常顺利。</p>
+<p><strong>二阶估计：为何 \(S^{-1}\)？</strong> 不同资产的 \(m_tR_t-1\) 方差不同，高方差资产的样本均值测得更不准，理应<strong>少给关注</strong>。由于 \(g_T=E_T(u_{t+1})\) 是样本均值，其方差为</p>
+</div>
+<div class="lang en">
+<p><strong>First-stage estimates.</strong> There are usually more moment conditions (returns times instruments) than parameters (else a theory with as many parameters as facts is vacuous), so we cannot set every \(g_T=0\) and instead minimize the quadratic form \(\min_b g_T(b)'Wg_T(b)\). With \(W=I\) all assets are treated symmetrically — minimize the sum of squared pricing errors. \(g_T(b)\) may be nonlinear, needing a numerical search, but it is locally quadratic so the search is usually easy.</p>
+<p><strong>Second-stage estimates: why \(S^{-1}\)?</strong> Different assets' \(m_tR_t-1\) have different variances; high-variance assets' sample means are measured less accurately and deserve <strong>less attention</strong>. Since \(g_T=E_T(u_{t+1})\) is a sample mean, its variance is</p>
+</div>
+<p>$$\operatorname{var}(g_T)\to\frac1T\sum_{j=-\infty}^{\infty}E(u_tu'_{t-j})=\frac1T\,S.$$</p>
+<div class="lang zh">
+<p>这里 \(S\) 即 \(u_t\) 在零频率的<strong>谱密度矩阵</strong>。Hansen (1982) 正式证明：取 \(W=S^{-1}\) 是<strong>统计最优</strong>的加权矩阵（产生渐近方差最小的估计）。它把最多关注放在"当前数据信息量最大"的矩的线性组合上——这与线性回归中由 OLS 到 GLS 的异方差/相关性校正完全同理。事实上当 \(u_t\) 时间上不相关时，\(\operatorname{var}(g_T)=\operatorname{var}(u)/T\)——这是你最早学过的统计公式（样本均值的方差）；在 GMM 里它也是你最后会用到的公式：GMM 不过是把"样本均值的分布"这一简单思想推广到参数估计与一般统计情形。</p>
+<p><strong>标准误。</strong> \(\operatorname{var}(\hat b_2)=\tfrac1T(d'S^{-1}d)^{-1}\) 最简单地理解为 <strong>delta 方法</strong>（\(f(x)\) 的渐近方差为 \(f'(x)^2\operatorname{var}(x)\)）：单参数单矩时 \(S/T\) 是 \(g_T\) 的方差，\(d^{-1}=\partial b/\partial g_T\)，故 \(\operatorname{var}(\hat b_2)=\tfrac{\partial b}{\partial g_T}\operatorname{var}(g_T)\tfrac{\partial b}{\partial g_T}\)，向量化即得。</p>
+</div>
+<div class="lang en">
+<p>Here \(S\) is the <strong>spectral density matrix</strong> of \(u_t\) at frequency zero. Hansen (1982) proves \(W=S^{-1}\) is the <strong>statistically optimal</strong> weighting matrix (lowest asymptotic variance). It pays most attention to the linear combinations of moments about which the data have the most information — exactly the heteroskedasticity/correlation correction that takes you from OLS to GLS. Indeed when \(u_t\) is uncorrelated over time, \(\operatorname{var}(g_T)=\operatorname{var}(u)/T\) — the very first statistical formula you ever saw (the variance of a sample mean); in GMM it is the last one too: GMM just generalizes the distribution of the sample mean to parameter estimation and general statistical contexts.</p>
+<p><strong>Standard errors.</strong> \(\operatorname{var}(\hat b_2)=\tfrac1T(d'S^{-1}d)^{-1}\) is most simply an instance of the <strong>delta method</strong> (the asymptotic variance of \(f(x)\) is \(f'(x)^2\operatorname{var}(x)\)): with one parameter and moment, \(S/T\) is the variance of \(g_T\), \(d^{-1}=\partial b/\partial g_T\), so \(\operatorname{var}(\hat b_2)=\tfrac{\partial b}{\partial g_T}\operatorname{var}(g_T)\tfrac{\partial b}{\partial g_T}\), generalized to vectors.</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>\(J_T\) 检验：定价误差是否"太大" / The \(J_T\) test: are the pricing errors "too big"?
+<span class="lang zh">估出最优参数后，问"拟合多好"？看定价误差是否大到不像运气：\(TJ_T=T\,g_T(\hat b)'S^{-1}g_T(\hat b)\sim\chi^2(\#\text{moments}-\#\text{params})\)。因 \(S\) 是 \(g_T\) 的协方差阵，此统计量就是"定价误差除以其协方差阵"；样本均值趋正态，故均值平方除方差趋 \(\chi^2\)。自由度减去参数个数，是因为我们在每个样本里把 \(g_T\) 的某些线性组合置了零（真实 \(g_T\) 协方差阵奇异，秩为 \(\#\text{moments}-\#\text{params}\)）。</span><span class="lang en">Having estimated the best-fitting parameters, ask "how well does it fit?" — are the pricing errors too big to be luck? \(TJ_T=T\,g_T(\hat b)'S^{-1}g_T(\hat b)\sim\chi^2(\#\text{moments}-\#\text{parameters})\). Since \(S\) is the covariance matrix of \(g_T\), this is the minimized pricing errors divided by their covariance; sample means go to normal, so means squared over variance go to \(\chi^2\). Degrees of freedom drop by the number of parameters because we set linear combinations of \(g_T\) to zero in each sample (the true covariance of \(g_T\) is singular, rank \(\#\text{moments}-\#\text{parameters}\)).</span></p></p></div>
+<div class="lang zh">
+<h2 id="10-3-gmm-applying-gmm">10.3 应用 GMM / Applying GMM</h2>
+<p><strong>记号、工具与收益。</strong> 大部分功夫只是把问题映射到这套通用记号。用收益时矩条件为 \(E[m_{t+1}(b)R_{t+1}-1]=0\)。常加<strong>工具变量</strong>：把 \(1=E_t[m_{t+1}R_{t+1}]\) 两边乘以 \(t\) 时可观测的 \(z_t\) 再取非条件期望，得 \(0=E[(m_{t+1}R_{t+1}-1)z_t]\)。对收益与工具的整个向量，用 Kronecker 积紧凑写成</p>
+</div>
+<div class="lang en">
+<h2 id="10-3-applying-gmm">10.3 Applying GMM</h2>
+<p><strong>Notation, instruments, returns.</strong> Most of the effort is just mapping a problem into this general notation. With returns the moments are \(E[m_{t+1}(b)R_{t+1}-1]=0\). One commonly adds <strong>instruments</strong>: multiply \(1=E_t[m_{t+1}R_{t+1}]\) by a \(t\)-observed \(z_t\) and take unconditional expectations, giving \(0=E[(m_{t+1}R_{t+1}-1)z_t]\). For a whole vector of returns and instruments, the Kronecker product writes it compactly:</p>
+</div>
+<p>$$E\bigl[(m_{t+1}(b)R_{t+1}-1)\otimes z_t\bigr]=0.\tag{10.9}$$</p>
+<div class="lang zh">
+<p><strong>预测误差与工具。</strong> 模型说：尽管期望收益随时间与资产变化，<strong>期望贴现收益总应等于 1</strong>。误差 \(u_{t+1}=m_{t+1}R_{t+1}-1\) 是事后贴现收益，像任何预测误差一样应条件与非条件均值为零。在计量语境里 \(z\) 是"工具"，因它应与 \(u_{t+1}\) 不相关——\(E(z_tu_{t+1})\) 是 \(u_{t+1}\) 对 \(z_t\) 回归系数的分子；加工具本质上是检验"事后贴现收益不能被线性回归预测"。如 §8.1，加工具 = 加管理组合，原则上能捕捉模型全部预测。</p>
+</div>
+<div class="lang en">
+<p><strong>Forecast errors and instruments.</strong> The model says: although expected returns vary across time and assets, the <strong>expected discounted return should always be 1</strong>. The error \(u_{t+1}=m_{t+1}R_{t+1}-1\) is the ex-post discounted return and, like any forecast error, should be conditionally and unconditionally mean zero. In econometric terms \(z\) is an "instrument" because it should be uncorrelated with \(u_{t+1}\) — \(E(z_tu_{t+1})\) is the numerator of a regression coefficient of \(u_{t+1}\) on \(z_t\); adding instruments checks that the ex-post discounted return is unforecastable by linear regressions. As in §8.1, adding instruments = adding managed portfolios, and in principle captures all the model's predictions.</p>
+</div>
+<div class="callout"><div class="callout-title">Warning</div><p>平稳性与单位选择 / Stationarity and choice of units
+<span class="lang zh">GMM 分布理论最重要的假设是 \(m,p,x\) 须为<strong>平稳</strong>随机变量（"平稳"指 \(x_t,x_{t-j}\) 的联合分布只依赖 \(j\) 而非 \(t\)，<strong>不是</strong>指恒定或 i.i.d.）；样本均值须收敛到总体均值。确保平稳通常归结为<strong>选对单位</strong>：股价 \(p\) 与股利 \(d\) 随时间增长、非平稳，故不要写 \(p_t=E_t[m_{t+1}(d_{t+1}+p_{t+1})]\)，而应除以 \(p_t\) 写成 \(1=E_t[m_{t+1}R_{t+1}]\)（收益大体平稳），或除以股利写成价格股利比形式。债券是对 1 美元的索取权，价格/收益率不随时间增长，故 \(p^b_t=E(m_{t+1}\cdot1)\) 可不变换。注意：变量"越不平稳"（样本中摆动越久，如名义利率虽根本上平稳却可二十年单向漂移），渐近分布越不可靠——届时应用模拟/自助法求有限样本分布。也要让<strong>检验资产</strong>平稳（故常把股票按特征排成组合，组合的统计特征比个股稳定得多）。GMM 的方差公式<strong>不</strong>需要 i.i.d./正态/同方差假设（可加以简化公式与改善小样本表现，但非必需）。</span><span class="lang en">The most important assumption of the GMM distribution theory is that \(m,p,x\) be <strong>stationary</strong> random variables ("stationary" means the joint distribution of \(x_t,x_{t-j}\) depends only on \(j\) not \(t\) — <strong>not</strong> constant or i.i.d.); sample averages must converge to population means. Ensuring stationarity usually amounts to a <strong>choice of sensible units</strong>: stock prices \(p\) and dividends \(d\) grow over time and are nonstationary, so don't write \(p_t=E_t[m_{t+1}(d_{t+1}+p_{t+1})]\); divide by \(p_t\) to get \(1=E_t[m_{t+1}R_{t+1}]\) (returns are plausibly stationary), or by dividends for a price/dividend form. Bonds are a claim to a dollar, so \(p^b_t=E(m_{t+1}\cdot1)\) needs no transform. Note: the "less stationary" a variable (the longer its swings — e.g. nominal interest rates are fundamentally stationary yet drift one way for 20 years), the less reliable the asymptotic distribution — then use simulation/bootstrap for a finite-sample distribution. Choose <strong>test assets</strong> to be stationary too (hence sorting stocks into portfolios by characteristics, whose statistics are far more constant than individual stocks'). GMM's variance formulas need <strong>no</strong> i.i.d./normal/homoskedastic assumptions (you may add them to simplify formulas and improve small-sample performance, but you need not).</span></p></p></div>
+<div class="lang zh">
+<h2 id="summary">小结 / Summary</h2>
+<p>GMM 把"样本均值的分布"这一最基本统计思想推广为完整的估计与检验框架：把矩条件（= 定价误差 = Jensen's alpha）的加权平方和最小化以估参数（一阶 \(W=I\) 如 OLS，二阶 \(W=S^{-1}\) 如 GLS、渐近有效），用 delta 方法得标准误，用 \(J_T=T\cdot(\text{min objective})\sim\chi^2\) 检验过度识别约束。它与 \(p=\mathbb E(mx)\) 天然契合、不需分布假设，唯一关键前提是平稳性（靠选对单位与检验资产保证）。下一章给出 GMM 的一般公式与更多应用。</p>
+</div>
+<div class="lang en">
+<h2 id="summary">Summary</h2>
+<p>GMM generalizes the most basic statistical idea — the distribution of a sample mean — into a full estimation and testing framework: minimize a weighted sum of squared moment conditions (= pricing errors = Jensen's alpha) to estimate parameters (first stage \(W=I\) like OLS, second stage \(W=S^{-1}\) like GLS and asymptotically efficient), get standard errors via the delta method, and test the overidentifying restrictions with \(J_T=T\cdot(\text{minimized objective})\sim\chi^2\). It fits \(p=\mathbb E(mx)\) naturally and needs no distributional assumptions; its one key prerequisite is stationarity (ensured by choosing sensible units and test assets). The next chapter gives the general GMM formulas and more applications.</p>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#10-1-the-recipe">10.1 配方 / The Recipe</a></li>
+        <li><a href="#10-1-the-recipe">10.1 The Recipe</a></li>
+        <li><a href="#10-2-gmm-interpreting-the-gmm-procedure">10.2 解读 GMM / Interpreting the GMM Procedure</a></li>
+        <li><a href="#10-2-interpreting-the-gmm-procedure">10.2 Interpreting the GMM Procedure</a></li>
+        <li><a href="#10-3-gmm-applying-gmm">10.3 应用 GMM / Applying GMM</a></li>
+        <li><a href="#10-3-applying-gmm">10.3 Applying GMM</a></li>
+        <li><a href="#summary">小结 / Summary</a></li>
+        <li><a href="#summary">Summary</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

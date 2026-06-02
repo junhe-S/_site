@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>期权的『微笑』里，藏着投资者对崩盘的恐惧 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>期权的『微笑』里，藏着投资者对崩盘的恐惧</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2002 JFE]</span> The Jump-risk Premia Implicit in Options: Evidence from an Integrated Time-series Study</div>
+        <div class="paper-source-authors"><a href="/research/author/jun-pan/">Jun Pan</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">期权定价</span>
+        
+        
+        
+        
+        <span class="tag">跳跃风险</span>
+        
+        
+        
+        
+        <span class="tag">随机波动率</span>
+        
+        
+        
+        
+        <span class="tag">GMM</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Pan (2002, <em>Journal of Financial Economics</em>)</strong>：把 S&amp;P 500 指数和近价短期期权这两条时间序列【放进同一个无套利模型里一起估】，作者发现期权价格里有一块此前从未被单独称量过的「跳跃风险溢价 (jump-risk premium)」——它会随市场波动率一起起伏，市场越乱、它越高。正是这块会「看天吃饭」的溢价，既调和了现货与期权两个市场原本对不上的动态，又解释了横截面期权那道挥之不去的波动率「冷笑 (smirk)」。</p></p></div>
+<h2 id="1">1 一个对不上的账</h2>
+<p>先从一个让人不太舒服的事实说起。</p>
+<p>如果你拿 Black-Scholes 模型去看标普指数期权，会发现一件怪事：期权价格里「内含」的那个波动率，常年偏高——高到用事后真正实现的现货波动率根本兜不住。Jackwerth 和 Rubinstein (1996) 早就记下了这笔账：期权市场报出来的波动率，比现货市场最终兑现的要大。换句话说，期权「太贵」了。</p>
+<p>为什么贵？最自然的解释是：期权价格里不只装着对未来波动的预期，还装着一块<strong>风险溢价 (risk premium)</strong>——投资者为了规避某种额外的风险，愿意多付的钱。</p>
+<p>接着，一个自然的问题是：这块溢价，到底是为「哪一种」风险付的？</p>
+<p>标普指数的收益率，至少同时被三种性质迥异的风险因子推着走：(1) 连续的<strong>扩散型价格冲击 (diffusive price shocks)</strong>，就是布朗运动那一份；(2) 偶发的<strong>价格跳跃 (price jumps)</strong>，崩盘那种；(3) 波动率本身的随机变动，即<strong>随机波动率 (stochastic volatility)</strong>。</p>
+<p>过去的文献，几乎只盯着前两种里的「波动率风险」做文章（Guo, 1998；Benzoni, 1998；Bakshi 和 Kapadia, 2001 等等，关于波动率风险被定成负价格这件事，可参见<a href="/research/delta-hedged-gains-and-the-negative-market-volatility-risk/">《「买了保险，注定亏钱」：从一份对冲组合里，读出波动率的负价格》</a>）。但有一种风险的价格，在这篇论文之前，从来没有人单独称量过——</p>
+<p><strong>跳跃风险，到底值多少钱？它的定价，和扩散风险一样吗？</strong></p>
+<p>这就是 Pan (2002) 要回答的问题。</p>
+<h2 id="2">2 真正关键的一步：把两个市场放进同一个模型一起估</h2>
+<p>要回答「跳跃风险的价格」，光看现货不行，光看期权也不行。</p>
+<p>原因不难想：现货价格 \(S\) 走的是<strong>真实测度 (physical measure, \(P\))</strong> 下的动态——它告诉你跳跃多久来一次、平均跳多大；而期权价格反映的是<strong>风险中性测度 (risk-neutral measure, \(Q\))</strong> 下的动态——它把投资者的恐惧也一并折进去了。风险的「价格」，恰恰就藏在 \(P\) 和 \(Q\) 这两套动态的<strong>差</strong>里。所以你必须同时握住现货和期权两条数据，让它们互相对质。</p>
+<p>这种「联合估计」的想法，文献里早有人呼吁，但真正落地是近些年的事。非参数的路子，Aït-Sahalia 等 (2001) 把现货和期权各自估出的风险中性密度拿来比对；参数化的路子，Chernov 和 Ghysels (2000) 用联合数据去估 Heston (1993) 模型。</p>
+<p>但真正关键的一步，在于 Pan 设计了一套叫 <strong>「隐含状态」广义矩估计 (implied-state GMM, IS-GMM)</strong> 的办法。</p>
+<p>它的巧妙之处是这样的：模型里有一个谁也看不见的状态变量——瞬时波动率 \(V_t\)。直接拿期权价格 \(C\) 去做 GMM，会被期权定价公式的非线性搞得一团糟。Pan 的做法是反过来：给定一组待估参数 \(\Psi\)，用当期的现货价 \(S_t\) 和一只近价短期期权价 \(C_t\)，<strong>从期权定价公式里反解出</strong>一个「期权隐含」的波动率 \(V_t^{\Psi}\)。</p>
+<p>一旦把看不见的 \(V\) 换成了能算出来的 \(V_t^{\Psi}\)，剩下的就好办了：状态变量 \((\ln S, V)\) 具有<strong>仿射 (affine)</strong> 结构，其联合条件矩生成函数有闭式解，于是能写出一大堆矩条件，照常做 GMM。唯一的区别，是其中一个状态变量是「随参数变动」的——这就是「隐含状态」四个字的由来。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>直觉上，这一步等于让现货市场和期权市场每天「对一次表」：模型每挑一组参数，就要求由期权倒推的波动率 \(V_t^{\Psi}\)，能和现货收益的实际波动在统计上自洽。对不上，就说明参数错了——而风险溢价，正是让它们对得上的那把钥匙。</p></p></div>
+<h2 id="3">3 模型：三种风险，三种价格</h2>
+<p>这一节我们把模型摊开讲。Pan 采用的是 Bates (2000) 的设定——它在 Heston (1993) 随机波动率模型之上，加了一个状态依赖的跳跃。</p>
+<h3 id="3-1-p">3.1 真实测度 \(P\) 下的数据生成过程</h3>
+<p>股价 \(S\) 服从</p>
+<p>$$ dS_t = \big(r_t - q_t + \eta_s V_t + \lambda V_t(\mu - \mu^\star)\big)\, S_t\, dt + \sqrt{V_t}\, S_t\, dW_t^{(1)} + dZ_t - \mu\, S_t\, \lambda V_t\, dt $$</p>
+<p>波动率 \(V\) 自成一个「平方根 (square-root)」过程：</p>
+<p>$$ dV_t = \kappa_v(\bar v - V_t)\, dt + \sigma_v \sqrt{V_t}\Big(\rho\, dW_t^{(1)} + \sqrt{1-\rho^2}\, dW_t^{(2)}\Big) $$</p>
+<p>逐项看：\(V\) 以速率 \(\kappa_v\) 向长期均值 \(\bar v\) 回归，波动系数为 \(\sigma_v\)；\(\rho\) 是价格冲击与波动率冲击的相关系数，它取负值，正好捕捉「股票跌、波动涨」这个老生常谈的杠杆效应 (Black, 1976)。</p>
+<p>跳跃藏在纯跳过程 \(Z\) 里。它有两个零件：<strong>随机的跳跃时点</strong>和<strong>随机的跳跃幅度</strong>。跳跃事件按一个<strong>状态依赖的强度 (state-dependent intensity)</strong> \(\lambda V_t\) 到来——注意这里是 \(\lambda V_t\)，不是常数。这是全文的「七寸」：</p>
+<div class="callout"><div class="callout-title">Warning</div><p>强度被写成 \(\lambda V_t\) 而非一个常数 \(\lambda_0\)，意味着<strong>市场越波动，跳跃越频繁</strong>。为保持模型简洁，Pan 干脆把常数项扔掉了（这个「常数项为零」的约束后文会被正式检验）。正是这个线性设定，让跳跃风险溢价也能「看天吃饭」。</p></p></div>
+<p>给定第 \(i\) 次跳跃发生，对数股价跳一个 \(U_i^s \sim N(\mu_J, \sigma_J^2)\)，于是平均相对跳幅 \(\mu = \mathbb{E}(e^{U^s}-1) = e^{\mu_J + \sigma_J^2/2} - 1\)。式中最后那项 \(\mu S_t \lambda V_t\, dt\) 是跳跃过程的补偿子，扣掉它，跳跃才不会污染漂移。</p>
+<h3 id="3-2-q">3.2 风险中性测度 \(Q\) 下的动态</h3>
+<p>换到 \(Q\) 测度，同样两条 SDE：</p>
+<p>$$ dS_t = (r_t - q_t)\, S_t\, dt + \sqrt{V_t}\, S_t\, dW_t^{(1)}(Q) + dZ_t^{Q} - \mu^\star\, S_t\, \lambda V_t\, dt $$</p>
+<p>$$ dV_t = \big(\kappa_v(\bar v - V_t) + \eta_v V_t\big)\, dt + \sigma_v \sqrt{V_t}\Big(\rho\, dW_t^{(1)}(Q) + \sqrt{1-\rho^2}\, dW_t^{(2)}(Q)\Big) $$</p>
+<p>把 \(P\) 和 \(Q\) 摆在一起对比，三种风险怎样被定价就一目了然了：</p>
+<ul>
+<li><strong>扩散型收益风险</strong>：\(P\) 的漂移里多出一项 \(\eta_s V_t\)，\(Q\) 里没有。\(\eta_s\) 就是这块「布朗冲击」的风险价格，类似 CAPM 里的风险—收益权衡。</li>
+<li><strong>波动率风险</strong>：\(Q\) 测度下 \(V\) 的漂移多了一项 \(\eta_v V_t\)。\(\eta_v > 0\) 时，波动率在 \(Q\) 下平均增速更快，于是期权更贵。</li>
+<li><strong>跳跃风险</strong>：关键在跳幅。\(P\) 下平均跳幅由 \(\mu\)（即 \(\mu_J\)）决定，\(Q\) 下变成 \(\mu^\star\)（即 \(\mu_J^\star\)）。让 \(\mu^\star \ne \mu\)，就给「跳幅不确定性」开了一块溢价。</li>
+</ul>
+<p>这里有个诚实的取舍：跳跃风险其实有两层——跳得多频繁（timing）和跳得多大（size）。Pan 出于识别上的顾虑，假定跳跃强度系数在两个测度下相同（\(\lambda^\star = \lambda\)），把所有跳跃溢价都「人为地」塞进跳幅这一项 \(\mu - \mu^\star\) 里。于是，补偿跳幅不确定性的瞬时超额收益就是 \(\lambda V_t(\mu - \mu^\star)\)。</p>
+<h3 id="3-3">3.3 一个方程看懂三种溢价</h3>
+<p>把现货收益里的两块风险溢价拎出来，整篇文章的经济学就压缩在这一个表达式里：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{a1}{\eta_s V_t} \;+\; \cssId{a2}{\lambda V_t}\,\cssId{a3}{(\mu - \mu^\star)}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>扩散型（布朗）收益风险溢价：η_s 是其价格，随波动率 V_t 放大</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>跳跃到达强度 λV_t——状态依赖，市场越乱跳得越勤，溢价随之水涨船高</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>单次跳跃的跳幅风险溢价：真实平均跳幅 μ 与风险中性跳幅 μ* 之差</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>读这个式子的方式是：第一项是「老实人」的报酬，跟波动率成比例；第二、三项合起来才是这篇论文的主角——<strong>跳跃风险溢价</strong>。它由两块相乘：一块是「跳得多勤」\(\lambda V_t\)，因为强度挂着 \(V_t\)，所以它会随市场波动起伏；另一块是「投资者多怕这一跳」\(\mu - \mu^\star\)。两者相乘，便得到一个会随市场情绪呼吸的、状态依赖的跳跃溢价。</p>
+<p>最后是期权定价。借助 \((\ln S, V, r, q)\) 的仿射结构和变换法 (Duffie, Pan 和 Singleton, 2000)，欧式看涨期权有半闭式解：</p>
+<p>$$ C_t = \mathbb{E}^{Q}_t\Big[\exp\Big(-\int_t^T r_u\, du\Big)(S_T - K)^+\Big] = S_t\, f\Big(V_t;\, \Psi;\, r_t, q_t;\, \tau;\, \tfrac{K}{S_t}\Big) $$</p>
+<p>正是这个 \(f\)，让 IS-GMM 能从 \(C_n = S_n f(V_n^{\Psi};\Psi)\) 里把隐含波动率 \(V_n^{\Psi}\) 反解出来。整套待估参数是 \(\Psi = [\kappa_v, \bar v, \sigma_v, \rho, \lambda, \mu, \sigma_J, \eta_s, \eta_v, \mu^\star]\)。</p>
+<h2 id="4">4 反转：是跳跃，不是波动率，撑住了这盘棋</h2>
+<p>模型搭好，接下来就是让数据说话。Pan 的策略是「步步紧逼」，一个模型一个模型地试。</p>
+<p><strong>第一步，只给波动率风险定价。</strong> 把 Heston (1993) 模型（含一个波动率风险溢价 \(\eta_v\)）拿去拟合现货与期权的联合序列 \(\{S_t, C_t\}\)。结果是：波动率风险溢价显著，拟合也有改善——但<strong>模型整体仍被联合数据拒绝</strong>。更糟的是，这样估出来的波动率溢价，会让 \(V\) 在 \(Q\) 测度下变成一个「爆炸」的过程，从而把长期期权严重定高。一个为了救短期期权而把长期期权弄垮的模型，显然不对。</p>
+<p><strong>于是反转出现。</strong> 第二步，改用 Bates (2000) 模型，引入跳跃和那个状态依赖的跳跃溢价。结果截然不同：跳跃风险溢价<strong>显著为正</strong>；模型<strong>不再被联合数据拒绝</strong>；而且估出的溢价水平<strong>不会扭曲长期期权</strong>。</p>
+<p><strong>第三步，把两种溢价同时放进去</strong>让它们竞争，结论干脆利落：<strong>状态依赖的跳跃风险溢价，远远盖过了波动率风险溢价。</strong> Table 3 把这两块溢价的估计摆在一起，二者都为正，但分量天差地别。</p>
+<div class="article-image"><img alt="Table 3: shows that both types of risk premia are estimated to be positive. The" src="assets/table-3.png" /></div>
+<p><em>Table 3: shows that both types of risk premia are estimated to be positive. The</em></p>
+<p>到这里，故事其实已经讲完了一半：在调和现货与期权动态这件事上，真正干活的是跳跃溢价，而不是大家此前盯着看的波动率溢价。</p>
+<h2 id="5">5 再下一城：横截面期权的「冷笑」</h2>
+<p>但 Pan 没有就此收手。她手里还攥着一张更难的考卷。</p>
+<p>前面的估计，自始至终只用了「一只现货 + 一只近价短期期权」这两条时间序列。可每一天，市场上还摆着一整排<strong>不同行权价、不同到期日</strong>的期权。如果把那些<strong>完全没参与估计</strong>的期权也拿出来对一遍，模型扛得住吗？</p>
+<p>扛住了，而且出人意料地好。用只从 \(\{S_t, C_t\}\) 这一对序列里估出来的参数，Bates (2000) 模型能很好地复制横截面期权数据，尤其是那道随时间变化的波动率<strong>「冷笑」</strong>——即深度虚值看跌期权的隐含波动率系统性地高于平价期权，画出来像一张往下撇的嘴。</p>
+<p>撑起这道冷笑的，又是那个状态依赖的跳跃溢价：在真实世界里只是「小幅向下」的跳跃，在风险中性世界里被感知为「显著更负」。换句话说——</p>
+<div class="callout"><div class="callout-title">Note</div><p>波动率「冷笑」的成因，主要是投资者对大幅负向价格跳跃的<strong>恐惧</strong>。Bakshi 等 (1997) 和 Bates (2000) 也得到过类似结论，但他们是直接拿整条横截面期权去拟合「风险中性」那一半；Pan 的不同在于，她只用一只现货和一只期权的时间序列，就把这块恐惧给「钓」了出来，并进一步指出：这种对跳跃的恐惧，不只反映在深度虚值看跌期权里，连<strong>近价期权</strong>里都有它的影子。</p></p></div>
+<p>（关于「罕见但可怕的事件如何被折进期权微笑」这条更偏均衡建模的思路，可参见<a href="/research/an-equilibrium-model-of-rare-event-premia-and-its/">《罕见，所以可怕：把「算不准的概率」写进期权的微笑里》</a>；而「从期权倒推出的风险厌恶为什么会咧嘴一笑」，则见<a href="/research/why-does-implied-risk-aversion-smile/">《为什么从期权里「读」出来的风险厌恶，会咧嘴一笑？》</a>。）</p>
+<h2 id="6">6 文献脉络</h2>
+<p>把这条线索捋一捋，会看到一段相当清晰的演进。</p>
+<p><strong>起点</strong>自然是 Black 和 Scholes (1973)——常数波动率、无跳跃的完备市场。它优雅，但解释不了股票收益的「肥尾」，也画不出横截面期权的「冷笑」。</p>
+<p><strong>第一次松绑</strong>是 Heston (1993)，把波动率放成一个平方根随机过程，并给出闭式期权定价。它捕捉了波动率的随机性和杠杆效应，却仍解释不了肥尾与冷笑（Andersen 等, 1998；Bakshi 等, 1997）。</p>
+<p><strong>第二次松绑</strong>是加跳跃。Bakshi、Cao 和 Chen (1997) 与 Bates (2000) 用横截面期权拟合，确认了跳跃对刻画冷笑的重要性。与此同时，方法论上 Duffie、Pan 和 Singleton (2000) 把「仿射跳跃扩散」的变换定价法做成了通用工具，为这类模型的解析处理铺好了路。</p>
+<p><strong>联合估计的浪潮</strong>随后兴起：Aït-Sahalia 等 (2001) 走非参数路线，Chernov 和 Ghysels (2000) 走参数路线，都试图让现货与期权两个市场互相校验。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p><strong>本文所处的位置</strong>，是在这两股潮流的交汇点上：它既站在 Bates (2000) 的模型肩上，又用 IS-GMM 把「现货 + 期权」的联合估计做成了一件解析上可控的事，从而第一次单独称量出<strong>跳跃风险的价格</strong>，并指出它的状态依赖性才是调和两个市场、解释冷笑的主角。</p>
+<h2>7 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：跳跃风险溢价和波动率风险溢价，到底差在哪？</strong></p>
+<blockquote>
+<p>差在「定价的是什么风险」。波动率溢价 \(\eta_v\) 补偿的是连续的波动率变动（\(V\) 的随机漂移），而跳跃溢价 \(\lambda V_t(\mu - \mu^\star)\) 补偿的是离散的、突发的崩盘式跳幅不确定性。Pan 的核心发现就是：在标普期权里，后者远比前者重要，而且只有后者不会把长期期权定价搞坏。</p>
+</blockquote>
+<p><strong>Q：「状态依赖」到底关键在哪？换成常数强度不行吗？</strong></p>
+<blockquote>
+<p>关键在于它让溢价能「看天吃饭」。强度写成 \(\lambda V_t\)，意味着市场越乱、跳跃越勤、溢价越高——这恰好对应「投资者在动荡期更怕崩盘」的直觉。Pan 还正式检验了「强度无常数项」这个约束；为了调和现货与期权动态，起主导作用的正是这个状态依赖项，而非常数项。</p>
+</blockquote>
+<p><strong>Q：把跳跃时点溢价和跳幅溢价合并（令 \(\lambda^\star=\lambda\)），会不会把结论带偏？</strong></p>
+<blockquote>
+<p>这是出于识别的务实之举：单靠标普指数数据，跳跃强度 \(\lambda\) 和平均跳幅 \(\mu\) 在 GMM 下很难分别钉死。合并之后，所有跳跃溢价都被算进跳幅项 \(\mu-\mu^\star\)。论文在第 5.2 节放松了这一约束去衡量两者的相对重要性，算是对稳健性的一个交代——但严格区分二者，依然是这类研究的老大难。</p>
+</blockquote>
+<p><strong>Q：这和「peso 问题」怎么区分？</strong></p>
+<blockquote>
+<p>区分不开，但二者本质不同。Jackwerth 和 Rubinstein (1996) 提出的「peso」成分，说的是虚值看跌期权之所以贵，是因为某种尚未兑现的极端事件的客观概率；而风险溢价的解释强调的是投资者对这种事件的<strong>厌恶</strong>。由于跳跃本就稀少、样本期又不长，实证上很难把两者掰开——这是论文坦承的局限。</p>
+</blockquote>
+<p><strong>Q：IS-GMM 比「直接对期权做 GMM」强在哪？</strong></p>
+<blockquote>
+<p>强在它绕开了期权定价的非线性。直接拿 \(C\) 做估计，\((S,C)\) 的联合分布会很难缠；而把 \(V\) 用期权反解出来后，作者就能直接利用 \((\ln S, V)\) 的仿射结构——它的联合条件矩生成函数有闭式解，矩条件唾手可得。代价是其中一个状态变量「随参数变动」，需要相应地修正大样本性质（见附录 C）。</p>
+</blockquote>
+<p><strong>Q：模型有没有明显的硬伤？</strong></p>
+<blockquote>
+<p>有两处作者自己点了名。一是波动率本身不能跳（而 Eraker 等, 2000 发现波动率跳很重要）；二是平方根设定可能让波动率「涨得不够快」（Jones, 1999）。论文在第 5.4 节用诊断检验考察了这些局限对跳跃溢价结论的影响。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把这套「双市场对质」搬到公司债 / 信用市场。</strong></p>
+<blockquote>
+<p>【经济故事】公司债利差里同样既有违约的「跳跃」成分，也有流动性与风险溢价成分。能不能像 Pan 对待股指那样，把单个发行人的股价（或 CDS）与其债券价格放进同一个跳跃扩散模型，单独称量「违约跳跃风险」的价格？
+【可行性】中。CDS + 股票 + 债券的高频联合数据在 TRACE 与 Markit 时代是可得的；难点在于公司层面的跳跃稀少、识别更弱，且需要处理信用市场的流动性摩擦。</p>
+</blockquote>
+<p><strong>2. 跳跃溢价的状态依赖，能不能换成「外资持有人结构」来驱动？</strong></p>
+<blockquote>
+<p>【经济故事】Pan 让跳跃强度挂在波动率 \(V_t\) 上；一个自然的延伸是问：当某类边际投资者（如外资）占比变化时，跳跃溢价是否随之改变？这把「谁在定价崩盘恐惧」这个问题摆上了台面。
+【可行性】中至低。需要把投资者持有结构（如 13F、跨境持仓数据）与期权隐含的跳跃溢价对齐；识别上要小心持有结构的内生性，最好找一个外生的持有人冲击做工具。</p>
+</blockquote>
+<p><strong>3. 用 IS-GMM 的「隐含状态」思想去估流动性的影子价格。</strong></p>
+<blockquote>
+<p>【经济故事】Pan 把看不见的波动率从期权里反解出来。同理，市场流动性也是个看不见的状态变量——能不能从「同一资产、不同流动性档位」的价格里把它隐含地反解出来，再估它的风险价格？
+【可行性】中。公司债的「同发行人多券种」结构（不同剩余期限、不同发行规模）天然提供了横截面，可用来识别流动性状态；难在为流动性写一个解析可控的定价核。</p>
+</blockquote>
+<p><strong>4. 跳跃溢价的状态依赖在危机里是否「断裂」？</strong></p>
+<blockquote>
+<p>【经济故事】Pan 的样本相对平静。2008 与 2020 这种极端时段，\(\lambda V_t\) 的线性设定可能不够——溢价或许会非线性地飙升，甚至出现「波动率自己也跳」的情形。
+【可行性】高。VIX 衍生品、标普期权的长样本数据齐备，可直接检验线性强度设定在危机窗口是否失效（关于危机如何掀翻各种「均值回归」式的波动率模型，可参见<a href="/research/valuation-of-vix-derivatives/">《恐慌指数也能定价：当 2008 把所有「均值回归」模型一起按在地上摩擦》</a>）。</p>
+</blockquote>
+<h2 id="">我的判断</h2>
+<p>这篇论文的贡献，我认为有两层，且都立得住。</p>
+<p>方法上，IS-GMM 是个漂亮的「以退为进」：与其在期权的非线性里硬刚，不如把看不见的波动率反解出来，退回到状态变量自身的仿射世界里做矩估计。这个思路的可迁移性，比它解决的具体问题更值钱。</p>
+<p>实质上，它第一次把「跳跃风险的价格」从「波动率风险的价格」里干净地剥离出来，并给出一个反直觉却有力的结论：撑住整盘棋、画出那道冷笑的，是状态依赖的跳跃溢价，而非大家长期盯着的波动率溢价。更难得的是稳健性——只用一对时间序列估出的参数，竟能外推解释整条横截面期权。这种「样本外的胜利」，在结构估计的文章里并不多见。</p>
+<p>对识别，我有两点保留。其一，是作者自己也承认的「peso 问题 vs. 风险溢价」之争：在一个跳跃稀少、样本不长的世界里，「概率本就如此」和「投资者过度厌恶」在统计上几乎是同一回事，分不开就难言因果。其二，是把跳跃时点溢价并入跳幅溢价（\(\lambda^\star=\lambda\)）这一刀——它让模型可估，却也意味着我们读到的「跳跃溢价」是个混合体，其内部构成只能靠额外假设去拆。</p>
+<p>后续我最想看到的，是把这套框架放到更长、含危机的样本里，去检验那个 \(\lambda V_t\) 的<strong>线性</strong>强度设定。我的直觉是，真正的崩盘恐惧在尾部是高度非线性的——而那，恰恰是 Pan 这篇奠基之作留给后人最诱人的一道缝隙。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Bakshi, G., Cao, C., Chen, Z. (1997). Empirical performance of alternative option pricing models. <em>Journal of Finance</em> 52, 2003–2049.</li>
+<li>Bates, D. (2000). Post-’87 crash fears in S&amp;P 500 futures options. <em>Journal of Econometrics</em> 94, 181–238.</li>
+<li>Black, F. (1976). Studies of stock price volatility changes. <em>Proceedings of the 1976 Meetings of the Business and Economics Statistics Section, American Statistical Association</em>, 177–181.</li>
+<li>Black, F., Scholes, M. (1973). The pricing of options and corporate liabilities. <em>Journal of Political Economy</em> 81, 637–654.</li>
+<li>Chernov, M., Ghysels, E. (2000). A study towards a unified approach to the joint estimation of objective and risk neutral measures for the purpose of options valuation. <em>Journal of Financial Economics</em> 56, 407–458.</li>
+<li>Duffie, D., Pan, J., Singleton, K. (2000). Transform analysis and asset pricing for affine jump-diffusions. <em>Econometrica</em> 68, 1343–1376.</li>
+<li>Heston, S. (1993). A closed-form solution of options with stochastic volatility with applications to bond and currency options. <em>Review of Financial Studies</em> 6, 327–343.</li>
+<li>Jackwerth, J.C., Rubinstein, M. (1996). Recovering probability distributions from option prices. <em>Journal of Finance</em> 51, 1611–1631.</li>
+<li>Pan, J. (2002). The jump-risk premia implicit in options: Evidence from an integrated time-series study. <em>Journal of Financial Economics</em> 63, 3–50.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个对不上的账</a></li>
+        <li><a href="#2">2 真正关键的一步：把两个市场放进同一个模型一起估</a></li>
+        <li><a href="#3">3 模型：三种风险，三种价格</a></li>
+          <li><a href="#3-1-p">3.1 真实测度 \(P\) 下的数据生成过程</a></li>
+          <li><a href="#3-2-q">3.2 风险中性测度 \(Q\) 下的动态</a></li>
+          <li><a href="#3-3">3.3 一个方程看懂三种溢价</a></li>
+        <li><a href="#4">4 反转：是跳跃，不是波动率，撑住了这盘棋</a></li>
+        <li><a href="#5">5 再下一城：横截面期权的「冷笑」</a></li>
+        <li><a href="#6">6 文献脉络</a></li>
+        <li><a href="#7-q-a">7 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#">我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

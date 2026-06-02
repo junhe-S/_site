@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Eom, Helwege &amp; Huang (2004, <em>Review of Financial Studies</em>)</strong>：他们把 Merton、Geske、Longstaff-Schwartz、Leland-Toft、Collin-Dufresne-Goldstein 这五个结构模型，放到同一批 <code>182</code> 只「干净」的公司债上做了一次正面对账，结论却把流传了三十年的「常识」掀翻了一半——老的 Merton 模型确实把利差<strong>算低</strong>了，可那些更「先进」的新模型，平均反而把利差<strong>算高</strong>了；而真正的病根，既不是太高也不是太低，是预测值<strong>离谱地散</strong>：给安全债算出近乎零的利差，给高风险债算出大得吓人的利差。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Eom, Helwege &amp; Huang (2004, <em>Review of Financial Studies</em>)</strong>：他们把 Merton、Geske、Longstaff-Schwartz、Leland-Toft、Collin-Dufresne-Goldstein 这五个结构模型，放到同一批 <code>182</code> 只「干净」的公司债上做了一次正面对账，结论却把流传了三十年的「常识」掀翻了一半——老的 Merton 模型确实把利差<strong>算低</strong>了，可那些更「先进」的新模型，平均反而把利差<strong>算高</strong>了；而真正的病根，既不是太高也不是太低，是预测值<strong>离谱地散</strong>：给安全债算出近乎零的利差，给高风险债算出大得吓人的利差。</p></p></div>
 <h2 id="1">1 一个三十年的「老问题」</h2>
 <p>故事得从一句几乎人人会背的「定论」讲起。</p>
 <p>自 Black 和 Scholes (1973)、Merton (1974) 把期权定价的那套随机分析搬到公司债上之后，信用风险的理论文献就像滚雪球一样膨胀。它的核心想法优雅得让人着迷：一家有限责任公司的<strong>股权</strong>，本质上就是一份<strong>以公司资产价值为标的、以债务面值为执行价的看涨期权</strong>——资产值钱，股东行权（继续经营）；资产不值钱，股东弃权（违约），把公司丢给债权人。于是债券价格、违约概率、信用利差，全都能从一个 Black-Scholes 式的公式里推出来。</p>
@@ -107,7 +107,7 @@
 <li><strong>CDG（Collin-Dufresne &amp; Goldstein, 2001）</strong>：在 LS 之上加了一条<strong>平稳杠杆率</strong> (stationary leverage ratio)——公司只能在短期内偏离目标杠杆，长期会被拉回去。（关于「债务本身会动」这条线索如何补全了信用风险的另一半，可参见<a href="/research/debt-dynamics-and-credit-risk/">《债，其实一直在动》</a>。）</li>
 </ul>
 <p>这五个模型在四个维度上各不相同：违约边界怎么定、回收率多少、息票怎么处理、利率是否随机。文章的实现逻辑是一条标准流水线：每个模型都有解析或准解析的债券定价公式（G 模型的多元正态积分太难算，改用二叉树/有限差分），算出模型价格后，再换算成半年复利的「债券等价收益率」(bond equivalent yield)，与市场收益率相减，得到<strong>预测利差</strong>与<strong>实际利差</strong>之差。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>注意：这是一篇<strong>实证检验</strong>论文，不是又一个新模型。它的「识别」不在于找外生冲击，而在于<strong>控制变量式的公平比较</strong>——同一批债、同一套参数估计口径、同一个利差定义，让五个模型在完全相同的赛道上各跑一遍。谁高谁低、谁准谁糙，一目了然。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>注意：这是一篇<strong>实证检验</strong>论文，不是又一个新模型。它的「识别」不在于找外生冲击，而在于<strong>控制变量式的公平比较</strong>——同一批债、同一套参数估计口径、同一个利差定义，让五个模型在完全相同的赛道上各跑一遍。谁高谁低、谁准谁糙，一目了然。</p></p></div>
 <p>参数估计是这条流水线里最容易藏污纳垢的环节，文章也最较真。几个关键约定：违约边界用资产负债表上的<strong>总负债账面值</strong>（而非单只债的面值），因为样本公司还有别的债，股权只有在所有债都还清后才有剩余价值；面值 <code>F</code> 取总负债，公司价值 <code>V</code> 取「股权市值 + 总负债账面值」；税率统一假设为 <code>0.35</code>；利率曲线用 Nelson &amp; Siegel (1987) 或 Vasicek (1977) 拟合 CMT 数据。</p>
 <h2 id="3-merton">3 把「结构模型」拆开看：从 Merton 说起</h2>
 <p>为了让后面的结果读得明白，值得把这套框架最底层的那块积木——Merton 模型——一步步摆出来。</p>
@@ -137,7 +137,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p><strong>但第二个发现，是彻底的反转。</strong> LS、LT、CDG 这三个「更先进」的模型，平均利差不但不低，反而<strong>太高了</strong>。尤其是 Leland-Toft，它在绝大多数债上都高估利差，对高息票债尤其离谱——以至于它连<strong>短期债</strong>的信用风险都高估了（而旧文献一口咬定结构模型在短期债上利差「永远不够高」，这里恰好被打脸）。所以「结构模型一律低估利差」这句流传三十年的话，至少错了一半。</p>
 <p><strong>而第三个、也是最深刻的发现是：平均值本身就是个骗局。</strong> 文章反复强调，这些模型的预测利差「要么小得荒唐，要么大得离谱」(ludicrously small or incredibly large)，平均误差几乎不携带信息。真正的病不在<strong>水平</strong> (level)，而在<strong>离散</strong> (dispersion)：新模型对高杠杆、高波动的公司<strong>严重夸大</strong>信用风险，却对最安全的债<strong>依旧低估</strong>。于是平均下来「看着还行」，逐只看却全是大错。LS、CDG、LT 三个模型共享这个毛病；若再叠上随机利率、再用「面值回收」规则去刻画破产成本，离散度还会进一步恶化。</p>
 <p>把三步连起来，文章给整个领域留下一句斩钉截铁的诊断：</p>
-<div class="callout"><div class="callout-title">Warning</div><p>结构债券定价的真正挑战，不是「把平均利差抬到比 Merton 高」——那太容易了，随便夸大点违约风险就行——而是要在<strong>抬高均值的同时，不把波动率、杠杆、息票带来的风险一起放大到失真</strong>。一句话：别为了喂饱风险债的胃口，而饿死安全债的利差。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>结构债券定价的真正挑战，不是「把平均利差抬到比 Merton 高」——那太容易了，随便夸大点违约风险就行——而是要在<strong>抬高均值的同时，不把波动率、杠杆、息票带来的风险一起放大到失真</strong>。一句话：别为了喂饱风险债的胃口，而饿死安全债的利差。</p></p></div>
 <p>这个洞见之所以重要，是因为它把「信用利差之谜」从一道「水平题」改写成了一道「形状题」。后来者若想做出更好的结构模型，得避开那些「专挑高风险债下狠手、却几乎不碰最安全债」的设定。这条思路，也呼应了后来文献对结构模型「漏掉了什么」的反思（比如把会计透明度这类信息摩擦请进利差的期限结构，见<a href="/research/accounting-transparency-and-the-term-structure-of-credit/">《财报越「干净」，短债越便宜》</a>）。</p>
 <h2 id="6">6 文献脉络</h2>
 <p>把这条线索捋直，会看到一个相当清晰的「理论狂奔、实证滞后」的故事。</p>

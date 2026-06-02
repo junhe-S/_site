@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>你以为分散了风险，可一到崩盘那天，它们全抱成了团 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>你以为分散了风险，可一到崩盘那天，它们全抱成了团</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2002 JFE]</span> Asymmetric Correlations of Equity Portfolios</div>
+        <div class="paper-source-authors"><a href="/research/author/andrew-ang/">Andrew Ang</a>, <a href="/research/author/joseph-chen/">Joseph Chen</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">相关性</span>
+        
+        
+        
+        
+        <span class="tag">尾部风险</span>
+        
+        
+        
+        
+        <span class="tag">条件矩</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Ang &amp; Chen (2002, Journal of Financial Economics)</strong>：美国股票与大盘的相关性，在「一起下跌」时远高于「一起上涨」时——条件在下行的相关性，比正态分布所隐含的高出 <code>11.6%</code>，而上行的相关性却与正态无异。两位作者造了一个不依赖任何模型的统计量 <code>H</code> 来度量、比较、检验这种不对称，并发现规模小、价值型、过去的输家、以及低 beta 的股票，下行抱团得更紧。</p></p></div>
+<h2 id="1">1 一个让人不安的引言</h2>
+<p>先想象一件最朴素的事。你按照教科书的教诲，把钱分散到一篮子股票里。分散的逻辑是什么？是相关性。两只股票的相关系数越低，组合的波动就越小，分散的好处就越大。于是你算出一个无条件相关系数（unconditional correlation），比如 <code>ρ = 0.5</code>，心里有了底，觉得「风险已经摊开了」。</p>
+<p>可问题在于，相关系数是一个「平均」出来的数字。它把行情好的日子和行情坏的日子混在一起，算出一个折中的值。于是一个自然的问题是：在你最需要分散、也就是市场暴跌的那几天，这个 <code>0.5</code> 还作数吗？</p>
+<p>Ang 和 Chen 的回答是：不作数，而且偏的方向恰恰是最坏的那个方向。他们发现，当一只股票和大盘<strong>同时下跌</strong>时，它们之间的相关性会显著升高；而当两者同时上涨时，相关性却没什么变化。换句话说，分散这把伞，偏偏在下雨那天会自动收起来。</p>
+<p>这个现象本身，业界早有体感。真正难的，是怎样把它<strong>严谨地</strong>量出来——难就难在一个看似技术、实则致命的陷阱：条件偏误。</p>
+<h2 id="2">2 真正的拦路虎：条件偏误</h2>
+<p>这是全文最关键、也最容易被忽略的一步，所以我们慢一点讲。</p>
+<p>直觉上，你会这样做：把所有「股票和大盘都跌了」的日子挑出来，单独算一个相关系数；再把「都涨了」的日子挑出来，算另一个；两者一比，不就看出不对称了吗？</p>
+<p>错。哪怕真实世界严格服从一个对称的、相关性恒定的 双变量正态分布 (bivariate normal distribution)，你这样切出来的两个条件相关系数，也<strong>不等于</strong>那个无条件的 <code>ρ</code>。这就是 条件偏误 (conditioning bias)：当你按照变量自身的取值去筛样本（比如只看都跌的日子），你算出来的相关性会被这个筛选行为本身扭曲。</p>
+<p>作者用闭式解把这件事钉死了。他们定义了一个 双重截断 (doubly truncated) 正态分布的条件相关性：</p>
+<p>$$\rho^{\#}(h_1,h_2,k_1,k_2)=\mathrm{corr}\!\left(\tilde{x},\tilde{y}\mid h_1<\tilde{x}<h_2,\; k_1<\tilde{y}<k_2;\;\rho\right)$$</p>
+<p>这里 <code>x̃</code> 和 <code>ỹ</code> 是标准化后的股票收益与市场收益。Rosenbaum (1961) 早就算过它的矩。关键的结论是：哪怕 <code>ρ</code> 固定不变，只要你改变截断点 <code>(h, k)</code>，这个条件相关性就会变。</p>
+<p>具体有多反直觉？作者给了一个数字。设无条件相关性 <code>ρ = 0.5</code>，在正态分布下，条件在「两者都比均值低 1 个标准差」时的相关性是：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{a1}{\mathrm{corr}(\tilde{x},\tilde{y}\mid \tilde{x}<-1,\;\tilde{y}<-1)} = \cssId{a2}{0.1789} + \cssId{a3}{H}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>下行条件相关性：两个标准化收益都跌破 -1 个标准差时的相关</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>正态分布的「应有值」——注意它只有 0.1789，远低于 0.5</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>数据相对正态多出来的那一截不对称，正是要度量的 H</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>请盯住那个 <code>0.1789</code>。一个无条件相关性高达 <code>0.5</code> 的正态分布，一旦你只看尾部，条件相关性会<strong>掉到</strong> <code>0.18</code> 左右。原因很简单：正态分布的尾巴是「散」的、是平的，越往极端走，两个变量的联动越弱。所以——如果你天真地拿尾部的条件相关性去和 <code>0.5</code> 比，你会得出「下行相关性反而更低」的荒谬结论；反过来，如果数据里下行相关性明明该掉到 <code>0.18</code>，结果却没掉那么多，那才是真正的不对称信号。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>这正是为什么不能「眼睛一闭、按涨跌切样本直接比」。Forbes &amp; Rigobon (1999)、Boyer et al. (1999)、Stambaugh (1995) 都警告过：忽略条件偏误，会凭空「制造」出根本不存在的不对称。Ang 和 Chen 的全部功夫，就是先把正态分布「本该有」的偏误算干净，再看数据偏离了多少。</p></p></div>
+<p>接着，一个自然的问题是：怎么把「偏离了多少」浓缩成<strong>一个</strong>可比较、可检验的数字？</p>
+<h2 id="3-h">3 H 统计量：一把不挑模型的尺子</h2>
+<p>作者借用了 Longin &amp; Solnik (2001) 的 超越相关性 (exceedance correlation) 这个工具。它的定义很干脆——给定一个门槛 <code>ϑ</code>，只看两个变量同时超过（正向）或同时跌破（负向）这个门槛时的相关性：</p>
+<p>$$\rho^c(\vartheta)=\begin{cases}\mathrm{corr}(\tilde{x},\tilde{y}\mid \tilde{x}>\vartheta,\;\tilde{y}>\vartheta;\;\rho) & \text{if } \vartheta\ge 0\\[4pt]\mathrm{corr}(\tilde{x},\tilde{y}\mid \tilde{x}<\vartheta,\;\tilde{y}<\vartheta;\;\rho) & \text{if } \vartheta\le 0\end{cases}$$</p>
+<p>把 <code>ρ^c(ϑ)</code> 对着 <code>ϑ</code> 画出来，对正态分布而言，这条曲线是<strong>对称的、帐篷状</strong>（tent-shaped）的——左右两侧随 <code>|ϑ|</code> 增大而平滑趋零。于是检验不对称就变成了一件很视觉的事：把数据的超越相关性曲线，叠在正态分布的帐篷曲线上，看左半边（下行）是不是「拱」得比右半边（上行）高。</p>
+<p><code>H</code> 统计量做的，就是把数据曲线与某个模型（基准用正态）所隐含曲线之间的<strong>距离</strong>，在一系列门槛 <code>ϑ</code> 上加权平方、再开方，汇总成一个标量。它的妙处有三：</p>
+<ul>
+<li><strong>不挑模型</strong>。它衡量的是尾部相关性的行为，而不是某个 GARCH 设定下的「协方差对负向冲击的反应」。所以同一把尺子，可以拿去量任何候选模型（正态、GARCH、跳跃、机制转换……），看谁离数据更近。</li>
+<li><strong>省观测</strong>。极端联动事件本来就稀少，作者用时间序列的全部样本去估计尾部那几个点，把有限的极端观测「榨」到极致。</li>
+<li><strong>能检验</strong>。配合 GMM 式的渐近分布，<code>H</code> 不只是描述，还能给出拒绝「多元正态」原假设的 t 值。</li>
+</ul>
+<p>落到数据上，结论很硬：把美国股票组合与大盘放在一起，下行（<code>ϑ &lt; 0</code>）的条件相关性比正态分布隐含的平均高出 <code>11.6%</code>；而上行（<code>ϑ &gt; 0</code>）那一侧，统计上与正态分布<strong>无法区分</strong>。无论用 日 (daily)、周 (weekly) 还是 月 (monthly) 频率，多元正态分布的原假设都被干净利落地拒绝。</p>
+<p>（关于「与其盯着相关系数，不如直接去数一起暴跌的次数」这条思路，国际传染文献里有一个互补的做法，可参见<a href="/research/a-new-approach-to-measuring-financial-contagion/">《别再盯着相关系数了——用「一起暴跌」数出传染》</a>；而把这把「不挑模型」的尺子进一步一般化的后续工作，则可参见<a href="/research/asymmetries-in-stock-returns-statistical-tests-and-economic/">《涨时各走各的，跌时一起跳水：给「不对称」一把无关模型的尺子》</a>。）</p>
+<h2 id="4">4 谁抱团抱得最紧？——横截面的故事</h2>
+<p>光说「市场整体有不对称」还不够过瘾。Ang 和 Chen 真正出彩的一步，是把股票按特征分组，去问：<strong>哪一类股票的下行抱团最严重？</strong></p>
+<p>他们用 CRSP 和 COMPUSTAT 的数据，按市值（规模）、账面市值比（价值）、过去 6 个月收益（动量）把股票分成五分位组合，再加上按 beta、协偏度、杠杆排序的组合，以及「规模 × beta」「规模 × 杠杆」的双重排序组合。结论可以归成几条：</p>
+<ul>
+<li><strong>小公司、价值股、过去的输家</strong>，下行相关性的不对称更强。传统的防御性行业——石油、公用事业——也表现出显著的不对称。</li>
+<li><strong>更risky的股票（高 beta）反而不对称更小</strong>；控制规模之后，<strong>低 beta</strong> 的股票才是下行抱团最紧的那一批。这一点相当反直觉：你以为高 beta 是「跟跌跟得最凶」的，但在尾部联动这个维度上，恰恰相反。</li>
+<li>控制规模之后，<strong>杠杆</strong>与相关性不对称<strong>无关</strong>。这一刀切得很关键——因为「波动率的杠杆效应」是一套主流解释（公司一跌，杠杆被动抬高，波动随之放大）。作者的发现说明：相关性不对称不是杠杆的副产品。</li>
+<li>这种不对称，与 偏度 (skewness) 和 协偏度 (co-skewness) 是<strong>两回事</strong>，也不能被 beta 所代表的风险吸收。它是一个独立的高阶现象。</li>
+</ul>
+<p>换句话说，相关性不对称不是某一类「问题股」的专利，而是横跨规模、价值、动量、行业的系统性特征，并且它有自己的「面孔」——和我们熟悉的偏度、杠杆、beta 都对不上号。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>同样是 Ang 和 Chen，两年后（与 Xing 合作）把这条线推向了定价：如果股票在下行时一起抱团，那么对下行风险更敏感的股票，是否该要求更高的预期收益？答案是肯定的，可参见<a href="/research/downside-risk/">《跌的时候才显形：被 CAPM 漏掉的那半个 beta》</a>。本文是那条定价线的「现象学前传」。</p></p></div>
+<h2 id="5">5 一个把代价算成钱的模型</h2>
+<p>那么，这种不对称到底「值多少钱」？作者在正文第 2 节用一个干净的资产配置模型，把它翻译成了真金白银。这一节虽小，却是全文的「钩子」，值得一步步看。</p>
+<p><strong>设定。</strong> 一个 常相对风险厌恶 (constant relative risk aversion, CRRA) 的投资者，把财富配置在两个风险资产（连续复利收益 <code>x</code>、<code>y</code>）和一个无风险资产之间，最大化期末效用：</p>
+<p>$$\max_{a_1,a_2}\; \mathbb{E}\!\left[\frac{W^{\,1-\gamma}}{1-\gamma}\right]$$</p>
+<p>期末财富为</p>
+<p>$$W=e^{r_f}+a_1\!\left(e^{x}-e^{r_f}\right)+a_2\!\left(e^{y}-e^{r_f}\right)$$</p>
+<p>参数取 <code>r_f = 0.05</code>，风险厌恶 <code>γ = 4</code>，两资产同均值 <code>μ = 0.07</code>、同波动 <code>σ = 0.15</code>、无条件相关 <code>ρ = 0.5</code>。由于两资产对称，相信正态分布的投资者会等额持有，记这个组合权重为 <code>aʷ</code>。</p>
+<p><strong>真实世界其实是机制转换的。</strong> 投资者<strong>误以为</strong>收益服从正态，但真实分布是一个 机制转换 (regime-switching, RS) 模型：</p>
+<p>$$X=(x,y)'\sim N(\mu_{s_t},\Sigma_{s_t}),\qquad s_t\in\{1,2\}$$</p>
+<p>机制之间由 马尔可夫链 (Markov chain) 切换，转移概率为</p>
+<p>$$\begin{pmatrix}P & 1-P\\ 1-Q & Q\end{pmatrix},\qquad P=\Pr(s_t=1\mid s_{t-1}=1),\; Q=\Pr(s_t=2\mid s_{t-1}=2)$$</p>
+<p>每个机制的协方差矩阵写成</p>
+<p>$$\Sigma_i=\sigma_i^2\begin{pmatrix}1 & \rho_i\\ \rho_i & 1\end{pmatrix},\qquad i=1,2$$</p>
+<p>作者令 <code>σ₁ = σ₂ = 0.15</code>（关掉波动率的影响，专注相关性），并选 <code>ρ₁ &gt; ρ₂</code> 且 <code>(ρ₁+ρ₂)/2 = ρ</code>，使这个 RS 模型与正态分布有<strong>完全相同</strong>的前两阶无条件矩——同样的均值、波动、无条件相关。唯一的区别，是它在下行时的条件相关性会高出 <code>H</code>：</p>
+<p>$$\mathrm{corr}(\tilde{x},\tilde{y}\mid \tilde{x}<-1,\;\tilde{y}<-1)=0.1789+H$$</p>
+<p><strong>关键的一步在于：误判是有代价的。</strong> 因为 RS 模型在「高相关机制」里下行抱团更紧，相信正态分布的投资者会<strong>高估</strong>下行的分散好处，从而在该谨慎时反而超配了风险资产。作者用一个补偿量 <code>ω</code> 来度量这个损失——要让投资者心甘情愿地拿着次优的正态权重 <code>aʷ</code> 而非最优的 RS 权重 <code>aⁿ</code>，需要事前补偿他多少钱：</p>
+<p>$$\omega=100\times(\bar{\omega}_{s_t}-1),\qquad \bar{\omega}_{s_t}=\left(\frac{Q^{n}_{s_t}}{Q^{w}_{s_t}}\right)^{1/(1-\gamma)}$$</p>
+<p>其中 <code>Q^n</code> 与 <code>Q^w</code> 分别是最优权重与次优权重下的间接 CRRA 效用。</p>
+<p><strong>结果。</strong> 当 <code>H = 0.10</code> 时，在高相关机制（regime 1）里，投资者需要<strong>超过 120 个基点</strong>的补偿；在 regime 2 里也要约 <strong>100 个基点</strong>。对一个本就该被分散好处吸引的投资者来说，这笔因为「用错了分布」而付出的代价，一点都不小。</p>
+<p>这就把整篇文章的动机闭合了：相关性不对称不是一个统计学玩具，它直接侵蚀了分散化和风险管理的根基。</p>
+<h2 id="6">6 哪种模型救得了场？</h2>
+<p>最后一个自然的问题是：既然正态分布被否决，那现有的哪些模型能复现数据里的不对称？作者拉来四个候选：</p>
+<ol>
+<li>非对称 GARCH-M 模型；</li>
+<li>在双变量正态上叠加跳跃的 泊松跳跃 (Poisson Jump) 模型；</li>
+<li>机制转换的正态分布模型；</li>
+<li>机制转换的 GARCH 模型。</li>
+</ol>
+<p>用 <code>H</code> 统计量当裁判，结论是：<strong>机制转换类模型表现最好</strong>——这与第 5 节模型里「真实世界是 RS」的假设遥相呼应。直觉也清楚：一个低概率、高相关的「危机机制」，天然能制造出「平时松、崩盘时紧」的尾部联动，这恰恰是 GARCH 那种「靠过去冲击平滑驱动」的机制很难一步到位的。但作者也很诚实：<strong>没有一个模型能完全解释</strong>数据里不对称的程度。这扇门，他们只推开了一条缝。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这篇论文放回它生长的土壤里看，会更清楚它的位置。</p>
+<p>最早的一条根，是「股票收益与其波动率负相关」的长期文献，以及在 GARCH 框架内记录协方差不对称的工作——Conrad, Gultekin &amp; Kaul (1991)、Kroner &amp; Ng (1998) 用多元非对称 GARCH 刻画美国股票组合，Bekaert &amp; Wu (2000) 则在日本股票上把它和杠杆效应、波动率反馈联系起来。这一支的共同特征是：不对称被<strong>关在某个特定 GARCH 设定里</strong>定义。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>另一条根来自国际市场。Karolyi &amp; Stulz (1996) 问「市场为什么一起动」，Longin &amp; Solnik（1995, 2001）用 极值理论 (extreme value theory) 证明国际股市在大跌时相关性远高于大涨时——但他们停在「描述」，没给出针对特定分布的刻画。与此并行，方法论的警钟由 Forbes &amp; Rigobon (1999)、Boyer et al. (1999) 敲响：当心条件偏误。而 Hamilton (1989) 的机制转换、Harvey &amp; Siddique (2000) 的条件协偏度，则分别提供了「候选模型」与「需要被区分开的相邻概念」。</p>
+<p>Ang &amp; Chen (2002) 的位置，正在这几条线的交汇处：它把国际文献里的「下行相关性升高」搬回<strong>美国国内</strong>市场，用一个<strong>不依赖 GARCH、自带条件偏误修正</strong>的 <code>H</code> 统计量统一了度量与检验，并第一次系统地刻画了相关性不对称的<strong>横截面决定因素</strong>（规模、价值、动量、beta、杠杆）。</p>
+<h2>评论与延伸（Q&amp;A + 研究方向）</h2>
+<p><strong>(a) 几个可能的疑问</strong></p>
+<p><strong>Q：「下行相关性高」会不会只是 GARCH 那种波动率聚集的副产品？</strong></p>
+<blockquote>
+<p>不是。作者特意把第 5 节模型里的 <code>σ₁ = σ₂</code> 设成相等，剥离掉波动率渠道，仅靠 <code>ρ₁ ≠ ρ₂</code> 就造出了不对称；实证上他们也发现非对称 GARCH 模型并不能很好复现 <code>H</code>，反倒是机制转换模型更贴。所以相关性不对称是一个独立于「波动率不对称」的现象。</p>
+</blockquote>
+<p><strong>Q：这和「负偏度」「协偏度」是不是一回事？</strong></p>
+<blockquote>
+<p>不是。论文明确指出相关性不对称与 偏度、协偏度 在度量上是「fundamentally different」的，也不能被 beta 吸收。偏度刻画的是单一分布的形状，而 <code>H</code> 刻画的是两个变量在尾部的<strong>联动结构</strong>，二者可以彼此独立地存在。</p>
+</blockquote>
+<p><strong>Q：那个反直觉的「低 beta 股票不对称更强」，会不会是规模没控干净？</strong></p>
+<blockquote>
+<p>作者正是用「规模 × beta」双重排序来回应这个担忧的：控制规模之后，低 beta 组的相关性不对称仍然更高。当然，beta 与规模、价值高度纠缠，能否完全洗净仍可争论，但双重排序至少排除了「纯规模效应伪装成 beta 效应」这一最直接的混淆。</p>
+</blockquote>
+<p><strong>Q：11.6% 这个数字，到底是相对什么说的？</strong></p>
+<blockquote>
+<p>是相对<strong>正态分布隐含的条件相关性</strong>而言。回忆那个 <code>0.1789</code>：正态分布在尾部本来就该「相关性掉下去」，数据相对这个基准平均高出 11.6%。它衡量的不是「比无条件相关高 11.6%」，而是「比正态该有的尾部相关高 11.6%」——这正是先修正条件偏误的意义所在。</p>
+</blockquote>
+<p><strong>Q：H 统计量比直接看 Longin-Solnik 的超越相关性曲线，多了什么？</strong></p>
+<blockquote>
+<p>多了「可检验」和「可比较」。Longin &amp; Solnik 给出曲线和极值理论的极限行为，但没有针对特定分布的统计量。<code>H</code> 把曲线与任意基准之间的距离汇总成一个带渐近分布的标量，于是你既能拒绝正态原假设，又能拿同一把尺子去给 GARCH、跳跃、RS 等模型排座次。</p>
+</blockquote>
+<p><strong>Q：样本是美股，结论能外推到债券或新兴市场吗？</strong></p>
+<blockquote>
+<p>论文本身只声称美国股票。它的贡献恰恰是说明「下行抱团不只是国际现象、在单一国家内部也很强」。债券、信用、跨资产能否复现，是开放问题——而这正引出了下面的研究方向。</p>
+</blockquote>
+<p><strong>(b) 几个可能的研究问题与提案</strong></p>
+<p><strong>1. 把 H 统计量搬到公司债市场。</strong>
+- 【经济故事】公司债在信用利差走阔时是否也「下行抱团」？如果是，那么基于评级、行业、流动性分组的债券组合，其下行相关性不对称的横截面，可能和股票截然不同——信用是带「违约同步」的，尾部联动也许更极端。
+- 【可行性】中。TRACE 提供成交价，可构造日度/周度债券组合收益；难点在债券交易稀疏导致的非同步定价偏误，需要先处理 Scholes-Williams (1977) 式的滞后调整，再套用 <code>H</code> 框架。</p>
+<p><strong>2. 外资持有人是「抱团」的放大器还是缓冲器？</strong>
+- 【经济故事】如果一类股票的边际投资者是会在危机中集体撤资的外资，那么它的下行相关性不对称应当更强。把「外资可投资度 (investability)」作为分组变量，看它是否预测更高的 <code>H</code>，可以把 Ang-Chen 的横截面故事接到资本流动上。
+- 【可行性】中。需要个股层面的外资持股或可投资度数据（如新兴市场的 investable 标记），识别上可借助指数纳入这类准外生事件来缓解内生性。</p>
+<p><strong>3. 相关性不对称的「定价」缺口。</strong>
+- 【经济故事】既然下行抱团有真金白银的效用代价（第 5 节的 120 bps），那么对「系统性下行相关性」暴露更高的股票，是否要求更高的预期收益？这是 downside beta 之外、更纯粹的「联动结构」定价问题。
+- 【可行性】高。可构造个股对市场的条件下行相关性载荷，做 Fama-MacBeth 横截面回归；数据现成（CRSP），主要挑战是把「下行相关 beta」与已有的 downside risk、协偏度因子区分开。</p>
+<p><strong>4. 机制转换模型「差最后一口气」的那部分是什么？</strong>
+- 【经济故事】作者承认没有模型能完全复现 <code>H</code>。残差里缺的，可能是「相关性本身的时变跳跃」或「机制数大于 2」。把 RS 模型扩展到时变转移概率（à la Gray, 1996）或三机制，看 <code>H</code> 的拟合缺口能补多少。
+- 【可行性】中。模型估计成熟，但高维 RS-GARCH 的似然面崎岖、识别困难，需要谨慎的数值优化与样本外检验。</p>
+<h2 id="">我的判断</h2>
+<p>这篇论文的贡献，我认为主要在<strong>方法</strong>而非现象本身——「下行抱团」业界早有体感，国际文献也记录过。它真正立得住的，是把一个一直被条件偏误污染的问题，用一个不挑模型、自带偏误修正、还能做假设检验的 <code>H</code> 统计量给「干净化」了，并第一次系统地画出了相关性不对称的横截面地图。「低 beta 抱团更紧」「杠杆无关」这两条，尤其值得后人反复咀嚼，因为它们直接反驳了「波动率杠杆效应」这套主流叙事。</p>
+<p>对识别的担忧有两点。其一，<code>H</code> 统计量在尾部的估计依赖于极少的极端观测，其有限样本性质和对门槛 <code>ϑ</code> 选择的敏感性，论文虽用全样本时间序列缓解，但稳健性边界仍值得追问。其二，规模、价值、动量、beta、杠杆这些特征彼此高度纠缠，双重排序能控住一部分，却难说把所有混淆都洗净了——「低 beta」效应在多大程度上是别的特征的影子，仍是悬而未决的。</p>
+<p>后续我最想看到的，是把这套尺子接到<strong>信用市场和外资持有人</strong>上：公司债在危机里的下行联动，是否比股票更极端？而当边际投资者是会集体撤离的外资时，尾部抱团会不会被系统性放大？这两个问题，都能把 Ang-Chen 这把「现象学的尺子」，量到更有政策含义的地方去。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Ang, A., Chen, J. (2002). Asymmetric correlations of equity portfolios. <em>Journal of Financial Economics</em> 63(3), 443–494.</li>
+<li>Bekaert, G., Wu, G. (2000). Asymmetric volatility and risk in equity markets. <em>Review of Financial Studies</em> 13(1), 1–42.</li>
+<li>Boyer, B.H., Gibson, M.S., Loretan, M. (1999). Pitfalls in tests for changes in correlations. <em>International Finance Discussion Paper</em> 597, Board of Governors of the Federal Reserve System.</li>
+<li>Conrad, J., Gultekin, M., Kaul, G. (1991). Asymmetric predictability of conditional variances. <em>Review of Financial Studies</em> 4(4), 597–622.</li>
+<li>Fama, E.F., French, K.R. (1993). Common risk factors in the returns on stocks and bonds. <em>Journal of Financial Economics</em> 33(1), 3–56.</li>
+<li>Forbes, K., Rigobon, R. (1999). No contagion, only interdependence: measuring stock market co-movements. <em>Journal of Finance</em> (forthcoming).</li>
+<li>Gray, S.F. (1996). Modeling the conditional distribution of interest rates as a regime-switching process. <em>Journal of Financial Economics</em> 42(1), 27–62.</li>
+<li>Hamilton, J.D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. <em>Econometrica</em> 57(2), 357–384.</li>
+<li>Harvey, C.R., Siddique, A. (2000). Conditional skewness in asset pricing tests. <em>Journal of Finance</em> 55(3), 1263–1295.</li>
+<li>Karolyi, A., Stulz, R. (1996). Why do markets move together? An investigation of US–Japan stock return comovements. <em>Journal of Finance</em> 51(3), 951–986.</li>
+<li>Kroner, K.F., Ng, V.K. (1998). Modeling asymmetric comovements of asset returns. <em>Review of Financial Studies</em> 11(4), 817–844.</li>
+<li>Longin, F., Solnik, B. (2001). Extreme correlation of international equity markets. <em>Journal of Finance</em> 56(2), 649–676.</li>
+<li>Rosenbaum, S. (1961). Moments of a truncated bivariate normal distribution. <em>Journal of the Royal Statistical Society, Series B</em> 23(2), 405–408.</li>
+<li>Scholes, M., Williams, J.T. (1977). Estimating betas from nonsynchronous data. <em>Journal of Financial Economics</em> 5(3), 309–327.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个让人不安的引言</a></li>
+        <li><a href="#2">2 真正的拦路虎：条件偏误</a></li>
+        <li><a href="#3-h">3 H 统计量：一把不挑模型的尺子</a></li>
+        <li><a href="#4">4 谁抱团抱得最紧？——横截面的故事</a></li>
+        <li><a href="#5">5 一个把代价算成钱的模型</a></li>
+        <li><a href="#6">6 哪种模型救得了场？</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#q-a">评论与延伸（Q&A + 研究方向）</a></li>
+        <li><a href="#">我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

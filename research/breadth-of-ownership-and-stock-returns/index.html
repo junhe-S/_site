@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Chen, Hong &amp; Stein (2002, JFE)</strong>：当一只股票的持有者「越来越少」——即所有权宽度 (breadth) 下降——这其实是在告诉你，卖空约束正绷得很紧，悲观者被挤出了市场，价格相对基本面偏高。于是宽度下降应当预测未来低收益。用 1979–1998 年的共同基金持仓数据，他们发现：上一季度宽度变化处于最低十分位的股票，在随后 12 个月里要比最高十分位<strong>少赚 6.38%</strong>；剔除规模、账面市值比与动量后，这个差距仍有 <strong>4.95%</strong>。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Chen, Hong &amp; Stein (2002, JFE)</strong>：当一只股票的持有者「越来越少」——即所有权宽度 (breadth) 下降——这其实是在告诉你，卖空约束正绷得很紧，悲观者被挤出了市场，价格相对基本面偏高。于是宽度下降应当预测未来低收益。用 1979–1998 年的共同基金持仓数据，他们发现：上一季度宽度变化处于最低十分位的股票，在随后 12 个月里要比最高十分位<strong>少赚 6.38%</strong>；剔除规模、账面市值比与动量后，这个差距仍有 <strong>4.95%</strong>。</p></p></div>
 <h2 id="1">1 一个老问题：被「请」出去的人，去哪了？</h2>
 <p>先从一个简单的画面开始。</p>
 <p>假设一只股票，有人看多，有人看空。在一个没有摩擦的世界里，看空的人会去<strong>卖空 (short selling)</strong>，把他们的悲观判断「写」进价格里，于是价格反映了市场上所有人的意见——多空相抵，价格停在一个公允的位置。</p>
@@ -156,9 +156,9 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>数据来自 CDA/Spectrum 的共同基金普通股持仓库，覆盖 1979 年一季度到 1998 年四季度、注册在美国的共同基金的季度持仓。基金按 SEC 规定每半年披露持仓，CDA 再用基金自愿的季报补全。作者<strong>不按投资目标筛选</strong>任何基金。</p>
 <p>每个季度 \(t\)，对每只股票，宽度 <code>BREADTH</code> 定义为<strong>持有该股多头的基金数 ÷ 当季样本里的基金总数</strong>。</p>
 <p>这里有一个不可忽视的细节：基金的「宇宙」一直在膨胀——1979 年一季度只有 582 只基金，到 1998 年四季度已有 8950 只。如果不小心，宽度变化会被「新基金诞生、老基金消亡」这种成分变化污染。所以宽度变化 <code>ΔBREADTH</code> 的构造很讲究：<strong>只看在 \(t\) 和 \(t-1\) 两个季度都在样本里的基金</strong>，用其中「\(t\) 季持有」减去「\(t-1\) 季持有」的基金数，再除以 \(t-1\) 季的基金总数。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这步「只数老基金」的处理，是整个识别的关键——它把度量从「行业规模变化」里剥离出来，让 ΔBREADTH 尽量只反映<strong>现有基金的进出</strong>。作者还把它拆成 <code>ΔBREADTH = IN − OUT</code>：<code>IN</code> 是新开仓的基金比例，<code>OUT</code> 是清仓的基金比例。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这步「只数老基金」的处理，是整个识别的关键——它把度量从「行业规模变化」里剥离出来，让 ΔBREADTH 尽量只反映<strong>现有基金的进出</strong>。作者还把它拆成 <code>ΔBREADTH = IN − OUT</code>：<code>IN</code> 是新开仓的基金比例，<code>OUT</code> 是清仓的基金比例。</p></p></div>
 <p>其它变量都来自标准数据源：<code>LOGSIZE</code>（CRSP 市值对数）、<code>BK/MKT</code>（按 Fama and French, 1993 构造的账面市值比）、<code>E/P</code>、<code>MOM12</code>（CRSP 过去 12 个月累计收益）、以及来自 CRSP 的换手率。</p>
-<div class="callout"><div class="callout-title">Warning</div><p><strong>最大的软肋，作者自己摆在了台面上。</strong> 理论要的是「全体受卖空约束的投资者」的宽度，而数据只覆盖共同基金。设想：100 股、100 只基金，初始每只持 1 股。情形 A：50 只增持到 2 股、50 只清仓——这是我们想要的「宽度下降」。情形 B：50 只持 1 股、50 只清仓，而这 50 股流向了 50 个<strong>个人</strong>投资者——数据里同样记成「宽度下降」，但这其实只是股份从基金部门流向了个人。这种度量误差打开了一个替代解释：ΔBREADTH 预测收益，也许不是因为卖空约束，而是因为<strong>基金经理选股能力强于个人</strong>（Chen, Jegadeesh and Wermers, 2000 的发现支持这一可能）。为此，作者在回归里加入了他们的「基金总持股变化」变量 <code>ΔHOLD</code> 作为控制——宽度效应在这个控制下基本完好无损。但作者诚实地承认，这个隐患<strong>无法被完全排除</strong>。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p><strong>最大的软肋，作者自己摆在了台面上。</strong> 理论要的是「全体受卖空约束的投资者」的宽度，而数据只覆盖共同基金。设想：100 股、100 只基金，初始每只持 1 股。情形 A：50 只增持到 2 股、50 只清仓——这是我们想要的「宽度下降」。情形 B：50 只持 1 股、50 只清仓，而这 50 股流向了 50 个<strong>个人</strong>投资者——数据里同样记成「宽度下降」，但这其实只是股份从基金部门流向了个人。这种度量误差打开了一个替代解释：ΔBREADTH 预测收益，也许不是因为卖空约束，而是因为<strong>基金经理选股能力强于个人</strong>（Chen, Jegadeesh and Wermers, 2000 的发现支持这一可能）。为此，作者在回归里加入了他们的「基金总持股变化」变量 <code>ΔHOLD</code> 作为控制——宽度效应在这个控制下基本完好无损。但作者诚实地承认，这个隐患<strong>无法被完全排除</strong>。</p></p></div>
 <h2 id="6-6-38-4-95">6 主要结果：6.38% 与 4.95%</h2>
 <p>把股票按上一季度的 <code>ΔBREADTH</code> 分成十分位组合，再看之后的收益，结果干净利落：</p>
 <ul>

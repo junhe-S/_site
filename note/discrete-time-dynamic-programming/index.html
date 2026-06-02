@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2. Discrete-Time Dynamic Programming – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>2. Discrete-Time Dynamic Programming</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">动态规划</span><span class="lang en">Dynamic Programming</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Bellman 方程</span><span class="lang en">Bellman Equation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">最优消费组合</span><span class="lang en">Consumption-Portfolio</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">横截性条件</span><span class="lang en">Transversality</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">CARA/CRRA</span><span class="lang en">CARA/CRRA</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>2. Discrete-Time Dynamic Programming</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本讲导读
+本讲（Toda 第 2 讲）讲经典的 Samuelson (1969) <strong>最优消费-组合问题</strong>（另见 Hakansson (1970)、Toda (2014)）。§1 <strong>最优组合问题</strong>：1.1 模型（CRRA 可加效用、收益 i.i.d.、预算约束 \(w_{t+1}=R_{t+1}(\theta_t)(w_t-c_t)\)）；1.2 <strong>有限期解</strong>（Bellman 方程；齐次性 Lemma 1 \(V_T(w)=a_T\frac{w^{1-\gamma}}{1-\gamma}\)；Prop 2 最优组合 \(\theta^*=\arg\max\frac1{1-\gamma}\mathbb E[R(\theta)^{1-\gamma}]\)；消费率与一阶线性差分方程 \(b_T\)；期限越长消费比例越小、组合不变）；1.3 <strong>无限期解</strong>（一般 DP 问题；Lemma 3 \(V_t^*\le V_t^\infty\)；Prop 4 <strong>横截性条件</strong> \(\limsup_T\mathbb E_t[V_T^\infty(x_T)]\le0\) 充要；应用于组合问题验证）。§2 <strong>收入波动问题</strong>：2.1 模型（CARA \(u(c)=-e^{-\gamma c}/\gamma\)、AR(1) 收入、可负消费）；2.2 <strong>解</strong>（Prop 5 = Wang (2003) 闭式解 \(c(w,y)=aw+b+dy\)，猜测验证；附注与出处）。含每讲参考文献。</p></p></div>
+</div>
+<div class="lang en">
+<h1>2. Discrete-Time Dynamic Programming</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+This lecture (Toda's Lecture 2) covers the classic Samuelson (1969) <strong>optimal consumption-portfolio problem</strong> (see also Hakansson (1970), Toda (2014)). §1 <strong>optimal portfolio problem</strong>: 1.1 model (additive CRRA utility, i.i.d. returns, budget constraint \(w_{t+1}=R_{t+1}(\theta_t)(w_t-c_t)\)); 1.2 <strong>finite horizon</strong> (Bellman equation; homotheticity Lemma 1 \(V_T(w)=a_T\frac{w^{1-\gamma}}{1-\gamma}\); Prop 2 optimal portfolio \(\theta^*=\arg\max\frac1{1-\gamma}\mathbb E[R(\theta)^{1-\gamma}]\); the consumption rate and a first-order linear difference equation for \(b_T\); the longer the horizon, the smaller the consumed fraction, while the portfolio is unchanged); 1.3 <strong>infinite horizon</strong> (a general DP problem; Lemma 3 \(V_t^*\le V_t^\infty\); Prop 4 the <strong>transversality condition</strong> \(\limsup_T\mathbb E_t[V_T^\infty(x_T)]\le0\) is necessary and sufficient; applied back to the portfolio problem). §2 <strong>income fluctuation problem</strong>: 2.1 model (CARA \(u(c)=-e^{-\gamma c}/\gamma\), AR(1) income, consumption allowed negative); 2.2 <strong>solution</strong> (Prop 5 = Wang (2003) closed form \(c(w,y)=aw+b+dy\), guess-and-verify; remarks and sources). Includes per-lecture references.</p></p></div>
+</div>
+<div class="lang zh">
+<h2 id="1-optimal-portfolio-problem">1 最优组合问题 / Optimal Portfolio Problem</h2>
+</div>
+<div class="lang en">
+<h2 id="1-optimal-portfolio-problem">1 Optimal Portfolio Problem</h2>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>1.1 模型 / 1.1 Model
+<span class="lang zh">时间 \(t=0,1,\dots,T\)（可能 \(T=\infty\)）。资产 \(j\in J=\{1,\dots,J\}\)（Samuelson (1969) 中 \(J=2\)，一风险一无风险）。初始财富 \(w_0>0\)，投资者最大化终身期望效用 \(\mathbb E_0\sum_{t=0}^T\beta^t\dfrac{c_t^{1-\gamma}}{1-\gamma}\)，\(\beta>0\) 贴现因子、\(\gamma>0\) 相对风险厌恶、\(c_t\) 消费（<strong>可加 CRRA 偏好</strong>）。设 \(P_t^j\) 为资产 \(j\) 每股价格、\(D_t^j\) 红利，毛收益 \(R_{t+1}^j=\dfrac{P_{t+1}^j+D_{t+1}^j}{P_t^j}\)（红利期初付、价格期末报）。收益向量 \(\mathbf R_{t+1}=[R_{t+1}^1,\dots,R_{t+1}^J]\)，简化假设 \(\{\mathbf R_t\}\) <strong>i.i.d.</strong>（但截面联合分布任意）。\(\theta_t^j\) 为投资于资产 \(j\) 的财富比例（多/空头），\(\sum_{j=1}^J\theta_t^j=1\)。组合毛收益 \(R_{t+1}(\theta)=\mathbf R_{t+1}'\theta=\sum_{j=1}^J R_{t+1}^j\theta^j\)。<strong>时序</strong>：期初收益 \(\mathbf R_t\) 实现并定下财富 \(w_t\)，再选 \(c_t,\theta_t\)。预算约束</span><span class="lang en">Time \(t=0,1,\dots,T\) (maybe \(T=\infty\)). Assets \(j\in J=\{1,\dots,J\}\) (in Samuelson (1969), \(J=2\), one risky and one riskless). From initial wealth \(w_0>0\), the investor maximizes lifetime expected utility \(\mathbb E_0\sum_{t=0}^T\beta^t\dfrac{c_t^{1-\gamma}}{1-\gamma}\), with \(\beta>0\) the discount factor, \(\gamma>0\) relative risk aversion, \(c_t\) consumption (<strong>additive CRRA preference</strong>). Let \(P_t^j\) be the per-share price of asset \(j\), \(D_t^j\) its dividend; the gross return is \(R_{t+1}^j=\dfrac{P_{t+1}^j+D_{t+1}^j}{P_t^j}\) (dividends paid at the beginning, prices quoted at the end). The return vector \(\mathbf R_{t+1}=[R_{t+1}^1,\dots,R_{t+1}^J]\), with the simplifying assumption \(\{\mathbf R_t\}\) <strong>i.i.d.</strong> (but the cross-sectional joint distribution is arbitrary). \(\theta_t^j\) is the fraction of wealth in asset \(j\) (long/short), \(\sum_{j=1}^J\theta_t^j=1\). The portfolio gross return is \(R_{t+1}(\theta)=\mathbf R_{t+1}'\theta=\sum_{j=1}^J R_{t+1}^j\theta^j\). <strong>Timing</strong>: at the start of \(t\), returns \(\mathbf R_t\) realize and determine wealth \(w_t\); then \(c_t,\theta_t\) are chosen. The budget constraint is</span></p>
+<p>$$w_{t+1}=R_{t+1}(\theta_t)(w_t-c_t)\ge0.$$</p></p></div>
+<h3 id="1-2-solution-finite-horizon">1.2 有限期解 / Solution: finite horizon</h3>
+<div class="callout"><div class="callout-title">Important</div><p>Bellman 方程与齐次性（引理 1）/ Bellman equation and homotheticity (Lemma 1)
+<span class="lang zh">因收益 i.i.d.，唯一状态变量是财富。记 \(V_T(w)\) 为还剩 \(T\) 期（含当期共 \(T+1\) 期）时的值函数。\(T\ge1\) 时 Bellman 方程为</span><span class="lang en">Since returns are i.i.d., the only state variable is wealth. Let \(V_T(w)\) be the value function when \(T\) periods remain (the investor has \(T+1\) periods to live including the current one). For \(T\ge1\) the Bellman equation is</span></p>
+<p>$$V_T(w)=\max_{c,\theta}\left\{\frac{c^{1-\gamma}}{1-\gamma}+\beta\mathbb E[V_{T-1}(w')]\,\middle|\,w'=R(\theta)(w-c)\right\}.$$</p>
+<p><span class="lang zh">\(T=0\) 时只能消费全部财富，\(V_0(w)=\dfrac{w^{1-\gamma}}{1-\gamma}\)。<strong>引理 1</strong>：对每个 \(T\)，存在 \(a_T\) 使 \(V_T(w)=a_T\dfrac{w^{1-\gamma}}{1-\gamma}\)。</span><span class="lang en">For \(T=0\) the investor can only consume his wealth, \(V_0(w)=\dfrac{w^{1-\gamma}}{1-\gamma}\). <strong>Lemma 1</strong>: for each \(T\), there exists \(a_T\) such that \(V_T(w)=a_T\dfrac{w^{1-\gamma}}{1-\gamma}\).</span></p></p></div><div class="callout"><div class="callout-title">Note</div><p>引理 1 证明（齐次性）/ Proof of Lemma 1 (homotheticity)
+<span class="lang zh">设 \(c_0,\dots,c_T\) 是从财富 \(w\) 出发的最优消费、值 \(V_T(w)\)。由预算约束线性，若初始财富为 \(\lambda w\)（\(\lambda>0\)），则 \(\lambda c_0,\dots,\lambda c_T\) 可行；由效用齐次性，相应终身效用为 \(\lambda^{1-\gamma}V_T(w)\)。又从 \(\lambda w\) 出发的最优值是 \(V_T(\lambda w)\)，故</span><span class="lang en">Let \(c_0,\dots,c_T\) be the optimal consumption from wealth \(w\) with value \(V_T(w)\). By the linearity of the budget constraint, if initial wealth is \(\lambda w\) (\(\lambda>0\)), then \(\lambda c_0,\dots,\lambda c_T\) is feasible; by the homotheticity of utility, its lifetime utility is \(\lambda^{1-\gamma}V_T(w)\). Since the optimal value from \(\lambda w\) is \(V_T(\lambda w)\),</span></p>
+<p>$$\lambda^{1-\gamma}V_T(w)\le V_T(\lambda w).\tag{1}$$</p>
+<p><span class="lang zh">在 (1) 中令 \(w'=\lambda w\)、\(\lambda'=1/\lambda\) 得 \((\lambda')^{1-\gamma}V_T(w')\ge V_T(\lambda'w')\) (2)；去撇并结合 (1) 得 \(\lambda^{1-\gamma}V_T(w)\ge V_T(\lambda w)\) (3)。故等号成立。取 \(\lambda=1/w\)：</span><span class="lang en">Setting \(w'=\lambda w\), \(\lambda'=1/\lambda\) in (1) gives \((\lambda')^{1-\gamma}V_T(w')\ge V_T(\lambda'w')\) (2); dropping primes and combining with (1) gives \(\lambda^{1-\gamma}V_T(w)\ge V_T(\lambda w)\) (3). So equality holds. Taking \(\lambda=1/w\):</span></p>
+<p>$$V_T(w)=V_T(1)w^{1-\gamma}\equiv a_T\frac{w^{1-\gamma}}{1-\gamma}.\quad\blacksquare$$</p></p></div><div class="callout"><div class="callout-title">Important</div><p>命题 2（最优组合）与定义 ρ / Proposition 2 (optimal portfolio) and \(\rho\)
+<span class="lang zh">代入引理 1 与预算约束，Bellman 化为 \(a_T\dfrac{w^{1-\gamma}}{1-\gamma}=\max_c\left\{\dfrac{c^{1-\gamma}}{1-\gamma}+\beta a_{T-1}(w-c)^{1-\gamma}\max_\theta\dfrac1{1-\gamma}\mathbb E[R(\theta)^{1-\gamma}]\right\}\) (4)。<strong>命题 2</strong>：最优组合 \(\theta^*\in\arg\max_\theta\dfrac1{1-\gamma}\mathbb E[R(\theta)^{1-\gamma}]\)，与财富、期限无关。定义 \(\rho=\mathbb E[R(\theta^*)^{1-\gamma}]^{\frac1{1-\gamma}}=\max_\theta\mathbb E[R(\theta)^{1-\gamma}]^{\frac1{1-\gamma}}\)（第二个等号用 \(x\mapsto\frac{x^{1-\gamma}}{1-\gamma}\) 单调）。</span><span class="lang en">Substituting Lemma 1 and the budget constraint, the Bellman equation becomes \(a_T\dfrac{w^{1-\gamma}}{1-\gamma}=\max_c\left\{\dfrac{c^{1-\gamma}}{1-\gamma}+\beta a_{T-1}(w-c)^{1-\gamma}\max_\theta\dfrac1{1-\gamma}\mathbb E[R(\theta)^{1-\gamma}]\right\}\) (4). <strong>Proposition 2</strong>: the optimal portfolio is \(\theta^*\in\arg\max_\theta\dfrac1{1-\gamma}\mathbb E[R(\theta)^{1-\gamma}]\), independent of wealth and horizon. Define \(\rho=\mathbb E[R(\theta^*)^{1-\gamma}]^{\frac1{1-\gamma}}=\max_\theta\mathbb E[R(\theta)^{1-\gamma}]^{\frac1{1-\gamma}}\) (the second equality uses that \(x\mapsto\frac{x^{1-\gamma}}{1-\gamma}\) is monotone).</span></p></p></div><div class="callout"><div class="callout-title">Note</div><p>消费率与 \(b_T\) 差分方程 / The consumption rate and the \(b_T\) difference equation
+<span class="lang zh">代入 \(\rho\)，(4) 变为 \(a_T\dfrac{w^{1-\gamma}}{1-\gamma}=\max_c\left\{\dfrac{c^{1-\gamma}}{1-\gamma}+\beta a_{T-1}(w-c)^{1-\gamma}\dfrac{\rho^{1-\gamma}}{1-\gamma}\right\}\) (5)。这是关于 \(c\) 的一元凹最大化，一阶条件 \(c^{-\gamma}-\beta a_{T-1}\rho^{1-\gamma}(w-c)^{-\gamma}=0\) (6)，解得 \(c=\dfrac{w}{1+(\beta a_{T-1}\rho^{1-\gamma})^{\frac1\gamma}}\) (7)。代回 (5) 并整理：\(a_T^{1/\gamma}=1+(\beta\rho^{1-\gamma})^{1/\gamma}a_{T-1}^{1/\gamma}\)。令 \(b_T=a_T^{1/\gamma}\) 得一阶线性差分方程 \(b_T=1+(\beta\rho^{1-\gamma})^{1/\gamma}b_{T-1}\)，\(b_0=1\)，故 \(b_T=\sum_{k=0}^T(\beta\rho^{1-\gamma})^{k/\gamma}=\dfrac{1-(\beta\rho^{1-\gamma})^{\frac{T+1}\gamma}}{1-(\beta\rho^{1-\gamma})^{\frac1\gamma}}\)。由 (7) 最优消费规则 \(c=\dfrac w{b_T}=\dfrac{1-(\beta\rho^{1-\gamma})^{\frac1\gamma}}{1-(\beta\rho^{1-\gamma})^{\frac{T+1}\gamma}}w\)。因 \(1=b_1<b_2<\cdots\)，<strong>期限越长，应消费的财富比例 \(1/b_T\) 越小；但组合在各期相同（i.i.d. 假设下）</strong>。\(\blacksquare\)</span><span class="lang en">Substituting \(\rho\), (5) becomes \(a_T\dfrac{w^{1-\gamma}}{1-\gamma}=\max_c\left\{\dfrac{c^{1-\gamma}}{1-\gamma}+\beta a_{T-1}(w-c)^{1-\gamma}\dfrac{\rho^{1-\gamma}}{1-\gamma}\right\}\) (5). This is a one-variable concave maximization in \(c\), with first-order condition \(c^{-\gamma}-\beta a_{T-1}\rho^{1-\gamma}(w-c)^{-\gamma}=0\) (6), giving \(c=\dfrac{w}{1+(\beta a_{T-1}\rho^{1-\gamma})^{\frac1\gamma}}\) (7). Back-substituting into (5) and simplifying: \(a_T^{1/\gamma}=1+(\beta\rho^{1-\gamma})^{1/\gamma}a_{T-1}^{1/\gamma}\). Letting \(b_T=a_T^{1/\gamma}\) gives the first-order linear difference equation \(b_T=1+(\beta\rho^{1-\gamma})^{1/\gamma}b_{T-1}\), \(b_0=1\), so \(b_T=\sum_{k=0}^T(\beta\rho^{1-\gamma})^{k/\gamma}=\dfrac{1-(\beta\rho^{1-\gamma})^{\frac{T+1}\gamma}}{1-(\beta\rho^{1-\gamma})^{\frac1\gamma}}\). By (7) the optimal consumption rule is \(c=\dfrac w{b_T}=\dfrac{1-(\beta\rho^{1-\gamma})^{\frac1\gamma}}{1-(\beta\rho^{1-\gamma})^{\frac{T+1}\gamma}}w\). Since \(1=b_1<b_2<\cdots\), <strong>the longer the horizon, the smaller the consumed fraction \(1/b_T\); but the portfolio is the same over time (under i.i.d.)</strong>. \(\blacksquare\)</span></p></p></div>
+<h3 id="1-3-solution-infinite-horizon">1.3 无限期解 / Solution: infinite horizon</h3>
+<div class="callout"><div class="callout-title">Important</div><p>一般动态规划问题 / A general dynamic programming problem
+<span class="lang zh">无限期解大体相同：令有限期解中 \(T\to\infty\)，若 \(\beta\rho^{1-\gamma}<1\)，则系数 \(b=\dfrac1{1-(\beta\rho^{1-\gamma})^{1/\gamma}}\)、消费率 \(c/w=1-(\beta\rho^{1-\gamma})^{1/\gamma}\)。此猜测正确，但有技术细节。考虑更一般问题 \(\max_{\{c_t\}}\mathbb E_0\sum_{t=0}^\infty f_t(c_t,x_t)\) s.t. \(c_t\in\Gamma_t(x_t)\)、\(x_{t+1}=g_{t+1}(c_t,x_t)\)（\(x_t\) 状态、\(c_t\) 控制、\(f_t\) 流效用）。定义 \(T\) 期值函数 \(V_t^T(x)=\sup_{\{c_{t+s}\}_{s=0}^{T-1}}\mathbb E_t\sum_{s=0}^{T-1}f_{t+s}(c_{t+s},x_{t+s})\)，无限期值函数 \(V_t^\infty(x)=\limsup_{T\to\infty}V_t^T(x)\)，真值函数 \(V_t^*(x)=\sup_{\{c_{t+s}\}_{s=0}^\infty}\mathbb E_t\sum_{s=0}^\infty f_{t+s}(c_{t+s},x_{t+s})\)。</span><span class="lang en">The infinite-horizon solution is basically the same: letting \(T\to\infty\) in the finite-horizon answer, if \(\beta\rho^{1-\gamma}<1\) the coefficient is \(b=\dfrac1{1-(\beta\rho^{1-\gamma})^{1/\gamma}}\) and the consumption rate \(c/w=1-(\beta\rho^{1-\gamma})^{1/\gamma}\). This guess is correct but has technical subtleties. Consider the more general problem \(\max_{\{c_t\}}\mathbb E_0\sum_{t=0}^\infty f_t(c_t,x_t)\) s.t. \(c_t\in\Gamma_t(x_t)\), \(x_{t+1}=g_{t+1}(c_t,x_t)\) (\(x_t\) state, \(c_t\) control, \(f_t\) flow utility). Define the \(T\)-period value function \(V_t^T(x)=\sup_{\{c_{t+s}\}_{s=0}^{T-1}}\mathbb E_t\sum_{s=0}^{T-1}f_{t+s}(c_{t+s},x_{t+s})\), the infinite-horizon value function \(V_t^\infty(x)=\limsup_{T\to\infty}V_t^T(x)\), and the true value function \(V_t^*(x)=\sup_{\{c_{t+s}\}_{s=0}^\infty}\mathbb E_t\sum_{s=0}^\infty f_{t+s}(c_{t+s},x_{t+s})\).</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>引理 3 与命题 4（横截性条件）/ Lemma 3 and Proposition 4 (transversality)
+<span class="lang zh"><strong>引理 3</strong>：恒有 \(V_t^*(x)\le V_t^\infty(x)\)。称计划 \(\{c_{t+s}\}\) <strong>递归最优</strong>，若它解 \(V_{t+s}^\infty(x_{t+s})=\max_{c\in\Gamma_{t+s}(x_{t+s})}\{f_{t+s}(c,x_{t+s})+\mathbb E_{t+s}V_{t+s+1}^\infty(g_{t+s+1}(c,x_{t+s}))\}\)。<strong>命题 4</strong>：\(V_t^*(x)=V_t^\infty(x)\) 当且仅当<strong>横截性条件</strong> \(\limsup_{T\to\infty}\mathbb E_t[V_T^\infty(x_T)]\le0\) 成立（\(x_T\) 来自递归最优策略）。</span><span class="lang en"><strong>Lemma 3</strong>: always \(V_t^*(x)\le V_t^\infty(x)\). A plan \(\{c_{t+s}\}\) is <strong>recursively optimal</strong> if it solves \(V_{t+s}^\infty(x_{t+s})=\max_{c\in\Gamma_{t+s}(x_{t+s})}\{f_{t+s}(c,x_{t+s})+\mathbb E_{t+s}V_{t+s+1}^\infty(g_{t+s+1}(c,x_{t+s}))\}\). <strong>Proposition 4</strong>: \(V_t^*(x)=V_t^\infty(x)\) if and only if the <strong>transversality condition</strong> \(\limsup_{T\to\infty}\mathbb E_t[V_T^\infty(x_T)]\le0\) holds (\(x_T\) obtained from a recursively optimal policy).</span></p></p></div><div class="callout"><div class="callout-title">Note</div><p>引理 3、命题 4 证明 / Proof of Lemma 3 and Proposition 4
+<span class="lang zh"><strong>引理 3</strong>：任取可行计划 \(\{c_{t+s}\}\)，对任意 \(T\)，\(\mathbb E_t\sum_{s=0}^{T-1}f_{t+s}(c_{t+s},x_{t+s})\le V_t^T(x)\)。令 \(T\to\infty\)：\(\mathbb E_t\sum_{s=0}^\infty f_{t+s}=\lim_T\mathbb E_t\sum_{s=0}^{T-1}f_{t+s}\le\limsup_T V_t^T(x)=V_t^\infty(x)\)。对左端取 \(\sup\) 得 \(V_t^*(x)\le V_t^\infty(x)\)。\(\blacksquare\) <strong>命题 4</strong>：取递归最优策略，由定义 \(V_t^\infty(x)=\mathbb E_t\sum_{s=0}^{T-1}f_{t+s}(c_{t+s},x_{t+s})+\mathbb E_t[V_T^\infty(x_T)]\) (8)。令 \(T\to\infty\) 并用引理得 \(V_t^*(x)\ge V_t^\infty(x)-\limsup_T\mathbb E_t[V_T^\infty(x_T)]\)，故 \(\limsup_T\mathbb E_t[V_T^\infty(x_T)]\ge0\) 恒成立；若 \(\le0\) 则 $=0$，上述不等式皆成等式，得 \(V_t^*=V_t^\infty\)。反之若 \(V_t^*=V_t^\infty\)，递归最优策略也最优，在 (8) 中令 \(T\to\infty\) 得 \(\limsup_T\mathbb E_t[V_T^\infty(x_T)]=\lim_T\mathbb E_t[V_T^*(x_T)]=0\le0\)。\(\blacksquare\)</span><span class="lang en"><strong>Lemma 3</strong>: take any feasible plan \(\{c_{t+s}\}\); for any \(T\), \(\mathbb E_t\sum_{s=0}^{T-1}f_{t+s}(c_{t+s},x_{t+s})\le V_t^T(x)\). Letting \(T\to\infty\): \(\mathbb E_t\sum_{s=0}^\infty f_{t+s}=\lim_T\mathbb E_t\sum_{s=0}^{T-1}f_{t+s}\le\limsup_T V_t^T(x)=V_t^\infty(x)\). Taking the sup of the LHS gives \(V_t^*(x)\le V_t^\infty(x)\). \(\blacksquare\) <strong>Proposition 4</strong>: take a recursively optimal policy; by definition \(V_t^\infty(x)=\mathbb E_t\sum_{s=0}^{T-1}f_{t+s}(c_{t+s},x_{t+s})+\mathbb E_t[V_T^\infty(x_T)]\) (8). Letting \(T\to\infty\) and using the Lemma, \(V_t^*(x)\ge V_t^\infty(x)-\limsup_T\mathbb E_t[V_T^\infty(x_T)]\), so \(\limsup_T\mathbb E_t[V_T^\infty(x_T)]\ge0\) always; if \(\le0\) then $=0$ and all inequalities become equalities, so \(V_t^*=V_t^\infty\). Conversely, if \(V_t^*=V_t^\infty\), the recursively optimal policy is optimal, and letting \(T\to\infty\) in (8) gives \(\limsup_T\mathbb E_t[V_T^\infty(x_T)]=\lim_T\mathbb E_t[V_T^*(x_T)]=0\le0\). \(\blacksquare\)</span></p></p></div><div class="callout"><div class="callout-title">Note</div><p>应用于组合问题：验证横截性 / Application: verifying transversality for the portfolio problem
+<span class="lang zh">设 \(\beta\rho^{1-\gamma}<1\)，无限期值函数 \(V^\infty(w)=a\dfrac{w^{1-\gamma}}{1-\gamma}\)，\(a^{1/\gamma}=b=\dfrac1{1-(\beta\rho^{1-\gamma})^{1/\gamma}}>0\)。贴现横截性条件 \(\limsup_T\mathbb E_0[\beta^T V_T^\infty(w_T)]\le0\)：\(\gamma>1\) 时 \(V_T^\infty(w_T)\le0\) 平凡成立；\(0<\gamma<1\) 时由预算约束 \(w_{t+1}=R_{t+1}(\theta^*)(w_t-c_t)\le R_{t+1}(\theta^*)w_t\)，故 \(w_T\le w_0\prod_{t=1}^T R_t(\theta^*)\)，取 \((1-\gamma)\) 次幂取期望 \(\mathbb E_0[w_T^{1-\gamma}]\le w_0^{1-\gamma}\mathbb E[R(\theta^*)^{1-\gamma}]^T=w_0^{1-\gamma}\rho^{(1-\gamma)T}\)，于是 \(\mathbb E_0[\beta^T V_T^\infty(w_T)]\le\dfrac{aw_0^{1-\gamma}}{1-\gamma}(\beta\rho^{1-\gamma})^T\to0\)（因 \(\beta\rho^{1-\gamma}<1\)）。\(\blacksquare\)</span><span class="lang en">Suppose \(\beta\rho^{1-\gamma}<1\); the infinite-horizon value function is \(V^\infty(w)=a\dfrac{w^{1-\gamma}}{1-\gamma}\) with \(a^{1/\gamma}=b=\dfrac1{1-(\beta\rho^{1-\gamma})^{1/\gamma}}>0\). The discounted transversality condition \(\limsup_T\mathbb E_0[\beta^T V_T^\infty(w_T)]\le0\): for \(\gamma>1\), \(V_T^\infty(w_T)\le0\) trivially; for \(0<\gamma<1\), the budget constraint \(w_{t+1}=R_{t+1}(\theta^*)(w_t-c_t)\le R_{t+1}(\theta^*)w_t\) gives \(w_T\le w_0\prod_{t=1}^T R_t(\theta^*)\), and taking the \((1-\gamma)\)-th power and expectations, \(\mathbb E_0[w_T^{1-\gamma}]\le w_0^{1-\gamma}\mathbb E[R(\theta^*)^{1-\gamma}]^T=w_0^{1-\gamma}\rho^{(1-\gamma)T}\), so \(\mathbb E_0[\beta^T V_T^\infty(w_T)]\le\dfrac{aw_0^{1-\gamma}}{1-\gamma}(\beta\rho^{1-\gamma})^T\to0\) (since \(\beta\rho^{1-\gamma}<1\)). \(\blacksquare\)</span></p></p></div>
+<h2 id="2-income-fluctuation-problem">2 收入波动问题 / Income Fluctuation Problem</h2>
+<div class="callout"><div class="callout-title">Important</div><p>2.1 模型 / 2.1 Model
+<span class="lang zh">乘性风险（如随机资产收益）下用 CRRA 效用方便；<strong>可加风险</strong>（如随机劳动收入）下 <strong>CARA</strong> 效用更方便。考虑可加 CARA 效用 \(\mathbb E_0\sum_{t=0}^\infty\beta^t u(c_t)\) (9)，\(u(c)=-e^{-\gamma c}/\gamma\)（绝对风险厌恶 \(\gamma>0\)）。可按毛无风险利率 \(R>1\) 借贷。收入风险 AR(1)：\(y_{t+1}=\rho y_t+\varepsilon_{t+1}\) (10)，\(0\le\rho<1\)、\(\varepsilon\) i.i.d.（无失一般性不含常数项）。记 \(w_t\) 为期初金融财富（不含当期收入），预算约束 \(w_{t+1}=R(w_t-c_t+y_t)\)。Bellman 方程 \(V(w,y)=\max_c\{u(c)+\beta\mathbb E[V(R(w-c+y),y')]\mid y'=\rho y+\varepsilon\}\) (11)。CARA 定义在全实轴，故假设消费可为负。</span><span class="lang en">Under multiplicative risk (e.g. random asset returns) CRRA is convenient; under <strong>additive risk</strong> (e.g. random labor income) <strong>CARA</strong> is more convenient. Consider additive CARA utility \(\mathbb E_0\sum_{t=0}^\infty\beta^t u(c_t)\) (9), with \(u(c)=-e^{-\gamma c}/\gamma\) (absolute risk aversion \(\gamma>0\)). The agent can borrow/save at gross risk-free rate \(R>1\). Income risk is AR(1): \(y_{t+1}=\rho y_t+\varepsilon_{t+1}\) (10), \(0\le\rho<1\), \(\varepsilon\) i.i.d. (WLOG no constant term). Let \(w_t\) be financial wealth at the start of \(t\) (excluding current income); the budget constraint is \(w_{t+1}=R(w_t-c_t+y_t)\). The Bellman equation is \(V(w,y)=\max_c\{u(c)+\beta\mathbb E[V(R(w-c+y),y')]\mid y'=\rho y+\varepsilon\}\) (11). CARA is defined on the whole real line, so consumption may be negative.</span></p></p></div>
+<h3 id="2-2-solution">2.2 解 / Solution</h3>
+<div class="callout"><div class="callout-title">Important</div><p>命题 5（Wang 2003）/ Proposition 5 (Wang, 2003)
+<span class="lang zh">值函数与最优消费规则为 \(V(w,y)=-\dfrac1{\gamma a}e^{-\gamma(aw+b+dy)}\) (12a)，\(c(w,y)=aw+b+dy\) (12b)，其中 \(a=1-1/R\)、\(b=\dfrac1{\gamma(1-R)}\log\beta R\,\mathbb E[e^{-\gamma\frac{R-1}{R-\rho}\varepsilon}]\)、\(d=\dfrac{R-1}{R-\rho}\)。</span><span class="lang en">The value function and optimal consumption rule are \(V(w,y)=-\dfrac1{\gamma a}e^{-\gamma(aw+b+dy)}\) (12a), \(c(w,y)=aw+b+dy\) (12b), where \(a=1-1/R\), \(b=\dfrac1{\gamma(1-R)}\log\beta R\,\mathbb E[e^{-\gamma\frac{R-1}{R-\rho}\varepsilon}]\), \(d=\dfrac{R-1}{R-\rho}\).</span></p></p></div><div class="callout"><div class="callout-title">Note</div><p>命题 5 证明（猜测验证）/ Proof of Proposition 5 (guess-and-verify)
+<span class="lang zh">代 (12a) 入 Bellman (11)：</span><span class="lang en">Substitute (12a) into Bellman (11):</span></p>
+<p>$$-\frac1{\gamma a}e^{-\gamma(aw+b+dy)}=\max_c\left\{-\frac1\gamma e^{-\gamma c}-\frac\beta{\gamma a}\mathbb E[e^{-\gamma(aR(w-c+y)+b+dy')}]\right\}.\tag{13}$$</p>
+<p><span class="lang zh">对 \(c\) 的一阶条件为</span><span class="lang en">The first-order condition in \(c\) is</span></p>
+<p>$$e^{-\gamma c}-\beta R\,\mathbb E[e^{-\gamma(aR(w-c+y)+b+dy')}]=0.\tag{14}$$</p>
+<p><span class="lang zh">代 (14) 入 (13) 得</span><span class="lang en">Substituting (14) into (13) gives</span></p>
+<p>$$-\frac1{\gamma a}e^{-\gamma(aw+b+dy)}=-\frac1{\gamma a}(a+1/R)e^{-\gamma c}.\tag{15}$$</p>
+<p><span class="lang zh">比较系数知 \(a=1-1/R\)、\(c=aw+b+dy\) 时平凡成立。此时 \(aR(w-c+y)=aw+(1-R)b+(1-R)(d-1)y\)，(14) 变为</span><span class="lang en">Comparing coefficients, this holds trivially when \(a=1-1/R\) and \(c=aw+b+dy\). Then \(aR(w-c+y)=aw+(1-R)b+(1-R)(d-1)y\), and (14) becomes</span></p>
+<p>$$e^{-\gamma dy}=\beta R\,\mathbb E[e^{-\gamma((1-R)b+(1-R)(d-1)y+d(\rho y+\varepsilon))}].\tag{16}$$</p>
+<p><span class="lang zh">比较 \(y\) 的系数：\(d=(1-R)(d-1)+\rho d\iff d=\dfrac{R-1}{R-\rho}\)。代回 (16)：</span><span class="lang en">Comparing the coefficients of \(y\): \(d=(1-R)(d-1)+\rho d\iff d=\dfrac{R-1}{R-\rho}\). Back-substituting into (16):</span></p>
+<p>$$1=\beta R\,\mathbb E[e^{-\gamma((1-R)b+\frac{R-1}{R-\rho}\varepsilon)}]\iff b=\frac1{\gamma(1-R)}\log\beta R\,\mathbb E[e^{-\gamma\frac{R-1}{R-\rho}\varepsilon}].\quad\blacksquare$$</p></p></div><div class="callout"><div class="callout-title">Tip</div><p>附注 / Remarks
+<span class="lang zh"><strong>(i)</strong> \(\mathbb E[e^{-\gamma\frac{R-1}{R-\rho}\varepsilon}]\) 是 \(\varepsilon\) 的矩母函数 \(M_\varepsilon(s)=\mathbb E[e^{s\varepsilon}]\) 在 \(s=-\gamma\frac{R-1}{R-\rho}\) 处取值。<strong>(ii)</strong> 该收入波动问题可嵌入一般均衡（Huggett (1993) 模型的一个版本）；Toda (2017) 在 VAR(1) 收入下证明可能有多重均衡（AR(1) 情形唯一）。<strong>(iii)</strong> Toda (2017) 给出一个<strong>收入风险上升反而改善福利</strong>的例子。<strong>(iv)</strong> 横截性条件的证明见 Toda (2017) 附录。</span><span class="lang en"><strong>(i)</strong> \(\mathbb E[e^{-\gamma\frac{R-1}{R-\rho}\varepsilon}]\) is the moment generating function \(M_\varepsilon(s)=\mathbb E[e^{s\varepsilon}]\) of \(\varepsilon\) evaluated at \(s=-\gamma\frac{R-1}{R-\rho}\). <strong>(ii)</strong> This income fluctuation problem can be embedded into general equilibrium (a version of the Huggett (1993) model); Toda (2017) shows multiple equilibria are possible under VAR(1) income (unique in the AR(1) case). <strong>(iii)</strong> Toda (2017) gives an example where <strong>increasing income risk is welfare-improving</strong>. <strong>(iv)</strong> For a proof of the transversality condition, see the appendix of Toda (2017).</span></p></p></div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Angeletos, G.-M. and L.-E. Calvet (2005). Incomplete-Market Dynamics in a Neoclassical Production Economy. <em>Journal of Mathematical Economics</em> 41(4–5), 407–438.</li>
+<li>Angeletos, G.-M. and L.-E. Calvet (2006). Idiosyncratic Production Risk, Growth and the Business Cycle. <em>Journal of Monetary Economics</em> 53(6), 1095–1115.</li>
+<li>Calvet, L.-E. (2001). Incomplete Markets and Volatility. <em>Journal of Economic Theory</em> 98(2), 295–338.</li>
+<li>Hakansson, N. H. (1970). Optimal Investment and Consumption Strategies under Risk for a Class of Utility Functions. <em>Econometrica</em> 38(5), 587–607.</li>
+<li>Huggett, M. (1993). The Risk-Free Rate in Heterogeneous-Agent Incomplete-Insurance Economies. <em>Journal of Economic Dynamics and Control</em> 17(5–6), 953–969.</li>
+<li>Kamihigashi, T. (2014). Elementary Results on Solutions to the Bellman Equation of Dynamic Programming: Existence, Uniqueness, and Convergence. <em>Economic Theory</em> 56(2), 251–273.</li>
+<li>Samuelson, P. A. (1969). Lifetime Portfolio Selection by Dynamic Stochastic Programming. <em>Review of Economics and Statistics</em> 51(3), 239–246.</li>
+<li>Stokey, N. L. and R. E. Lucas (1989). <em>Recursive Methods in Economic Dynamics</em>. Harvard University Press.</li>
+<li>Toda, A. A. (2014). Incomplete Market Dynamics and Cross-Sectional Distributions. <em>Journal of Economic Theory</em> 154, 310–348.</li>
+<li>Toda, A. A. (2017). Huggett Economies with Multiple Stationary Equilibria. <em>Journal of Economic Dynamics and Control</em> 84, 77–90.</li>
+<li>Wang, N. (2003). Caballero Meets Bewley: The Permanent-Income Hypothesis in General Equilibrium. <em>American Economic Review</em> (CARA closed-form income-fluctuation solution).</li>
+</ul>
+</div>
+</div>
+<div class="lang en"></div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1-optimal-portfolio-problem">1 最优组合问题 / Optimal Portfolio Problem</a></li>
+        <li><a href="#1-optimal-portfolio-problem">1 Optimal Portfolio Problem</a></li>
+          <li><a href="#1-2-solution-finite-horizon">1.2 有限期解 / Solution: finite horizon</a></li>
+          <li><a href="#1-3-solution-infinite-horizon">1.3 无限期解 / Solution: infinite horizon</a></li>
+        <li><a href="#2-income-fluctuation-problem">2 收入波动问题 / Income Fluctuation Problem</a></li>
+          <li><a href="#2-2-solution">2.2 解 / Solution</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -89,12 +89,12 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Lu, Spiegel &amp; Zhang (2025, SSRN)</strong>：神经网络用一堆异象做出的「惊人」收益，并不神秘——只要给它一个恰当的经济学基准，即一套把权重按条件 alpha 摆放、再用回测剔除假信号的「动态套利组合」(Dynamic Arbitrage Portfolio, DAP)，就能解释掉它绝大部分的超额表现。剔除微盘股、只允许使用「已发表」异象之后，一个透明的经济模型几乎吃光了神经网络的 alpha。更有意思的是：同一套经济学，反过来还能把神经网络的业绩翻倍。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Lu, Spiegel &amp; Zhang (2025, SSRN)</strong>：神经网络用一堆异象做出的「惊人」收益，并不神秘——只要给它一个恰当的经济学基准，即一套把权重按条件 alpha 摆放、再用回测剔除假信号的「动态套利组合」(Dynamic Arbitrage Portfolio, DAP)，就能解释掉它绝大部分的超额表现。剔除微盘股、只允许使用「已发表」异象之后，一个透明的经济模型几乎吃光了神经网络的 alpha。更有意思的是：同一套经济学，反过来还能把神经网络的业绩翻倍。</p></p></div>
 <h2 id="1">1 引言：一个「太好了，反而可疑」的黑箱</h2>
 <p>先说一件让人不太舒服的事。</p>
 <p>过去十年，机器学习在预测股票收益上交出了一份近乎奢侈的成绩单。Gu, Kelly, and Xiu (2020) 之后，一篇又一篇论文告诉我们：把上百个异象 (anomaly) 喂给一个前馈神经网络 (Feedforward Neural Network, NN)，它就能搭出年化夏普比率高得惊人的多空组合。问题是——这些收益从哪儿来？神经网络是个「黑箱」(black box)，它只会告诉你买什么、不告诉你为什么。于是一个很自然、却始终没人答好的问题摆在那里：如果机器学习真有这么神，为什么手握同样工具、还能随便用任何手段的真实基金经理，做出来的收益却平庸得多？是现有的经济学理论漏掉了资产收益里的某种根本机制，还是说——这台机器其实在做一件我们早就懂的事，只是我们一直没用对的尺子去量它？</p>
 <p>Anthropic 的 CEO Dario Amodei 在 2025 年 4 月说过一句话，被作者放在了论文最前面：我们最好能赶在模型变得「压倒性强大」之前，先搞懂它内部到底在干什么——也就是「可解释性」(interpretability)。这篇论文做的，正是金融版的可解释性：它想在经济学原理和金融 AI 之间，修一条「双向」的路。一个方向是用经济学去解释 AI；另一个方向，是用经济学去改进 AI。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>把黑箱拆成玻璃箱，这股潮流不止这一篇。关于在公司债市场上做同样事情的努力，可参见<a href="/research/glass-box-machine-learning-and-corporate-bond-returns/">《把机器学习的黑箱拆成玻璃箱：公司债收益率能被「看懂」地预测吗？》</a>。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>把黑箱拆成玻璃箱，这股潮流不止这一篇。关于在公司债市场上做同样事情的努力，可参见<a href="/research/glass-box-machine-learning-and-corporate-bond-returns/">《把机器学习的黑箱拆成玻璃箱：公司债收益率能被「看懂」地预测吗？》</a>。</p></p></div>
 <p>本文要反复讲透的，其实只有一句话：<strong>神经网络的「超额」收益，很大程度上是因为我们从来没有给它一个合适的经济学基准。</strong> 而这篇论文造出来的那个基准，简单到几乎让人意外。</p>
 <h2 id="2-dap">2 一个三异象的世界：DAP 的全部直觉</h2>
 <p>要理解作者的基准，不必先碰任何公式。论文自己先讲了一个玩具世界，我们就从这里进。</p>
@@ -127,7 +127,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>这里有两个看似技术、实则致命的取舍，构成了本文真正的「识别策略」。</p>
 <p><strong>第一，微盘股 (microcap)。</strong> 主样本剔除了市值最小的 20% 股票。原因在已有文献里很硬：这些股票会给机器学习算法带来已知的偏误 (Avramov, Cheng, and Metzker 2023; Cong et al. 2021)——交易成本高、流动性差，纸面上的高收益现实中根本拿不到。论文也专门跑了「含微盘」的版本作对照，目的就是把机器学习收益的来源「显影」出来。</p>
 <p><strong>第二，也是更微妙的一点——异象的「时机」(anomaly timing)：一个模型，到底从什么时候起才被允许使用某个异象？</strong> 现有的 NN 测试通常剔除微盘，却允许模型在某个异象<strong>被学术界发表之前</strong>就拿来选股。这在现实中几乎不可能做到：要在一个异象发表前就用它，你得自己独立发现它——对一两个异象或许还行，对 153 个异象则纯属幻想。所以一个更现实的考法，是<strong>只允许模型使用已经发表的异象</strong>。这个约束同时堵死了「前视偏误」(look-ahead bias)，而且无论异象发表后收益下降是因为学术数据挖掘 (data mining) 还是因为市场把它交易掉了，都成立。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>把这两点连起来看，本文的「识别」其实是一句反问：当我们禁止神经网络去碰它现实中根本碰不到的东西（微盘股 + 未发表异象）之后，它还剩下多少「超额」？答案，是本文的核心。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>把这两点连起来看，本文的「识别」其实是一句反问：当我们禁止神经网络去碰它现实中根本碰不到的东西（微盘股 + 未发表异象）之后，它还剩下多少「超额」？答案，是本文的核心。</p></p></div>
 <h2 id="6">6 主要结果：黑箱被一步步拧开</h2>
 <p>于是反转开始。</p>
 <p><strong>第一步，诊断。</strong> 不含微盘时，在七因子 (FF7) 之上再加进 Backtested DAP_N 这一个因子，单隐层神经网络 NN1 的 alpha 就从 <code>1.930</code> 掉到 <code>1.164</code>——近 40% 的降幅。而一旦放微盘股进来，降幅只剩 26%。这个落差本身就说明：NN1 一旦被允许选微盘，就会重度依赖它们；而 Backtested DAP_N 虽然也用微盘，用得却克制得多。</p>
@@ -143,7 +143,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <div class="article-image"><img alt="Table 6: Explaining the Importance of Published Anomalies in Neural Networks" src="assets/table-6.png" /></div>
 <p><em>Table 6: Explaining the Importance of Published Anomalies in Neural Networks</em></p>
 <p>到这里，三条经济机制就立住了：<strong>其一</strong>，神经网络是通过一个与 DAP 相似的非线性策略来赚 alpha 的；<strong>其二</strong>，它相当一部分业绩来自未发表异象——这就逼出一个很实际的拷问：当我们检验一个机器学习模型时，到底该不该让它使用那些现实中根本无从知晓的异象？<strong>其三</strong>，把微盘放进来时，神经网络极易被微盘的虚假收益带偏。后一条与已有研究一致；前两条则是新贡献。它们合起来指向一个略带反讽的结论：<strong>机器学习之所以显得「超凡」，很可能只是因为我们一直缺一个合适的经济学基准。</strong> 神经网络无非是为了把交易收益最大化，自己「重新发现」了一套 DAP 式的最优策略，并用上了它的核心原则——给历史表现更好的信号更大的权重。</p>
-<div class="callout"><div class="callout-title">Note</div><p>把更多权重押在历史更优的信号上、再压缩掉噪声维度，这股思路与<a href="/research/shrinking-the-cross-section/">《压缩横截面：因子动物园的尽头，不是更少的因子，而是更聪明的收缩》</a>，以及<a href="/research/growing-the-efficient-frontier-on-panel-trees/">《把「排序」种成一棵树：P-Tree 如何长出有效前沿》</a>，是同一条河里的水。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>把更多权重押在历史更优的信号上、再压缩掉噪声维度，这股思路与<a href="/research/shrinking-the-cross-section/">《压缩横截面：因子动物园的尽头，不是更少的因子，而是更聪明的收缩》</a>，以及<a href="/research/growing-the-efficient-frontier-on-panel-trees/">《把「排序」种成一棵树：P-Tree 如何长出有效前沿》</a>，是同一条河里的水。</p></p></div>
 <h2 id="8-ai-ai">8 反过来：经济学不止能解释 AI，还能改进 AI</h2>
 <p>如果故事到此为止，那它只是一篇优雅的「可解释性」论文。但作者多走了一步，把那条「双向路」的另一头也走通了。</p>
 <p>机器学习严重依赖历史数据，因而格外怕「数据分布漂移」(data distributional shift)——未来与历史的分布不一致 (Cohen, Snow, and Szpruch 2023)。而第 4 节那个「回测」规则，天生就是来对付失灵信号的。那能不能直接把它焊到机器学习的输入端上？</p>

@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Chen, Didisheim &amp; Scheidegger (2026, Journal of Financial Economics)</strong>：他们提出「深度代理 (deep surrogate)」——用一张深度神经网络去高精度逼近一个昂贵的结构模型，把模型的求值与估计提速好几个数量级。作为示范，他们给一个 13 维的 Bates 期权定价模型造了一个代理，于是「每天重估一次模型」这种过去算不起的事变得可行：由此造出的尾部风险指数能强力预测股市崩盘，参数不稳定程度能解释期权市场的流动性，还能系统地比较结构式与简约式定价的优劣。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Chen, Didisheim &amp; Scheidegger (2026, Journal of Financial Economics)</strong>：他们提出「深度代理 (deep surrogate)」——用一张深度神经网络去高精度逼近一个昂贵的结构模型，把模型的求值与估计提速好几个数量级。作为示范，他们给一个 13 维的 Bates 期权定价模型造了一个代理，于是「每天重估一次模型」这种过去算不起的事变得可行：由此造出的尾部风险指数能强力预测股市崩盘，参数不稳定程度能解释期权市场的流动性，还能系统地比较结构式与简约式定价的优劣。</p></p></div>
 <h2 id="1">1 引言：当一个模型贵到「算不起」</h2>
 <p>先说一个做结构模型的人都心知肚明、却很少摆到台面上的尴尬。</p>
 <p>一个像样的结构模型，往往有十几个状态变量和参数。你要估计它，得反复地把模型「跑」很多遍——广义矩估计 (generalized method of moments, GMM) 要算一大堆矩条件、贝叶斯估计要在参数空间里走成千上万步、做样本外分析还得在一个滚动窗口里一遍遍重估参数。每跑一遍模型本身可能就要解一个偏微分方程、做一次数值积分、或者跑一遍蒙特卡洛。于是计算成本不是线性地、而是<strong>指数地</strong>膨胀——这就是那个老对手，维数灾难 (curse of dimensionality)：每多一个自由度，要覆盖的输入空间就翻一个量级。</p>
@@ -148,7 +148,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <li>ReLU 在零点不可导，于是哪怕它把价格本身拟合得和 Swish 一样好，它产出的函数<strong>梯度</strong>误差会大得多;</li>
 <li>而 GMM 这类极值估计量，恰恰要把代理的梯度（通过自动微分 automatic differentiation 算出来）当作核心输入。</li>
 </ul>
-<div class="callout"><div class="callout-title">Tip</div><p>这一点很容易被忽视，却是这套方法能用来做<strong>估计</strong>而不仅仅是<strong>求值</strong>的命门。代理不光要把 \(y\) 算对，还得把 \(\partial y/\partial \theta\) 算对——因为估计参数靠的就是这个导数。Swish 处处可导，于是它给出的 greeks 和参数识别都更稳。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这一点很容易被忽视，却是这套方法能用来做<strong>估计</strong>而不仅仅是<strong>求值</strong>的命门。代理不光要把 \(y\) 算对，还得把 \(\partial y/\partial \theta\) 算对——因为估计参数靠的就是这个导数。Swish 处处可导，于是它给出的 greeks 和参数识别都更稳。</p></p></div>
 <h2 id="5">5 应用一：每天重估一次，造一个崩盘指数</h2>
 <p>方法讲完，戏肉来了。代理一旦在手，那些「过去算不起」的分析就一个接一个变得可行。</p>
 <p>他们挑的练兵场是 Bates 模型——一个带随机波动率 (stochastic volatility) 的双指数跳跃扩散 (jump-diffusion) 模型，是 Bates (1996) 的直接推广。靠着代理，他们可以<strong>每天</strong>用当天的期权面板重估一次这个 13 维模型。</p>
@@ -162,7 +162,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>但论文没有停在「打脸模型」这一步，而是顺势把参数不稳定<strong>接到了一个真实的经济变量上：期权市场的流动性</strong>。</p>
 <p>逻辑是这样的：当定价模型变得不稳定，期权做市商就更难准确对冲手里存货的风险；对冲越难，他们的风险偏好越低，提供的流动性也就越少。于是预测应当是——<strong>参数越不稳定，买卖价差越宽。</strong></p>
 <p>数据印证了这一点：参数不稳定程度与 SPX 期权的相对买卖价差 (relative bid–ask spread) 之间，存在一个<strong>正向且统计显著</strong>的关系；而且在控制了合约固定效应、合约层面的异常成交量、到期时间和价值状态 (moneyness) 之后，这个系数依然显著为正。</p>
-<div class="callout"><div class="callout-title">Note</div><p>这条「模型不稳定 → 做市商难对冲 → 流动性收缩」的链路，和做市商风险承受能力影响流动性的那套逻辑是相通的——关于做市商如何在风险约束下定价，可参见<a href="/research/risk-averse-dealers-in-a-risk-free-marketthe-role-of/">《无风险市场里的风险厌恶：是谁给做市商系上了「风险限额」这根绳》</a>。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>这条「模型不稳定 → 做市商难对冲 → 流动性收缩」的链路，和做市商风险承受能力影响流动性的那套逻辑是相通的——关于做市商如何在风险约束下定价，可参见<a href="/research/risk-averse-dealers-in-a-risk-free-marketthe-role-of/">《无风险市场里的风险厌恶：是谁给做市商系上了「风险限额」这根绳》</a>。</p></p></div>
 <h2 id="7-vs">7 应用三：结构式 vs 简约式，谁赢？</h2>
 <p>第三件「过去算不起」的事，是系统地考查 Bates 模型的<strong>样本外</strong>表现。</p>
 <p>要做得干净，就得每天滚动重估、严防前视偏差——这正是开篇说的那个「理所应当却做不起」的分析。代理把这道坎抹平了。对照组是一个简约式 (reduced-form) 基准：用随机森林 (random forest, RF, Breiman, 2001) 去拟合隐含波动率曲面 (implied volatility surface)。</p>
@@ -174,7 +174,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 </ul>
 <p>怎么理解？短期限、深度价外、高价差的期权，对流动性因素、需求因素，以及 Bates 没纳入的特定跳跃动态更敏感——这些恰恰是结构模型因为「为了可解而抽象掉」的部分，于是它在这里吃了设定误差 (misspecification) 的亏。反过来，长期限期权更多反映的是基本面风险敞口，结构模型的约束在这里成了优点。</p>
 <p>更有意思的是边界效应：当市场波动或跳跃风险从训练期到预测时点<strong>上升</strong>，或者期权的执行价、到期日<strong>远离训练样本的质量中心</strong>时，Bates 的相对优势会扩大。原因在简约式那一侧——非参数的波动率曲面靠的是插值（边界内）和外推（边界外），一旦逼近训练数据的边缘，它就开始失灵。</p>
-<div class="callout"><div class="callout-title">Note</div><p>一句话总结这个 tradeoff：<strong>简约式模型在设定误差严重时表现更好，但一出训练数据的范围就「泛化」不动了；结构模型恰恰相反。</strong> 这和「把机器学习用在信用市场、要不要给黑箱加结构」的讨论遥相呼应——可参见<a href="/research/glass-box-machine-learning-and-corporate-bond-returns/">《把机器学习的黑箱拆成玻璃箱：公司债收益率能被「看懂」地预测吗？》</a>。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>一句话总结这个 tradeoff：<strong>简约式模型在设定误差严重时表现更好，但一出训练数据的范围就「泛化」不动了；结构模型恰恰相反。</strong> 这和「把机器学习用在信用市场、要不要给黑箱加结构」的讨论遥相呼应——可参见<a href="/research/glass-box-machine-learning-and-corporate-bond-returns/">《把机器学习的黑箱拆成玻璃箱：公司债收益率能被「看懂」地预测吗？》</a>。</p></p></div>
 <h2 id="8">8 应用四：期权收益的条件分布——一种全新的检验</h2>
 <p>最后，代理还解锁了一件很难独立做到的事：刻画<strong>期权收益的条件分布</strong>。</p>
 <p>沿用 Israelov &amp; Kelly (2017) 的思路，他们对相关状态估一个向量自回归 (vector autoregression, VAR)，用自助法 (bootstrapping) 模拟出未来状态的一个分布，再用代理沿着每条路径<strong>高效地</strong>把期权价格都算出来——这一步若没有代理，计算量是吓人的。</p>

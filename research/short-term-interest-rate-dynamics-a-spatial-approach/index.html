@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bandi (2002, <em>Journal of Financial Economics</em>)</strong>：作者用一套完全非参数、且不依赖平稳性的「空间」方法，重新估计了短期利率过程的漂移与扩散。结论出人意料——教科书里那个「线性均值回复」模型之所以被拒绝，<strong>并不是因为漂移在高利率处发生了非线性弯折</strong>，而是因为在 3% 到 15% 这一大段经验区间里，利率几乎就是一个<strong>鞅 (martingale)</strong>：漂移近乎为零。至于高利率处那段「拐弯」，因为样本几乎从未踏足，其统计含金量其实非常可疑。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bandi (2002, <em>Journal of Financial Economics</em>)</strong>：作者用一套完全非参数、且不依赖平稳性的「空间」方法，重新估计了短期利率过程的漂移与扩散。结论出人意料——教科书里那个「线性均值回复」模型之所以被拒绝，<strong>并不是因为漂移在高利率处发生了非线性弯折</strong>，而是因为在 3% 到 15% 这一大段经验区间里，利率几乎就是一个<strong>鞅 (martingale)</strong>：漂移近乎为零。至于高利率处那段「拐弯」，因为样本几乎从未踏足，其统计含金量其实非常可疑。</p></p></div>
 <h2 id="1">1 引言：一桩被反复引用的「定论」</h2>
 <p>先说一个几乎所有学连续时间金融的人都知道的故事。</p>
 <p>短期利率 \(r_t\) 是整个固定收益世界的地基：债券、利率衍生品的定价都从它出发，资产定价里的「超额收益」也都相对于它来定义。所以，给它的动态找一个对的模型，是一桩大生意。早年的做法很干净——把它写成一个<strong>线性均值回复 (linear mean reversion)</strong> 的扩散过程：利率高了就往下拉、低了就往上拽，拉力大小与偏离长期均值的距离成正比。Vasicek (1977)、Cox–Ingersoll–Ross (1985)、以及把它们统一进一个常弹性方差框架的 Chan, Karolyi, Longstaff and Sanders (1992)，讲的都是这一套。</p>
@@ -97,7 +97,7 @@
 <p>业界逐渐形成了一个相当流行的答案：错在<strong>漂移 (drift)</strong>。具体说，是漂移的<strong>非线性 (nonlinearity)</strong>——在利率很高的地方，回拉的力量不再是线性的，而是猛烈得多。利率越高，被拽回中枢的力气越大，于是这条非线性的强回复就成了「全局平稳性」的来源。Stanton (1997)、Conley et al. (1997)（后者讲的是「波动诱导的平稳性」）都在这条线上添砖加瓦。「短率漂移是非线性的」，俨然成了一条被反复引用的经验定论。</p>
 <p>接着，一个自然的、但很少有人正面问的问题是：<strong>我们凭什么对「高利率处的漂移」如此自信？</strong> 一个利率序列，绝大多数时间都待在 4%、5%、6% 这些「中间地带」，真正冲到 15% 以上的日子屈指可数。在那些几乎没有数据的角落里，非参数估计能告诉我们什么靠谱的东西吗？</p>
 <p>Bandi (2002) 这篇文章，正是把这个被忽略的问题摆到了台面中央。而他用来回答它的工具，是一个在金融计量里当时还相当陌生的概念——<strong>局部时间 (local time)</strong>。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>「漂移到底拐没拐弯」这桩公案，在这个博客里已经有好几篇相邻的文章在打：有人换了一把尺子去量短端（参见<a href="/research/is-nonlinear-drift-implied-by-the-short-end-of-the-term/">《利率会不会「拐弯」？》</a>），有人怀疑那道弯是先验「替它弯」出来的（参见<a href="/research/nonlinear-mean-reversion-in-the-short-term-interest-rate/">《利率会拐弯，是数据说的，还是先验替它弯的？》</a>）。本文是这条线上方法论最「根上」的一篇。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>「漂移到底拐没拐弯」这桩公案，在这个博客里已经有好几篇相邻的文章在打：有人换了一把尺子去量短端（参见<a href="/research/is-nonlinear-drift-implied-by-the-short-end-of-the-term/">《利率会不会「拐弯」？》</a>），有人怀疑那道弯是先验「替它弯」出来的（参见<a href="/research/nonlinear-mean-reversion-in-the-short-term-interest-rate/">《利率会拐弯，是数据说的，还是先验替它弯的？》</a>）。本文是这条线上方法论最「根上」的一篇。</p></p></div>
 <h2 id="2">2 一把新尺子：局部时间与「空间密度」</h2>
 <p>要理解这篇文章，得先理解作者为什么不愿意假设平稳性。</p>
 <p>理由很实在：短率到底平不平稳，证据本身就是一笔糊涂账。单位根检验要么拒绝不了「非平稳」的原假设，要么结果就卡在拒绝门槛附近来回横跳。既然先验上说不清，那么<strong>一上来就假设平稳</strong>——这正是连续时间金融里为了凑出一套完整估计理论而惯常做的事——就有可能把不精确的推断，包装成看似确凿的结论。</p>
@@ -143,7 +143,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 
 <p>这个式子在说一件极其朴素、却被先前文献忽略的事：<strong>在某一点 \(r\) 上，漂移估得有多准，取决于局部时间 \(\hat{\bar{L}}_r(T,r)\) 有多大</strong>。局部时间大，意味着过程在 \(r\) 附近反反复复待过很久、访问过很多次，标准化因子 \(\sqrt{\hat{\bar{L}}_r\,\varepsilon_{n,T}}\) 就大，估计就紧致；局部时间小，意味着过程几乎没去过那里，估计就稀烂。</p>
 <p>再对比一下两个收敛速度：扩散里除以了 \(\Delta_{n,T}\)（一个趋于零的量），漂移里没有。所以<strong>漂移估计量的收敛速度，天生比扩散慢一截</strong>。直白地说：波动率好估，漂移难估；而漂移在哪儿难估，要看过程在哪儿待得少。</p>
-<div class="callout"><div class="callout-title">Note</div><p>这套「收敛速度由局部时间决定」的逻辑，把一句过去只能靠直觉嘟囔的话——「高利率处样本太少，别太当真」——升级成了<strong>一个可以写进定理、可以画出置信区间</strong>的命题。Bandi 还顺手给出了局部时间和空间风险率的渐近分布（Theorems 3.1、3.2）与 95% 置信区间，于是「这一点的推断可不可信」第一次有了刻度。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>这套「收敛速度由局部时间决定」的逻辑，把一句过去只能靠直觉嘟囔的话——「高利率处样本太少，别太当真」——升级成了<strong>一个可以写进定理、可以画出置信区间</strong>的命题。Bandi 还顺手给出了局部时间和空间风险率的渐近分布（Theorems 3.1、3.2）与 95% 置信区间，于是「这一点的推断可不可信」第一次有了刻度。</p></p></div>
 <h2 id="4">4 数据与发现：那道「弯」，其实站在沙地上</h2>
 <p><strong>数据。</strong> 作者用的是年化的<strong>七天欧洲美元利率 (seven-day Eurodollar rate)</strong>，来自美国银行 (Bank of America)，日频，样本期从 1973 年 6 月 1 日到 1995 年 2 月 25 日。这套数据正是 Aït-Sahalia (1996a, b) 用过的那一套——这一点很重要，因为它让 Bandi 的结论可以和先前那条「漂移非线性」的文献<strong>直接对话</strong>。</p>
 <p>把整套机器开动起来，结论可以浓缩成三句话：</p>
@@ -152,7 +152,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p><strong>第三，扩散函数在 3% 到 16% 之间，呈现出清晰的常弹性方差 (CEV) 形状。</strong> 波动率随利率水平上升而上升，这一块倒是结结实实地估了出来——正因为它是个「局部」的量，不靠常返、不靠高利率处的访问。</p>
 <p>把这三句话拼起来，就是这篇文章对那桩公案的重新裁决：<strong>传统线性均值回复模型之所以被拒绝，主要矛盾不在「高利率处漂移非线性」，而在「中段漂移近乎为零（鞅性）」。</strong> 线性模型的设定要求漂移在中段就有一个可观的、与偏离成正比的回拉；可数据说，那里压根没有回拉。至于高处那道惊心动魄的弯，证据太薄，不足以作为拒绝线性模型的主要理由。</p>
 <p>这正好呼应了 Chapman and Pearson (2000) 那个一针见血的标题——「短率的漂移真的是非线性的吗？」他们担心的，正是高利率处样本稀少导致的伪非线性；而 Bandi 用局部时间，把这份担心从「直觉怀疑」做成了「渐近理论」。Pritsker (1998) 早先也指出，Aït-Sahalia (1996b) 那套检验在有限样本里<strong>尺度失真、功效偏低</strong>——同一根软肋，被不同的人从不同角度反复戳中。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>注意这里有一个常被误读的地方：Bandi <strong>并没有</strong>断言「漂移在高处一定是线性的」或「一定没有非线性」。他说的是更克制、也更诚实的一句话：在那个区间，<strong>我们没有足够的信息下任何firm的结论</strong>。缺数据不等于「证伪了非线性」，它等于「这道题暂时无解」。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>注意这里有一个常被误读的地方：Bandi <strong>并没有</strong>断言「漂移在高处一定是线性的」或「一定没有非线性」。他说的是更克制、也更诚实的一句话：在那个区间，<strong>我们没有足够的信息下任何firm的结论</strong>。缺数据不等于「证伪了非线性」，它等于「这道题暂时无解」。</p></p></div>
 <h2 id="5">5 文献脉络</h2>
 <p>这条研究的演进，可以读成一部「假设越用越省、尺子越做越精」的历史。</p>
 <p><strong>起点是参数化的单因子模型。</strong> Vasicek (1977) 给了线性高斯的均值回复，Cox–Ingersoll–Ross (1985) 给了带平方根扩散的版本（保证利率非负），Chan et al. (1992)（即 CKLS）把一票模型统一进常弹性方差的大框架里，用 GMM 做了横向比较。这一时期的共识是：模型要有明确的参数形式。</p>

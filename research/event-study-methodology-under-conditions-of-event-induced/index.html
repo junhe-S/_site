@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>你的 t 值在撒谎：当事件本身把方差吹大了 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>你的 t 值在撒谎：当事件本身把方差吹大了</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[1991 JFE]</span> Event-study Methodology Under Conditions of Event-induced Variance</div>
+        <div class="paper-source-authors"><a href="/research/author/ekkehart-boehmer/">Ekkehart Boehmer</a>, <a href="/research/author/jim-masumeci/">Jim Masumeci</a>, <a href="/research/author/annette-b-poulsen/">Annette B. Poulsen</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">事件研究</span>
+        
+        
+        
+        
+        <span class="tag">实证方法</span>
+        
+        
+        
+        
+        <span class="tag">横截面检验</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Boehmer, Masumeci &amp; Poulsen (1991, JFE)</strong>：当一个事件不只是平移了股票的平均收益、还顺手把收益的方差吹大时，金融学里最常用的那几个事件研究检验会<strong>频繁地把「其实没有异常收益」误判成「有」</strong>；作者提出一个把 Patell 标准化与横截面方差缝在一起的「标准化横截面检验」，在零假设为真时拒绝率回到正常，在零假设为假时又几乎和传统检验一样有力。</p></p></div>
+<h2 id="1-t">1 一个会撒谎的 t 值</h2>
+<p>先讲一个让人脊背发凉的场景。</p>
+<p>你做了一个事件研究：挑了一批公司，找到它们发生某件大事的那一天（公告、回购、并购……），按 Brown 和 Warner 的标准流程估出每只股票的「异常收益（abnormal return）」，再把它们加总、除以一个标准误，得到一个漂亮的 t 值。t 值很大，于是你长舒一口气，在论文里写下「事件带来了显著的正异常收益」。</p>
+<p>可问题是——<strong>这个 t 值可能在骗你</strong>。</p>
+<p>它骗你的方式很隐蔽。你以为自己在检验「平均异常收益是不是零」，而你真正在做的，是拿事件期的收益去比一把<strong>在平静日子里量出来的尺子</strong>（估计期的残差方差）。倘若这件大事除了挪动平均收益，还顺带把当天收益的<strong>离散程度</strong>搅大了，那么这把尺子就太短了：分母被低估，t 值被人为顶高，于是你在「明明什么都没发生」的时候，照样能拒绝零假设。</p>
+<p>这正是 Boehmer、Masumeci 和 Poulsen 这篇 1991 年 JFE 论文要对付的幽灵，他们给它起了个名字：<strong>事件诱发方差（event-induced variance）</strong>。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>这里的「方差」不是指你没控制好横截面上公司之间的异质性而测出的虚假离散。即便事件对每家公司的真实影响完全相同，只要事件本身让收益的随机性变大，问题就存在。Brown、Harlow 和 Tinic（1988, 1989）已经记录过：很多事件会让个股的风险与收益同时变化，表现为异常收益方差的一次暂时性抬升。</p></p></div>
+<h2 id="2">2 为什么这件事「自然」会发生</h2>
+<p>接着，一个自然的问题是：方差变大，难道不是因为研究者没把公司之间的差异控制干净吗？</p>
+<p>部分是。如果你不去区分「身处收购战中的公司采用毒丸」和「内部人持股 75% 的公司采用毒丸」，那么事件日横截面上的离散度当然会变大——但那是<strong>异质效应</strong>冒充的方差。早在二十多年前，Beaver（1968）就指出：盈余公告日横截面离散度的上升，本身就意味着公告传递了信息。</p>
+<p>但论文真正想说的是另一半：哪怕你把异质性控制得再干净，<strong>事件本身仍可能注入一份纯粹的随机性</strong>。Dann（1981）研究股票回购时报告过一个触目惊心的数字——事件期横截面标准差比估计期<strong>大了约 3.625 倍</strong>。这种放大，不是你建模能消掉的，它是事件的一部分。</p>
+<p>于是，常用的检验就站在了一个尴尬的位置上：它们的分母，来自<strong>事件之前</strong>那段安静的估计期；可它们要检验的对象，活在<strong>方差已经被吹大</strong>的事件期。尺子和被量的东西，根本不在一个刻度上。</p>
+<h2 id="3">3 已有的几把尺子，各有各的盲区</h2>
+<p>然后，我们来盘点一下作者拿来同台竞技的六种检验。理解它们各自「漏在哪儿」，才能看懂第六种为什么赢。</p>
+<p><strong>第一把：传统检验（traditional test）。</strong> 即 Brown-Warner（1980）的「无依赖调整」法。统计量是事件期异常收益之和，除以<strong>所有股票估计期残差方差之和</strong>的平方根：</p>
+<p>$$
+t_{\text{trad}} = \frac{\sum_{i=1}^{N} A_{i,0}}{\sqrt{\sum_{i=1}^{N} s_i^2}}
+$$</p>
+<p>它隐含假设了两件事：残差互不相关，且事件诱发方差<strong>可以忽略</strong>。第二个假设一旦破裂，分母系统性偏小。</p>
+<p><strong>第二把：标准化残差检验（standardized-residual test）。</strong> 即 Patell（1976）法，Brown-Warner（1985）也在用。它的聪明之处在于，先把每只股票的事件期残差，用它<strong>自己</strong>的估计期标准差（并做预测误差修正）标准化，再加总：</p>
+<p>$$
+SR_{i} = \frac{A_{i,0}}{S_i}, \qquad S_i = s_i\sqrt{\,1 + \frac{1}{T_i} + \frac{(R_{m,0}-\bar R_m)^2}{\sum_{t=1}^{T_i}(R_{m,t}-\bar R_m)^2}\,}
+$$</p>
+<p>这一步做对了两件事：一是修正了「事件期残差是样本外预测，方差天然更大」的问题（那个 \(1+\tfrac{1}{T_i}+\cdots\) 的修正项）；二是防止个别高方差股票主导整个检验。标准化后的 \(SR_i\) 近似单位正态，统计量约等于 \(\sum SR_i / \sqrt{N}\)。但是——它<strong>仍然</strong>假设事件诱发方差不重要。它修正的是「样本外」与「异方差」，不是「事件把方差吹大了」。</p>
+<p><strong>第三把：符号检验（sign test）。</strong> 数事件期正收益的比例减 0.5，再除以二项分布标准差。它常被用来佐证「结果不是几只股票带歪的」。但它假设 50% 的收益为负，而真实收益是右偏的（Fama 1976；Brown-Warner 1980）。</p>
+<p><strong>第四把：普通横截面检验（ordinary cross-sectional test）。</strong> 这把尺子换了思路：干脆<strong>不用</strong>估计期方差，而用事件期当天的横截面标准误来做 t 检验。它的好处是<strong>不要求</strong>事件诱发方差为零；它的硬伤是，一旦不同公司的事件期残差来自<strong>不同的分布</strong>，它就被错误设定（misspecified）了。</p>
+<p><strong>第五把：矩估计检验（method-of-moments）。</strong> Froot（1989）的估计量，允许残差同期相关、异方差，代价是要把公司分成「组间独立」的若干组（作者按一位 SIC 行业码分组）。先算每个行业的平均残差，标准化成「标准化行业残差（SIR）」，再加总除以行业数的平方根。代价是：组太粗、信息利用不充分，功效偏低。</p>
+<p>读到这里你大概已经嗅到了那个<strong>真正关键的一步</strong>。</p>
+<h2 id="4">4 把两把尺子缝在一起</h2>
+<p>普通横截面检验的优点，恰好是标准化残差检验的盲区（它允许方差变化）；而标准化残差检验的优点，又恰好补上普通横截面检验的短板（它用上了估计期的信息、且不让大方差股票称霸）。</p>
+<p>那为什么不<strong>把两者缝起来</strong>？</p>
+<p>这就是论文的核心贡献——<strong>标准化横截面检验（standardized cross-sectional test）</strong>。它分两步走：</p>
+<blockquote>
+<p>第一步，像 Patell 那样，把每只股票的残差用其估计期标准差（修正预测误差后）标准化，得到 \(SR_i\)，先消除普通横截面检验的「分布不同」错误设定问题；</p>
+<p>第二步，再对这批标准化后的 \(SR_i\) 施加普通横截面的做法——用它们<strong>当期的横截面标准误</strong>当分母。</p>
+</blockquote>
+<p>落成公式，就是下面这个后来被无数事件研究奉为标配、人称 <strong>BMP 统计量</strong>的东西：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+t_{BMP} = \frac{\cssId{a1}{\frac{1}{N}\sum_{i=1}^{N} SR_i}}{\cssId{a2}{\frac{1}{\sqrt{N}}}\,\cssId{a3}{\sqrt{\frac{1}{N-1}\sum_{i=1}^{N}\Big(SR_i - \frac{1}{N}\sum_{j=1}^{N} SR_j\Big)^2}}}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>事件期标准化残差的横截面均值——分子，衡量平均异常表现</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>1/√N，把横截面标准差转成均值的标准误</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>事件期当天 SR 的横截面标准差——分母从「估计期」搬到了「事件期」，方差被吹大它就跟着变大</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>把它和前几把尺子对照，妙处一目了然：分子里的 \(SR_i\) 已经做过 Patell 标准化，所以没有大方差个股称霸的问题（继承了第二把尺子的优点）；而分母不再是估计期那段安静日子的方差，而是<strong>事件期当天</strong>横截面上算出来的离散度——事件把方差吹多大，这个分母就跟着鼓多大（继承了第四把尺子的优点）。于是「分母太短」的病根被拔掉了。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>作者也点明：这个统计量其实是 Ball 和 Torous（1988）极大似然估计量的一个特例——当事件以概率 1 在某天发生、且事件诱发方差正比于个股估计期方差时，Ball-Torous 里的标准化收益是独立同分布的正态，此时 MLE 与之重合。换句话说，BMP 是把一个很一般、但难实现的估计量，「蒸馏」成了一行人人都算得出来的公式。这一点，颇有几分把复杂模型化作查找表的味道（可参见<a href="/research/deep-surrogates-for-finance-with-an-application-to-option/">《把结构模型「蒸馏」成一张查找表：深度代理与期权定价》</a>中类似的「化繁为简」思路）。</p></p></div>
+<h2 id="5-250">5 实验台：250 个投资组合的「压力测试」</h2>
+<p>但真正关键的一步，是怎么<strong>证明</strong>这把新尺子既准又有力。作者的办法是蒙特卡洛模拟（Monte Carlo simulation）。</p>
+<p>数据来自 <strong>1987 年版 CRSP 日收益文件</strong>（涵盖 1962 年 7 月至 1987 年 12 月）。他们构造了 <code>250</code> 个投资组合，每个 <code>50</code> 只证券，证券与事件日都是<strong>带放回</strong>随机抽取的，且剔除 1987 年的事件日（避开当年下半年的剧烈波动）。入选条件：估计期（$-249$ 到 $-11$）至少 50 个日收益，事件窗（$-19$ 到 $+10$）这 30 天无缺失。</p>
+<p>然后人为地往事件日「注射」两样东西：一个常数异常收益 \(\mu\)，和一份事件诱发方差。后者的强度用 \(k\) 来刻度——事件诱发方差是估计期方差的 \(k\) 倍。作者特意分了两种情形：方差增量正比于<strong>个股</strong>估计期方差（Panel A），或正比于<strong>组合平均</strong>估计期方差（Panel B）。Dann（1981）那个 3.625 倍的极端值，大约对应 \(k\approx 11\)。</p>
+<p>先看一个「定标」结果：当<strong>没有</strong>事件诱发方差时（\(k=0\)），各检验的表现应当回到经典水准。果然——单尾 \(\alpha=0.05\)、零异常收益时，标准化残差法拒绝 <code>7.2%</code>（Brown-Warner 1985 的对应数字是 <code>6.4%</code>）；异常收益为 <code>1%</code> 时，它拒绝 <code>96%</code>（Brown-Warner 是 <code>97.6%</code>）。尺子校准无误。</p>
+<h2 id="6">6 反转：当方差被吹大的那一刻</h2>
+<p>于是反转出现了。</p>
+<p>把 \(k\) 拧上去、同时让真实异常收益为零，灾难立刻显形。论文写道：<strong>即便 \(k_i\) 只有 0.5</strong>（事件诱发方差只是估计期方差的一半），传统法和标准化残差法拒绝零假设的频率，竟是它们<strong>应有水平的 2.2 到 6.4 倍</strong>。也就是说，在「什么都没发生」的世界里，这两把最常用的尺子有时会以六倍于名义显著性水平的频率，喊出「显著」。普通横截面法和符号检验则大体守住了正确的拒绝率——因为它们要么用了事件期方差，要么本就不靠正态方差。</p>
+<p>那么代价呢？一把不乱喊「狼来了」的尺子，会不会在<strong>真有狼</strong>时也喊不出声？这正是检验功效（power）的问题，也是 BMP 统计量必须证明自己的地方。</p>
+<p>当真实异常收益为 <code>1%</code>、方差增量正比于个股方差（双尾 \(\alpha=0.05\)）时：标准化横截面检验在 \(k_i=0.5\) 时拒绝 <code>81.6%</code>、\(k_i=1\) 时拒绝 <code>70.1%</code>；而传统法对应只有 <code>69.6%</code> 和 <code>61.6%</code>。注意这个细节——<strong>在较低的事件诱发方差下，新检验不仅比普通横截面法和符号检验更有力，甚至比传统法还要有力</strong>。它没有用「准」去换「力」。</p>
+<p>当异常收益升到 <code>2%</code> 时，传统法、标准化残差法和标准化横截面法在双尾 \(\alpha=0.05\) 下几乎都是 <code>100%</code> 拒绝；矩估计法则是六者中功效最差的那一个。</p>
+<p>一句话总结这场压力测试：<strong>传统法和标准化残差法，在零假设为真时拒绝得太多（size 失控）；矩估计法，在零假设为假时拒绝得太少（power 不足）；唯有标准化横截面检验，两头都站住了。</strong> 更难得的是，作者补充说，把它用到存在<strong>事件日聚集（event-date clustering）</strong>的组合上时，size 与 power 都不受影响。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这条线捋一捋，故事其实很清晰。</p>
+<p>最初，是 Beaver（1968）发现盈余公告会抬高横截面离散度——这是「方差会随事件变化」的最早自觉。接着，事件研究的方法学骨架由 Brown 和 Warner（1980, 1985）搭起，他们的「传统法」成了行业标准，却把事件诱发方差按下不表。与此同时，Patell（1976）从另一个方向贡献了「标准化残差」，解决了样本外预测与异方差，却也默认方差不随事件变。</p>
+<p>然后，一批人开始正面进攻这个幽灵：Christie（1983）提出在多事件下估计方差；Collins 和 Dent（1984）用模拟证明在事件日聚集时 GLS 优于 OLS；Ball 和 Torous（1988）祭出极大似然，同时估计事件期收益、方差与事件发生概率；Corrado（1989）则走非参数路线，用秩检验绕开正态假设。Froot（1989）的矩估计提供了允许相关与异方差的协方差矩阵。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>本文（1991）的位置，是在这堆「各显神通」的方案里，挑出一条<strong>最易实现、又两头都站得住</strong>的路：不需要多事件、不需要解似然、不需要非参数排序，只要把 Patell 标准化和横截面方差缝在一起。也正因为「易实现」，它后来成了事件研究的事实标准。这条「给事件研究挑尺子」的传统至今未绝（可参见<a href="/research/measuring-security-price-performance-using-daily-nasdaq/">《纳斯达克的收益里藏着「假阳性」——一篇给事件研究挑尺子的论文》</a>，以及更晚近的<a href="/research/past-is-prologue-inference-from-the-cross-section-of/">《事件研究里的「假阳性」：当一根 t 值不再等于因果》</a>）。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<p><strong>(a) 几个可能的疑问</strong></p>
+<p><strong>Q：事件诱发方差，和「我没控制好公司异质性」造成的虚假离散，到底差在哪？</strong></p>
+<blockquote>
+<p>差在「能不能被建模消掉」。异质效应是结构性的——毒丸对收购战中的公司和对内部人控股公司影响不同，你把这些协变量放进模型就能控制。事件诱发方差是<strong>纯随机性</strong>的抬升：哪怕事件对每家公司的真实影响完全相同（i.i.d. 情形），方差照样变大，无法靠加协变量消除。论文明确说，它不讨论方差变大的成因，只论证「必须控制它，才能得到对零假设的恰当检验」。</p>
+</blockquote>
+<p><strong>Q：既然普通横截面检验也用事件期方差、也守住了 size，为什么不直接用它？</strong></p>
+<blockquote>
+<p>因为它在零假设为假时<strong>功效偏低</strong>，而且当不同公司的事件期残差来自不同分布时会被错误设定。BMP 的第一步标准化，正是为了修掉这个错误设定；标准化之后，大方差个股不再主导，横截面标准误才量得准。所以 BMP 不是普通横截面法的替代品，而是它的「打了补丁的升级版」。</p>
+</blockquote>
+<p><strong>Q：标准化残差法（Patell）不是已经做了方差修正吗，为什么还会失灵？</strong></p>
+<blockquote>
+<p>Patell 修正的是「样本外预测方差更大」和「个股异方差」这两件事，用的仍是<strong>估计期</strong>的标准差。它从未假设事件<strong>本身</strong>会改变方差。一旦事件把事件日的方差吹大，Patell 的分母（来自估计期）依然系统性偏小，于是照样过度拒绝。</p>
+</blockquote>
+<p><strong>Q：为什么矩估计法（Froot）功效那么差？</strong></p>
+<blockquote>
+<p>因为它要求把公司分成组间独立的若干组，作者按一位 SIC 行业码分，平均每个 50 只的组合只有约 7 个行业。它先把每个行业内部的信息压成一个「标准化行业残差」，再用这 7 个数做检验——信息被严重粗化，自由度太低，功效自然上不去。它换来的是允许组内相关，但在这个模拟设定里这份代价不划算。</p>
+</blockquote>
+<p><strong>Q：这套方法依赖正态分布吗？股票收益明明右偏。</strong></p>
+<blockquote>
+<p>BMP 的渐近正态性依赖 \(SR_i\) 近似单位正态。但作者的模拟里异常收益是从正态抽的，所以这是「自家主场」。面对真实数据的偏度与厚尾，Corrado（1989）的非参数秩检验是另一条更稳健的路。两者其实是互补的：BMP 易算且高效，秩检验对分布假设更不敏感。</p>
+</blockquote>
+<p><strong>Q：把它用到「同一天发生事件」的样本（事件日聚集）上还成立吗？</strong></p>
+<blockquote>
+<p>作者专门测了，结论是<strong>size 和 power 都不受影响</strong>。但要注意，所有检验（包括 BMP）都仍假设证券残差在横截面上不相关。若聚集还伴随强烈的横截面相关，那是另一层问题，需要 Collins-Dent 式的 GLS 或 Froot 式的分组来对付。</p>
+</blockquote>
+<p><strong>(b) 几个可能的研究问题与提案</strong></p>
+<p><strong>1. 公司债事件研究里的「事件诱发方差」</strong></p>
+<blockquote>
+<p>【经济故事】事件研究的方法学几乎都长在股票市场上，可信用市场的「方差」行为很不一样：评级下调、违约、流动性枯竭往往同时抬高收益的均值漂移和方差，而且债券的厚尾、非交易、价格陈旧更严重。把 BMP 直接搬过来，分母可能被陈旧价格压扁，反而过度拒绝。
+【可行性】中。需要 TRACE 成交数据 + 同发行人多债券。识别策略：构造一个公司债版的蒙特卡洛，注入均值与方差冲击，比较 BMP、秩检验与基于成交量调整的标准误。诚实地说，债券的非同步交易会让「事件期横截面方差」本身含噪，是真正的难点。</p>
+</blockquote>
+<p><strong>2. 外资持有人冲击下的横截面方差结构</strong></p>
+<blockquote>
+<p>【经济故事】当一项政策同时改变多国、多公司的外资可投资度时，事件不只是平移了收益，还可能因为「谁被外资青睐」的差异而吹大横截面方差。此时用 BMP 检验「外资进入是否有异常收益」，size 是否还守得住？
+【可行性】中。需要跨国可投资度（investability）面板 + 事件日。可借鉴外资研究里已有的识别（如可投资度的离散变动），先做模拟标定，再上实证。</p>
+</blockquote>
+<p><strong>3. 当事件日聚集 + 横截面相关同时存在</strong></p>
+<blockquote>
+<p>【经济故事】BMP 假设残差横截面不相关。可现实里，宏观事件（央行公告、危机日）既聚集又高度相关。一个自然问题：在「方差被吹大 + 强横截面相关」的双重污染下，BMP、Collins-Dent 的 GLS、Froot 的分组三者，谁的 size-power 前沿最优？
+【可行性】高。纯模拟即可完成，不需新数据，是一篇干净的方法学论文。把 \(k\) 与相关系数 \(\rho\) 拉成一张二维网格，画出各检验的拒绝率曲面。</p>
+</blockquote>
+<p><strong>4. 非参数与参数的「缝合」</strong></p>
+<blockquote>
+<p>【经济故事】BMP 把 Patell 与横截面方差缝在一起；那能不能把 Corrado 的秩 + 横截面标准误也缝起来，得到一个「既稳健于偏度、又稳健于事件诱发方差」的检验？
+【可行性】高。理论上直接，模拟验证也不难。风险在于：秩变换后再算横截面标准误，统计量的渐近分布需要重新推导，可能没有漂亮的闭式。</p>
+</blockquote>
+<h2 id="9">9 我的判断</h2>
+<p>先说贡献。这篇论文的分量，不在数学的精巧——它的统计量简单到一行就能写完——而在于它<strong>精准地诊断出了一个普遍却隐蔽的错误，并给出了一个所有人都用得起的处方</strong>。事件研究是实证金融最常用的工具之一，而「事件诱发方差导致过度拒绝」这件事，在 1991 年之前是被广泛忽视的。BMP 把它摆上台面，又用 250 组模拟把六种方法的 size 与 power 一一对账，最后留下一把既准又有力的尺子。它后来成为事件研究标配，实至名归。</p>
+<p>再说对识别（这里更准确地说是「对模拟设计」）的担忧。第一，所有结论都建立在<strong>收益正态</strong>的模拟世界里——这是 BMP 的主场，对真实数据的偏度与厚尾，它未必同样稳健，这也正是 Corrado 路线存在的理由。第二，全篇假设残差<strong>横截面不相关</strong>；现实中宏观事件的强相关会让这个前提破裂，而论文只检验了「聚集但不相关」的情形。第三，模拟里事件诱发方差与估计期方差之比被设成<strong>常数 \(k\)</strong>，真实世界的方差冲击恐怕更不规则。</p>
+<p>后续我最想看到的，是把这套压力测试搬到<strong>公司债与信用市场</strong>：那里非同步交易、价格陈旧、厚尾更极端，「事件期横截面方差」本身就含噪，BMP 的分母会不会反而被噪声顶高、走向另一个方向的误判？这是一个既有现实意义、又有干净模拟设计的问题。</p>
+<h2 id="">参考文献</h2>
+<p>Ball, Clifford and Walter Torous (1988). Investigating security price performance in the presence of event-date uncertainty. <em>Journal of Financial Economics</em> 22, 113–154.</p>
+<p>Beaver, William H. (1968). The information content of annual earnings announcements. <em>Empirical Research in Accounting: Selected Studies</em>, Supplement to the <em>Journal of Accounting Research</em>, 67–92.</p>
+<p>Boehmer, Ekkehart, Jim Masumeci and Annette B. Poulsen (1991). Event-study methodology under conditions of event-induced variance. <em>Journal of Financial Economics</em> 30(2), 253–272.</p>
+<p>Brown, Keith, W.V. Harlow and Seha M. Tinic (1988). Risk aversion, uncertain information, and market efficiency. <em>Journal of Financial Economics</em> 22, 355–385.</p>
+<p>Brown, Stephen and Jerold Warner (1980). Measuring security price performance. <em>Journal of Financial Economics</em> 8, 205–258.</p>
+<p>Brown, Stephen and Jerold Warner (1985). Using daily stock returns: The case of event studies. <em>Journal of Financial Economics</em> 14, 3–31.</p>
+<p>Christie, Andrew (1983). On information arrival and hypothesis testing in event studies. Working paper, University of Rochester.</p>
+<p>Collins, Daniel W. and Warren T. Dent (1984). A comparison of alternative testing models used in capital market research. <em>Journal of Accounting Research</em> 22, 48–84.</p>
+<p>Corrado, Charles J. (1989). A nonparametric test for abnormal security price performance in event studies. <em>Journal of Financial Economics</em> 23, 385–395.</p>
+<p>Dann, Larry (1981). Common stock repurchases: An analysis of returns to bondholders and stockholders. <em>Journal of Financial Economics</em> 9, 113–138.</p>
+<p>Fama, Eugene F. (1976). <em>Foundations of Finance</em>. Basic Books, New York.</p>
+<p>Froot, Kenneth (1989). Consistent covariance matrix estimation with cross-sectional dependence and heteroskedasticity in financial data. <em>Journal of Financial and Quantitative Analysis</em> 24, 333–355.</p>
+<p>Patell, James (1976). Corporate forecasts of earnings per share and stock price behavior: Empirical tests. <em>Journal of Accounting Research</em> 14, 246–276.</p>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1-t">1 一个会撒谎的 t 值</a></li>
+        <li><a href="#2">2 为什么这件事「自然」会发生</a></li>
+        <li><a href="#3">3 已有的几把尺子，各有各的盲区</a></li>
+        <li><a href="#4">4 把两把尺子缝在一起</a></li>
+        <li><a href="#5-250">5 实验台：250 个投资组合的「压力测试」</a></li>
+        <li><a href="#6">6 反转：当方差被吹大的那一刻</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+        <li><a href="#9">9 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

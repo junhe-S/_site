@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Brandt, Goyal, Santa-Clara &amp; Stroud (2005, <em>Review of Financial Studies</em>)</strong>：他们借用给美式期权定价的「最小二乘蒙特卡洛」思路，提出一种「先模拟、再做横截面回归、最后逐期倒推」的方法，把过去被判了「计算上不可行」死刑的高维动态组合选择问题盘活了。作为压轴的应用，他们让一个投资者一边相信股息率能预测收益、一边对参数心里没底地「边走边学」——结果发现，<strong>学习带来的负向对冲需求，反过来盖过了可预测性带来的正向对冲需求</strong>，整个最优策略的符号都被改写了。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Brandt, Goyal, Santa-Clara &amp; Stroud (2005, <em>Review of Financial Studies</em>)</strong>：他们借用给美式期权定价的「最小二乘蒙特卡洛」思路，提出一种「先模拟、再做横截面回归、最后逐期倒推」的方法，把过去被判了「计算上不可行」死刑的高维动态组合选择问题盘活了。作为压轴的应用，他们让一个投资者一边相信股息率能预测收益、一边对参数心里没底地「边走边学」——结果发现，<strong>学习带来的负向对冲需求，反过来盖过了可预测性带来的正向对冲需求</strong>，整个最优策略的符号都被改写了。</p></p></div>
 <h2 id="1">1 一个被「维数」卡住的老问题</h2>
 <p>动态组合选择（dynamic portfolio choice）是一个很老的问题。老到什么程度呢？它的奠基工作可以一路追溯到 Merton (1969, 1971)、Samuelson (1969) 在连续时间里的经典推导，以及 Fama (1970) 在离散时间里的对应物。这些工作告诉我们一件很美的事：当投资机会会随时间变化时，一个有远见的长期投资者不会只盯着「这一期的均值-方差」，他还会去<strong>对冲</strong>未来投资机会的变动——这就是所谓的对冲需求（hedging demand），也是动态与短视（myopic）组合选择的分水岭。</p>
 <p>可问题是，这套理论虽美，能算出<strong>闭式解</strong>（closed-form solution）的场合却屈指可数。你得把投资者的偏好、收益的动态都摆成恰到好处的形状，才能像 Kim &amp; Omberg (1996)、Liu (1999a)、Wachter (2002) 那样把解写出来。（关于 Liu 那一支把整个组合问题压缩成一个常微分方程的优雅做法，可参见<a href="/research/portfolio-selection-in-stochastic-environments/">《把投资组合的「天书」解到只剩一个常微分方程》</a>。）现实里的投资者可没那么听话。</p>
@@ -116,7 +116,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>你看这个解多眼熟——它其实就是「风险的倒数乘以风险溢价」，一个被价值函数导数加权的均值-方差形式。换句话说，<strong>整个动态问题，被压成了两个条件期望的计算</strong>：一个关于二阶矩（风险），一个关于风险溢价（收益）。</p>
 <p>那这两个条件期望怎么算？这才是全篇的灵魂：<strong>用跨路径的最小二乘回归</strong>。具体说，在 \(T-1\) 时刻，把每条模拟路径上 \(T\) 时刻实现的效用、效用的导数、以及资产收益，<strong>对 \(T-1\) 时刻状态变量的基函数（basis functions）做横截面回归</strong>——回归的拟合值，就是我们要的条件期望（条件在状态变量上的矩）。算出 \(T-1\) 期的最优权重后，算法就这样一期一期地倒推回时间零点。</p>
 <p>整个方法于是被拆成三个动作，干净利落：<strong>模拟</strong>资产收益与状态变量的若干条样本路径 → 对每一期做一组<strong>跨路径回归</strong> → 在每条路径上<strong>评估那个近似组合问题的闭式解</strong>。维数灾难为什么消失了？因为回归并不在乎状态变量有几个、动态有多复杂——它只是在拟合一个函数。状态空间高维、路径依赖、甚至非平稳，对模拟和回归来说都无所谓。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>二阶展开有时不够准——当效用函数离二次型很远、或收益离正态很远时尤甚。所以作者实际用的是<strong>四阶展开</strong>，把偏度（skewness）和峰度（kurtosis）对效用的影响也纳进来。四阶展开的解是隐式的，但解起来很简单：拿二阶解当初始猜测 \(x_t^{(0)}\)，代入隐式方程右端解出 \(x_t^{(1)}\)，迭代几次就收敛。作者还发现一个经验规律：方法对<strong>展开阶数</strong>远比对<strong>展开点</strong>敏感——二阶和四阶结果能差很多，但换个展开点几乎没区别。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>二阶展开有时不够准——当效用函数离二次型很远、或收益离正态很远时尤甚。所以作者实际用的是<strong>四阶展开</strong>，把偏度（skewness）和峰度（kurtosis）对效用的影响也纳进来。四阶展开的解是隐式的，但解起来很简单：拿二阶解当初始猜测 \(x_t^{(0)}\)，代入隐式方程右端解出 \(x_t^{(1)}\)，迭代几次就收敛。作者还发现一个经验规律：方法对<strong>展开阶数</strong>远比对<strong>展开点</strong>敏感——二阶和四阶结果能差很多，但换个展开点几乎没区别。</p></p></div>
 <h2 id="3">3 这方法,到底准不准</h2>
 <p>一个新方法，最该先回答的问题不是「能不能算更难的」，而是「在能算的地方，算得对不对」。作者很克制地先在最简单的设定上做体检：股票指数与现金之间的两资产组合，收益要么是 iid、要么由股息率可预测。</p>
 <p>iid 那一档是用来检验泰勒展开本身的误差的——结论是，<strong>泰勒展开引入的近似误差极小</strong>（这个结论对带高阶矩的静态组合问题也独立地有用）。可预测收益那一档，则是用来和传统方法（Brennan-Schwartz-Lagnado、Balduzzi-Lynch、Brandt、Campbell-Viceira、Barberis 等）对表的——结论是，<strong>本方法给出的解和那些传统方法一致</strong>。作者还专门做了一个蒙特卡洛实验，量化模拟本身引入的噪声：最优权重的模拟误差、以及对应的财富确定性等价收益（certainty equivalent return）损失，都<strong>可以忽略</strong>。</p>

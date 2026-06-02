@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3. No-arbitrage Asset Pricing – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>3. No-arbitrage Asset Pricing</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">无套利</span><span class="lang en">No-arbitrage</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">资产定价基本定理</span><span class="lang en">FTAP</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">随机贴现因子</span><span class="lang en">SDF</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">线性因子模型</span><span class="lang en">Linear Factor Model</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">期权定价</span><span class="lang en">Option Pricing</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>3. No-arbitrage Asset Pricing</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本讲导读
+本讲（Toda 第 3 讲）从<strong>无套利</strong>出发推导资产定价。§1 <strong>无套利资产定价</strong>：两期经济、资产张成 \(\langle W\rangle\)、无套利定义；<strong>资产定价基本定理</strong>（Thm 1，Harrison-Kreps 1979）——无套利 \(\iff\) 存在正<strong>状态价格</strong> \(p\)；进而得风险中性测度 \(\{\nu_s\}\)、<strong>随机贴现因子 (SDF)</strong> \(m=p/\pi\)、\(\mathbb E[mR_j]=1\)、\(R_f=1/\mathbb E[m]\)、<strong>协方差定价公式</strong> \(\mathbb E[R_j]-R_f=-R_f\mathrm{Cov}[m,R_j]\)。§2 <strong>线性因子模型</strong>：\(m=a-b'f\)（CAPM 为单因子 \(f=R_m\)）、beta、风险溢价 \(\gamma_k\)、零-beta 率 \(\gamma_0\)、\(\mu_j=\gamma_0+\sum_k\gamma_k\beta_{k,j}\)；Fama-MacBeth 两步回归、GMM、<strong>伪因子 (spurious factor)</strong> 问题。§3 <strong>二项期权定价</strong>（Cox-Ross-Rubinstein 1979）：3.1 欧式（复制、风险中性 \(p=\frac{R-D}{U-D}\)、买卖权平价 \(C-P=S_0-KR^{-T}\)）、3.2 美式（Prop 2 Merton：\(R\ge1\) 时美式看涨=欧式看涨）、3.3 连续时间极限与 <strong>Black-Scholes 公式</strong>。含习题与附录（凸集 / 超平面 / 分离超平面定理）。</p></p></div>
+</div>
+<div class="lang en">
+<h1>3. No-arbitrage Asset Pricing</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+This lecture (Toda's Lecture 3) derives asset pricing from <strong>no-arbitrage</strong>. §1 <strong>no-arbitrage asset pricing</strong>: a two-period economy, the asset span \(\langle W\rangle\), the no-arbitrage definition; the <strong>Fundamental Theorem of Asset Pricing</strong> (Thm 1, Harrison-Kreps 1979) — no-arbitrage \(\iff\) positive <strong>state prices</strong> \(p\) exist; hence the risk-neutral measure \(\{\nu_s\}\), the <strong>stochastic discount factor (SDF)</strong> \(m=p/\pi\), \(\mathbb E[mR_j]=1\), \(R_f=1/\mathbb E[m]\), the <strong>covariance pricing formula</strong> \(\mathbb E[R_j]-R_f=-R_f\mathrm{Cov}[m,R_j]\). §2 <strong>linear factor model</strong>: \(m=a-b'f\) (CAPM is the single-factor \(f=R_m\)), beta, risk premia \(\gamma_k\), zero-beta rate \(\gamma_0\), \(\mu_j=\gamma_0+\sum_k\gamma_k\beta_{k,j}\); the Fama-MacBeth two-pass regression, GMM, and the <strong>spurious-factor</strong> problem. §3 <strong>binomial option pricing</strong> (Cox-Ross-Rubinstein 1979): 3.1 European (replication, risk-neutral \(p=\frac{R-D}{U-D}\), put-call parity \(C-P=S_0-KR^{-T}\)), 3.2 American (Prop 2 Merton: for \(R\ge1\) the American call equals the European call), 3.3 the continuous-time limit and the <strong>Black-Scholes formula</strong>. Includes exercises and appendices (convex sets / hyperplanes / separating hyperplane theorem).</p></p></div>
+</div>
+<div class="lang zh">
+<h2 id="1-no-arbitrage-asset-pricing">1 无套利资产定价 / No-arbitrage Asset Pricing</h2>
+</div>
+<div class="lang en">
+<h2 id="1-no-arbitrage-asset-pricing">1 No-arbitrage Asset Pricing</h2>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>设定：资产张成与无套利 / Setup: asset span and no-arbitrage
+<span class="lang zh">两期经济 \(t=0,1\)。\(t=1\) 时经济状态 \(s=1,\dots,S\)。\(J\) 个资产 \(j=1,\dots,J\)。资产 \(j\) 在 \(t=0\) 以价格 \(q_j\) 交易、在状态 \(s\) 支付 \(A_{sj}\)（可 \(A_{sj}<0\)）。价格向量 \(q=(q_1,\dots,q_J)\)、支付矩阵 \(A=(A_{sj})\)。定义 \((1+S)\times J\) <strong>净支付矩阵</strong>（状态 0 即时间 0）</span><span class="lang en">A two-period economy \(t=0,1\). At \(t=1\) the state is \(s=1,\dots,S\). There are \(J\) assets \(j=1,\dots,J\). Asset \(j\) trades at price \(q_j\) at \(t=0\) and pays \(A_{sj}\) in state \(s\) (possibly \(A_{sj}<0\)). Price vector \(q=(q_1,\dots,q_J)\), payoff matrix \(A=(A_{sj})\). Define the \((1+S)\times J\) <strong>net-payment matrix</strong> (state 0 is time 0)</span></p>
+<p>$$W=W(q,A)=\begin{bmatrix}-q'\\A\end{bmatrix}.$$</p>
+<p><span class="lang zh">组合 \(\theta\in\mathbb R^J\)（\(\theta_j\) 为持有股数，$&lt;0$ 即卖空）。其净支付向量 \(W\theta=\begin{bmatrix}-q'\theta\\A\theta\end{bmatrix}\in\mathbb R^{1+S}\)（在 \(t=0\) 付 \(q'\theta\)，在状态 \(s\) 收 \((A\theta)_s\)）。<strong>资产张成</strong> \(\langle W\rangle=\{W\theta\mid\theta\in\mathbb R^J\}\subset\mathbb R^{1+S}\)。称 \(\langle W\rangle\) <strong>无套利</strong>，若 \(\langle W\rangle\cap\mathbb R_+^{1+S}=\{0\}\)，即不存在某组合在每个状态支付非负、且至少一个状态严格为正。</span><span class="lang en">A portfolio \(\theta\in\mathbb R^J\) (\(\theta_j\) shares held, $&lt;0$ is shortselling). Its net-payment vector \(W\theta=\begin{bmatrix}-q'\theta\\A\theta\end{bmatrix}\in\mathbb R^{1+S}\) (pay \(q'\theta\) at \(t=0\), receive \((A\theta)_s\) in state \(s\)). The <strong>asset span</strong> \(\langle W\rangle=\{W\theta\mid\theta\in\mathbb R^J\}\subset\mathbb R^{1+S}\). We say \(\langle W\rangle\) exhibits <strong>no-arbitrage</strong> if \(\langle W\rangle\cap\mathbb R_+^{1+S}=\{0\}\), i.e. no portfolio pays a non-negative amount in every state and a positive amount in at least one.</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>定理 1（资产定价基本定理，Harrison-Kreps 1979）/ Theorem 1 (FTAP)
+<span class="lang zh">\(\langle W\rangle\) 无套利当且仅当存在 \(p\in\mathbb R_{++}^S\) 使 \([1,p']W=0\)。此时资产价格为 \(q_j=\sum_{s=1}^S p_s A_{sj}\)。\(p_s>0\) 称为状态 \(s\) 的<strong>状态价格</strong>。</span><span class="lang en">\(\langle W\rangle\) exhibits no-arbitrage if and only if there exists \(p\in\mathbb R_{++}^S\) such that \([1,p']W=0\). In this case the asset prices are \(q_j=\sum_{s=1}^S p_s A_{sj}\). \(p_s>0\) is called the <strong>state price</strong> in state \(s\).</span></p></p></div><div class="callout"><div class="callout-title">Note</div><p>定理 1 证明（用分离超平面定理）/ Proof of Theorem 1 (via the separating hyperplane theorem)
+<span class="lang zh"><strong>（充分性）</strong> 若这样的 \(p\) 存在，对 \(0\neq w=(w_0,\dots,w_S)\in\mathbb R_+^{1+S}\) 有 \([1,p']w=w_0+\sum_{s=1}^S p_s w_s>0\)，故 \(w\notin\langle W\rangle\)，即 \(\langle W\rangle\cap\mathbb R_+^{1+S}=\{0\}\)。<strong>（必要性）</strong> 设无套利，则 \(\langle W\rangle\cap\Delta=\emptyset\)（\(\Delta=\{w\in\mathbb R_+^{1+S}\mid\sum_{s=0}^S w_s=1\}\) 单纯形）。\(\langle W\rangle,\Delta\) 凸非空、\(\Delta\) 紧，由（强）分离超平面定理存在 \(0\neq\lambda\in\mathbb R^{1+S}\) 使 \(\langle\lambda,w\rangle<\langle\lambda,d\rangle\) 对 \(w\in\langle W\rangle,d\in\Delta\)。若存在 \(\theta\) 使 \(\langle\lambda,W\theta\rangle\neq0\)，令 \(w=W\alpha\theta\)、\(\alpha\to\pm\infty\) 矛盾，故 \(\lambda'W=0\)，不等式变为 \(0<\langle\lambda,d\rangle\)。取 \(d=e_s\) 得 \(\lambda_s>0\)。令 \(p_s=\lambda_s/\lambda_0\) 则 \(p\gg0\)、\([1,p']W=0\)，逐分量即 \(q_j=\sum_s p_s A_{sj}\)。\(\blacksquare\)</span><span class="lang en"><strong>(Sufficiency)</strong> If such \(p\) exists, for \(0\neq w=(w_0,\dots,w_S)\in\mathbb R_+^{1+S}\), \([1,p']w=w_0+\sum_{s=1}^S p_s w_s>0\), so \(w\notin\langle W\rangle\), i.e. \(\langle W\rangle\cap\mathbb R_+^{1+S}=\{0\}\). <strong>(Necessity)</strong> Suppose no-arbitrage; then \(\langle W\rangle\cap\Delta=\emptyset\) (\(\Delta=\{w\in\mathbb R_+^{1+S}\mid\sum_{s=0}^S w_s=1\}\) the unit simplex). \(\langle W\rangle,\Delta\) are convex nonempty and \(\Delta\) compact, so by the (strong) separating hyperplane theorem there is \(0\neq\lambda\in\mathbb R^{1+S}\) with \(\langle\lambda,w\rangle<\langle\lambda,d\rangle\) for \(w\in\langle W\rangle,d\in\Delta\). If some \(\theta\) had \(\langle\lambda,W\theta\rangle\neq0\), taking \(w=W\alpha\theta\), \(\alpha\to\pm\infty\) contradicts it, so \(\lambda'W=0\) and the inequality becomes \(0<\langle\lambda,d\rangle\). Taking \(d=e_s\) gives \(\lambda_s>0\). Letting \(p_s=\lambda_s/\lambda_0\), \(p\gg0\), \([1,p']W=0\), and component-wise \(q_j=\sum_s p_s A_{sj}\). \(\blacksquare\)</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>风险中性测度与 SDF / Risk-neutral measure and the SDF
+<span class="lang zh">无风险资产在每个状态支付 1，其价格 \(\dfrac1{1+r}=\sum_{s=1}^S p_s>0\)。令 \(\nu_s=p_s/\sum_s p_s>0\)（\(\sum_s\nu_s=1\)），则</span><span class="lang en">The risk-free asset pays 1 in every state, so its price is \(\dfrac1{1+r}=\sum_{s=1}^S p_s>0\). Letting \(\nu_s=p_s/\sum_s p_s>0\) (\(\sum_s\nu_s=1\)),</span></p>
+<p>$$q_j=\frac1{1+r}\sum_{s=1}^S\nu_s A_{sj}=\frac1{1+r}\tilde{\mathbb E}[A_{sj}],$$</p>
+<p><span class="lang zh">即资产价格是在<strong>风险中性概率</strong> \(\{\nu_s\}\) 下的贴现期望支付。再令 \(\pi_s\) 为客观概率、\(m_s=p_s/\pi_s\)，则</span><span class="lang en">i.e. the asset price is the discounted expected payoff under the <strong>risk-neutral probability</strong> \(\{\nu_s\}\). Letting \(\pi_s\) be the objective probability and \(m_s=p_s/\pi_s\),</span></p>
+<p>$$q_j=\sum_{s=1}^S p_s A_{sj}=\sum_{s=1}^S\pi_s m_s A_{sj}=\mathbb E[mA_j].$$</p>
+<p><span class="lang zh">随机变量 \(m\) 即<strong>随机贴现因子 (SDF)</strong>。令 \(R_j=A_j/q_j\) 为毛收益，则对任意资产 \(\mathbb E[mR_j]=1\)。无风险利率 \(R_f\) 满足 \(\mathbb E[mR_f]=1\iff R_f=1/\mathbb E[m]\)。</span><span class="lang en">The random variable \(m\) is the <strong>stochastic discount factor (SDF)</strong>. Letting \(R_j=A_j/q_j\) be the gross return, \(\mathbb E[mR_j]=1\) for any asset. The risk-free rate \(R_f\) satisfies \(\mathbb E[mR_f]=1\iff R_f=1/\mathbb E[m]\).</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>协方差定价公式 / The covariance pricing formula
+<span class="lang zh">由 \(\mathrm{Cov}[X,Y]=\mathbb E[XY]-\mathbb E[X]\mathbb E[Y]\)，</span><span class="lang en">Using \(\mathrm{Cov}[X,Y]=\mathbb E[XY]-\mathbb E[X]\mathbb E[Y]\),</span></p>
+<p>$$0=\mathbb E[m(R_j-R_f)]=\mathbb E[m](\mathbb E[R_j]-R_f)-\mathrm{Cov}[m,R_j-R_f],$$</p>
+<p><span class="lang zh">整理得</span><span class="lang en">which rearranges to</span></p>
+<p>$$\mathbb E[R_j]-R_f=-\frac1{\mathbb E[m]}\mathrm{Cov}[m,R_j-R_f]=-R_f\,\mathrm{Cov}[m,R_j].$$</p></p></div>
+<h2 id="2-linear-factor-model">2 线性因子模型 / Linear Factor Model</h2>
+<div class="callout"><div class="callout-title">Important</div><p>因子模型与 beta 定价 / Factor model and beta pricing
+<span class="lang zh">实证资产定价的核心问题是 SDF \(m\) 究竟是什么。从业者更关心<strong>线性因子定价模型</strong>，假设 SDF 形如 \(m_t=a-b'f_t\)（\(f_t\) 因子向量，\(a,b\) 常数）。最著名的例子是 <strong>CAPM</strong>：单因子 \(f_t=R_{mt}\)（市场收益）。若有 \(K\) 个因子、\(b=(b_1,\dots,b_K)'\)，协方差定价公式变为</span><span class="lang en">A central question in empirical asset pricing is what the SDF \(m\) is. Practitioners care more about <strong>linear factor pricing models</strong>, assuming the SDF takes the form \(m_t=a-b'f_t\) (\(f_t\) a vector of factors, \(a,b\) constants). The most famous example is the <strong>CAPM</strong>: a single factor \(f_t=R_{mt}\) (the market return). With \(K\) factors and \(b=(b_1,\dots,b_K)'\), the covariance pricing formula becomes</span></p>
+<p>$$\mathbb E[R_j]-R_f=R_f\sum_{k=1}^K b_k\,\mathrm{Cov}[f_k,R_j].$$</p>
+<p><span class="lang zh">定义资产 \(j\) 关于因子 \(k\) 的 <strong>beta</strong> \(\beta_{k,j}=\dfrac{\mathrm{Cov}[f_k,R_j]}{\mathrm{Var}[f_k]}\)，<strong>风险溢价</strong> \(\gamma_k=R_f\mathrm{Var}[f_k]\)，<strong>零-beta 率</strong> \(\gamma_0=R_f\)，则</span><span class="lang en">Define the <strong>beta</strong> of asset \(j\) w.r.t. factor \(k\), \(\beta_{k,j}=\dfrac{\mathrm{Cov}[f_k,R_j]}{\mathrm{Var}[f_k]}\), the <strong>risk premium</strong> \(\gamma_k=R_f\mathrm{Var}[f_k]\), and the <strong>zero-beta rate</strong> \(\gamma_0=R_f\); then</span></p>
+<p>$$\mu_j=\mathbb E[R_j]=\gamma_0+\sum_{k=1}^K\gamma_k\beta_{k,j}.$$</p></p></div><div class="callout"><div class="callout-title">Tip</div><p>Fama-MacBeth 两步回归与 GMM / Fama-MacBeth two-pass regression and GMM
+<span class="lang zh">经典估计法是 Fama and MacBeth (1973) <strong>两步回归</strong>。<strong>第一步</strong>：把资产收益 \(R_{j,t}\) 对常数与因子回归，估计 \(\alpha,\beta\)（\(R_{j,t}=\alpha_j+\sum_{k=1}^K\beta_{k,j}f_{k,t}+\epsilon_{j,t}\)）；模型成立则 \(\alpha_j\) 跨资产相同。<strong>第二步</strong>：把 \(\hat\mu_j\)（\(R_{j,t}\) 的时序样本均值）对常数与估计的 beta 回归，估计零-beta 率 \(\gamma_0\) 与风险溢价 \(\gamma_k\)；第二步回归的 \(R^2\) 视为模型拟合优度。现代做法是用 <strong>GMM</strong> 利用矩条件 \(\mathbb E_t[m_{t+1}R_{j,t+1}]=1\)（或 \(\mathbb E_t[m_{t+1}(R_{j,t+1}-R_{f,t})]=0\)），并用 \(J\) 检验。<strong>伪因子问题</strong>：若 \(m_t=a-b'f_t\) 近似成立，但纳入与所有收益独立的伪因子 \(g_t\)，矩条件 \(\mathbb E_t[(a-b'f_t-cg_t)(R_{j,t}-R_{f,t})]=0\) 在 \(b=0,c=1,a=\mathbb E[g_t]\) 时平凡成立——于是伪因子系数显著、有用因子不显著、模型完美拟合（Kan-Zhang 1999a,b；Burnside 2016）。Kan et al. (2013)、Gospodinov et al. (2014) 发展了误设下的渐近理论。</span><span class="lang en">The classic method is the Fama and MacBeth (1973) <strong>two-pass regression</strong>. <strong>First pass</strong>: regress asset returns \(R_{j,t}\) on a constant and the factors to estimate \(\alpha,\beta\) (\(R_{j,t}=\alpha_j+\sum_{k=1}^K\beta_{k,j}f_{k,t}+\epsilon_{j,t}\)); if the model holds, \(\alpha_j\) is common across assets. <strong>Second pass</strong>: regress \(\hat\mu_j\) (the time-series sample mean of \(R_{j,t}\)) on a constant and the estimated betas to estimate the zero-beta rate \(\gamma_0\) and risk premia \(\gamma_k\); the \(R^2\) of the second pass is viewed as goodness-of-fit. The modern approach uses <strong>GMM</strong> with the moment condition \(\mathbb E_t[m_{t+1}R_{j,t+1}]=1\) (or \(\mathbb E_t[m_{t+1}(R_{j,t+1}-R_{f,t})]=0\)) and a \(J\) test. <strong>Spurious-factor problem</strong>: if \(m_t=a-b'f_t\) is approximately true but one includes a spurious \(g_t\) independent of all returns, the moment condition \(\mathbb E_t[(a-b'f_t-cg_t)(R_{j,t}-R_{f,t})]=0\) holds trivially with \(b=0,c=1,a=\mathbb E[g_t]\) — so the spurious factor is significant, the useful factors insignificant, and the model fits perfectly (Kan-Zhang 1999a,b; Burnside 2016). Kan et al. (2013) and Gospodinov et al. (2014) develop the asymptotic theory under misspecification.</span></p></p></div>
+<h2 id="3-binomial-option-pricing">3 二项期权定价 / Binomial Option Pricing</h2>
+<div class="callout"><div class="callout-title">Important</div><p>设定与期权术语 / Setup and option terminology
+<span class="lang zh">作为无套利定价的应用，本节讲 Cox et al. (1979) 的<strong>二项期权定价</strong>模型。\(T\) 期经济 \(t=0,\dots,T\)，两资产：股票与债券。毛无风险利率常数 \(R\)，股价 \(S_t\) 随机，可涨可跌：\(S_{t+1}=US_t\)（涨）或 \(DS_t\)（跌），\(U>R>D\)。问：执行价 \(K\) 的看涨期权值多少？答案<strong>不依赖涨跌概率</strong>（乐观者与悲观者对期权定价一致）。<strong>术语</strong>：执行价 \(K\)、到期 \(T\) 的看涨（看跌）期权赋予持有人在到期前以 \(K\) 买入（卖出）股票的<strong>权利</strong>（非义务）；按约定价买卖称<strong>行权 (exercise)</strong>。任意时刻可行权为<strong>美式</strong>，仅到期可行权为<strong>欧式</strong>（详见 Shreve 2004）。</span><span class="lang en">As an application of no-arbitrage pricing, this section covers the <strong>binomial option pricing</strong> model of Cox et al. (1979). A \(T\)-period economy \(t=0,\dots,T\), two assets: a stock and a bond. The gross risk-free rate is constant at \(R\), the stock price \(S_t\) is random and can go up or down: \(S_{t+1}=US_t\) (up) or \(DS_t\) (down), with \(U>R>D\). Question: what is the price of a call with strike \(K\)? The answer <strong>does not depend on the up/down probability</strong> (an optimist and a pessimist agree on the price). <strong>Terminology</strong>: a call (put) with strike \(K\) and maturity \(T\) gives the holder the <strong>right</strong> (not the obligation) to buy (sell) the stock at \(K\) until maturity; buying/selling at the specified price is <strong>exercising</strong>. Exercisable at any time is <strong>American</strong>, only at maturity is <strong>European</strong> (see Shreve 2004).</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>3.1 欧式期权 / 3.1 European options
+<span class="lang zh">\(T=0\) 时 \(C=\max\{S_0-K,0\}\)。<strong>一期</strong>：涨态 \(C_u=\max\{US_0-K,0\}\)、跌态 \(C_d=\max\{DS_0-K,0\}\)，由无套利 \(C=p_u C_u+p_d C_d\)。用股票与债券的无套利定 \(p_u,p_d\)：\(1=p_u U+p_d D\)（股票）、\(1=p_u R+p_d R\)（债券）。解得</span><span class="lang en">For \(T=0\), \(C=\max\{S_0-K,0\}\). <strong>One period</strong>: up state \(C_u=\max\{US_0-K,0\}\), down state \(C_d=\max\{DS_0-K,0\}\), and by no-arbitrage \(C=p_u C_u+p_d C_d\). Determine \(p_u,p_d\) from the stock and bond no-arbitrage conditions \(1=p_u U+p_d D\) (stock) and \(1=p_u R+p_d R\) (bond). Solving,</span></p>
+<p>$$\begin{bmatrix}p_u\\p_d\end{bmatrix}=\frac1R\begin{bmatrix}p\\1-p\end{bmatrix},\qquad p=\frac{R-D}{U-D},$$</p>
+<p><span class="lang zh">故 \(C=\dfrac1R(pC_u+(1-p)C_d)=\dfrac1{1+r}\tilde{\mathbb E}[C_s]\)（风险中性概率 \(p\)）。<strong>一般 \(T\) 期</strong>：支付按 \(R^T\) 贴现，\(T\) 时风险中性分布为参数 \(p\) 的二项分布，恰好 \(n\) 次涨的概率为 \(\binom Tn p^n(1-p)^{T-n}\)、终值 \(S_T=U^n D^{T-n}S_0\)，故</span><span class="lang en">so \(C=\dfrac1R(pC_u+(1-p)C_d)=\dfrac1{1+r}\tilde{\mathbb E}[C_s]\) (risk-neutral probability \(p\)). <strong>General \(T\) periods</strong>: payoffs are discounted by \(R^T\), the risk-neutral distribution at \(T\) is binomial with parameter \(p\), the probability of exactly \(n\) up states is \(\binom Tn p^n(1-p)^{T-n}\) with final value \(S_T=U^n D^{T-n}S_0\), so</span></p>
+<p>$$C=\frac1{R^T}\sum_{n=0}^T\binom Tn p^n(1-p)^{T-n}\max\{U^n D^{T-n}S_0-K,0\}.$$</p>
+<p><span class="lang zh">看跌期权类似：\(P=\dfrac1{R^T}\sum_{n=0}^T\binom Tn p^n(1-p)^{T-n}\max\{K-U^n D^{T-n}S_0,0\}\)。</span><span class="lang en">The put is analogous: \(P=\dfrac1{R^T}\sum_{n=0}^T\binom Tn p^n(1-p)^{T-n}\max\{K-U^n D^{T-n}S_0,0\}\).</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>买卖权平价 / Put-call parity
+<span class="lang zh">欧式期权的重要性质是<strong>买卖权平价</strong>：\(C-P=S_0-KR^{-T}\)。证明：因</span><span class="lang en">An important property of European options is <strong>put-call parity</strong>: \(C-P=S_0-KR^{-T}\). Proof: since</span></p>
+<p>$$\max\{S_T-K,0\}-\max\{K-S_T,0\}=S_T-K,$$</p>
+<p><span class="lang zh">买一份看涨、卖一份看跌，其终端支付等于持有股票并在到期日付 \(K\)；该组合的现值恰为 \(S_0-KR^{-T}\)，故买卖权平价成立。（已知看涨价即可由 \(P=C-S_0+KR^{-T}\) 算看跌价。）</span><span class="lang en">buying one call and shorting one put has terminal payoff equal to holding the stock and paying \(K\) at maturity; the present value of this portfolio is exactly \(S_0-KR^{-T}\), so put-call parity holds. (Given the call price, the put is \(P=C-S_0+KR^{-T}\).)</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>3.2 美式期权与命题 2（Merton 1973）/ 3.2 American options and Proposition 2
+<span class="lang zh">美式可提前行权，故美式 \(\ge\) 欧式。\(T=0\) 时二者相同。一般地，记 \(C(S,T)\) 为股价 \(S\)、到期 \(T\) 时美式期权价（隐去对 \(K,R\) 的依赖），则</span><span class="lang en">American options can be exercised early, so American \(\ge\) European. For \(T=0\) they coincide. In general, letting \(C(S,T)\) be the American price when the stock price is \(S\) and maturity is \(T\) (suppressing dependence on \(K,R\)),</span></p>
+<p>$$C(S,T)=\max\left\{S-K,\ \frac1R(pC(US,T-1)+(1-p)C(DS,T-1))\right\}.\tag{2}$$</p>
+<p><span class="lang zh"><strong>命题 2（Merton 1973）</strong>：若 \(R\ge1\)，则提前行权看涨期权从不最优，美式看涨与欧式看涨价格相同。</span><span class="lang en"><strong>Proposition 2 (Merton 1973)</strong>: if \(R\ge1\), it is never optimal to exercise the call early, and the American and European calls have identical prices.</span></p></p></div><div class="callout"><div class="callout-title">Note</div><p>命题 2 证明（凸性）/ Proof of Proposition 2 (convexity)
+<span class="lang zh">先证 \(C(S,T)\) 关于 \(S\) 凸（归纳）：\(T=0\) 时 \(C(S,0)=\max\{S-K,0\}\) 凸；设 \(C(S,T-1)\) 凸，因 \(S\mapsto US,DS\) 线性故 \(C(US,T-1),C(DS,T-1)\) 凸，正加权和凸，两凸函数取大仍凸，故 (2) 中 \(C(S,T)\) 凸。再由凸性与 \(R\ge1\)：</span><span class="lang en">First show \(C(S,T)\) is convex in \(S\) (by induction): for \(T=0\), \(C(S,0)=\max\{S-K,0\}\) is convex; if \(C(S,T-1)\) is convex, then since \(S\mapsto US,DS\) are linear, \(C(US,T-1),C(DS,T-1)\) are convex, their positive weighted sum is convex, and the max of two convex functions is convex, so \(C(S,T)\) in (2) is convex. Then by convexity and \(R\ge1\):</span></p>
+<p>$$\frac1R(pC(US,T-1)+(1-p)C(DS,T-1))\ge\frac1R C((pU+(1-p)D)S,T-1)=\frac1R C(RS,T-1),$$</p>
+<p><span class="lang zh">又 \(\dfrac1R C(RS,T-1)\ge\dfrac1R\max\{RS-K,0\}=\max\{S-K/R,0\}\ge S-K/R\ge S-K\)（末式用 \(R\ge1\)）。故 (2) 右端第一项总不大于第二项，理性主体不提前行权。（看跌期权时 \(R>1\) 使最后一步不成立，美式看跌 $&gt;$ 欧式看跌，提前行权可能最优。）\(\blacksquare\)</span><span class="lang en">and \(\dfrac1R C(RS,T-1)\ge\dfrac1R\max\{RS-K,0\}=\max\{S-K/R,0\}\ge S-K/R\ge S-K\) (the last using \(R\ge1\)). So the first term in (2) is always \(\le\) the second, and rational agents do not exercise early. (For puts, \(R>1\) breaks the last step; American puts $&gt;$ European puts, and early exercise may be optimal.) \(\blacksquare\)</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>3.3 连续时间极限与 Black-Scholes 公式 / 3.3 Continuous-time limit and the Black-Scholes formula
+<span class="lang zh">用风险中性定价，看涨价 \(C=e^{-rT}\tilde{\mathbb E}[\max\{S_T-K,0\}]\)。设股价服从几何布朗运动 \(dS_t=\mu S_t dt+\sigma S_t dB_t\)。从风险中性主体看，\(dS_t=rS_t dt+\sigma S_t dB_t\)（否则有套利）。由 Ito 公式 \(d(\log S_t)=(r-\tfrac{\sigma^2}2)dt+\sigma dB_t\)，故 \(\log S_t\sim N((r-\sigma^2/2)t,\sigma^2 t)\)，可写 \(\log S_T=(r-\sigma^2/2)T+\sigma\sqrt T z\)（\(z\sim N(0,1)\)）。代入：</span><span class="lang en">By risk-neutral pricing, the call price is \(C=e^{-rT}\tilde{\mathbb E}[\max\{S_T-K,0\}]\). Suppose the stock follows a geometric Brownian motion \(dS_t=\mu S_t dt+\sigma S_t dB_t\). From the risk-neutral agent's view, \(dS_t=rS_t dt+\sigma S_t dB_t\) (otherwise there is arbitrage). By Ito's formula \(d(\log S_t)=(r-\tfrac{\sigma^2}2)dt+\sigma dB_t\), so \(\log S_t\sim N((r-\sigma^2/2)t,\sigma^2 t)\) and \(\log S_T=(r-\sigma^2/2)T+\sigma\sqrt T z\) (\(z\sim N(0,1)\)). Substituting:</span></p>
+<p>$$C=\int_{-\infty}^\infty\max\left\{S_0 e^{-\sigma^2T/2+\sigma\sqrt T z}-Ke^{-rT},0\right\}\frac1{\sqrt{2\pi}}e^{-z^2/2}\,dz.$$</p>
+<p><span class="lang zh">\(\max\) 内关于 \(z\) 严格递增，零点为 \(\bar z=\dfrac{\sigma\sqrt T}2-\dfrac1{\sigma\sqrt T}\log\!\left(\dfrac{S_0}{Ke^{-rT}}\right)\)。分两项积分（第二项 \(Ke^{-rT}\Phi(-\bar z)\)；第一项配方化为 \(S_0\Phi(-\bar z+\sigma\sqrt T)\)，\(\Phi\) 为标准正态 CDF），得</span><span class="lang en">The expression inside \(\max\) is strictly increasing in \(z\), with zero at \(\bar z=\dfrac{\sigma\sqrt T}2-\dfrac1{\sigma\sqrt T}\log\!\left(\dfrac{S_0}{Ke^{-rT}}\right)\). Splitting the integral (the second term is \(Ke^{-rT}\Phi(-\bar z)\); the first, by completing the square, is \(S_0\Phi(-\bar z+\sigma\sqrt T)\), with \(\Phi\) the standard normal CDF) gives</span></p>
+<p>$$C=S_0\Phi(x)-Ke^{-rT}\Phi(x-\sigma\sqrt T),\qquad x=-\bar z+\sigma\sqrt T=\frac1{\sigma\sqrt T}\log\!\left(\frac{S_0}{Ke^{-rT}}\right)+\frac{\sigma\sqrt T}2.$$</p>
+<p><span class="lang zh">这就是 <strong>Black-Scholes 公式</strong>。</span><span class="lang en">This is the <strong>Black-Scholes formula</strong>.</span></p></p></div>
+<h2 id="exercises">Exercises / 习题</h2>
+<div class="callout"><div class="callout-title">Note</div><p>习题 / Exercises
+<span class="lang zh"><strong>1.</strong> (a) 设 \(\{C_i\}_{i\in I}\subset\mathbb R^N\) 为一族凸集，证明 \(\bigcap_{i\in I}C_i\) 凸。(b) 对任意集合 \(A\)，证明存在包含 \(A\) 的最小凸集（\(A\) 的凸包）。<strong>2.</strong> 证明引理 3。<strong>3.</strong> (a) 设 \(0\neq a\in\mathbb R^N\)、\(c\in\mathbb R\)，证明超平面 \(H=\{x\mid\langle a,x\rangle=c\}\) 与半空间 \(H^+=\{x\mid\langle a,x\rangle\ge c\}\) 是凸集。(b) 设 \(A\) 为 \(M\times N\) 矩阵、\(b\in\mathbb R^M\)，证明多面体 \(P=\{x\mid Ax\le b\}\) 凸。<strong>4.</strong> (a) 证明平行四边形法则 \(\|a+b\|^2+\|a-b\|^2=2\|a\|^2+2\|b\|^2\)。(b) 用平行四边形法则证明 (3)。<strong>5.</strong> 设 \(A=\{(x,y)\mid y>x^3\}\)、\(B=\{(x,y)\mid x\ge1,y\le1\}\)：作图；问 \(A,B\) 能否分离（若能给出分离直线方程，否则说明原因）。<strong>6.</strong> 设 \(C=\{(x,y)\mid y>e^x\}\)、\(D=\{(x,y)\mid y\le0\}\)：作图；给出分离 \(C,D\) 的直线方程；\(C,D\) 能否严格分离（是/否并解释）。<strong>7.</strong> 证明 <strong>Stiemke 引理</strong>：设 \(A\) 为 \(M\times N\) 矩阵，则以下恰有一者成立：(1) 存在 \(x\in\mathbb R_{++}^N\) 使 \(Ax=0\)；(2) 存在 \(y\in\mathbb R^M\) 使 \(A'y>0\)。<strong>8.</strong> 线性规划 \(\min\langle c,x\rangle\) s.t. \(Ax\ge b\)（单纯形法）：(a) 证明单纯形法有限步终止；(b) 证明终止时即为原问题的解。</span><span class="lang en"><strong>1.</strong> (a) Let \(\{C_i\}_{i\in I}\subset\mathbb R^N\) be convex sets; prove \(\bigcap_{i\in I}C_i\) is convex. (b) For any set \(A\), prove there is a smallest convex set containing \(A\) (the convex hull of \(A\)). <strong>2.</strong> Prove Lemma 3. <strong>3.</strong> (a) For \(0\neq a\in\mathbb R^N\), \(c\in\mathbb R\), show the hyperplane \(H=\{x\mid\langle a,x\rangle=c\}\) and half space \(H^+=\{x\mid\langle a,x\rangle\ge c\}\) are convex. (b) For an \(M\times N\) matrix \(A\) and \(b\in\mathbb R^M\), show the polytope \(P=\{x\mid Ax\le b\}\) is convex. <strong>4.</strong> (a) Prove the parallelogram law \(\|a+b\|^2+\|a-b\|^2=2\|a\|^2+2\|b\|^2\). (b) Use it to prove (3). <strong>5.</strong> Let \(A=\{(x,y)\mid y>x^3\}\), \(B=\{(x,y)\mid x\ge1,y\le1\}\): draw them; can \(A,B\) be separated (give a separating line, or explain why not)? <strong>6.</strong> Let \(C=\{(x,y)\mid y>e^x\}\), \(D=\{(x,y)\mid y\le0\}\): draw them; give a separating line; can \(C,D\) be strictly separated (yes/no and explain)? <strong>7.</strong> Prove <strong>Stiemke's Lemma</strong>: for an \(M\times N\) matrix \(A\), exactly one holds: (1) there is \(x\in\mathbb R_{++}^N\) with \(Ax=0\); (2) there is \(y\in\mathbb R^M\) with \(A'y>0\). <strong>8.</strong> Linear program \(\min\langle c,x\rangle\) s.t. \(Ax\ge b\) (simplex method): (a) prove it terminates in finitely many steps; (b) prove that on termination you are at a solution.</span></p></p></div>
+<h2 id="appendix-a-convex-sets">Appendix A — 凸集 / Convex Sets</h2>
+<div class="callout"><div class="callout-title">Important</div><p>凸集、凸包、引理 3 / Convex set, convex hull, Lemma 3
+<span class="lang zh">集合 \(C\subset\mathbb R^N\) <strong>凸</strong>，若 \(x,y\in C\Rightarrow(1-\alpha)x+\alpha y\in C\)（\(\forall\alpha\in[0,1]\)）——任两点连线段全含于 \(C\)。圆、三角形、正方形凸，星形不凸。包含 \(A\) 的最小凸集称 \(A\) 的<strong>凸包</strong> \(\mathrm{co}\,A\)。\(\{x_k\}_{k=1}^K\) 的<strong>凸组合</strong>为 \(x=\sum_{k=1}^K\alpha_k x_k\)（\(\alpha_k\ge0\)，\(\sum_k\alpha_k=1\)）。<strong>引理 3</strong>：\(\mathrm{co}\,A\) 恰由 \(A\) 中点的所有凸组合构成。（Toda 的一个玩笑：汉字"凸"本身并不凸。）</span><span class="lang en">A set \(C\subset\mathbb R^N\) is <strong>convex</strong> if \(x,y\in C\Rightarrow(1-\alpha)x+\alpha y\in C\) (\(\forall\alpha\in[0,1]\)) — the segment between any two points lies in \(C\). Circles, triangles, squares are convex; a star is not. The smallest convex set containing \(A\) is its <strong>convex hull</strong> \(\mathrm{co}\,A\). A <strong>convex combination</strong> of \(\{x_k\}_{k=1}^K\) is \(x=\sum_{k=1}^K\alpha_k x_k\) (\(\alpha_k\ge0\), \(\sum_k\alpha_k=1\)). <strong>Lemma 3</strong>: \(\mathrm{co}\,A\) consists of all convex combinations of points of \(A\). (Toda's joke: the Chinese character for "convex," 凸, is itself not convex.)</span></p></p></div>
+<h2 id="appendix-b-hyperplanes-and-half-spaces">Appendix B — 超平面与半空间 / Hyperplanes and Half Spaces</h2>
+<div class="callout"><div class="callout-title">Important</div><p>超平面与半空间 / Hyperplanes and half spaces
+<span class="lang zh">\(\langle a,x\rangle=a_1x_1+\dots+a_Nx_N\) 为内积。集合 \(\{x\in\mathbb R^N\mid\langle a,x\rangle=c\}\)（\(a\neq0\)）称<strong>超平面</strong>，\(a\) 是其法向量（取超平面上 \(x_0\)，由 \(\langle a,x-x_0\rangle=0\) 知 \(a\perp(x-x_0)\)）。<strong>半空间</strong> \(H^+=\{x\mid\langle a,x\rangle\ge c\}\)、\(H^-=\{x\mid\langle a,x\rangle\le c\}\) 是超平面沿 \(a\)（或 \(-a\)）方向分出的两部分。超平面与半空间都是凸集。</span><span class="lang en">\(\langle a,x\rangle=a_1x_1+\dots+a_Nx_N\) is the inner product. The set \(\{x\in\mathbb R^N\mid\langle a,x\rangle=c\}\) (\(a\neq0\)) is a <strong>hyperplane</strong>, with \(a\) its normal vector (taking \(x_0\) on it, \(\langle a,x-x_0\rangle=0\) shows \(a\perp(x-x_0)\)). The <strong>half spaces</strong> \(H^+=\{x\mid\langle a,x\rangle\ge c\}\), \(H^-=\{x\mid\langle a,x\rangle\le c\}\) are the two parts split off by the hyperplane toward \(a\) (or \(-a\)). Hyperplanes and half spaces are convex.</span></p></p></div>
+<h2 id="appendix-c-separation-of-convex-sets">Appendix C — 凸集的分离 / Separation of Convex Sets</h2>
+<div class="callout"><div class="callout-title">Important</div><p>定理 4（分离超平面定理）/ Theorem 4 (Separating Hyperplane Theorem)
+<span class="lang zh">超平面 \(\langle a,x\rangle=c\) <strong>分离</strong> \(A,B\)，若 \(A\subset H^-\)、\(B\subset H^+\)，即 \(x\in A\Rightarrow\langle a,x\rangle\le c\)、\(x\in B\Rightarrow\langle a,x\rangle\ge c\)。\(A,B\) 可分离 \(\iff\sup_{x\in A}\langle a,x\rangle\le\inf_{x\in B}\langle a,x\rangle\)；不等式严格则<strong>严格分离</strong>。<strong>定理 4</strong>：设 \(C,D\subset\mathbb R^N\) 非空凸且 \(C\cap D=\emptyset\)，则存在分离 \(C,D\) 的超平面；若二者闭且其一紧，则可严格分离。</span><span class="lang en">A hyperplane \(\langle a,x\rangle=c\) <strong>separates</strong> \(A,B\) if \(A\subset H^-\), \(B\subset H^+\), i.e. \(x\in A\Rightarrow\langle a,x\rangle\le c\), \(x\in B\Rightarrow\langle a,x\rangle\ge c\). \(A,B\) are separable \(\iff\sup_{x\in A}\langle a,x\rangle\le\inf_{x\in B}\langle a,x\rangle\); strict inequality gives <strong>strict separation</strong>. <strong>Theorem 4</strong>: if \(C,D\subset\mathbb R^N\) are nonempty convex with \(C\cap D=\emptyset\), there is a separating hyperplane; if both are closed and one is compact, they can be strictly separated.</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>引理 5（投影）与命题 6 / Lemma 5 (projection) and Proposition 6
+<span class="lang zh"><strong>引理 5</strong>：设 \(C\) 非空凸，则任意 \(x\in\mathbb R^N\) 有唯一最近点 \(P_C(x)\in\mathrm{cl}\,C\)（\(x\) 在 \(\mathrm{cl}\,C\) 上的投影），且对任意 \(z\in C\)，\(\langle x-P_C(x),z-P_C(x)\rangle\le0\)。<strong>命题 6</strong>：设 \(C\) 非空凸、\(\bar x\notin\mathrm{int}\,C\)，则存在分离 \(\bar x\) 与 \(C\) 的超平面 \(\langle a,x\rangle=c\)，即 \(\langle a,\bar x\rangle\ge c\ge\langle a,z\rangle\)（\(\forall z\in C\)）；若 \(\bar x\notin\mathrm{cl}\,C\) 则可取严格不等式。</span><span class="lang en"><strong>Lemma 5</strong>: if \(C\) is nonempty convex, every \(x\in\mathbb R^N\) has a unique closest point \(P_C(x)\in\mathrm{cl}\,C\) (the projection of \(x\) onto \(\mathrm{cl}\,C\)), and for any \(z\in C\), \(\langle x-P_C(x),z-P_C(x)\rangle\le0\). <strong>Proposition 6</strong>: if \(C\) is nonempty convex and \(\bar x\notin\mathrm{int}\,C\), there is a hyperplane \(\langle a,x\rangle=c\) separating \(\bar x\) and \(C\), i.e. \(\langle a,\bar x\rangle\ge c\ge\langle a,z\rangle\) (\(\forall z\in C\)); if \(\bar x\notin\mathrm{cl}\,C\) the inequalities can be made strict.</span></p></p></div><div class="callout"><div class="callout-title">Note</div><p>引理 5、命题 6、定理 4 证明梗概 / Proof outline of Lemma 5, Proposition 6, Theorem 4
+<span class="lang zh"><strong>引理 5</strong>：设 \(\delta=\inf\{\|x-y\|\mid y\in C\}\)，取 \(\{y_k\}\subset C\) 使 \(\|x-y_k\|\to\delta\)。由平行四边形法则 \(\|y_k-y_l\|^2=2\|x-y_k\|^2+2\|x-y_l\|^2-4\|x-\tfrac12(y_k+y_l)\|^2\) (3)，又 \(\tfrac12(y_k+y_l)\in C\)，故 \(\|y_k-y_l\|^2\le2\|x-y_k\|^2+2\|x-y_l\|^2-4\delta^2\to0\)，\(\{y_k\}\) Cauchy 收敛到 \(y\in\mathrm{cl}\,C\)，且 \(\|x-y\|=\delta\)。唯一性同理。对 \(z\in C\)，由 \(C\) 凸，\((1-\alpha)y_k+\alpha z\in C\)，\(\delta^2\le\|x-(1-\alpha)y_k-\alpha z\|^2\)，令 \(k\to\infty\)、除以 \(\alpha>0\)、令 \(\alpha\to0\) 得 \(\langle x-y,z-y\rangle\le0\)。<strong>命题 6</strong>：若 \(\bar x\notin\mathrm{cl}\,C\)，令 \(y=P_C(\bar x)\)、\(a=\bar x-y\neq0\)、\(c=\langle a,y\rangle+\tfrac12\|a\|^2\)，则由引理 5 对 \(z\in C\) 有 \(\langle a,z\rangle\le\langle a,y\rangle<c\)，而 \(\langle a,\bar x\rangle-c=\tfrac12\|a\|^2>0\)，严格分离。\(\bar x\in\mathrm{cl}\,C\) 但 \(\notin\mathrm{int}\,C\) 时取 \(x_k\notin\mathrm{cl}\,C\)、\(x_k\to\bar x\)，对每个 \(x_k\) 得 \(\|a_k\|=1\) 的分离向量，取收敛子列取极限。<strong>定理 4</strong>：令 \(E=C-D=\{x-y\mid x\in C,y\in D\}\) 非空凸，\(C\cap D=\emptyset\Rightarrow0\notin E\)。由命题 6 存在 \(a\neq0\) 使 \(0\ge\langle a,z\rangle\)（\(\forall z\in E\)），即 \(\langle a,x\rangle\le\langle a,y\rangle\)（\(x\in C,y\in D\)），取 \(\sup_C\langle a,x\rangle\le c\le\inf_D\langle a,y\rangle\) 即分离。若 \(C\) 闭、\(D\) 紧，可证 \(E=C-D\) 闭且 \(0\notin E\)，由命题 6 得严格分离。\(\blacksquare\)</span><span class="lang en"><strong>Lemma 5</strong>: let \(\delta=\inf\{\|x-y\|\mid y\in C\}\) and take \(\{y_k\}\subset C\) with \(\|x-y_k\|\to\delta\). By the parallelogram law \(\|y_k-y_l\|^2=2\|x-y_k\|^2+2\|x-y_l\|^2-4\|x-\tfrac12(y_k+y_l)\|^2\) (3), and \(\tfrac12(y_k+y_l)\in C\), so \(\|y_k-y_l\|^2\le2\|x-y_k\|^2+2\|x-y_l\|^2-4\delta^2\to0\); \(\{y_k\}\) is Cauchy, converging to \(y\in\mathrm{cl}\,C\) with \(\|x-y\|=\delta\). Uniqueness is similar. For \(z\in C\), by convexity \((1-\alpha)y_k+\alpha z\in C\), so \(\delta^2\le\|x-(1-\alpha)y_k-\alpha z\|^2\); letting \(k\to\infty\), dividing by \(\alpha>0\), and letting \(\alpha\to0\) gives \(\langle x-y,z-y\rangle\le0\). <strong>Proposition 6</strong>: if \(\bar x\notin\mathrm{cl}\,C\), let \(y=P_C(\bar x)\), \(a=\bar x-y\neq0\), \(c=\langle a,y\rangle+\tfrac12\|a\|^2\); by Lemma 5, for \(z\in C\), \(\langle a,z\rangle\le\langle a,y\rangle<c\), while \(\langle a,\bar x\rangle-c=\tfrac12\|a\|^2>0\), giving strict separation. If \(\bar x\in\mathrm{cl}\,C\) but \(\notin\mathrm{int}\,C\), take \(x_k\notin\mathrm{cl}\,C\), \(x_k\to\bar x\), get separating vectors with \(\|a_k\|=1\), and pass to a convergent subsequence. <strong>Theorem 4</strong>: let \(E=C-D=\{x-y\mid x\in C,y\in D\}\), nonempty convex; \(C\cap D=\emptyset\Rightarrow0\notin E\). By Proposition 6 there is \(a\neq0\) with \(0\ge\langle a,z\rangle\) (\(\forall z\in E\)), i.e. \(\langle a,x\rangle\le\langle a,y\rangle\) (\(x\in C,y\in D\)); taking \(\sup_C\langle a,x\rangle\le c\le\inf_D\langle a,y\rangle\) separates them. If \(C\) is closed and \(D\) compact, one shows \(E=C-D\) is closed with \(0\notin E\), and Proposition 6 gives strict separation. \(\blacksquare\)</span></p></p></div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Black, F. and M. Scholes (1973). The Pricing of Options and Corporate Liabilities. <em>Journal of Political Economy</em> 81(3), 637–654.</li>
+<li>Burnside, C. (2016). Identification and Inference in Linear Stochastic Discount Factor Models with Excess Returns. <em>Journal of Financial Econometrics</em> 14(2), 295–330.</li>
+<li>Cox, J. C., S. A. Ross, and M. Rubinstein (1979). Option Pricing: A Simplified Approach. <em>Journal of Financial Economics</em> 7(3), 229–263.</li>
+<li>Duffie, D. (2001). <em>Dynamic Asset Pricing Theory</em> (3rd ed.). Princeton University Press.</li>
+<li>Fama, E. F. and J. D. MacBeth (1973). Risk, Return, and Equilibrium: Empirical Tests. <em>Journal of Political Economy</em> 81(3), 607–636.</li>
+<li>Gospodinov, N., R. Kan, and C. Robotti (2014). Misspecification-Robust Inference in Linear Asset-Pricing Models with Irrelevant Risk Factors. <em>Review of Financial Studies</em> 27(7), 2139–2170.</li>
+<li>Harrison, J. M. and D. M. Kreps (1979). Martingales and Arbitrage in Multiperiod Securities Markets. <em>Journal of Economic Theory</em> 20(3), 381–408.</li>
+<li>Kan, R. and C. Zhang (1999a). Two-Pass Tests of Asset Pricing Models with Useless Factors. <em>Journal of Finance</em> 54(1), 203–235.</li>
+<li>Kan, R. and C. Zhang (1999b). GMM Tests of Stochastic Discount Factor Models with Useless Factors. <em>Journal of Financial Economics</em> 54(1), 103–127.</li>
+<li>Kan, R., C. Robotti, and J. Shanken (2013). Pricing Model Performance and the Two-Pass Cross-Sectional Regression Methodology. <em>Journal of Finance</em> 68(6), 2617–2649.</li>
+<li>Merton, R. C. (1973). Theory of Rational Option Pricing. <em>Bell Journal of Economics and Management Science</em> 4(1), 141–183.</li>
+<li>Shreve, S. E. (2004). <em>Stochastic Calculus for Finance II — Continuous-Time Models</em>. Springer.</li>
+</ul>
+</div>
+</div>
+<div class="lang en"></div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1-no-arbitrage-asset-pricing">1 无套利资产定价 / No-arbitrage Asset Pricing</a></li>
+        <li><a href="#1-no-arbitrage-asset-pricing">1 No-arbitrage Asset Pricing</a></li>
+        <li><a href="#2-linear-factor-model">2 线性因子模型 / Linear Factor Model</a></li>
+        <li><a href="#3-binomial-option-pricing">3 二项期权定价 / Binomial Option Pricing</a></li>
+        <li><a href="#exercises">Exercises / 习题</a></li>
+        <li><a href="#appendix-a-convex-sets">Appendix A — 凸集 / Convex Sets</a></li>
+        <li><a href="#appendix-b-hyperplanes-and-half-spaces">Appendix B — 超平面与半空间 / Hyperplanes and Half Spaces</a></li>
+        <li><a href="#appendix-c-separation-of-convex-sets">Appendix C — 凸集的分离 / Separation of Convex Sets</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bates (2006, Review of Financial Studies)</strong>：当我们想从股票收益里同时估出「看不见的波动率」和「看不见的跳跃风险」时，与其在概率密度里硬算，不如换到特征函数 (characteristic function) 的世界——用一条 Bayes 法则的「傅里叶版」递归更新潜变量的特征函数。这套被作者称为近似极大似然 (approximate maximum likelihood, AML) 的方法，把参数估计和潜变量滤波第一次装进了同一个框架；用到 1953–1996 年的标普 500 日收益上，它读出了比 EMM 更大、更随时间起伏的跳跃风险。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bates (2006, Review of Financial Studies)</strong>：当我们想从股票收益里同时估出「看不见的波动率」和「看不见的跳跃风险」时，与其在概率密度里硬算，不如换到特征函数 (characteristic function) 的世界——用一条 Bayes 法则的「傅里叶版」递归更新潜变量的特征函数。这套被作者称为近似极大似然 (approximate maximum likelihood, AML) 的方法，把参数估计和潜变量滤波第一次装进了同一个框架；用到 1953–1996 年的标普 500 日收益上，它读出了比 EMM 更大、更随时间起伏的跳跃风险。</p></p></div>
 <h2 id="1">1 一个三十年都没解干净的难题</h2>
 <p>随机波动率 (stochastic volatility) 这个想法，到 2006 年已经在金融学里活了三十年。可奇怪的是，理论上人人都同意「资产收益的波动是会变的、是随机的」，真要把这个随机过程的参数、以及「此时此刻波动率到底有多高」一并估出来，却出奇地难。</p>
 <p>难在哪？Bates 在引言里把它拆成两个互相纠缠的子问题，干净利落：</p>
@@ -98,7 +98,7 @@
 <li><strong>滤波问题</strong>：在参数已知的前提下，怎样从过去的数据里，反推出当前那个看不见的潜变量 (latent variable) 取到了多少。</li>
 </ol>
 <p>这两件事听上去像一回事，其实是两层皮。打个最贴近实务的比方：风险管理里的在险价值 (Value at Risk) 关心的就是第二个问题——「今天的波动率到底是多少」；而 GARCH 的流行，本质上不过是给「用过去数据推断当前波动」这件事，提供了一个简单到可以确定性计算的滤波算法。</p>
-<div class="callout"><div class="callout-title">Note</div><p>这里埋着全文的张力：主流方法几乎都在专心解第一个问题。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>这里埋着全文的张力：主流方法几乎都在专心解第一个问题。</p></p></div>
 <p>效率方法矩 (Efficient Method of Moments, EMM)、马尔可夫链蒙特卡洛 (Markov Chain Monte Carlo, MCMC)，这些仿真类的重武器，火力全部对准参数估计。可一旦参数估出来了，你想知道「此刻波动率多高」，还得再额外接上一道滤波程序——Gallant 和 Tauchen (1998, 2002) 要靠所谓「再投影 (reprojection)」从大量仿真里学出一条「由过去收益推断波动」的经验规则；Johannes、Polson 和 Stroud (2002) 则给 Eraker、Johannes 和 Polson (2003) 的 MCMC 估计，再补一个粒子滤波。</p>
 <p>参数估计和波动率滤波，被人为地切成了两段。Bates 想问的是：<strong>能不能让它们从头到尾就是一件事？</strong></p>
 <h2 id="2">2 为什么是「特征函数」，而不是「密度」</h2>
@@ -111,7 +111,7 @@
 <li>第二，也是更深的一条：<strong>能写出解析转移密度的状态空间系统少得可怜，能写出解析条件特征函数的却多得多</strong>。仿射 (affine) 类过程的全部魅力，正在于此——它的密度、分布、期权价格往往没有闭式解，却几乎总能从特征函数出发，靠傅里叶反演 (Fourier inversion) 数值地算出来。</li>
 </ul>
 <p>换句话说，密度这门「语言」太窄，很多有意思的过程根本没法用它流利地说话；特征函数这门语言宽得多。Bates 做的，就是把整套滤波递归，从密度的语言整体翻译成特征函数的语言。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这个「在变换空间里干活」的思路，和近年用神经网络去拟合结构期权模型的做法异曲同工——都是承认「直接算密度太贵」，转而去算一个更友好的中间对象。关于后者，可参见<a href="/research/deep-surrogates-for-finance-with-an-application-to-option/">《把结构模型「蒸馏」成一张查找表：深度代理与期权定价》</a>。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这个「在变换空间里干活」的思路，和近年用神经网络去拟合结构期权模型的做法异曲同工——都是承认「直接算密度太贵」，转而去算一个更友好的中间对象。关于后者，可参见<a href="/research/deep-surrogates-for-finance-with-an-application-to-option/">《把结构模型「蒸馏」成一张查找表：深度代理与期权定价》</a>。</p></p></div>
 <h2 id="3">3 模型：把贝叶斯更新写进特征函数</h2>
 <p>下面这一节会涉及若干公式。我们当然不是在写论文，但这套递归的精巧之处，不把推导摆出来是说不清的。如果你只想看结论，可以直接跳到第 4 节。</p>
 <h3 id="3-1">3.1 半仿射结构：一切的地基</h3>
@@ -153,7 +153,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p><strong>第三，也是最有意思的——实证发现。</strong> 为了和基于 EMM 的估计正面对话，Bates 用了 Andersen、Benzoni 和 Lund (2002) 那份 1953–1996 年的标普 500 日收益数据（由 Luca Benzoni 慷慨提供）。结果出现了<strong>反转</strong>：AML 给出的结论与 EMM 有实质性分歧——它读出了<strong>更大、且随时间起伏 (time-varying)</strong> 的跳跃风险。这一点对给股指期权定价至关重要：跳跃风险的水平和它的时变性，正是期权隐含波动率「微笑」与「期限结构」背后的核心驱动。SVJ2 模型在收益与超额收益上的估计，汇总在下表。</p>
 <div class="article-image"><img alt="Table 8: contains estimates of the SVJ2 model on returns and excess" src="assets/table-8.png" /></div>
 <p><em>Table 8: contains estimates of the SVJ2 model on returns and excess</em></p>
-<div class="callout"><div class="callout-title">Warning</div><p>这里要诚实：本文正文在公开可读的部分并未逐一给出 SVJ2 各参数的点估计与 t 值，上面三段只复述了作者明确陈述的定性结论与效率排序。具体数字请以原文表 2、表 8 为准。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这里要诚实：本文正文在公开可读的部分并未逐一给出 SVJ2 各参数的点估计与 t 值，上面三段只复述了作者明确陈述的定性结论与效率排序。具体数字请以原文表 2、表 8 为准。</p></p></div>
 <h2 id="5-1938">5 文献脉络：从一篇 1938 年的老论文说起</h2>
 <p>把这条线索捋直，会发现它跨度惊人。</p>
 <p>最上游，是 Bartlett (1938) 那篇讲「条件统计量的特征函数」的小文章——它提供了「特征函数版贝叶斯更新」这把钥匙，沉睡了大半个世纪。中游分两支：一支是高斯状态空间与卡尔曼滤波（Hamilton 1994 的教科书式总结，以及 Ruiz 1994、Harvey、Ruiz 和 Shephard 1994 把它用到潜在波动率上）；另一支是仿真革命——Jacquier、Polson 和 Rossi (1994) 的 MCMC，Gallant 和 Tauchen (1998, 2002) 的 EMM，把「估计」推到了前所未有的灵活度，代价是「滤波」要另起炉灶。</p>

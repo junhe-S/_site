@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>指数会「记仇」，期货却转头就忘——一道拆穿短期自相关的现货-期货实验 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>指数会「记仇」，期货却转头就忘——一道拆穿短期自相关的现货-期货实验</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2002 RFS]</span> Partial Adjustment or Stale Prices? Implications from Stock Index and Futures Return Autocorrelations</div>
+        <div class="paper-source-authors"><a href="/research/author/dong-hyun-ahn/">Dong-Hyun Ahn</a>, <a href="/research/author/jacob-boudoukh/">Jacob Boudoukh</a>, <a href="/research/author/matthew-richardson/">Matthew Richardson</a>, <a href="/research/author/robert-f-whitelaw/">Robert F. Whitelaw</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">市场微观结构</span>
+        
+        
+        
+        
+        <span class="tag">自相关</span>
+        
+        
+        
+        
+        <span class="tag">股指期货</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Ahn, Boudoukh, Richardson &amp; Whitelaw (2002, Review of Financial Studies)</strong>：股票指数的短期收益有显著的正自相关（Russell 2000 日度高达 <code>22%</code>），可它对应的期货合约几乎没有（仅 <code>6%</code>）。作者用一个简单到近乎「狡猾」的现货-期货对照，把「行为/偏调整」和「陈旧价格」这两类长期纠缠不清的解释一刀切开——证据齐刷刷地指向微观结构里的<strong>陈旧价格</strong>，而非投资者的非理性。</p></p></div>
+<h2 id="1">1 一桩悬了二十年的「悬案」</h2>
+<p>先说一个让金融经济学家头疼了很久的现象。</p>
+<p>把许多只股票打包成一个组合，再看它日度、周度的收益序列，你会发现一件「不该发生」的事：<strong>今天涨、明天大概率也涨</strong>。用统计的话讲，短期组合收益存在显著为正的自相关 (autocorrelation)。这不是个别样本的巧合——从 Hawawini (1980) 到 Lo and MacKinlay (1988)，这个模式跨样本期、跨国家地反复出现，而且和公司规模、成交量、分析师覆盖、机构持股都挂得上钩。</p>
+<p>为什么说它「不该发生」？因为按照资产定价的常识，预期收益的变动是一件<strong>低频</strong>的事——它由投资机会集的缓慢变化驱动，不可能今天和明天就翻来覆去地变。可正自相关偏偏说：高频上，收益是可预测的。这就像你发现钟摆每一秒都在「记仇」，而物理学告诉你钟摆的周期是以小时计的。</p>
+<p>于是，二十年里，解释这桩悬案的努力大致分成了<strong>两大阵营</strong>，而且谁也说服不了谁。</p>
+<p><strong>第一个阵营，叫偏调整 (partial adjustment)。</strong> 它说：市场里有一群股票，对全市场的信息反应「慢半拍」。可能是因为某些投资者非理性（行为模型），也可能是因为信息不对称叠加交易摩擦，套利者进不来 [Holden and Subrahmanyam (1992)、Brennan, Jegadeesh, and Swaminathan (1993)、Jones and Slezak (1999)]。组合的自协方差，恰好是成分股交叉自协方差的平均——只要有一批股票滞后反应，组合层面就会冒出正自相关。</p>
+<p><strong>第二个阵营，叫陈旧价格 (stale prices)。</strong> 它说：根本没那么玄乎，问题出在「价格是怎么被记下来的」。股指收盘价用的是每只成分股当天<strong>最后一笔成交价</strong>；但这些股票既不在同一时刻成交，也未必恰好在收盘那一秒成交。于是指数里混进了一批「过时」的价格——这就是经典的非同步交易 (nonsynchronous trading)，它会<strong>人为地</strong>制造出正自相关 [Fisher (1966)、Scholes and Williams (1977)、Lo and MacKinlay (1990a)]。（关于「收盘价到底准不准」这件事本身，可参见<a href="/research/a-closing-calls-impact-on-market-quality-at-euronext-paris/">《收盘价到底准不准？》</a>。）</p>
+<div class="callout"><div class="callout-title">Warning</div><p>两个阵营的麻烦在于：它们对<strong>指数收益</strong>的预测<strong>一模一样</strong>——都预测正自相关。光盯着指数序列本身，你永远分不清到底是投资者「真的」反应慢，还是只是价格被「记旧」了。这正是悬案二十年悬而未决的根本原因。</p></p></div>
+<p>接着，一个自然的问题就是：有没有一个变量，能让这两种解释<strong>给出相反的预测</strong>？</p>
+<h2 id="2">2 真正关键的一步：把期货拉进来对照</h2>
+<p>本文最漂亮的地方，就是找到了这个变量——<strong>同一个指数对应的股指期货合约</strong>。</p>
+<p>为什么期货能当「裁判」？因为现货指数 \(S\) 和它的期货 \(F\) 之间有一条无套利的硬约束。在持有成本模型 (cost-of-carry) 下，期货价就是现货价按利率（扣股息）复利出去：</p>
+<p>$$ F_{t,T} = S_t\, e^{(i-d)(T-t)} $$</p>
+<p>对它取对数差分，就得到期货收益和现货收益之间的关系（论文式 (1)）：</p>
+<p>$$ r_{F_t} = r_{S_t} - i $$</p>
+<p>这里 \(r_F\) 是期货的连续复合收益，\(r_S\) 是标的指数收益，\(i\) 是利率（已对股息率调整），\(T\) 是到期日。常数利率假设让 \(i-d\) 的变动项被抵消掉了。</p>
+<p>现在见证奇迹的时刻到了。让我们把两个阵营分别套进这个框架，看它们对<strong>期货收益的自相关</strong>各自预测什么。</p>
+<h3 id="2-1">2.1 偏调整模型：指数和期货「同呼吸」</h3>
+<p>先看偏调整。本文挑了 Brennan, Jegadeesh, and Swaminathan (1993) 那一类模型：把指数拆成两半，一半是充分反应的股票（收益 \(r_{1t}\)），一半是滞后反应的股票（收益 \(r_{2t}\)）：</p>
+<p>$$ r_{1t} = \pi_1 + \beta_1 m_t $$</p>
+<p>$$ r_{2t} = \pi_2 + \beta_2 m_t + \gamma_2 m_{t-1} $$</p>
+<p>其中 \(m_t\) 是零均值、i.i.d. 的市场因子，\(\gamma_2 m_{t-1}\) 这一项就是「慢半拍」——上一期的市场冲击，今天才被这批股票消化。设指数里充分反应的股票占比为 \(\theta\)，那么指数和期货的收益（论文式 (4)）是：</p>
+<p>$$ r_{S_t} = \pi + \beta m_t + \gamma m_{t-1} $$</p>
+<p>$$ r_{F_t} = r_{S_t} - i $$</p>
+<p>其中 \(\gamma = (1-\theta)\gamma_2\)。在 beta 约等于 1 的近似下，这个序列的一阶自相关大约就是 \((1-\theta)\gamma_2\)——它取决于「慢半拍」的股票占多大比例、以及它们慢到什么程度。</p>
+<p><strong>关键在于：期货收益直接等于指数收益减去一个常数 \(i\)。</strong> 也就是说，期货<strong>原封不动地继承</strong>了指数的自相关。直觉上为什么？因为偏调整下的滞后效应是<strong>真实的</strong>——到期日那天的现货价确实包含这些滞后项，而期货作为「未来现货的现值」，贴现时也会把它们一并带上。结论很硬气：</p>
+<blockquote>
+<p>在偏调整模型里，指数和期货应当呈现<strong>相同</strong>的自相关。</p>
+</blockquote>
+<h3 id="2-2">2.2 陈旧价格模型：期货「转头就忘」</h3>
+<p>再看陈旧价格。本文用了 Lo and MacKinlay (1990a) 的经典设定：每一期，每只股票有一个外生概率 \(\delta\) 它的价格<strong>没被更新</strong>（要么没交易，要么是别的市场特征）。于是「测出来的」等权指数收益是一个被几何衰减的旧信息污染过的序列：</p>
+<p>$$ r_{S^o_t} = \pi + (1-\delta)\sum_{k=0}^{\infty}\delta^k\, m_{t-k} $$</p>
+<p>而<strong>真实</strong>的指数收益其实干净得很（特质风险已被分散掉）：</p>
+<p>$$ r_{S_t} = \pi + m_t $$</p>
+<p>测出来的序列里塞进了 \(m_{t-1}, m_{t-2}, \dots\)，所以它有正自相关——这正是「虚假」的那一部分。那期货呢？在无套利下，期货反映的是到期日指数的现值（论文式 (2)）：</p>
+<p>$$ F_{t,T} = PV(S^o_T)\, e^{i(T-t)} $$</p>
+<p>由于非同步交易，到期日的指数也含陈旧价格，所以今天的期货价会<strong>沾上一点点</strong>未来的陈旧性。但 Lo and MacKinlay (1990a) 的模型告诉我们，这个污染的量级是 \(\delta^{T-t}\)——只要合约离到期还远，它<strong>微不足道</strong>。于是期货收益（论文式 (3)）就是：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+r_{F_{t+1}} = \cssId{a1}{(1 - \delta^{T-t})}\,\big(\,\cssId{a2}{r_{S_{t+1}}} \;-\; \cssId{a3}{i}\,\big)
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>陈旧价格的「残留」因子；只要离到期还远，δ 的 (T−t) 次方趋于 0，整个因子≈1</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>标的指数的「真实」收益——它是 i.i.d. 的，本身没有任何自相关</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>持有成本里的利率项（已对股息调整）</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>把 a1 的因子看作 1，期货收益就约等于<strong>真实</strong>指数收益减 \(i\)。而真实收益是 i.i.d. 的——所以：</p>
+<blockquote>
+<p>在陈旧价格模型里，期货收益<strong>几乎没有</strong>自相关，哪怕此时指数收益正相关得很厉害。</p>
+</blockquote>
+<p>这就是全文的命门。<strong>两个阵营，第一次给出了相反的预测：偏调整说「指数=期货」，陈旧价格说「指数有、期货无」。</strong> 裁判终于能下判决了。</p>
+<h2 id="3">3 那「套利做不成」会不会救了偏调整？</h2>
+<p>读到这里，行为派一定不服气：凭什么假定套利能做成？现实里有交易成本——佣金、买卖价差，套利者根本不一定能把现货和期货扳到一起。如果套利做不成，期货也许就<strong>接不住</strong>指数的性质了，那 2.1 节的「同呼吸」结论不就崩了吗？</p>
+<p>这是个好问题，也是本文必须正面回应的硬骨头。然后，作者把交易成本 \(\kappa\) 写进了模型。套利者每次进出指数要付加性成本 \(\kappa\)，往返就是 \(2\kappa\)。在没有套利的区间里，期货价被夹在一条「无套利带」里（论文式 (5)）：</p>
+<p>$$ -\kappa\big(1+e^{i(T-t)}\big) \le F_{t,T} - S_t e^{(i-d)(T-t)} \le \kappa\big(1+e^{i(T-t)}\big) $$</p>
+<p>只有当价差冲出这条带子，套利才会发动、把价格扳回来。期货价跑出带外的条件是（论文式 (6)）：</p>
+<p>$$ |m_t| \ge \frac{\kappa\big(1+e^{i(T-t)}\big)}{(1-\theta)\gamma_2} $$</p>
+<p>这个不等式里藏着三个推手：<strong>(i)</strong> 近期指数波动越大（\(|m_t|\) 越大）、<strong>(ii)</strong> 交易成本越低（\(\kappa\) 越小）、<strong>(iii)</strong> 指数自相关越强（\((1-\theta)\gamma_2\) 越大），就越容易冲出带外、触发套利。一旦冲出，即便期货交易者再老练，期货的预期收益也不再是常数，而要捕捉一部分指数的「非理性」（论文式 (7)）：</p>
+<p>$$ E_t[r_{F_{t+1}}] = \pi - i + (1-\theta)\gamma_2\, m_t \pm \kappa\big(1+e^{i(T-t)}\big) $$</p>
+<p>于是偏调整模型给出了一个<strong>可被证伪的细节预测</strong>：在带子里，期货预期收益是平的；一旦冲出带外，期货才开始「沾染」指数的正自相关。换句话说，<strong>在那些套利最容易做成的时段（低成本、大波动、高自相关），偏调整模型预测期货应当最像指数。</strong></p>
+<p>这就把球踢回到了数据：如果在「最有利于套利」的条件下，期货依然和指数大相径庭，那偏调整模型就站不住脚了。</p>
+<h2 id="4">4 数据怎么说</h2>
+<p>作者的数据覆盖 <strong>15 个国家、24 个股指</strong>及其对应的期货合约——既有美国的 S&amp;P 500、Russell 2000，也有日本的 TOPIX、英国的 FTSE 250。这是个聪明的设计：国际市场之间的横截面相关性其实很低，等于给同一个假说提供了一批<strong>相互独立</strong>的检验样本。</p>
+<p>主要事实摆出来，分量很足：</p>
+<p><strong>第一，含不流动股票的指数，自相关明显为正，可期货却接近零。</strong> 最干净的例子就是 Russell 2000：日度收益自相关 <code>22%</code>，而它的期货合约只有 <code>6%</code>。这个差距在经济上和统计上都显著。TOPIX、FTSE 250 也是同样的模式——它们都装着大量交易稀疏的小股票。</p>
+<p><strong>第二，交易成本解释不了这个差距。</strong> 即便只看那些「最有利于现货-期货套利」的时段（对应第 3 节里冲出带外的条件），自相关的差距几乎纹丝不动。按偏调整模型的预测，这时期货本该最像指数才对——可它没有。这是直接打在偏调整模型脸上的一记。</p>
+<p><strong>第三，成交量是「显影液」。</strong> 在普遍高成交量的时段，<strong>现货指数</strong>的自相关急剧下降；而<strong>期货</strong>的性质几乎不随成交量变化。这恰恰是陈旧价格的指纹——成交量一上来，非同步交易的问题就缓解了，指数里的「旧价格」被冲刷掉，虚假自相关自然回落；而期货本就没靠陈旧价格吃饭，自然无动于衷。</p>
+<p>作者用回归把这些对照系统地做了一遍，逐合约估计（论文式 (9)）。结果与上面的叙事一致：期货收益对滞后信息的载荷远低于现货指数，且这种差异在调整套利条件后依旧稳健。</p>
+<div class="article-image"><img alt="Table 3: presents the regression results from Equation (9) for each contract" src="assets/table-3.png" /></div>
+<p><em>Table 3: presents the regression results from Equation (9) for each contract</em></p>
+<p>把三条事实串起来，判决就清楚了：<strong>短期组合自相关的主因，是陈旧价格这类微观结构偏差，而不是投资者的非理性或慢半拍。</strong> 这也和 Kadlec and Patterson (1999) 校准日内数据后的结论遥相呼应——非同步交易能解释小股票组合日度自相关的 <code>85%</code>、随机组合的 <code>52%</code>、大股票组合的 <code>36%</code>。不是全部，但绝对是大头。</p>
+<h2 id="5">5 文献脉络</h2>
+<p>把这条线捋一遍，能更清楚地看到本文站在哪儿。</p>
+<p>最早，<strong>Fisher (1966)</strong> 就指出指数构造里有「平滑」问题，<strong>Scholes and Williams (1977)</strong> 则在估计 beta 时正式处理非同步交易。真正把短期自相关推上风口浪尖的，是 <strong>Lo and MacKinlay (1988)</strong>——他们的方差比检验让「股价不是随机游走」成了一桩公案，并把自相关和公司规模挂上了钩。紧接着，<strong>Lo and MacKinlay (1990a)</strong> 给出了非同步交易的计量模型（也就是本文第 2.2 节的骨架）。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>另一边，行为/信息派的代表是 <strong>Brennan, Jegadeesh, and Swaminathan (1993)</strong>——用分析师覆盖把股票分成「快」「慢」两组，给偏调整模型提供了微观基础（本文第 2.1 节正是借了它的设定）。<strong>Boudoukh, Richardson, and Whitelaw (1994)</strong> 那篇《三所学校的故事》，已经在用指数组合（如 S&amp;P 500 与 NYSE 的组合）启发式地论证现货与期货性质应当不同——但只是启发式的、样本短、指数少。到 <strong>Kadlec and Patterson (1999)</strong>，非同步交易的解释力被精确校准。</p>
+<p>本文 (2002) 的位置就很清楚了：它把 BRW (1994) 的启发式直觉，升级成一个<strong>有明确理论预测、又能跨国独立检验</strong>的完整框架，第一次让现货-期货对照真正充当了区分两大阵营的「裁判」。（顺带一提，「测出来的自相关有多少是流动性/陈旧价格幻觉」这个主题，在动量研究里也有回声，可参见<a href="/research/momentum-and-autocorrelation-in-stock-returns/">《动量到底是谁干的？》</a>与<a href="/research/the-illusory-nature-of-momentum-profits/">《动量利润的「纸面富贵」》</a>。）</p>
+<h2>6 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：偏调整和陈旧价格，本质区别到底在哪？</strong></p>
+<blockquote>
+<p>区别在于「滞后是不是真的」。偏调整里，滞后反应是<strong>真实的价格变动</strong>——到期日的现货价确实含这些滞后项，所以无套利会让期货一并继承。陈旧价格里，滞后只是<strong>记账的幻觉</strong>——真实价格早就调整完了，只是指数用了旧的成交价。前者期货有自相关，后者期货没有。这一「真/假」之分，正是整篇文章的杠杆支点。</p>
+</blockquote>
+<p><strong>Q：为什么期货能「免疫」于陈旧价格？它不也得靠现货定价吗？</strong></p>
+<blockquote>
+<p>因为期货反映的是<strong>到期日</strong>现货的现值，而陈旧性对当下期货价的污染只有 \(\delta^{T-t}\) 的量级。合约离到期还远时，这个数趋近于零。所以期货收益约等于「真实」现货收益减利率，而真实收益是 i.i.d. 的——没有自相关的来源。</p>
+</blockquote>
+<p><strong>Q：用高成交量时段的对照来论证，会不会本末倒置？成交量本身就和收益相关。</strong></p>
+<blockquote>
+<p>这是合理的担忧。但作者的逻辑是非对称的：成交量上升时，<strong>现货</strong>自相关塌掉、<strong>期货</strong>纹丝不动。如果是某种与成交量相关的「真实」预期收益变动，它没理由只影响现货、不碰期货。这种「只打一边」的模式，恰恰是陈旧价格（而非偏调整）的特征。</p>
+</blockquote>
+<p><strong>Q：交易成本那条「无套利带」会不会其实救了偏调整？</strong></p>
+<blockquote>
+<p>作者正是为此把交易成本写进模型，并预测：在最有利于套利的时段（低成本、大波动、高自相关），期货应当最像指数。数据却显示差距几乎不变。所以「套利做不成」这条退路被堵死了。</p>
+</blockquote>
+<p><strong>Q：Russell 2000 的 22% vs 6%，这个差距经济上算大吗？</strong></p>
+<blockquote>
+<p>很大。22% 的日度自相关意味着指数收益里有相当可观的可预测成分；而期货只有 6%，接近其无套利下应有的「近零」水平。两者的差，统计与经济上都显著，且在 15 国 24 个指数里反复出现——不是单一市场的偶然。</p>
+</blockquote>
+<p><strong>Q：这是不是说短期自相关「不存在」、不能交易？</strong></p>
+<blockquote>
+<p>不。它真实地存在于<strong>指数报价</strong>里，但它主要是陈旧价格制造的幻象——你没法按这些「旧价」真正成交一笔像样的量。也就是说，它不代表可实现的套利机会，而是市场摩擦的影子。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把这套现货-期货裁判搬到公司债 ETF 上。</strong></p>
+<blockquote>
+<p>【经济故事】公司债本身交易稀疏、报价陈旧问题极重，而公司债 ETF（如 LQD、HYG）有连续的二级市场价格，类似「期货」角色。ETF 与其 NAV 之间的自相关差异，或许能像本文一样，把信用市场短期可预测性里的「陈旧价格」成分剥离出来。
+【可行性】中。数据可得（TRACE 债券成交 + ETF 高频价 + 每日 NAV），识别策略直接移植本文逻辑；难点是 ETF 申赎套利的成本结构比股指期货复杂，需要小心刻画「无套利带」。</p>
+</blockquote>
+<p><strong>2. 外资持有比例如何调节指数的陈旧价格成分。</strong></p>
+<blockquote>
+<p>【经济故事】外资集中、时区错配的市场（如新兴市场的某些指数），收盘时的非同步交易可能更严重。若能用外资可投资度 (investability) 作为横截面变量，检验「外资越多→陈旧价格自相关越强 / 越弱」，可把微观结构和投资者结构连起来。
+【可行性】中。可投资度数据有（如 S&amp;P/IFC），指数与期货数据需逐市场拼。难点是外资比例与流动性内生，需要找制度性冲击（如可投资度扩容事件）做识别。</p>
+</blockquote>
+<p><strong>3. 高成交量「显影」效应的事件研究版本。</strong></p>
+<blockquote>
+<p>【经济故事】本文用平均成交量时段做对照，但可以更干净：围绕指数成分股的<strong>集中放量事件</strong>（如纳入/剔除、财报季）做事件窗，看现货自相关是否在放量后骤降、期货是否纹丝不动。这能把「成交量→陈旧价格→自相关」的因果链锁得更紧。
+【可行性】高。成分股调整日、财报日都有明确日期，事件研究框架成熟，数据门槛低。</p>
+</blockquote>
+<p><strong>4. 用更细的微观结构数据直接量化「最后一笔成交距收盘多久」。</strong></p>
+<blockquote>
+<p>【经济故事】本文把陈旧性当作外生概率 \(\delta\)。其实可以用日内成交数据，直接测每只成分股「最后一笔成交时间距收盘的间隔」，构造一个<strong>实测的</strong>陈旧度指标，再看它能否解释指数-期货自相关差的横截面。
+【可行性】中高。日内数据（TAQ 类）可得，指标构造清楚；难点是把个股陈旧度聚合到指数层面的权重处理。</p>
+</blockquote>
+<p><strong>5. 在公司债市场检验「真实滞后 vs 记账滞后」。</strong></p>
+<blockquote>
+<p>【经济故事】信用市场常被指「反应慢」——但这究竟是债券价格真的慢，还是只是报价陈旧？若能找到同一发行人「流动 vs 不流动」两只债券（参见<a href="/research/corporate-bond-mutual-funds-and-asset-fire-sales/">《同一个发行人的两只债券》</a>的思路），用 CDS 或股票当「期货」式的快速基准对照，或可复刻本文的裁判逻辑。
+【可行性】中。需要匹配同发行人多券种 + CDS 报价，数据拼接成本高，但识别思路干净。</p>
+</blockquote>
+<h2 id="7">7 我的判断</h2>
+<p>这篇文章的贡献，不在于它发现了什么新异象，而在于它<strong>把一个旧异象逼到了非黑即白的境地</strong>。短期自相关的两类解释扯了二十年，谁都拿不出能让对方闭嘴的证据，原因是大家都只盯着指数序列本身——而指数序列对两种机制是「兼容」的。作者的高明，是意识到无套利关系会让期货在两种机制下表现迥异，于是凭空多出一个能区分二者的维度。这种「找一个让竞争假说给出相反预测的变量」的思路，是实证设计里最值得学的一课。</p>
+<p>对识别的担忧，我有两点。其一，整套逻辑高度依赖<strong>常数利率与股息率</strong>的假设来抵消 \(i-d\) 的变动项；虽然作者论证这些变量比指数本身稳定得多，但在利率剧烈波动的样本期（或某些新兴市场），这个简化是否依然无害，值得更正式的稳健性检验。其二，「高成交量时段」与「有利套利时段」都是<strong>内生</strong>的条件——成交量、波动率、自相关三者纠缠在一起，作者的对照虽然在符号上很有说服力，但严格的因果识别仍需要外生冲击（比如指数成分调整、期货合约上市这类制度事件）来加固。</p>
+<p>后续我最想看到的，是把这套现货-期货（或现货-衍生品）裁判系统地推广到<strong>信用市场</strong>：公司债的「反应慢」长期被当作行为故事讲，但它有多少其实只是 TRACE 报价的陈旧？如果能像本文一样，用一个快速基准把「真实滞后」和「记账滞后」分开，那对整个信用市场的可预测性文献，都会是一次必要的祛魅。</p>
+<h2 id="">参考文献</h2>
+<p>Atchison, M., K. Butler, and R. Simonds (1987). Nonsynchronous Security Trading and Market Index Autocorrelation. <em>Journal of Finance</em> 42, 533–553.</p>
+<p>Boudoukh, J., M. Richardson, and R. Whitelaw (1994). A Tale of Three Schools: Insights on Autocorrelations of Short-Horizon Stock Returns. <em>Review of Financial Studies</em> 7, 539–573.</p>
+<p>Brennan, M., N. Jegadeesh, and B. Swaminathan (1993). Investment Analysis and the Adjustment of Stock Prices to Common Information. <em>Review of Financial Studies</em> 6, 799–824.</p>
+<p>Chordia, T., and B. Swaminathan (2000). Trading Volume and Cross-Autocorrelations in Stock Returns. <em>Journal of Finance</em> 55, 913–935.</p>
+<p>Fisher, L. (1966). Some New Stock Market Indexes. <em>Journal of Business</em> 39, 191–225.</p>
+<p>Kadlec, G., and D. Patterson (1999). A Transactions Data Analysis of Nonsynchronous Trading. <em>Review of Financial Studies</em> 12, 609–630.</p>
+<p>Lo, A., and C. MacKinlay (1988). Stock Market Prices Do Not Follow Random Walks: Evidence from a Simple Specification Test. <em>Review of Financial Studies</em> 1, 41–66.</p>
+<p>Lo, A., and C. MacKinlay (1990a). An Econometric Analysis of Nonsynchronous Trading. <em>Journal of Econometrics</em> 45, 181–211.</p>
+<p>MacKinlay, C., and K. Ramaswamy (1988). Index-Futures Arbitrage and the Behavior of Stock Index Futures Prices. <em>Review of Financial Studies</em> 1, 137–158.</p>
+<p>Scholes, M., and J. Williams (1977). Estimating Betas from Nonsynchronous Data. <em>Journal of Financial Economics</em> 5, 309–327.</p>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一桩悬了二十年的「悬案」</a></li>
+        <li><a href="#2">2 真正关键的一步：把期货拉进来对照</a></li>
+          <li><a href="#2-1">2.1 偏调整模型：指数和期货「同呼吸」</a></li>
+          <li><a href="#2-2">2.2 陈旧价格模型：期货「转头就忘」</a></li>
+        <li><a href="#3">3 那「套利做不成」会不会救了偏调整？</a></li>
+        <li><a href="#4">4 数据怎么说</a></li>
+        <li><a href="#5">5 文献脉络</a></li>
+        <li><a href="#6-q-a">6 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#7">7 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11. GMM: General Formulas and Applications – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>11. GMM: General Formulas and Applications</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">广义矩估计</span><span class="lang en">GMM</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">加权矩阵</span><span class="lang en">Weighting Matrix</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">稳健性</span><span class="lang en">Robustness</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Hansen-Jagannathan距离</span><span class="lang en">HJ Distance</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">谱密度矩阵</span><span class="lang en">Spectral Density Matrix</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>11. GMM: General Formulas and Applications</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+本章（Cochrane 第 11 章）给出 <strong>GMM 的一般框架</strong>与五类应用。核心是两条主公式：设 \(a_Tg_T(\hat b)=0\) 定义估计，则<strong>系数协方差</strong> \(T\operatorname{cov}(\hat b)=(ad)^{-1}aSa'(ad)^{-1\prime}\)、<strong>矩协方差</strong> \(T\operatorname{cov}(g_T)=(I-d(ad)^{-1}a)S(I-d(ad)^{-1}a)'\)。很多计算就是巧妙地选取选择线性组合的 \(a\) 矩阵、再读出这两条公式。§11.1 一般公式（含模型比较的 χ² 差检验）；§11.2 检验单个/一组定价误差；§11.3 用 delta 方法求任意量的标准误；§11.4 把 OLS 映入 GMM（导出修正自相关/异方差的标准误）；§11.5 <strong>预设加权矩阵</strong>（为何不总用"有效"的 \(S^{-1}\)：经济意义、稳健性、模型可比性）；§11.6 一组矩估计、另一组检验；§11.7 估计谱密度矩阵 \(S\) 的实操要点。</p></p></div>
+</div>
+<div class="lang en">
+<h1>11. GMM: General Formulas and Applications</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+This chapter (Cochrane Ch 11) lays out the <strong>general GMM framework</strong> and five applications. The core is two master formulas: with \(a_Tg_T(\hat b)=0\) defining the estimate, the <strong>coefficient covariance</strong> is \(T\operatorname{cov}(\hat b)=(ad)^{-1}aSa'(ad)^{-1\prime}\) and the <strong>moment covariance</strong> is \(T\operatorname{cov}(g_T)=(I-d(ad)^{-1}a)S(I-d(ad)^{-1}a)'\). Many calculations are just clever choices of the \(a\) matrix selecting which linear combination of moments to set to zero, then reading off these two formulas. §11.1 general formulas (with a χ²-difference test for model comparison); §11.2 testing individual/groups of pricing errors; §11.3 standard errors of anything via the delta method; §11.4 mapping OLS into GMM (deriving autocorrelation/heteroskedasticity-corrected standard errors); §11.5 <strong>prespecified weighting matrices</strong> (why not always the "efficient" \(S^{-1}\): economic meaning, robustness, model comparability); §11.6 estimating on one group of moments, testing on another; §11.7 practicalities of estimating the spectral density matrix \(S\).</p></p></div>
+</div>
+<div class="lang zh">
+<h2 id="11-1-gmm-general-gmm-formulas">11.1 一般 GMM 公式 / General GMM Formulas</h2>
+<p>把模型写成 \(E[f(x_t,b)]=0\)（\(f\) 是 \(L\) 维矩、\(x_t\) 是数据、\(b\) 是 \(N\) 个参数，推广上章的 \(u_t(b)\)）。<strong>GMM 估计</strong>：选 \(\hat b\) 使某线性组合 \(a_Tg_T(\hat b)=0\)，其中 \(g_T(b)=\tfrac1T\sum_t f(x_t,b)\)。上章的最小化是特例：\(\min_b g_T'Wg_T\) 的一阶条件即 \(a_T=\partial g_T'/\partial b\,W\)。</p>
+</div>
+<div class="lang en">
+<h2 id="11-1-general-gmm-formulas">11.1 General GMM Formulas</h2>
+<p>Write the model as \(E[f(x_t,b)]=0\) (\(f\) an \(L\)-vector of moments, \(x_t\) data, \(b\) an \(N\)-vector of parameters, generalizing \(u_t(b)\)). The <strong>GMM estimate</strong>: pick \(\hat b\) so some linear combination \(a_Tg_T(\hat b)=0\), where \(g_T(b)=\tfrac1T\sum_t f(x_t,b)\). The last chapter's minimization is a special case: the first-order condition of \(\min_b g_T'Wg_T\) is \(a_T=\partial g_T'/\partial b\,W\).</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>两条主公式（Hansen 1982） / The two master formulas (Hansen 1982)
+<span class="lang zh">设 \(d\equiv E[\partial f/\partial b'] = \partial g_T/\partial b'\)，\(a\equiv\operatorname{plim}a_T\)，\(S\equiv\sum_{j=-\infty}^{\infty}E[f(x_t,b)f(x_{t-j},b)']\)。则<br><strong>系数分布</strong>：\(\sqrt T(\hat b-b)\to N\bigl(0,(ad)^{-1}aSa'(ad)^{-1\prime}\bigr)\)；<br><strong>矩分布</strong>：\(\sqrt T g_T(\hat b)\to N\bigl(0,(I-d(ad)^{-1}a)S(I-d(ad)^{-1}a)'\bigr)\)（奇异，因每个样本里把某些 \(g_T\) 的线性组合置零）。<br><strong>有效估计</strong> \(a=d'S^{-1}\) 时简化为 \(T\operatorname{cov}(\hat b)=(d'S^{-1}d)^{-1}\)，且 \(TJ_T=Tg_T'S^{-1}g_T\to\chi^2(\#\text{moments}-\#\text{params})\)。</span><span class="lang en">With \(d\equiv E[\partial f/\partial b'] = \partial g_T/\partial b'\), \(a\equiv\operatorname{plim}a_T\), \(S\equiv\sum_{j=-\infty}^{\infty}E[f(x_t,b)f(x_{t-j},b)']\):<br><strong>Coefficient distribution</strong>: \(\sqrt T(\hat b-b)\to N\bigl(0,(ad)^{-1}aSa'(ad)^{-1\prime}\bigr)\);<br><strong>Moment distribution</strong>: \(\sqrt T g_T(\hat b)\to N\bigl(0,(I-d(ad)^{-1}a)S(I-d(ad)^{-1}a)'\bigr)\) (singular, since each sample sets some linear combinations of \(g_T\) to zero).<br>For the <strong>efficient estimate</strong> \(a=d'S^{-1}\) this reduces to \(T\operatorname{cov}(\hat b)=(d'S^{-1}d)^{-1}\), and \(TJ_T=Tg_T'S^{-1}g_T\to\chi^2(\#\text{moments}-\#\text{params})\).</span></p></p></div>
+<div class="lang zh">
+<p>\(a=d'S^{-1}\) 之"有效"在于：任意 \(a\) 的系数方差 (11.4) 等于有效估计方差 (11.8) 加一个半正定矩阵——故在"把不同线性组合置零"的估计类中方差最小（基于其他矩的估计可能更有效）。χ² 检验可直接用非奇异的 \(S^{-1}\)：\(Tg_T'S^{-1}g_T\to\chi^2\)（仅对最优权适用；其他权须用一般式 (11.4)、(11.5) 并伪逆奇异协方差阵）。</p>
+<p><strong>模型比较。</strong> 若一个模型是另一个的"受限"特例，用<strong>同一个 \(S\)</strong>（通常取无约束模型的），则受限 \(J_T\) 必上升；若受限模型为真则不应升"太多"：</p>
+</div>
+<div class="lang en">
+<p>\(a=d'S^{-1}\) is "efficient" because the coefficient variance for any \(a\) (11.4) equals the efficient variance (11.8) plus a positive semidefinite matrix — smallest among estimators that set linear combinations to zero (estimators based on other moments may be more efficient still). The χ² test can use the nonsingular \(S^{-1}\) directly: \(Tg_T'S^{-1}g_T\to\chi^2\) (only for the optimal weights; other weights need the general formulas (11.4), (11.5) and a pseudo-inverse of the singular covariance).</p>
+<p><strong>Model comparison.</strong> If one model is a "restricted" case of another, using the <strong>same \(S\)</strong> (usually the unrestricted model's), the restricted \(J_T\) must rise; if the restricted model is true it should not rise "much":</p>
+</div>
+<p>$$TJ_T(\text{restricted})-TJ_T(\text{unrestricted})\sim\chi^2(\#\text{restrictions}).$$</p>
+<div class="lang zh">
+<p>这是 Newey-West (1987a) 的"χ² 差检验"（D 检验），类似似然比检验。</p>
+<h2 id="11-2-testing-moments">11.2 检验定价误差 / Testing Moments</h2>
+<p>想看模型在<strong>特定</strong>资产/定价误差上的表现（如著名的"小公司效应"：无条件 CAPM 在最小市值组合上定价差）。\(g_T\) 的各元就是定价误差，其抽样分布 (11.5) 给出标准误，可对单个 \(g_T\) 做 \(t\) 检验、对一组做 χ² 检验，也可为"预测 vs 实际平均收益"图加误差棒。或用 χ² 差检验：把待检验的矩置零、用同一 \(S\) 重估，二者目标之差 \(\sim\chi^2(\#\text{eliminated moments})\)。<strong>注意陷阱</strong>：不要从 10 个定价误差里挑最大的那个、说它超过两倍标准差——最大者的分布远宽于单个；须<strong>先选定</strong>要检验哪个，再看数据。</p>
+<h2 id="11-3-delta-standard-errors-of-anything">11.3 用 delta 方法求任意量的标准误 / Standard Errors of Anything</h2>
+<p>当要估计的量是样本均值的非线性函数 \(b=\phi[E(x_t)]=\phi(\mu)\) 时，(11.2) 化为</p>
+</div>
+<div class="lang en">
+<p>This is Newey-West's (1987a) "χ²-difference test" (D-test), much like a likelihood-ratio test.</p>
+<h2 id="11-2-testing-moments">11.2 Testing Moments</h2>
+<p>To see how a model does on <strong>particular</strong> assets/pricing errors (e.g. the famous "small-firm effect": an unconditional CAPM prices the smallest-cap portfolio badly). The elements of \(g_T\) are the pricing errors, and their sampling distribution (11.5) gives the standard error — a \(t\)-test for a single \(g_T\), a χ² test for a group, or error bars on a "predicted vs. actual mean return" plot. Or use a χ²-difference test: zero out the moments to be tested, re-estimate with the same \(S\), and the difference in objectives \(\sim\chi^2(\#\text{eliminated moments})\). <strong>A trap</strong>: do not pick the largest of 10 pricing errors and note it is over two standard deviations from zero — the distribution of the largest is far wider than that of a single one; you must pick which to test <strong>before</strong> looking at the data.</p>
+<h2 id="11-3-standard-errors-of-anything-by-the-delta-method">11.3 Standard Errors of Anything by the Delta Method</h2>
+<p>When the quantity is a nonlinear function of sample means \(b=\phi[E(x_t)]=\phi(\mu)\), (11.2) reduces to</p>
+</div>
+<p>$$\operatorname{var}(b_T)=\frac1T\left(\frac{d\phi}{d\mu}\right)'\sum_{j=-\infty}^{\infty}\operatorname{cov}(x_t,x'_{t-j})\left(\frac{d\phi}{d\mu}\right).\tag{11.11}$$</p>
+<div class="lang zh">
+<p>很直观：括号内是样本均值的协方差，导数把 \(\phi\) 在真值处线性化。如此可得相关系数、脉冲响应、方差分解等的标准误。</p>
+<h2 id="11-4-gmm-using-gmm-for-regressions">11.4 用 GMM 做回归 / Using GMM for Regressions</h2>
+<p>把 OLS 映入 GMM，可导出<strong>修正自相关与条件异方差</strong>的标准误。OLS 的一阶条件即"残差与右侧变量正交" \(g_T(\beta)=E_T[x_t(y_t-x_t'\beta)]=0\)（恰好识别，\(a=I\)）。代入 (11.2)（\(d=-E(x_tx_t')\)、\(f=x_t\varepsilon_t\)）得</p>
+</div>
+<div class="lang en">
+<p>Very intuitive: the bracket is the covariance of the sample mean, and the derivatives linearize \(\phi\) near the true value. This yields standard errors for correlation coefficients, impulse responses, variance decompositions, and more.</p>
+<h2 id="11-4-using-gmm-for-regressions">11.4 Using GMM for Regressions</h2>
+<p>Mapping OLS into GMM yields standard errors <strong>corrected for autocorrelation and conditional heteroskedasticity</strong>. The OLS first-order condition is "the residual is orthogonal to the right-hand variable," \(g_T(\beta)=E_T[x_t(y_t-x_t'\beta)]=0\) (exactly identified, \(a=I\)). Substituting into (11.2) (\(d=-E(x_tx_t')\), \(f=x_t\varepsilon_t\)) gives</p>
+</div>
+<p>$$\operatorname{var}(\hat\beta)=\frac1T E(x_tx_t')^{-1}\Bigl[\sum_{j=-\infty}^{\infty}E(\varepsilon_tx_tx'_{t-j}\varepsilon_{t-j})\Bigr]E(x_tx_t')^{-1}.\tag{11.13}$$</p>
+<div class="lang zh">
+<p>它在特例下退化：序列无关 + 同方差时回到 \(\sigma_\varepsilon^2(X'X)^{-1}\)；删去同方差得 <strong>White 异方差稳健标准误</strong> \(\tfrac1T E(xx')^{-1}E(\varepsilon^2xx')E(xx')^{-1}\)；重叠长期限回归（如六个月收益用月度数据）得 <strong>Hansen-Hodrick 标准误</strong>（仅保留 \(|j|<k\) 的项，因 \(E(\varepsilon_t\varepsilon_{t-j})=0\) 当 \(|j|\ge k\)）。注意：修正 OLS 标准误<strong>不等于</strong> GLS——误差不满足 OLS 假设时，OLS 仍一致、常比 GLS 更稳健，只是标准误需修正。</p>
+<h2 id="11-5-prespecified-weighting-matrices">11.5 预设加权矩阵与矩条件 / Prespecified Weighting Matrices</h2>
+<p>固定 \(W\) 的公式：\(\operatorname{var}(\hat b)=\tfrac1T(d'Wd)^{-1}d'WSWd(d'Wd)^{-1}\)，\(\operatorname{var}(g_T)=\tfrac1T(I-d(d'Wd)^{-1}d'W)S(I-Wd(d'Wd)^{-1}d')\)（\(W=S^{-1}\) 时退回有效式）。\(S\) 仍出现在所有标准误里——用预设 \(W\) <strong>不等于</strong>忽略误差相关性。</p>
+</div>
+<div class="lang en">
+<p>It reduces in special cases: serially uncorrelated + homoskedastic returns to \(\sigma_\varepsilon^2(X'X)^{-1}\); dropping homoskedasticity gives <strong>White heteroskedasticity-robust standard errors</strong> \(\tfrac1T E(xx')^{-1}E(\varepsilon^2xx')E(xx')^{-1}\); overlapping long-horizon regressions (e.g. six-month returns on monthly data) give <strong>Hansen-Hodrick standard errors</strong> (keeping only \(|j|<k\) terms, since \(E(\varepsilon_t\varepsilon_{t-j})=0\) for \(|j|\ge k\)). Note: correcting OLS standard errors is <strong>not</strong> GLS — when errors violate OLS assumptions, OLS is still consistent and often more robust than GLS, but its standard errors need correction.</p>
+<h2 id="11-5-prespecified-weighting-matrices-and-moment-conditions">11.5 Prespecified Weighting Matrices and Moment Conditions</h2>
+<p>Fixed-\(W\) formulas: \(\operatorname{var}(\hat b)=\tfrac1T(d'Wd)^{-1}d'WSWd(d'Wd)^{-1}\), \(\operatorname{var}(g_T)=\tfrac1T(I-d(d'Wd)^{-1}d'W)S(I-Wd(d'Wd)^{-1}d')\) (reducing to the efficient form when \(W=S^{-1}\)). \(S\) still appears in all standard errors — using a prespecified \(W\) is <strong>not</strong> the same as ignoring error correlation.</p>
+</div>
+<div class="callout"><div class="callout-title">Warning</div><p>为何不总用"有效"的 \(S^{-1}\) / Why not always the "efficient" \(S^{-1}\)
+<span class="lang zh">如同回归里 OLS 常优于 GLS。理由：① <strong>稳健性</strong>——若 \(S\) 模型设错，有效估计可能远差于一阶估计，且会"盯住"模型轻微设误处；常数据量足够，与其榨取每一分统计精度，不如要不依赖可疑假设的估计。② <strong>近奇异的 \(S\)</strong>——资产收益高度相关、矩数常接近数据点数，\(S\) 近奇异，\(S^{-1}\) 会让 GMM 死盯方差最小的线性组合（如 \(100R_1-99R_2\) 的强多空组合，实际受卖空成本限制），即<strong>样本最小方差组合</strong>——而样本前沿远宽于真前沿、其最小方差组合多半是运气（图 11.1）。③ <strong>公平竞技</strong>——\(S\) 随模型变，加噪声 \(m'=m+\varepsilon\) 可不改 \(g_T\) 却抬高 \(S\)、从而虚降 \(J_T\) 造成"改进"假象；用统一 \(W\) 评 \(g_T'Wg_T\) 可避此陷阱。</span><span class="lang en">As OLS often beats GLS in regressions. Reasons: ① <strong>Robustness</strong> — if the \(S\) model is wrong, the efficient estimate can be far worse than the first-stage one and "zeroes in" on slightly misspecified parts of the model; with enough data, estimates that don't depend on questionable assumptions beat wringing out every ounce of precision. ② <strong>Near-singular \(S\)</strong> — asset returns are highly correlated and the number of moments often approaches the data points, so \(S\) is near-singular and \(S^{-1}\) makes GMM fixate on minimum-variance linear combinations (e.g. strongly-levered \(100R_1-99R_2\) portfolios, limited by short-sale costs in reality) — the <strong>sample minimum-variance portfolio</strong> — yet the sample frontier is far wider than the true one and its minimum-variance portfolio is largely luck (Figure 11.1). ③ <strong>Level playing field</strong> — \(S\) changes with the model; adding noise \(m'=m+\varepsilon\) can leave \(g_T\) unchanged yet inflate \(S\) and spuriously lower \(J_T\) (a false "improvement"); a common \(W\) evaluating \(g_T'Wg_T\) avoids this trap.</span></p></p></div>
+<div class="lang zh"></div>
+<div class="lang en"></div>
+
+<div class="article-image"><img alt="Figure 11.1 — True (ex ante) vs sample (ex post) mean-variance frontier" src="assets/fig-11-1.png" /></div>
+<div class="lang zh">
+<p><em>图 11.1　真实（事前）与样本（事后）均值方差前沿。样本前沿通常宽得多，其"最小方差组合"多由运气决定，与真实最小方差组合关系不大——这正是高效 GMM 易过度看重的对象。</em></p>
+</div>
+<div class="lang en">
+<p><em>Figure 11.1　True (ex ante) and sample (ex post) mean-variance frontier. The sample frontier is typically much wider; its "minimum-variance portfolio" largely reflects luck and has little to do with the true one — exactly what efficient GMM tends to overweight.</em></p>
+</div>
+<div class="lang zh">
+<p><strong>两个有用的预设权。</strong> ① <strong>二阶矩矩阵</strong> \(W=E(xx')^{-1}\)（Hansen-Jagannathan 1997）：其最小化目标 \(g_T'E(xx')^{-1}g_T\) 恰是候选贴现因子 \(y\) 到真贴现因子空间的<strong>距离</strong>（HJ 距离）。如图 11.2，\(\|y-\text{nearest }m\|=\|\operatorname{proj}(y|X)-x^*\|=[E(yx)-p]'E(xx')^{-1}[E(yx)-p]\)。它对资产的初始选择<strong>不变</strong>（与 \(S\) 同享此性质），可保证"更好的模型是因定价误差更小，而非吹大权矩阵"。② <strong>单位阵</strong> \(W=I\)：对初始资产等权，规避近奇异 \(S\) 求逆之难——许多 OLS 截面回归正是带单位权的一阶 GMM。</p>
+</div>
+<div class="lang en">
+<p><strong>Two useful prespecified weights.</strong> ① <strong>Second-moment matrix</strong> \(W=E(xx')^{-1}\) (Hansen-Jagannathan 1997): its objective \(g_T'E(xx')^{-1}g_T\) is exactly the <strong>distance</strong> from a candidate discount factor \(y\) to the space of true discount factors (the HJ distance). As in Figure 11.2, \(\|y-\text{nearest }m\|=\|\operatorname{proj}(y|X)-x^*\|=[E(yx)-p]'E(xx')^{-1}[E(yx)-p]\). It is <strong>invariant</strong> to the initial choice of assets (a property it shares with \(S\)), ensuring "a better model is better because its pricing errors are smaller, not because it blew up the weighting matrix." ② <strong>Identity matrix</strong> \(W=I\): weights the initial assets equally and sidesteps inverting a near-singular \(S\) — many OLS cross-sectional regressions are exactly first-stage GMM with identity weights.</p>
+</div>
+<div class="lang zh"></div>
+<div class="lang en"></div>
+
+<div class="article-image"><img alt="Figure 11.2 — HJ distance: distance between y and nearest m = distance between proj(y|X) and x*" src="assets/fig-11-2.png" /></div>
+<div class="lang zh">
+<p><em>图 11.2　Hansen-Jagannathan 距离：候选贴现因子 \(y\) 到最近合法 \(m\) 的距离，等于 \(\operatorname{proj}(y\mid X)\) 到 \(x^*\) 的距离。</em></p>
+</div>
+<div class="lang en">
+<p><em>Figure 11.2　Hansen-Jagannathan distance: the distance from a candidate discount factor \(y\) to the nearest valid \(m\) equals the distance between \(\operatorname{proj}(y\mid X)\) and \(x^*\).</em></p>
+</div>
+<div class="lang zh">
+<p>二者权衡：二阶矩阵对资产组合变换不变（Kandel-Stambaugh 1995 警示结果对组合选择敏感），但它常比 \(S\) 更近奇异、且会"撤销"你精心构造的经济意义组合；单位阵结果依赖初始组合，却能聚焦经济上有意义的特征（规模、账面市值比、动量等）。</p>
+<h2 id="11-6-estimate-on-one-group-test-on-another">11.6 一组矩估计、另一组检验 / Estimate on One Group, Test on Another</h2>
+<p>可强制系统用一组矩估计、另一组检验——宏观 RBC 文献广泛如此（用"一阶矩"校准、"二阶矩"评价），或用一组资产（股票/国内/前九个规模分位）估参、再"样本外"看另一组（债券/国外/小公司/共同基金），且让检验的分布理论纳入参数估计的抽样不确定性。实现极简：用合适的 \(a_T\) 或 \(W\)——如前 \(N\) 个矩估 \(N\) 个参数、其余 \(M\) 个检验，取 \(a_T=[I_N\ 0_{N+M}]\)（或在估计块为单位、其余为零的 \(W\)）。</p>
+<h2 id="11-7-s-estimating-the-spectral-density-matrix">11.7 估计谱密度矩阵 \(S\) / Estimating the Spectral Density Matrix</h2>
+<p>\(S=\sum_j E(u_tu_{t-j}')\) 的估计要点（用样本对应物估总体）：(1) 用合理的一阶 \(W\)（常 \(W=I\)）或变换数据使各矩量纲相当（如 \(R\times(1+d/p)\)）；(2) <strong>去均值</strong>（Hansen-Singleton 1982，避免加上奇异的 \(E(u)E(u)'\)）；(3) <strong>降权高阶相关</strong>——不能用全部自相关（样本 100 无法估 \(E(u_tu_{t+101}')\)），用 <strong>Newey-West/Bartlett</strong> 估计 \(S=\sum_{j=-k}^{k}\tfrac{k-|j|}{k}\tfrac1T\sum_t u_tu_{t-j}'\)（仅含 \(k\) 阶内、降权、保证样本内正定）；\(k\) 须随样本增长但慢于样本（\(k\to\infty,k/T\to0\)），实际靠判断；(4) 可对自相关/异方差施加<strong>参数结构</strong>（如 AR(1)：\(S=\sigma_u^2\tfrac{1+\rho}{1-\rho}\)，比估一长串自相关更可靠）；(5) <strong>用零假设</strong>限制相关——资产定价里 \(E_t(u_{t+1})=0\) 蕴含 \(S\) 各自相关项为零，可只估 \(S=\tfrac1T\sum u_tu_t'\)（但若怀疑收益可预测，宜留几项）；(6) <strong>规模问题</strong>——矩数超过约 1/10 数据点时 \(S\) 估计不稳/奇异，故二阶 GMM 多限于少数资产与工具，可考虑对 \(S\) 施加因子结构；(7) <strong>替代两步法</strong>：迭代（反复用 \(\hat b_j\) 更新 \(S\) 直到不动点，Ferson-Foerster 1994 小样本更好）或同时选 \(b,S\)（\(\min_b g_T'S^{-1}(b)g_T\)，渐近等价，Hansen-Heaton-Yaron 1996）。</p>
+<h2 id="summary">小结 / Summary</h2>
+<p>GMM 的全部威力浓缩在两条公式（系数协方差、矩协方差）与一个选择矩阵 \(a\) 里：换 \(a\) 就能做参数检验、单个定价误差检验、OLS 稳健标准误、任意非线性量的 delta 方法标准误、HJ 距离、模型 χ² 差比较。最重要的实践智慧是：<strong>"有效"的 \(S^{-1}\) 并非总是最佳</strong>——出于稳健性、近奇异 \(S\)、与公平比较模型的考虑，预设加权矩阵（\(W=I\) 或 HJ 的 \(E(xx')^{-1}\)）往往更可取，正如回归中 OLS 之于 GLS。\(S\) 的估计需小心（去均值、降权高阶相关、必要时用参数结构或零假设）。下一章把这些工具用于线性因子模型的回归检验。</p>
+</div>
+<div class="lang en">
+<h2 id="11-6-estimating-on-one-group-of-moments-testing-on-another">11.6 Estimating on One Group of Moments, Testing on Another</h2>
+<p>One can force the system to estimate on one set of moments and test on another — the macro RBC literature does this extensively (calibrate on "first moments," evaluate on "second moments"), or estimate parameters on one set of assets (stocks/domestic/first nine size deciles) and see "out of sample" how the model does on another (bonds/foreign/small-firm/mutual funds), with the test's distribution theory incorporating the sampling uncertainty of the parameters. Implementation is simple: use an appropriate \(a_T\) or \(W\) — e.g. with the first \(N\) moments estimating \(N\) parameters and the rest testing, take \(a_T=[I_N\ 0_{N+M}]\) (or a \(W\) that is identity in the estimation block, zero elsewhere).</p>
+<h2 id="11-7-estimating-the-spectral-density-matrix">11.7 Estimating the Spectral Density Matrix</h2>
+<p>Estimating \(S=\sum_j E(u_tu_{t-j}')\) (sample counterparts for population moments): (1) use a sensible first-stage \(W\) (often \(W=I\)) or transform data so moments have comparable units (e.g. \(R\times(1+d/p)\)); (2) <strong>remove means</strong> (Hansen-Singleton 1982, avoiding the added singular \(E(u)E(u)'\)); (3) <strong>downweight higher-order correlations</strong> — you cannot use all autocorrelations (a sample of 100 cannot estimate \(E(u_tu_{t+101}')\)); use the <strong>Newey-West/Bartlett</strong> estimator \(S=\sum_{j=-k}^{k}\tfrac{k-|j|}{k}\tfrac1T\sum_t u_tu_{t-j}'\) (only up to lag \(k\), downweighted, positive definite in sample); \(k\) must grow with the sample but slower (\(k\to\infty,k/T\to0\)), and in practice takes judgment; (4) consider <strong>parametric structures</strong> for autocorrelation/heteroskedasticity (e.g. AR(1): \(S=\sigma_u^2\tfrac{1+\rho}{1-\rho}\), more reliable than a long list of autocorrelations); (5) <strong>use the null</strong> to limit correlations — in asset pricing \(E_t(u_{t+1})=0\) implies all autocorrelation terms of \(S\) vanish, so one can estimate just \(S=\tfrac1T\sum u_tu_t'\) (but if returns may be predictable, keep a few terms); (6) <strong>size problems</strong> — when moments exceed ~1/10 the data points, \(S\) becomes unstable/singular, so second-stage GMM is usually limited to few assets and instruments, and one might impose a factor structure on \(S\); (7) <strong>alternatives to two-stage</strong>: iterate (repeatedly update \(S\) with \(\hat b_j\) toward a fixed point, better small-sample per Ferson-Foerster 1994) or pick \(b,S\) simultaneously (\(\min_b g_T'S^{-1}(b)g_T\), asymptotically equivalent, Hansen-Heaton-Yaron 1996).</p>
+<h2 id="summary">Summary</h2>
+<p>GMM's full power is condensed into two formulas (coefficient and moment covariance) and a selection matrix \(a\): changing \(a\) lets you do parameter tests, individual pricing-error tests, robust OLS standard errors, delta-method standard errors of any nonlinear quantity, the HJ distance, and χ²-difference model comparisons. The key practical wisdom: <strong>the "efficient" \(S^{-1}\) is not always best</strong> — for robustness, near-singular \(S\), and fair model comparison, prespecified weighting matrices (\(W=I\) or HJ's \(E(xx')^{-1}\)) are often preferable, just as OLS is to GLS in regressions. Estimating \(S\) takes care (remove means, downweight higher-order correlations, use parametric structure or the null when warranted). The next chapter applies these tools to regression-based tests of linear factor models.</p>
+</div>
+<div class="lang zh">
+<h2 id="problems">习题 / Problems</h2>
+<ol>
+<li>用 delta 方法版的 GMM 公式，导出自相关系数的抽样方差。</li>
+<li>(a) 写出修正自相关（但不修正异方差）的 OLS 回归系数标准误公式。(b) 证明此时若 \(x\) 在时间上不相关，则即便误差 \(\varepsilon\) 自相关，传统标准误仍正确。</li>
+<li>若 GMM 误差来自资产定价模型 \(u_t=m_tR_t-1\)，能否忽略谱密度矩阵中的滞后项？若已知收益可预测呢？若误差由工具/管理组合 \(u_tz_{t-1}\) 构成呢？</li>
+</ol>
+</div>
+<div class="lang en">
+<h2 id="problems">Problems</h2>
+<ol>
+<li>Use the delta-method version of the GMM formulas to derive the sampling variance of an autocorrelation coefficient.</li>
+<li>(a) Write a formula for the standard error of OLS regression coefficients that corrects for autocorrelation but not heteroskedasticity. (b) Show that in this case conventional standard errors are fine if the \(x\)'s are uncorrelated over time, even if the errors \(\varepsilon\) are correlated over time.</li>
+<li>If the GMM errors come from an asset pricing model, \(u_t=m_tR_t-1\), can you ignore lags in the spectral density matrix? What if you know returns are predictable? What if the error is formed from an instrument/managed portfolio \(u_tz_{t-1}\)?</li>
+</ol>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#11-1-gmm-general-gmm-formulas">11.1 一般 GMM 公式 / General GMM Formulas</a></li>
+        <li><a href="#11-1-general-gmm-formulas">11.1 General GMM Formulas</a></li>
+        <li><a href="#11-2-testing-moments">11.2 检验定价误差 / Testing Moments</a></li>
+        <li><a href="#11-3-delta-standard-errors-of-anything">11.3 用 delta 方法求任意量的标准误 / Standard Errors of Anything</a></li>
+        <li><a href="#11-2-testing-moments">11.2 Testing Moments</a></li>
+        <li><a href="#11-3-standard-errors-of-anything-by-the-delta-method">11.3 Standard Errors of Anything by the Delta Method</a></li>
+        <li><a href="#11-4-gmm-using-gmm-for-regressions">11.4 用 GMM 做回归 / Using GMM for Regressions</a></li>
+        <li><a href="#11-4-using-gmm-for-regressions">11.4 Using GMM for Regressions</a></li>
+        <li><a href="#11-5-prespecified-weighting-matrices">11.5 预设加权矩阵与矩条件 / Prespecified Weighting Matrices</a></li>
+        <li><a href="#11-5-prespecified-weighting-matrices-and-moment-conditions">11.5 Prespecified Weighting Matrices and Moment Conditions</a></li>
+        <li><a href="#11-6-estimate-on-one-group-test-on-another">11.6 一组矩估计、另一组检验 / Estimate on One Group, Test on Another</a></li>
+        <li><a href="#11-7-s-estimating-the-spectral-density-matrix">11.7 估计谱密度矩阵 \(S\) / Estimating the Spectral Density Matrix</a></li>
+        <li><a href="#summary">小结 / Summary</a></li>
+        <li><a href="#11-6-estimating-on-one-group-of-moments-testing-on-another">11.6 Estimating on One Group of Moments, Testing on Another</a></li>
+        <li><a href="#11-7-estimating-the-spectral-density-matrix">11.7 Estimating the Spectral Density Matrix</a></li>
+        <li><a href="#summary">Summary</a></li>
+        <li><a href="#problems">习题 / Problems</a></li>
+        <li><a href="#problems">Problems</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

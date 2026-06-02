@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Hou &amp; Moskowitz (2005, <em>Review of Financial Studies</em>)</strong>：他们用「股价对信息反应的平均延迟」(price delay) 这一个数，简洁地刻画了一只股票所承受的市场摩擦严重程度。结论令人意外——延迟最严重的那批公司只占全市场市值的 <strong>0.02%</strong>，却背负着高达 <strong>每年 12%</strong> 的收益溢价；而把这块溢价撑起来的，不是传统意义上的流动性，而是 Merton (1987) 所说的「投资者认知」(investor recognition)。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Hou &amp; Moskowitz (2005, <em>Review of Financial Studies</em>)</strong>：他们用「股价对信息反应的平均延迟」(price delay) 这一个数，简洁地刻画了一只股票所承受的市场摩擦严重程度。结论令人意外——延迟最严重的那批公司只占全市场市值的 <strong>0.02%</strong>，却背负着高达 <strong>每年 12%</strong> 的收益溢价；而把这块溢价撑起来的，不是传统意义上的流动性，而是 Merton (1987) 所说的「投资者认知」(investor recognition)。</p></p></div>
 <h2 id="1">1 一个绕不开的麻烦：摩擦到底有多大？</h2>
 <p>传统资产定价理论有一组很干净的假设：市场无摩擦、信息完全、投资者充分分散。可任何一个看过真实交易数据的人都知道，这些假设错得离谱——交易有成本，信息有死角，还有一大批散户根本没有分散持仓。</p>
 <p>于是过去几十年里，研究者们一头扎进各种「摩擦」里：不完全信息 [Merton (1987)]、信息不对称 [Easley, Hvidkjaer, and O'Hara (2002)]、卖空约束 [Miller (1977)]、税收 [Constantinides (1984)]、流动性 [Amihud and Mendelson (1986)]、噪声交易者风险 [De Long et al. (1990)]……名单可以一直列下去。</p>
@@ -104,7 +104,7 @@
 <p>每年 6 月底，作者对每只股票 <code>j</code> 跑一个回归：把它过去一年的<strong>周</strong>收益率，回归到当周以及前四周的市场组合收益上：</p>
 <p>$$r_{j,t} = \alpha_j + \beta_j R_{m,t} + \sum_{n=1}^{4} \delta_j^{(-n)} R_{m,t-n} + \epsilon_{j,t}$$</p>
 <p>这里 \(r_{j,t}\) 是股票 <code>j</code> 在第 <code>t</code> 周的收益，\(R_{m,t}\) 是 CRSP 市值加权市场指数的收益。直觉非常清楚：<strong>如果股价对市场消息反应及时，那么只有当期的 \(\beta_j\) 显著，四个滞后项 \(\delta_j^{(-n)}\) 应该全是零；反之，如果股价反应有延迟，那么一些 \(\delta_j^{(-n)}\) 会显著不为零</strong>——也就是说，上周的市场消息要到这周才在它身上体现。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>为什么用<strong>周</strong>频而不是日频或月频？月频下大多数股票都能在一个月内反应完，几乎没有区分度；日频虽然更精细，却会引入买卖价差跳动 (bid-ask bounce)、非同步交易这些微观结构噪声。周频是个折中。而且作者特意取「周三到下周三」收盘价计周收益，以避开 Friday-to-Friday 的高自相关和 Monday-to-Monday 的低自相关问题。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>为什么用<strong>周</strong>频而不是日频或月频？月频下大多数股票都能在一个月内反应完，几乎没有区分度；日频虽然更精细，却会引入买卖价差跳动 (bid-ask bounce)、非同步交易这些微观结构噪声。周频是个折中。而且作者特意取「周三到下周三」收盘价计周收益，以避开 Friday-to-Friday 的高自相关和 Monday-to-Monday 的低自相关问题。</p></p></div>
 <p>有了回归系数，作者构造了三个延迟度量。最主要的是 \(D1\)，它衡量「被滞后市场收益解释掉的那部分变动占比」——即把所有滞后项约束为零后 \(R^2\) 的损失：</p>
 <p>$$D1 = 1 - \frac{R^2_{\delta^{(-n)}=0,\ \forall n\in[1,4]}}{R^2}$$</p>
 <p>这个数越大，说明越多的收益变动是被「上几周的市场消息」解释的，延迟也就越严重。它本质上是一个关于滞后项联合显著性的 F 检验，再用当期解释力做缩放。</p>
@@ -113,7 +113,7 @@
 <p>\(D3\) 则进一步用 <code>t</code> 值（系数除以其标准误）替换系数本身，把估计精度也纳进来：</p>
 <p>$$D3 = \frac{\sum_{n=1}^{4} n\,\delta^{(-n)}/se(\delta^{(-n)})}{\big(\beta/se(\beta)\big) + \sum_{n=1}^{4}\delta^{(-n)}/se(\delta^{(-n)})}$$</p>
 <p>这些度量的雏形来自 Brennan, Jegadeesh, and Swaminathan (1993) 和 Mech (1993)，他们用类似的构造去刻画股票之间的领先—滞后关系。作者还做了一堆稳健性：加入领先项、用更高阶滞后、用绝对值系数，结果几乎不变——比如 \(D1\) 与「加入领先项后的 \(D1\)」的横截面秩相关高达 <code>0.90</code>。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>这里有个绕不过去的技术坑：<strong>周度个股回归的系数估得很不准</strong>（误差变量问题）。作者的处理是「两阶段组合延迟」(second-stage portfolio delay)——先按市值分十组，组内再按个股延迟分十组，得到 100 个 size-delay 组合，对组合重估回归(1)，再把组合的延迟值赋回组内每只股票。这相当于把个股延迟向「同规模、同延迟档」的均值收缩，大幅降低了估计噪声。但代价是：这个两阶段做法可能人为抬高规模与延迟的相关性——这一点后面会成为识别上的隐忧。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这里有个绕不过去的技术坑：<strong>周度个股回归的系数估得很不准</strong>（误差变量问题）。作者的处理是「两阶段组合延迟」(second-stage portfolio delay)——先按市值分十组，组内再按个股延迟分十组，得到 100 个 size-delay 组合，对组合重估回归(1)，再把组合的延迟值赋回组内每只股票。这相当于把个股延迟向「同规模、同延迟档」的均值收缩，大幅降低了估计噪声。但代价是：这个两阶段做法可能人为抬高规模与延迟的相关性——这一点后面会成为识别上的隐忧。</p></p></div>
 <p>那么，被这把尺子量出来「最慢」的，是些什么公司？</p>
 <h2 id="4">4 数据与「延迟公司」的画像</h2>
 <p>样本是 1963 年 7 月到 2001 年 12 月 CRSP 上 share code 为 10/11 的全部普通股（1973 年起纳入 NASDAQ），需要 COMPUSTAT 的账面价值时按 Fama and French (1993) 定义。交易策略收益从 1964 年 7 月起算。</p>

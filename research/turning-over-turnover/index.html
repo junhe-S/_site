@@ -84,7 +84,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Cremers &amp; Mei (2007, Review of Financial Studies)</strong>：他们把 Bai-Ng 的面板因子分解搬到了「换手率」上，发现个股换手里有三到五个系统性因子；更关键的是，能用收益率系统性风险解释的那部分，平均占到全部系统性换手的 <strong>66%</strong>。换句话说，市场上看似纷繁的买卖，很大一块其实只是大家在为同一份风险做「组合再平衡」。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Cremers &amp; Mei (2007, Review of Financial Studies)</strong>：他们把 Bai-Ng 的面板因子分解搬到了「换手率」上，发现个股换手里有三到五个系统性因子；更关键的是，能用收益率系统性风险解释的那部分，平均占到全部系统性换手的 <strong>66%</strong>。换句话说，市场上看似纷繁的买卖，很大一块其实只是大家在为同一份风险做「组合再平衡」。</p></p></div>
 <h2 id="1">1 引言：成交量是个谜</h2>
 <p>先抛一个看似平常、却谁也答不上来的问题：<strong>今天这么多股票被买进又卖出，到底是为什么？</strong></p>
 <p>是因为有人拿到了内幕消息（信息不对称）？是因为大家对同一只股票的看法越掰越开（分歧）？还是因为投资者只是在机械地调整仓位、维持自己想要的风险敞口（组合再平衡）？这些动机在行为金融、流动性、信息不对称的各类模型里都被反复讨论过，可一旦回到数据，研究者却长期被卡在门口——成交量（更准确地说，换手率 turnover）这个变量实在太「不听话」了。</p>
@@ -100,7 +100,7 @@
 $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>firm j 的常数项，即它的平均换手水平</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>系统性换手：firm j 以「换手 beta」δ_jk 暴露在 K 个全市场交易冲击 g_kt 上</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>特质换手：均值为零、与所有 g_kt 正交，对应 firm-specific 的交易动机</div></aside><svg class="mathanno-lines"></svg></div>
 
 <p>这个写法背后有个深刻的经济学故事，叫<strong>共同基金分离 (mutual fund separation)</strong>。如果所有投资者都只持有少数几只「基金」（比如 CAPM 世界里的市场组合加无风险资产，即两基金分离），那么当系统性风险变动时，每个人都会按同样的方向调整仓位——交易就被「同步」起来了。LW 模型的一个强假设由此而来：<strong>收益率与换手率应当拥有相同数目的系统性因子</strong>。这是个可以拿去检验的命题。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>直觉上，收益率因子模型回答的是「价格为什么一起动」，换手率因子模型回答的是「成交量为什么一起动」。共同基金分离把两者绑在了一起：同一份系统性风险，既定价了收益，也驱动了交易。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>直觉上，收益率因子模型回答的是「价格为什么一起动」，换手率因子模型回答的是「成交量为什么一起动」。共同基金分离把两者绑在了一起：同一份系统性风险，既定价了收益，也驱动了交易。</p></p></div>
 <h2 id="3">3 真正关键的一步：换个方向算协方差</h2>
 <p>接着，一个自然的问题是：因子 \(g_{kt}\) 看不见，怎么把它估出来？</p>
 <p>教科书式的做法是 Connor 和 Korajczyk（CK，1988）的渐近主成分法，对<strong>股票之间</strong>的方差-协方差矩阵 \(\mathrm{var}(\tau_i,\tau_j)\) 做主成分。但这里有个致命问题：换手率带着时间趋势，\(\mathrm{var}(\tau_i,\tau_j)\) 根本不是良定义的。</p>
@@ -120,7 +120,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>但真正关键的一步在于作者随后做的诊断。他们意识到，问题正出在那个「严重异方差」上：用原始换手率，等于在方程 (2) 的残差平方和里给那些换手「大起大落」的股票分配了过高的权重，于是 BN 准则被迫把这几只股票（的某种组合）也当成了因子。可这些「因子」并不具有全市场的渗透性。</p>
 <p>证据干净利落：把换手率峰度 (kurtosis) 最高的 5% 或 10% 股票剔掉，原始换手率的因子数会<strong>骤降 6 到 7 个</strong>；而对标准化后的数据，剔不剔这些股票，因子数纹丝不动。</p>
 <p>于是反转出现：解法其实就是<strong>标准化 (standardize)</strong>——先对每只股票的换手率序列去均值、再除以它自己的样本标准差。这在效果上等价于把方程 (1) 的回归从 OLS 换成了 <strong>加权最小二乘 (weighted least squares, WLS)</strong>，把那几只「巨震」股票的权重压下去。一标准化，1967–71 的因子数就从 16 个直接掉到了 <strong>5 个</strong>。蒙特卡洛模拟也确认：BN 统计量在标准化换手率上具有良好的小样本性质，在原始换手率上则不然。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>这是本文一个被低估的方法论提醒：把一套为「行为良好」的数据设计的因子准则，直接套在重尾、异方差的变量上，得到的「因子数」可能纯粹是几只极端股票的伪影。换手率如此，很多另类数据恐怕也如此。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这是本文一个被低估的方法论提醒：把一套为「行为良好」的数据设计的因子准则，直接套在重尾、异方差的变量上，得到的「因子数」可能纯粹是几只极端股票的伪影。换手率如此，很多另类数据恐怕也如此。</p></p></div>
 <h2 id="5">5 核心结果：三分之二的交易，是在「随大流」</h2>
 <p>清理干净之后，真正的图景才浮现出来。</p>
 <p>第一，<strong>换手率里确实有可观的系统性成分</strong>。标准化换手率的第一主成分，在各期能解释 6.5% 到 15.0% 的变异；三到五个因子合起来，可以捕捉个股换手率 <strong>15.47%–26.74%</strong> 的变异（如表 3）——这个量级，和个股收益率里系统性变异的占比惊人地接近。也就是说，「成交量的共同波动」并不比「价格的共同波动」弱多少。这一发现比 Chordia, Roll &amp; Subrahmanyam（2000）、Hasbrouck &amp; Seppi（2001）等用高频报价数据做的流动性共性研究，给出了一个更强、且带正式因子个数检验的版本。（关于「股票们有多齐心」这件事本身如何预测市场，可参见<a href="/research/average-correlation-and-stock-market-returns/">《市场会涨还是会跌？别盯着波动率，去看股票们「有多齐心」》</a>。）</p>

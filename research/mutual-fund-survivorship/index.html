@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>死人不会说话：当基金数据库只剩下「活下来」的那些基金 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>死人不会说话：当基金数据库只剩下「活下来」的那些基金</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2002 RFS]</span> Mutual Fund Survivorship</div>
+        <div class="paper-source-authors"><a href="/research/author/mark-m-carhart/">Mark M. Carhart</a>, <a href="/research/author/jennifer-n-carpenter/">Jennifer N. Carpenter</a>, <a href="/research/author/anthony-w-lynch/">Anthony W. Lynch</a>, <a href="/research/author/david-k-musto/">David K. Musto</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">共同基金</span>
+        
+        
+        
+        
+        <span class="tag">幸存者偏差</span>
+        
+        
+        
+        
+        <span class="tag">业绩持续性</span>
+        
+        
+        
+        
+        <span class="tag">样本选择</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Carhart, Carpenter, Lynch &amp; Musto (2002, <em>Review of Financial Studies</em>)</strong>：当一只基金的生死取决于它「过去好几年」的累计业绩，而不只是最近一年，那么你用「只剩活人」的样本去估算平均业绩，偏差不但存在，而且会<strong>随着样本期拉长而越变越大</strong>——在他们的数据里，这个年化偏差从 1 年样本的 <code>0.07%</code> 一路爬到 15 年以上样本的约 <code>1%</code>。</p></p></div>
+<h2 id="1">1 一个看不见的「幸存者」</h2>
+<p>先讲一个谁都知道、却又总被忽略的常识。</p>
+<p>你打开一个商业基金数据库，想算一算「主动型股票基金到底跑赢大盘没有」。你把库里所有基金的收益拉出来，取个平均，得到一个数字。问题是：这个库里装的，往往<strong>只是今天还活着的基金</strong>。那些业绩烂到被清盘、被并掉、被悄悄从货架上撤下来的基金，早就不在你的样本里了。它们死了，而死人不会说话。</p>
+<p>于是你算出来的「平均业绩」，其实是「活下来的那批人的平均业绩」。这就是大家耳熟能详的 幸存者偏差 (survivorship bias)。</p>
+<p>到这里，故事似乎讲完了——「样本里少了差生，平均分自然虚高」，是个一句话就能说清的道理。但本文真正有意思的地方，恰恰是从这句「人人都懂」的话<strong>往下再走一步</strong>时，出现的一个反直觉的问题。</p>
+<h2 id="2">2 一个自然、却让人意外的问题</h2>
+<p>接着，一个自然的问题是：<strong>这个偏差，会随着样本期的长短而变化吗？</strong></p>
+<p>直觉上你可能会觉得：样本越长，越「全」，偏差应该越小才对——毕竟看的历史越久，越接近基金业的全貌。也有人会反过来想：偏差大概是个固定的常数，跟你看一年还是看二十年没关系。</p>
+<p>本文的回答是：<strong>都不对，而且关键取决于「基金是怎么死的」。</strong></p>
+<p>这就要分清两种生存规则。所谓 单期生存规则 (single-period survival rule)，是指一只基金只要<strong>当期</strong>业绩低于某个门槛 <code>b</code> 就出局；而 多期生存规则 (multiperiod survival rule)，是指一只基金的存亡取决于它<strong>过去 <code>n</code> 年累计</strong>的业绩是否低于门槛。</p>
+<p>为什么要纠结这个区别？因为本文的第一个、也是最漂亮的理论结论是：</p>
+<ul>
+<li>如果是<strong>单期</strong>规则（<code>m = 1</code>），那么年化的幸存者偏差是个常数，跟样本长度 <code>k</code> 完全无关（命题 1）；</li>
+<li>如果是<strong>多期</strong>规则（<code>m &gt; 1</code>），那么偏差会<strong>随样本长度 <code>k</code> 递增</strong>，只是增速越来越慢（命题 2）。</li>
+</ul>
+<p>而经验证据偏偏指向后者：Brown and Goetzmann (1995) 发现，即便控制住最近一年的业绩，更早年份的业绩<strong>依然</strong>能预测一只基金的存活——这说明美国的共同基金，遵循的是一条多期生存规则。换句话说，「样本越长、偏差越大」这件反直觉的事，在真实世界里是会发生的。</p>
+<p>那么，多期规则为什么会让偏差越滚越大？这才是真正关键的一步。</p>
+<h2 id="3">3 识别的核心：「直接淘汰」与「间接淘汰」</h2>
+<p>本文最精巧的概念，是把作用在某一年收益 <code>R_t</code> 上的「业绩淘汰」拆成两种。</p>
+<p>设第 <code>t</code> 期的淘汰条件（conditioning statement）为：一只 <code>m</code> 岁以上的基金，若过去 <code>m</code> 年的收益之和低于门槛就出局。用论文的原始记号写出来就是</p>
+<p>$$C_t \equiv \left\{ \sum_{\tau = t-m+1}^{t} R_\tau > b \right\}$$</p>
+<p>注意，这个 <code>C_t</code> 把从 <code>R_{t-m+1}</code> 一直到 <code>R_t</code> 这 <code>m</code> 年的收益「捆」在一起做判断。于是对某一年的收益 <code>R_t</code> 而言：</p>
+<ul>
+<li>凡是<strong>判断窗口里包含了 <code>R_t</code></strong> 的那些淘汰，叫<strong>直接淘汰</strong>（direct cut）。一个 <code>m</code> 年规则下，<code>R_t</code> 会被 <code>C_t, C_{t+1}, \dots, C_{t+m-1}</code> 这 <code>m</code> 次淘汰直接「过筛」；</li>
+<li>凡是判断窗口<strong>不包含 <code>R_t</code></strong> 的淘汰，叫<strong>间接淘汰</strong>（indirect cut）。比如 <code>C_{t+m}</code> 判断的是 <code>R_{t+1}</code> 到 <code>R_{t+m}</code> 的和，跟 <code>R_t</code> 不重叠。</li>
+</ul>
+<p>直觉上你会觉得间接淘汰「跟 <code>R_t</code> 无关、不该影响它的条件均值」。本文专门提醒：<strong>这是错的。</strong> 因为相邻的淘汰条件 <code>C_t</code> 与 <code>C_{t-1}</code> 本身是相关的，所以即便 <code>R_t</code> 和 <code>C_{t-1}</code> 独立，<code>E[R_t \mid C_{t-1}, C_t]</code> 也<strong>不等于</strong> <code>E[R_t \mid C_t]</code>。只不过，多加一次<strong>直接</strong>淘汰，对条件均值的抬升，要比多加一次间接淘汰大得多。</p>
+<p>把这个直觉形式化，引入两个核心对象。一是「再撑过一次淘汰」的条件存活概率</p>
+<p>$$x_i \equiv \Pr\{ C_t \mid C_{t-1}, \dots, C_{t-i} \}$$</p>
+<p>二是「经历了某一串淘汰之后」的条件期望收益</p>
+<p>$$\mu_{i,j} \equiv E[\, R_{t+1-i} \mid C_{t-j}, \dots, C_t \,]$$</p>
+<p>本文的命题 2 证明：只要 (i) 条件均值 <code>μ</code> 只依赖于、且严格递增于它所经历的<strong>直接淘汰次数</strong>（<code>μ &lt; μ_1 &lt; μ_2 &lt; \dots &lt; μ_m</code>），(ii) 存活概率与已撑过几次淘汰无关（<code>x_i = x</code>），(iii) 基金业处于稳态增长（各年龄分布逐年不变），那么端点条件下的 <code>k</code> 年偏差 <code>\bar{\mu}^T_k</code> 就随 <code>k</code> 递增。</p>
+<h2 id="4">4 为什么「最后一年」总是最惨：两年规则的解剖</h2>
+<p>抽象的命题不好懂，本文用一个 <code>m = 2</code>（两年规则）的例子把机制摊开，这也是全文最值得一步步跟下来的推导。</p>
+<p>两年规则下，第 <code>t</code> 期的淘汰条件简化为 <code>C_t \equiv \{ R_{t-1} + R_t &gt; b \}</code>。设 <code>μ_1</code>、<code>μ_2</code> 分别是「经受一次、两次直接淘汰」后的条件期望一年收益，按前面的直觉有 <code>μ &lt; μ_1 &lt; μ_2</code>。</p>
+<p>现在站在样本终点 <code>T</code> 往回看。一只基金在样本里的<strong>最后一年</strong>收益，最多只能被一次直接淘汰过筛（它之后再没有年份去「捆」着它判断了）；同理，<strong>第一年</strong>的收益也只能被一次直接淘汰过筛。而处在中间的那些年，则要被<strong>两次</strong>直接淘汰过筛。</p>
+<p>于是，对在 <code>T</code> 时刻存活下来的那批基金，终点年 <code>T</code> 的截面平均收益是「一岁新基金（完全没被淘汰过，均值是无条件的 <code>μ</code>）」与「更老的基金（最后一年，均值 <code>μ_1</code>）」的加权平均：</p>
+<p>$$\mu^T_T = \hat{w}^T_{1,T}\,\mu + (1 - \hat{w}^T_{1,T})\,\mu_1$$</p>
+<p>而在 <code>T</code> 之前的任意一年 <code>t</code>，老基金的收益要被两次直接淘汰过筛，于是</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\mu^T_t = \cssId{a1}{\hat{w}^T_{1,t}}\,\cssId{a2}{\mu_1} + (1 - \hat{w}^T_{1,t})\,\cssId{a3}{\mu_2}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>截面里「一岁」基金的占比；它们只可能经受一次直接淘汰</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>经受一次直接淘汰后的条件期望收益</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>经受两次直接淘汰后的条件期望收益，满足 μ &lt; μ_1 &lt; μ_2，故年份越靠中间被抬得越高</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>把 (6)、(7) 两式对照着看，结论就跳出来了：由于 <code>μ &lt; μ_1 &lt; μ_2</code>，<strong>终点年 <code>T</code> 的截面均值，永远低于它前面任何一年</strong>。所以当你把样本从「只看最后一年」一路加长时，你不断往时间序列平均里掺入那些「被抬得更高」的早年截面均值，整段样本的平均业绩 <code>\bar{\mu}^T_T_k</code>（即 <code>\bar{\mu}^T_k</code>）于是<strong>随 <code>k</code> 递增</strong>；而终点那一年的「拖累」在长样本里被摊薄，所以增速越来越慢。</p>
+<p>这就是「样本越长、幸存者偏差越大」背后那台精巧的机器。本文还顺手指出：偏差<strong>未必总是</strong>单调递增——若稳态、等存活概率这些前提被破坏，反例是可以构造的。这是一篇难得地把「定理」和「定理的边界」都讲清楚的论文。</p>
+<h2 id="5">5 数据与两把业绩尺子</h2>
+<p>理论讲完，本文用 Carhart (1997) 的那套数据来对账。</p>
+<p>数据库覆盖 <strong>1962 年 1 月到 1995 年 12 月</strong>所有已知的「分散化股票型」共同基金（剔除行业基金、国际基金、平衡基金），月度数据。样本共 <code>2071</code> 只基金，其中 <code>1346</code> 只到 1995 年 12 月 31 日仍在运作，<code>725</code> 只在此之前消失。年均淘汰率（attrition rate）为 <code>3.6%</code>（标准差 <code>2.4%</code>），其中并购占 <code>2.2%</code>、清盘占 <code>1.0%</code>。</p>
+<p>业绩用两把尺子量：一是 组内调整收益 (group-adjusted return)，即基金收益减去同类基金的等权平均；二是 Carhart (1997) 的 四因子模型 (four-factor model) 的截距 <code>α</code>，模型在 Fama and French (1993) 的三因子上，加了一个捕捉 Jegadeesh and Titman (1993) 一年期动量的因子 <code>PR1YR</code>：</p>
+<p>$$r_{i,t} = \alpha_i + b_i\,\mathrm{RMRF}_t + s_i\,\mathrm{SMB}_t + h_i\,\mathrm{HML}_t + p_i\,\mathrm{PR1YR}_t + e_{i,t}$$</p>
+<p>本文还细致区分了两种「幸存者筛选」：端点筛选 (end-of-sample conditioning)——只保留样本末期还活着的基金；以及 回望筛选 (look-ahead conditioning)——要求基金在某个参考日之后再存活一段最短期限。后者尤其要紧，因为<strong>任何业绩持续性检验里，都天然含有回望筛选</strong>：你要拿「未来 <code>n</code> 期的业绩」去回归「过去的业绩」，就等于要求基金至少再活 <code>n</code> 期。</p>
+<h2 id="6-0-07-1">6 主要结果：从 0.07% 到 1%，以及被削弱的「持续性」</h2>
+<p>先看体检报告。Table 1 显示：幸存基金的四因子月度 <code>α</code> 是 <code>−0.07%</code>，非幸存基金是 <code>−0.33%</code>，幸存样本相对全样本的差异是每月 <code>0.08%</code>。若按个体基金的截面平均算，非幸存基金每年比幸存基金少赚约 <code>4%</code>，其中清盘基金表现最差。</p>
+<p>接着是全文的招牌结论。如表 3 所示，年化的幸存者偏差<strong>随样本长度单调上升</strong>：1 年样本只有约 <code>0.07%</code>，而对长于 15 年的子样本，偏差爬到了约 <code>1%</code>。理论预言的「随 <code>k</code> 递增、增速递减」，在数据里得到了干净的印证。</p>
+<div class="article-image"><img alt="Table 3: shows that the survivor bias increases in the sample length. For a" src="assets/table-3.png" /></div>
+<p><em>Table 3: shows that the survivor bias increases in the sample length. For a</em></p>
+<p>然后是对「持续性」的冲击。本文发现，<strong>幸存者筛选会系统性地削弱业绩持续性的证据</strong>——相对全样本，筛选后的持续性被「抹平」了。这一点与 Brown et al. (1992)、Grinblatt and Titman (1992)、Carpenter and Lynch (1999) 的理论预言一致，也和 Myers (2001) 在养老金上的发现相互呼应。换句话说，那些声称「赢家恒赢」的 hot-hands 文献，有一部分热度，可能是样本筛选「制造」出来的幻觉。（关于「跑赢大盘」本身会随持有期缩水这件事，可参见<a href="/research/mutual-fund-performance-at-long-horizons/">《"跑赢大盘"是会过期的》</a>；关于短期持续性到底有多短，可参见<a href="/research/short-term-persistence-in-mutual-fund-performance/">《"手热"只有三个月》</a>。）</p>
+<p>但真正把这篇论文从「方法论提醒」抬升为「实证警告」的，是第四步。</p>
+<h2 id="7">7 反转：横截面回归里那个更隐蔽的陷阱</h2>
+<p>到这里你可能想：幸存者偏差不就是把平均分抬高一点吗？做横截面回归时，我又不关心截距，把它当成一个常数吸收掉不就行了？</p>
+<p>本文的反转恰恰在这里：<strong>只要你拿来当解释变量的「基金特征」，本身与幸存者偏差相关，那条横截面回归的斜率就会被带偏。</strong> 比如 Table 1 的因子载荷已经透露，相对非幸存者，幸存基金更偏向大盘、价值风格——这意味着「规模」「价值」这类特征与「能否活下来」是相关的，于是当你用它们去解释业绩时，斜率系数被污染了。</p>
+<p>如表 5 所示，在五年回望筛选下，本文估计了一批常用基金特征的斜率系数偏差，发现这些偏差<strong>量级可以很大</strong>，而且方向与直觉一致。</p>
+<div class="article-image"><img alt="Table 5: shows that the regression coefficients from the five-year look-" src="assets/table-5.png" /></div>
+<p><em>Table 5: shows that the regression coefficients from the five-year look-</em></p>
+<p>那能不能用经典的样本选择纠偏来补救？本文老老实实地试了 Heckman (1976, 1979) 的两步法 (two-step correction for incidental truncation)，结论却泼了一盆冷水：<strong>模型设定误差 (model misspecification) 可能是个严重问题</strong>——想靠这套现成的程序去「修掉」幸存者偏差，并不像教科书里那么稳妥。这是一个诚实、也很有价值的负面发现。</p>
+<p>更值得玩味的是本文在引言里点出的外推含义：这套逻辑根本不限于共同基金。许多研究把<strong>跨国</strong>的股市表现差异，归因于跨国的市场特征差异——可那些「失败的股市」的数据往往根本不可得，如果市场特征又恰好与存活相关，这类跨国比较就可能严重失真。（这正是<a href="/research/is-the-united-states-a-lucky-survivor-a-hierarchical/">《美国是侥幸活下来的那一个吗？》</a>所追问的同一种幽灵。）同样，任何按公司特征给股票分组的研究，只要存活标准与这些特征挂钩，价差组合的收益就会被幸存者筛选带偏。</p>
+<h2 id="8">8 文献脉络</h2>
+<p>把这条研究线索捋一捋，会看到一个清晰的接力。</p>
+<p>最早把幸存者偏差「形式化」的，是 Brown, Goetzmann, Ibbotson and Ross (1992)——他们在单期规则下给出了关键的理论洞见，指出幸存者筛选会<strong>凭空制造出</strong>业绩持续性的假象。几乎同时，Grinblatt and Titman (1992) 也从持续性的角度触及了这个问题。</p>
+<p>接着，实证那一侧热闹起来：Hendricks, Patel and Zeckhauser (1993) 发现了短期「hot hands」，又在 (1997) 里专门讨论了幸存者偏差下持续性的「J 形」；Malkiel (1995)、Brown and Goetzmann (1995)、Elton, Gruber and Blake (1996) 各自用不同来源的数据去量这个偏差，其中 Brown and Goetzmann 给出了「多期生存规则」的关键证据。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>然后，理论被推进到多期规则：Carpenter and Lynch (1999) 系统分析了幸存者筛选与淘汰效应如何扭曲持续性的度量。而本文（2002）正站在这条线索的汇合点上——它既接过 Carhart (1997) 那套覆盖 1962–1995 的完整数据，又把「多期规则下偏差随样本长度递增」这一理论结论严格证明出来，并一口气把它的后果贯通到平均业绩、持续性检验、横截面回归三个战场。它是这条脉络里少见的「理论与实证两头都钉死」的集大成之作。</p>
+<h2>9 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：「样本越长偏差越大」难道不该反过来吗？长样本不是更全吗？</strong></p>
+<blockquote>
+<p>关键在于这里的「样本长度 <code>k</code>」指的是<strong>端点筛选下回溯的年数</strong>，而非「数据库收录得更全」。在多期规则下，越靠样本中间的年份，其存活基金被「直接淘汰」过筛的次数越多，截面均值被抬得越高；样本往前加长，就不断掺入这些被抬高的早年均值，于是年化偏差递增。它衡量的不是「数据完整度」，而是「筛选机制的累积作用」。</p>
+</blockquote>
+<p><strong>Q：单期规则和多期规则的差别，真有那么本质吗？</strong></p>
+<blockquote>
+<p>是的，本文命题 1 与命题 2 给出的就是定性差别：单期规则下偏差是与 <code>k</code> 无关的常数，多期规则下则随 <code>k</code> 递增。而 Brown and Goetzmann (1995) 的证据——控制了最近一年业绩后，更早业绩仍能预测存活——把现实世界明确地推向了「多期」这一侧，这正是本文实证结论成立的前提。</p>
+</blockquote>
+<p><strong>Q：Table 1 里幸存者相对全样本只差每月 0.08%，听起来很小，值得大惊小怪吗？</strong></p>
+<blockquote>
+<p>月度 <code>0.08%</code> 年化约 <code>1%</code>，而这已是长样本下的量级；对一个长期复利的资产、对一个本就只在零附近挣扎的主动管理 <code>α</code> 而言，<code>1%</code> 足以颠覆「主动基金到底有没有 <code>α</code>」这类结论的符号。更何况本文真正的警告不在平均数，而在它对持续性检验和横截面回归斜率的扭曲。</p>
+</blockquote>
+<p><strong>Q：那直接上 Heckman 纠偏不就解决了？</strong></p>
+<blockquote>
+<p>本文恰恰泼了冷水：他们估了 Heckman (1976, 1979) 两步法，发现模型设定误差可能很严重。原因之一是生存的真实规则是多期、非线性的，而 Heckman 一阶段的 probit 选择方程很难把它设定对。纠偏工具用错了选择模型，反而可能引入新的偏差。</p>
+</blockquote>
+<p><strong>Q：这套结论只对共同基金有效吗？</strong></p>
+<blockquote>
+<p>完全不是，这正是本文野心所在。任何「只观测到活下来者」且「分组/解释变量与存活相关」的场景都受影响：跨国股市比较、按公司特征排序的股票价差组合、对冲基金、养老金。可不可得的「失败者数据」越系统性地缺失，偏差越危险。</p>
+</blockquote>
+<p><strong>Q：偏差一定随样本长度单调递增吗？</strong></p>
+<blockquote>
+<p>不一定。本文明确指出，命题 2 依赖稳态增长、等存活概率等前提；一旦这些前提被破坏，可以构造出偏差非单调的反例。这种「连自己结论的边界都讲清楚」的诚实，是本文质量的一部分。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1）把这套「多期生存」逻辑搬到公司债基金 / 信用市场</strong></p>
+<blockquote>
+<p>【经济故事】公司债基金的清盘与并购，往往也取决于多年累计业绩，而信用资产的收益高度偏态、且与流动性紧密纠缠——幸存者筛选很可能同时污染「信用利差能否被基金特征解释」这类横截面回归。
+【可行性】中。需要一个含「死亡基金」的债基面板（如 CRSP/Morningstar 债基库 + 并购清盘记录），识别上可复用本文「直接/间接淘汰」框架，但要重新刻画信用市场的存活规则，工作量不小但 doable。</p>
+</blockquote>
+<p><strong>2）外资持有人与「市场层面」的幸存者偏差</strong></p>
+<blockquote>
+<p>【经济故事】跨国研究常把「外资能进入的市场表现更好」当成开放的红利，但<strong>关掉的、被外资抛弃后萎缩消失的市场</strong>根本不在样本里。若「可投资度」与存活相关，这正是本文警告的跨国版本。
+【可行性】中偏低。难点在于「消失的市场」数据极难获得；可行的折中是用市场层面的关停 / 降频事件做生存分析，识别偏弱，需谨慎。</p>
+</blockquote>
+<p><strong>3）用流动性度量重估持续性检验里的回望筛选偏差</strong></p>
+<blockquote>
+<p>【经济故事】本文指出任何持续性检验都内含回望筛选。若「难以脱手 / 低流动性」的基金更易在回望期内消失，那么持续性证据会与流动性筛选纠缠在一起。
+【可行性】高。已有成熟的基金流动性与持仓数据，可在本文框架下，按流动性分层比较全样本与回望筛选样本的持续性差异，识别清晰、数据可得。</p>
+</blockquote>
+<p><strong>4）把 Heckman 纠偏换成「正确设定多期选择方程」的结构估计</strong></p>
+<blockquote>
+<p>【经济故事】本文发现 Heckman 两步法因设定误差而失灵。一个自然的下一步，是直接把多期、非线性的存活规则写进选择方程做结构估计，看能否真正「修掉」偏差。
+【可行性】中。理论上 doable，本文已提供存活概率 <code>x_i</code> 与条件均值 <code>μ_{i,j}</code> 的对象，但结构识别对分布假设敏感，需要大量稳健性检验。</p>
+</blockquote>
+<h2 id="">我的判断</h2>
+<p>本文的贡献是「干净」二字：它把一个人人挂在嘴边、却从没被严格刻画的直觉，做成了可证明的命题，并诚实地标出了命题失效的边界；又把这套理论一口气贯通到平均业绩、持续性、横截面回归三处，最后还老实承认 Heckman 纠偏未必管用。这种「既给定理、又给定理的反例、还给纠偏的失败」的写法，本身就是方法论论文的范本。</p>
+<p>对识别我有两点保留。其一，命题 2 严重依赖稳态增长与等存活概率，而 1962–1995 恰是美国基金业从小到爆发式扩张的非稳态阶段，「年龄分布逐年不变」这个前提在数据里多大程度成立，值得用实际的年龄分布去检验。其二，本文坦承样本里有 53 只非幸存基金<strong>完全没有收益数据</strong>——这恰恰意味着，他们对「全样本 vs 幸存样本」差异的估计，很可能<strong>低估</strong>了真实的幸存者筛选效应；换句话说，本文报出的 <code>1%</code> 也许还是个保守下限。</p>
+<p>后续我最想看到的，是把这套框架移植到信用市场和外资持有人语境下，用今天更完整的「死亡基金」与「关停市场」数据，重新量一遍那条被幸存者悄悄抬高的曲线。</p>
+<h2 id="">参考文献</h2>
+<p>Brown, S. J., W. N. Goetzmann, R. G. Ibbotson, and S. A. Ross (1992). Survivorship Bias in Performance Studies. <em>Review of Financial Studies</em> 5(4), 553–580.</p>
+<p>Brown, S. J., and W. N. Goetzmann (1995). Performance Persistence. <em>Journal of Finance</em> 50(2), 679–698.</p>
+<p>Carhart, M. M. (1997). On Persistence in Mutual Fund Performance. <em>Journal of Finance</em> 52(1), 57–82.</p>
+<p>Carhart, M. M., J. N. Carpenter, A. W. Lynch, and D. K. Musto (2002). Mutual Fund Survivorship. <em>Review of Financial Studies</em> 15(5), 1439–1463.</p>
+<p>Carpenter, J. N., and A. W. Lynch (1999). Survivorship Bias and Attrition Effects in Measures of Performance Persistence. <em>Journal of Financial Economics</em> 54(3), 337–374.</p>
+<p>Elton, E. J., M. J. Gruber, and C. R. Blake (1996). Survivorship Bias and Mutual Fund Performance. <em>Review of Financial Studies</em> 9(4), 1097–1120.</p>
+<p>Fama, E. F., and K. R. French (1993). Common Risk Factors in the Returns on Bonds and Stocks. <em>Journal of Financial Economics</em> 33(1), 3–53.</p>
+<p>Grinblatt, M., and S. Titman (1992). The Persistence of Mutual Fund Performance. <em>Journal of Finance</em> 47(5), 1977–1984.</p>
+<p>Heckman, J. (1979). Sample Selection Bias as a Specification Error. <em>Econometrica</em> 47(1), 153–161.</p>
+<p>Hendricks, D., J. Patel, and R. Zeckhauser (1993). Hot Hands in Mutual Funds: Short-Run Persistence of Performance, 1974–88. <em>Journal of Finance</em> 48(1), 93–130.</p>
+<p>Jegadeesh, N., and S. Titman (1993). Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency. <em>Journal of Finance</em> 48(1), 65–91.</p>
+<p>Malkiel, B. G. (1995). Returns from Investing in Equity Mutual Funds 1971–1991. <em>Journal of Finance</em> 50(2), 549–572.</p>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个看不见的「幸存者」</a></li>
+        <li><a href="#2">2 一个自然、却让人意外的问题</a></li>
+        <li><a href="#3">3 识别的核心：「直接淘汰」与「间接淘汰」</a></li>
+        <li><a href="#4">4 为什么「最后一年」总是最惨：两年规则的解剖</a></li>
+        <li><a href="#5">5 数据与两把业绩尺子</a></li>
+        <li><a href="#6-0-07-1">6 主要结果：从 0.07% 到 1%，以及被削弱的「持续性」</a></li>
+        <li><a href="#7">7 反转：横截面回归里那个更隐蔽的陷阱</a></li>
+        <li><a href="#8">8 文献脉络</a></li>
+        <li><a href="#9-q-a">9 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#">我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

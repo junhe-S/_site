@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Grieser, Hadlock, LeSage &amp; Zekhnini (2022, JFE)</strong>：他们用 空间计量经济学 (spatial econometrics) 的框架，配上 Hoberg-Phillips 的文本产品网络，把「公司会不会跟着同行调整杠杆」这个老问题重新做了一遍。结论是——同行效应是真的，但远没那么大：一家公司对同行杠杆的敏感度大约在 <code>0.20</code> 这个量级，是「温和而实在」的战略互补，而非前人估计的「近乎一比一」。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Grieser, Hadlock, LeSage &amp; Zekhnini (2022, JFE)</strong>：他们用 空间计量经济学 (spatial econometrics) 的框架，配上 Hoberg-Phillips 的文本产品网络，把「公司会不会跟着同行调整杠杆」这个老问题重新做了一遍。结论是——同行效应是真的，但远没那么大：一家公司对同行杠杆的敏感度大约在 <code>0.20</code> 这个量级，是「温和而实在」的战略互补，而非前人估计的「近乎一比一」。</p></p></div>
 <h2 id="1">1 一个看起来很简单、其实很难的问题</h2>
 <p>先讲一件几乎所有人都会点头同意的事：一家公司选多少杠杆，不可能闭着眼睛拍脑袋。它要看对手在干什么。对手都在加杠杆抢市场，你按兵不动，可能就被挤出局；对手都很保守，你激进举债去打价格战，或许能占便宜。换句话说，资本结构本身就是产品市场博弈里的一枚棋子——这一点，从 Brander and Lewis (1986) 到 Bolton and Scharfstein (1990) 的一长串理论模型早就讲透了。</p>
 <p>于是一个自然的问题是：<strong>这种「跟着同行走」的倾向，到底有多强？</strong></p>
@@ -99,7 +99,7 @@
 <p>这个幽灵叫 反射问题 (reflection problem)，由 Manski (1993) 提出。</p>
 <p>它的麻烦在哪？同行的平均杠杆，<strong>既影响你，又被你影响</strong>。你看着同行调整自己，可你的调整又反过来进了「同行平均」里，去影响别人，别人再回过头影响你……这是一个同时决定的均衡，不是单向的因果链。把这样一个内生的均衡量直接塞进 OLS，系数当然是不一致的。</p>
 <p>那 LR 的工具变量不是解决了内生性吗？这里是全文最反直觉、也最关键的一句话：</p>
-<div class="callout"><div class="callout-title">Warning</div><p>找到一个合格的外生工具变量，足以<strong>拒绝「没有同行效应」的原假设</strong>，但<strong>不足以识别同行效应的量级</strong>。IV 给出的，是真实效应乘上一个无法识别的缩放因子（scaling factor）。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>找到一个合格的外生工具变量，足以<strong>拒绝「没有同行效应」的原假设</strong>，但<strong>不足以识别同行效应的量级</strong>。IV 给出的，是真实效应乘上一个无法识别的缩放因子（scaling factor）。</p></p></div>
 <p>为什么？因为在一个互相反馈的系统里，一个外生冲击不会停在第一轮。冲击打到 Firm 1，它的杠杆动了 <code>βδ</code>；这带动 Firm 2、Firm 3 各动了 <code>βδρ/2</code>；可 Firm 2 动了又会反过来推 Firm 3，Firm 3 又推回 Firm 2……一轮接一轮，是一个几何级数。你最终在数据里观测到的，是这整套连锁反应<strong>收敛后的总和</strong>，而不是某一轮的「纯效应」。</p>
 <p>接着，一个更要命的事情出现了：当你为了消掉行业固定效应而做「行业内去均值」时，自身特征的直接效应 <code>β</code> 和同行效应 <code>ρ</code>，会<strong>纠缠成同一个系数</strong>，再也分不开。一个「直接效应中等、同行效应几乎为零」的世界，和一个「直接效应大、同行效应也大」的世界，在去均值后的数据里<strong>长得一模一样</strong>。</p>
 <p>这正是下一节要用模型讲清楚的事。</p>
@@ -116,7 +116,7 @@ $$y_3 = \alpha_k + \rho\,\frac{y_1+y_2}{2} + \beta x_3 + \varepsilon_3$$</p>
 <p>$$\ddot{y}_i = \frac{\beta}{1+\rho/2}\,\ddot{x}_i + \frac{1}{1+\rho/2}\,\ddot{\varepsilon}_i, \quad i = 1,2,3.$$</p>
 <p>请盯着 <code>ẍ_i</code> 前面那个系数 <code>β/(1+ρ/2)</code> 看。这就是反射问题的全部要害：你能估出来的只有这<strong>一个</strong>合成系数，但你想要的是 <code>β</code> 和 <code>ρ</code> <strong>两个</strong>参数。即便你手握全世界无穷多个同等规模的三家公司行业，也无法把它们拆开——这跟你有没有外生的 <code>x</code> 一点关系都没有。</p>
 <p>直觉上说：在一个完全对称的网络里，一个冲击对所有人「一视同仁」地扩散，于是「冲击本身很重要」和「同行传导很重要」这两种解释，留下的数据指纹完全重合。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这就是为什么作者反复强调：<strong>外生变异负责「证有无」，网络结构负责「定大小」。</strong> 前人多半只做到了前一半。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这就是为什么作者反复强调：<strong>外生变异负责「证有无」，网络结构负责「定大小」。</strong> 前人多半只做到了前一半。</p></p></div>
 <p>那么，真正关键的一步是什么？</p>
 <h2 id="4">4 反转：非传递性，才是识别的金矿</h2>
 <p>现实世界的网络，几乎从来不是传递的。论文给了一个绝妙的例子：<strong>Nike 多年来在高尔夫球领域和 Callaway 竞争、在网球领域和 Head 竞争，但 Callaway 和 Head 彼此却不直接竞争。</strong> Nike 是网络的中心，另两家只通过它发生关联——这就是 非传递网络 (intransitive network)。</p>

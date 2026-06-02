@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>选模型，其实是在选一条波动率曲线——六个 HJM 利率期权模型的一场对账 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>选模型，其实是在选一条波动率曲线——六个 HJM 利率期权模型的一场对账</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[1994 JFE]</span> Implied Volatility Functions in Arbitrage-free Term Structure Models</div>
+        <div class="paper-source-authors"><a href="/research/author/kaushik-i-amin/">Kaushik I. Amin</a>, <a href="/research/author/andrew-j-morton/">Andrew J. Morton</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 1994</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">利率衍生品</span>
+        
+        
+        
+        
+        <span class="tag">期限结构</span>
+        
+        
+        
+        
+        <span class="tag">隐含波动率</span>
+        
+        
+        
+        
+        <span class="tag">实证资产定价</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Amin &amp; Morton (1994, Journal of Financial Economics)</strong>：在 Heath-Jarrow-Morton 框架下，债券与期权的全部定价信息都浓缩进一条「波动率函数」里。作者用 1987–1992 年的欧洲美元期货期权，逐日反解出六种波动率函数的隐含参数，发现它们都能把价格拟合得极好——用「滞后一天」的隐含波动率，平均每天同时给 <code>18.5</code> 张期权定价、平均绝对误差只有 <code>1.5</code> 到 <code>2</code> 个基点；可越是拟合得好，越藏着一件尴尬的事：所有六个模型，都留下了<strong>系统性</strong>的执行价与到期期限偏差。</p></p></div>
+<h2 id="1">1 引言：一个被「省掉」的麻烦</h2>
+<p>做过期权定价的人都知道 Black-Scholes 公式之所以好用，是因为它把一堆难缠的东西一笔勾销了——你不需要知道股票的期望收益率，不需要假设投资者偏好，你只需要一个数：波动率。定价权完全交给了「方差」，而不是「漂移」。</p>
+<p>利率衍生品的世界本来没这么干净。早期的利率模型——Vasicek (1977)、Brennan &amp; Schwartz (1979)、Cox, Ingersoll &amp; Ross (1985)——都是从「短期利率（spot rate）服从某个随机过程」出发，再把整条期限结构反推出来。这套做法对理解债券之间的关系很有用，可一旦拿去给利率期权定价，就处处碰壁：模型内生地决定了期限结构，于是几乎拟合不上市场上<strong>当前</strong>真实的收益率曲线；为了硬凑，又得塞进一堆随时间变化的参数（Hull &amp; White 1990 就是这么干的），而这些参数本身又出了名地难估（CIR 模型的参数估计，不同研究者能给出差得离谱的结果）。</p>
+<p>然后，Ho &amp; Lee (1986) 换了个思路：不去内生地「解释」期限结构，而是<strong>把今天的整条贴现债券价格曲线当成已知的输入</strong>，只去刻画它此后如何无套利地演化。Heath, Jarrow &amp; Morton（下称 HJM，1992）把它推到连续时间，并允许远期利率的变动形式「几乎任意」地指定。</p>
+<p>这一步的意义，正是把 Black-Scholes 的那个好处搬到了利率世界——</p>
+<div class="callout"><div class="callout-title">Tip</div><p>在 HJM 框架里，今天的期限结构是<strong>给定</strong>的，无套利又把漂移<strong>锁死</strong>了。于是一旦你选定了「波动率函数」，所有债券、所有期权的价格就<strong>全部</strong>被确定下来。波动率函数，就是模型本身。</p></p></div>
+<p>于是一个自然的问题浮出水面：既然 HJM 允许波动率函数「几乎任意」，那么——<strong>到底哪一条波动率曲线，才最像真实的市场？</strong> 这正是本文要回答的问题。</p>
+<h2 id="2">2 模型：为什么「选好波动率，就什么都定了」</h2>
+<p>我们值得把这件事一步步讲清楚，因为它是全文的支点。</p>
+<p>HJM 直接对<strong>每一个</strong>到期期限 \(T\) 的远期利率 \(f(t,T)\) 同时设定演化方程。记 \(W(t)\) 为一维标准布朗运动，则</p>
+<p>$$
+df(t,T) = \alpha(t,T,\cdot)\,dt + \sigma(t,T,f(t,T))\,dW(t)
+$$</p>
+<p>这里 \(\alpha\) 是漂移、\(\sigma\) 是扩散（即波动率）系数。注意它和短期利率模型的根本区别：传统模型只直接给<strong>一个</strong>利率（短端）建模，其余利率靠它推；而 HJM 一次性地、外生地给<strong>所有</strong>期限的远期利率写好了方程。</p>
+<p>接着，一个自然的问题是：漂移 \(\alpha\) 能自由选吗？不能。在风险中性测度下，无套利施加了一个铁的约束——</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{a1}{\alpha(t,T,\cdot)} = \cssId{a2}{\sigma(t,T,f(t,T))} \cssId{a3}{\int_t^T \sigma(t,u,f(t,u))\,du}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>到期期限为 T 的远期利率的漂移率——它不是自由参数，而是被「算」出来的</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>该远期利率自身的瞬时波动（dispersion）</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>从 t 到 T 所有更短期限远期利率波动的累积——正是它把「无套利」刻进了漂移</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这条式子是 HJM 的灵魂：<strong>漂移完全由波动率决定</strong>。你只要写下 \(\sigma(\cdot)\)，\(\alpha(\cdot)\) 就被这个积分式唯一地算出来了。换句话说，整个模型里唯一「自由」的，就是波动率函数 \(\sigma\)。</p>
+<p>然后，定价就顺理成章。期货价格在风险中性测度下是鞅（因为开仓不需要投入资金）：</p>
+<p>$$
+\phi(t) = E_t\!\left[F_T(T)\right]
+$$</p>
+<p>欧式期权的价格则是贴现后的期望支付：</p>
+<p>$$
+C(t) = E_t\!\left[\exp\!\left(-\int_t^T r(u)\,du\right)G(T)\right]
+$$</p>
+<p>美式期权再多一层「最优停时」：</p>
+<p>$$
+C(t) = \sup_{\theta\in\mathcal{T}[t,T]} E_t\!\left[G_\theta(\theta)\exp\!\left(-\int_t^\theta r(u)\,du\right)\right]
+$$</p>
+<p>到这里，论证的链条已经闭合：<strong>给定今天的期限结构（输入）＋ 一条波动率函数（唯一的选择）→ 无套利锁死漂移 →（用一个路径依赖的二叉树做后向归纳）→ 所有期货与期权的价格</strong>。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>但真正关键的一步麻烦，恰恰藏在「路径依赖」四个字里。一般的 HJM 模型不是马尔可夫的：一个「先涨后跌」的利率路径，未必回到「先跌后涨」的同一条期限结构。这意味着二叉树不重合，计算量随步数<strong>指数级</strong>爆炸。正是这个计算障碍，让 HJM 问世多年几乎无人做实证——在本文之前，只有 Flesaker (1992) 和 Cohen (1991) 两篇，而 Flesaker 为了算得动，只测了波动率为常数的 Ho-Lee 那一个特例。本文（借助 Amin &amp; Bodurtha 1994 等发展出的数值方法）是第一个系统地实证、并检验一大类路径依赖 HJM 模型的研究。</p></p></div>
+<h3 id="2-1">2.1 六条候选曲线</h3>
+<p>既然模型 = 波动率函数，本文索性挑了六种<strong>具体</strong>的函数形式来比。它们全都被同一个四参数母函数所「嵌套」：</p>
+<p>$$
+\sigma(t,T,f(t,T)) = \left[\sigma_0 + \sigma_1 (T-t)\right]\exp\!\left[-\lambda (T-t)\right] f(t,T)^{\gamma}
+$$</p>
+<p>四个参数 \(\sigma_0,\sigma_1,\lambda,\gamma\) 分别管：整体水平、随期限的线性项、随期限的指数衰减、对利率水平的弹性。六个模型就是它的六个特例：</p>
+<p>$$
+\begin{aligned}
+&\text{(1) Absolute (Ho-Lee):} && \sigma(\cdot)=\sigma_0\\
+&\text{(2) Square Root:} && \sigma(\cdot)=\sigma_0\, f(t,T)^{1/2}\\
+&\text{(3) Proportional:} && \sigma(\cdot)=\sigma_0\, f(t,T)\\
+&\text{(4) Linear Absolute:} && \sigma(\cdot)=\sigma_0+\sigma_1 (T-t)\\
+&\text{(5) Exponential (Vasicek):} && \sigma(\cdot)=\sigma_0\exp[-\lambda(T-t)]\\
+&\text{(6) Linear Proportional:} && \sigma(\cdot)=\left[\sigma_0+\sigma_1 (T-t)\right] f(t,T)
+\end{aligned}
+$$</p>
+<p>前三个是单参数模型，后三个是双参数。值得玩味的是，这六条曲线恰好覆盖了文献里几种最经典的直觉：(1) 的常数波动率就是 Ho-Lee；(5) 的指数衰减，对应 Vasicek (1977) 的 Ornstein-Uhlenbeck 短期利率（Brenner 1989 给了证明）；(3) 的「波动率正比于利率水平」则保证了利率永远为正——这正是高斯型模型（如 Vasicek）被诟病的地方：它们允许利率以正概率变负。</p>
+<p>作者没有去硬估四个参数。他们试过同时反解 \(\sigma_0\) 与 \(\gamma\)，结果参数极不稳定、标准误比参数本身还大、还高度依赖迭代初值。于是干脆<strong>逐个</strong>钉死具体形式，分别检验——这是务实的取舍，也埋下了后文「模型怎么挑都不完美」的伏笔。</p>
+<h2 id="3">3 数据与「隐含波动率」</h2>
+<p>为什么是欧洲美元（Eurodollar）期货期权，而不是更出名的国债期货期权？这是个被低估的好选择。欧洲美元合约极其流动，且——这是关键——能直接拼出一条与期权<strong>同时点</strong>的、完整的初始远期利率曲线（HJM 恰恰需要这条曲线做输入）；而国债期货因为底层券有 15 年以上的到期期限、交割期权又复杂（Gay &amp; Manaster 1986），根本拼不出这条曲线。</p>
+<p>数据来自 CME 的逐笔成交库，区间为 <strong>1987 年 1 月 1 日至 1992 年 11 月 10 日</strong>。作者取每天 <code>8:30am CST</code> 的最后成交价作为同步价格，得到 <code>1,483</code> 个交易日、<code>27,368</code> 个期权观测，平均每天 <code>4.001</code> 张期货、<code>9.3</code> 张看涨、<code>9.2</code> 张看跌。一个基点（tick）对应 <code>$25</code>。</p>
+<p>所谓「隐含波动率」，在这里不再是 Black-Scholes 里那个标量，而是上面某条波动率函数的<strong>参数</strong>。做法是：用市场期权价格去反解出让模型价格最贴近市场的参数值，得到一条逐日的「隐含波动率参数」时间序列，再去看它的时序性质。</p>
+<div class="article-image"><img alt="Figure 1: Implied volatility parameters and absolute implied volatility for absolute and proportional" src="assets/figure-1.png" /></div>
+<p><em>Figure 1: Implied volatility parameters and absolute implied volatility for absolute and proportional</em></p>
+<p>图 1 把绝对（Absolute）与比例（Proportional）两个模型反解出的隐含波动率画了出来。你能直观看到：参数确实随时间波动，但相对平稳——这正是后面「用昨天的参数定今天的价」之所以可行的前提。</p>
+<h2 id="4">4 反转：拟合得越好，错得越有规律</h2>
+<p>到这一步，故事本该是个圆满的结局：模型能用、参数稳定、拟合极好。作者用<strong>滞后一天</strong>的隐含波动率（即昨天反解出的参数，拿来定今天的价——这一步刻意避免了「用今天的价去拟合今天的价」的数据窥探）做检验，结果漂亮：一、两参数模型平均每天同时给 <code>18.5</code> 张期权定价，平均绝对误差仅 <code>1.5</code> 到 <code>2</code> 个基点。对一个完全样本外的预测来说，这个精度相当惊人。</p>
+<p>但真正关键的一步，是作者没有就此打住，而是去问：<strong>这点误差，是纯随机的噪声，还是有结构的偏差？</strong></p>
+<p>答案是后者，而且<strong>六个模型无一幸免</strong>。误差不是均匀地撒在零附近，而是随两个维度系统性地漂移：</p>
+<p><strong>其一，沿到期期限。</strong> 定价误差随期权到期期限呈现规律性的形态（图 2）——这意味着某些期限的期权被模型系统性高估、另一些被低估。</p>
+<div class="article-image"><img alt="Figure 2: Forecast error as a function of maturity" src="assets/figure-2.png" /></div>
+<p><em>Figure 2: Forecast error as a function of maturity</em></p>
+<p><strong>其二，沿执行价（moneyness）。</strong> 同样的系统性偏差也出现在「在值/平值/虚值」这条轴上（图 3）。这其实就是股票期权世界里那个著名的「波动率微笑/偏斜」在利率期权里的影子：单一波动率函数无法同时拟合不同执行价的期权。</p>
+<div class="article-image"><img alt="Figure 3: exhibits the pattern of mispricing as a function of moneyness. The linear" src="assets/figure-3.png" /></div>
+<p><em>Figure 3: exhibits the pattern of mispricing as a function of moneyness. The linear</em></p>
+<p>这就是全文最有意思的反转：<strong>「拟合得好」和「设定正确」是两回事。</strong> 一个误设定（misspecified）的模型，照样可以把平均误差压到两个基点以内；可它一旦遇到极端执行价或极端期限，就会以<strong>可预测</strong>的方向出错。而可预测的错误，恰恰是模型不对的铁证——也是潜在的套利机会。</p>
+<p>（关于「换一把尺子，利率波动率的结论就可能翻案」这一主题，可参见<a href="/research/identifying-term-structure-volatility-from-the-libor-swap/">《波动率藏在哪里？——一篇被「换了把尺子」就翻案的利率期限结构论文》</a> 与<a href="/research/modeling-volatility-in-dynamic-term-structure-models/">《收益率曲线拟合得再好，也可能对波动率「充耳不闻」》</a>。）</p>
+<h2 id="5">5 最后一问：这些「错误」是真的吗？</h2>
+<p>发现系统性偏差，还不足以下结论。一个谨慎的怀疑是：所谓「偏差」会不会只是买卖价差、非同步交易这类微观结构噪声的产物，根本无法落袋为安？</p>
+<p>于是作者设计了最后一道检验——<strong>简单的交易策略</strong>：在每天反解出隐含波动率之后，用它在当天<strong>稍晚</strong>的时点去买入模型认为「便宜」的、卖出「贵」的期权（用滞后信息确保可执行、无窥探）。如果偏差是真的，这些策略就该赚钱；如果只是噪声，就赚不到。</p>
+<div class="article-image"><img alt="Figure 4: Profits from trading strategies to exploit mispriced options" src="assets/figure-4.png" /></div>
+<p><em>Figure 4: Profits from trading strategies to exploit mispriced options</em></p>
+<p>图 4 给出了这些策略的盈亏。结论是：模型识别出的部分错误定价<strong>确实</strong>能被简单策略捕捉——它们不是纯噪声，而是真实的、可被利用的定价偏离。这反过来又强化了前面那个判断：六个模型都有真实的、而非统计幻觉式的设定缺陷。</p>
+<p>由此，作者给出务实的建议：在研究与实务中，没必要迷信复杂模型——简单的一、两参数 HJM 设定在拟合上已经足够好；而既然所有模型都留有系统性偏差，选择时更应权衡计算成本与偏差结构，而不是盲目追求参数个数。</p>
+<h2 id="6">6 文献脉络</h2>
+<p>把这条线索捋一捋，故事其实很清晰。最早，利率建模是「短端驱动」的：Vasicek (1977) 用 Ornstein-Uhlenbeck 过程刻画短期利率，Brennan &amp; Schwartz (1979) 加了一个长期利率，Cox, Ingersoll &amp; Ross (1985) 给了一般均衡的基础。它们理论优美，却在拟合当前期限结构和给期权定价上屡屡受挫。</p>
+<p>转折来自 Ho &amp; Lee (1986)：不再「解释」期限结构，而是把它当输入、只刻画其无套利演化。这套思想的数学地基，是 Harrison &amp; Pliska (1981) 的鞅定价理论。HJM (1992) 把它推广到连续时间，让波动率函数几乎可以任意指定——也正是在这里，「模型 = 波动率函数」这个命题被彻底确立。但 HJM 的路径依赖让实证极其困难，所以在本文之前，实证的版图近乎空白（Flesaker 1992 只测了 Ho-Lee 特例）。本文，正是站在「第一次系统检验一大类 HJM 模型」的位置上。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<h2>7 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：HJM 模型里「波动率函数就是一切」，那它和 Black-Scholes「单一波动率」到底差在哪？</strong></p>
+<blockquote>
+<p>差在维度。Black-Scholes 用一个标量描述单一资产的波动；HJM 的波动率函数 \(\sigma(t,T,f)\) 必须描述<strong>整条期限结构曲线</strong>如何随机演化——它是期限 \(T-t\)（乃至利率水平 \(f\)）的函数。所以本文的「隐含波动率」反解出来的是一组参数（如 \(\sigma_0,\sigma_1,\lambda\)），而非一个数。</p>
+</blockquote>
+<p><strong>Q：「无套利锁死漂移」这件事，凭什么成立？</strong></p>
+<blockquote>
+<p>凭风险中性测度下「所有可交易证券的瞬时期望收益都等于短期利率」这一条。把它施加到债券价格上，就逼出了正文那个漂移 = 波动率 × 未来波动率积分的约束。直觉上，远期利率波动越大，为了不产生套利，其漂移就必须做相应补偿——这和 Black-Scholes 里漂移被无风险利率取代是同一回事的「期限结构版」。</p>
+</blockquote>
+<p><strong>Q：用「滞后一天」的隐含波动率，是不是太刻意了？</strong></p>
+<blockquote>
+<p>恰恰相反，这是方法论上的洁癖，也是本文最值得学的地方。若用当天价格反解参数、再用同一参数去「预测」当天价格，那是循环论证、必然拟合极好。用昨天的参数定今天的价，才是真正的样本外检验——<code>1.5–2</code> 个基点的误差因此才有说服力。</p>
+</blockquote>
+<p><strong>Q：六个模型都能压到两个基点，那「系统性偏差」还重要吗？</strong></p>
+<blockquote>
+<p>重要，而且是全文的命门。平均误差小，说明模型「平均而言」对；系统性偏差说明它「在结构上」错。后者意味着：在特定执行价/期限上，错误是可预测的方向性偏离——这正是误设定的指纹，也是套利的入口。图 4 的交易策略盈利，证明这些偏差不是噪声。</p>
+</blockquote>
+<p><strong>Q：为什么不直接把四参数母函数一次估到底，岂不更灵活？</strong></p>
+<blockquote>
+<p>作者试过，结果参数高度不稳定、标准误超过参数本身、还依赖初值。短期期货期权（多在两年内到期）里，根本没有足够的期限变异去同时识别四个参数。这是一个诚实的负面结果，也解释了为什么他们退而求其次、逐个钉死形式来比。</p>
+</blockquote>
+<p><strong>Q：为什么选欧洲美元而不是国债期货期权？这会不会限制结论的普适性？</strong></p>
+<blockquote>
+<p>选它是因为它能拼出与期权同步的完整远期曲线（HJM 的必要输入），且无国债合约那些复杂的交割/择时期权。代价是期限较短（多在一年内），所以本文只做单因子 HJM——正如 Dybvig (1990) 所言，五年内的远期利率变异几乎能被单一因子解释。要外推到长端或多因子，结论需重新检验。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把这套「隐含波动率函数」框架搬到公司债/信用衍生品。</strong>
+【经济故事】HJM 的逻辑天然可推广到<strong>可违约</strong>期限结构：给定今天的信用利差曲线，无套利同样能锁死违约强度的漂移。那么，CDS 期权或可赎回公司债里隐含的「信用波动率函数」，会不会也在「评级/久期」维度上留下与本文同构的系统性偏差？
+【可行性】中。数据上 CDS 期权流动性远不如欧洲美元，但投资级 CDX/iTraxx 期权可用；识别上可复用本文的「滞后隐含参数 + 样本外定价 + 交易策略」三段式。</p>
+<p><strong>2. 系统性偏差是否被「流动性」驱动？</strong>
+【经济故事】本文把偏差归因于波动率函数的误设定。但虚值/长期期权恰恰也是最不流动的——那么执行价/期限偏差里，有多大一块其实是流动性溢价而非模型错误？
+【可行性】高。在原始 CME 逐笔数据上，可用成交量、买卖价差、报价深度作为流动性代理，把定价误差对「模型 moneyness/maturity」与「流动性」同时回归，看偏差在控制流动性后是否衰减。这是一个干净、可做的横截面检验。</p>
+<p><strong>3. 外资/机构持有人结构与利率期权偏差。</strong>
+【经济故事】不同投资者群体对不同执行价的需求压力（如机构买保护性虚值期权）可能正是「微笑」的需求侧来源。若能匹配持仓结构，便能检验本文的系统性偏差中有多少是「需求压力」造的。
+【可行性】低到中。利率期权的持仓人结构数据极难获取（CFTC 的持仓报告颗粒度有限），识别上也难把需求与模型误设定干净地分开；属于「有意思但 data-constrained」。</p>
+<p><strong>4. 损失函数与模型排名的稳健性。</strong>
+【经济故事】本文用「绝对定价误差」给模型打分。但若改用相对误差、或对在值期权加权，模型排名会不会翻盘？「最优波动率函数」可能本就是损失函数的函数。
+【可行性】高。仅需在已有定价残差上换算不同损失函数即可，无须新数据，是一个低成本、高确定性的稳健性练习。</p>
+<h2 id="8">8 我的判断</h2>
+<p>本文的贡献，与其说是「找到了最好的利率模型」，不如说是<strong>为整个 HJM 实证研究铺了第一块地基</strong>，并立下了一个至今仍成立的方法论标尺：用滞后隐含参数做样本外定价、再用交易策略检验偏差是否「为真」。它最深刻的一句潜台词是——在 HJM 世界里，挑模型就是挑一条波动率曲线，而<strong>拟合优度并不等于设定正确</strong>。这一点，今天读结构化信用模型、读机器学习定价时，依然值得反复咀嚼。</p>
+<p>对识别的担忧有两处。其一，样本只覆盖一年内到期、单因子可解释的欧洲美元，结论能否外推到长端与多因子并不清楚（作者自己也坦承无法可靠分离两个因子）。其二，「系统性偏差 = 模型误设定」这个推断，没有充分排除流动性与微观结构噪声——虚值/长期期权既是模型最易出错处，也是最不流动处，两者在数据里是共线的，这正是我上面第 2 个研究提案想拆开的东西。</p>
+<p>后续我最想看到的，是把这套「隐含波动率函数 + 系统偏差诊断」框架迁到信用市场：在可违约期限结构里，今天最先进的结构模型，会不会也像本文的六条曲线一样，拟合得天衣无缝、却在评级与久期维度上错得很有规律？（这一方向与<a href="/research/structural-models-of-corporate-bond-pricing-an-empirical/">《结构模型给债券定价，错的从来不是「太低」，而是「太散」》</a> 的精神一脉相承。）若答案为「是」，那本文三十年前的洞见，就还远没有过期。</p>
+<h2 id="">参考文献</h2>
+<p>Amin, K. I. and J. N. Bodurtha, Jr. (1994). Discrete-time valuation of American options with stochastic interest rates. <em>Review of Financial Studies</em>, forthcoming.</p>
+<p>Brennan, M. J. and E. S. Schwartz (1979). A continuous time approach to the pricing of bonds. <em>Journal of Banking and Finance</em> 3, 133–155.</p>
+<p>Cox, J. C., J. E. Ingersoll, and S. A. Ross (1985). A theory of the term structure of interest rates. <em>Econometrica</em> 53, 385–407.</p>
+<p>Dybvig, P. H. (1990). Bond and bond option pricing based on the current term structure. Technical report, Washington University in St. Louis.</p>
+<p>Flesaker, B. (1992). Testing and estimation of the constant volatility HJM term structure model. Technical report, University of Illinois.</p>
+<p>Harrison, J. M. and S. R. Pliska (1981). Martingales and stochastic integrals in the theory of continuous trading. <em>Stochastic Processes and their Applications</em> 11, 215–260.</p>
+<p>Heath, D., R. Jarrow, and A. Morton (1992). Bond pricing and the term structure of interest rates: A new methodology. <em>Econometrica</em> 60, 77–105.</p>
+<p>Ho, T. S. Y. and S.-B. Lee (1986). Term structure movements and pricing interest rate contingent claims. <em>Journal of Finance</em> 41, 1011–1029.</p>
+<p>Vasicek, O. (1977). An equilibrium characterization of the term structure. <em>Journal of Financial Economics</em> 5, 177–188.</p>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 引言：一个被「省掉」的麻烦</a></li>
+        <li><a href="#2">2 模型：为什么「选好波动率，就什么都定了」</a></li>
+          <li><a href="#2-1">2.1 六条候选曲线</a></li>
+        <li><a href="#3">3 数据与「隐含波动率」</a></li>
+        <li><a href="#4">4 反转：拟合得越好，错得越有规律</a></li>
+        <li><a href="#5">5 最后一问：这些「错误」是真的吗？</a></li>
+        <li><a href="#6">6 文献脉络</a></li>
+        <li><a href="#7-q-a">7 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#8">8 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Doshi, Jacobs &amp; Liu (2024, Journal of Financial Economics)</strong>：把无套利仿射期限结构模型里的波动率因子，从「收益率因子水平的线性函数」换成一个 GARCH 过程（即「滞后平方扰动的函数」），债券价格仍有解析解，但对收益率波动率——尤其是长端——的拟合大幅改善。模型隐含波动率与已实现波动率的无条件相关性平均达到 <code>65%</code>（与 EGARCH 基准比则是 <code>80%</code>），而仿射随机波动率基准只有 <code>47%</code>（<code>68%</code>）；在国债期货期权定价上，新模型「完胜」标准 <code>A₁(3)</code> 模型。一句话：<strong>波动率因子的设定方式，才是胜负手</strong>。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Doshi, Jacobs &amp; Liu (2024, Journal of Financial Economics)</strong>：把无套利仿射期限结构模型里的波动率因子，从「收益率因子水平的线性函数」换成一个 GARCH 过程（即「滞后平方扰动的函数」），债券价格仍有解析解，但对收益率波动率——尤其是长端——的拟合大幅改善。模型隐含波动率与已实现波动率的无条件相关性平均达到 <code>65%</code>（与 EGARCH 基准比则是 <code>80%</code>），而仿射随机波动率基准只有 <code>47%</code>（<code>68%</code>）；在国债期货期权定价上，新模型「完胜」标准 <code>A₁(3)</code> 模型。一句话：<strong>波动率因子的设定方式，才是胜负手</strong>。</p></p></div>
 <h2 id="1">1 一个「偏科」的好学生</h2>
 <p>先讲一个让做利率模型的人很尴尬的事实。</p>
 <p>过去三十年，资产定价学界打磨出了一套极其精致的工具：仿射期限结构模型 (affine term structure model, ATSM)。它能把整条收益率曲线——从三个月到十年——拟合得相当漂亮，债券价格有解析解，估计起来也不算难。可一旦你换个角度，问它「收益率的<strong>波动率</strong>长什么样」，这位好学生立刻露了怯。</p>
@@ -101,7 +101,7 @@
 <p>$$\sigma_{i,t}^2 = a_i + b_i' X_t$$</p>
 <p>这个写法背后有它的道理。一大批文献都发现，利率高的时候波动率往往也高，收益率曲线曲率大的时候波动率也大 (Cox et al., 1985; Litterman and Scheinkman, 1991; Longstaff and Schwartz, 1992)。所以让方差「挂」在因子水平上，看起来顺理成章。</p>
 <p>但麻烦也恰恰在这里。<strong>收益率的均值和方差，被同一组状态变量的水平驱动着。</strong> 你想让 \(X_t\) 把收益率曲线的形状解释好，又想让同一个 \(X_t\) 把波动率的时间变化解释好——这两件事互相打架。Joslin and Le (2021) 把这种张力说得很透：在无套利约束下，同时拟合一阶矩与二阶矩是这类模型内生的核心矛盾。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>这不是「估计没估好」的问题，而是设定层面的硬约束。只要方差是因子水平的线性组合，一条收益率曲线的线性组合，<strong>在设计上</strong>就抓不住收益率的第二矩。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这不是「估计没估好」的问题，而是设定层面的硬约束。只要方差是因子水平的线性组合，一条收益率曲线的线性组合，<strong>在设计上</strong>就抓不住收益率的第二矩。</p></p></div>
 <p>于是，一个自然的问题浮出水面：能不能让波动率不再骑在因子水平这匹马上？</p>
 <h2 id="3-garch">3 关键一步：把 GARCH 的引擎装进无套利模型</h2>
 <p>本文的答案，简单到近乎「显然」，但效果出奇地好——<strong>把波动率因子写成一个 GARCH 过程</strong>。</p>
@@ -117,7 +117,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>把它和上一节那个 \(\sigma_{i,t}^2 = a_i + b_i' X_t\) 摆在一起对比，全文的「核心」就清清楚楚了：</p>
 <div class="callout"><div class="callout-title">Tip</div><p><strong>左边（仿射基准）</strong>：方差 = 因子水平的线性函数。
 <strong>右边（本文 GARCH）</strong>：方差 = 滞后平方扰动的函数。
-看上去只是个技术细节，但作者反复强调——正是这一处设定，决定了模型在波动率维度上的成败。</p></div>
+看上去只是个技术细节，但作者反复强调——正是这一处设定，决定了模型在波动率维度上的成败。</p></p></div>
 <p>而 \(\epsilon_{i,t}\) 又能从状态变量的观测里反推出来。把扰动写开，GARCH 递归变成可以从 \(X_{i,t}\) 的历史滤出的形式：</p>
 <p>$$\sigma_{i,t+1}^2 = \omega_i + \beta_i \sigma_{i,t}^2 + \alpha_i \frac{\left(X_{i,t} - K_{0(i)}^P - K_{1(i,i)}^P X_{i,t-1}\right)^2}{\sigma_{i,t}^2}$$</p>
 <p>为了简约，基准模型里只给<strong>第一个因子</strong>的波动率装上 GARCH 引擎（即对 \(i=2,3\) 令 \(\beta_i = \alpha_i = 0\)，方差退化为常数）。一个时变波动率因子，已经够用——这也是后面结果里最让人意外的地方。</p>
@@ -134,7 +134,7 @@ $$B_n = -\rho_1' + B_{n-1}' K_1^Q$$
 $$C_{i,n} = \frac{B_{i,n-1}^2}{2\left(1 - 2\alpha_i C_{i,n-1}\right)} + \beta_i C_{i,n-1}$$</p>
 <p>初始条件为 \(A_1 = -\rho_0,\ B_1 = -\rho_1',\ C_{i,1} = 0\)。这组递归之所以能闭合，关键在那个 \(\log(1 - 2\alpha_i C_{i,n-1})\) 项——它来自对正态扰动取期望时的高斯矩母函数，而 GARCH 把方差写成平方扰动的线性函数，恰好让这个期望仍然可解析地往前递推。于是 \(n\) 期收益率也是解析的：</p>
 <p>$$\hat{y}_t^n = \mathcal{A}_n + \mathcal{B}_n' X_t + \sum_i \mathcal{C}_{i,n}\,\sigma_{i,t+1}^2$$</p>
-<div class="callout"><div class="callout-title">Note</div><p>一句话总结这一节：<strong>本文保留了仿射模型的全部可解析性（tractability），却换上了 GARCH 的波动率心脏。</strong> 这正是它和 Heston and Nandi (2003) 的根本不同——后者用了非常相似的设定，却只在两周的零息债券价格上做了校准，无法真正考察对收益率波动率的建模能力。本文用一个长样本、一套完整的极大似然估计，把这件事做到了底。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>一句话总结这一节：<strong>本文保留了仿射模型的全部可解析性（tractability），却换上了 GARCH 的波动率心脏。</strong> 这正是它和 Heston and Nandi (2003) 的根本不同——后者用了非常相似的设定，却只在两周的零息债券价格上做了校准，无法真正考察对收益率波动率的建模能力。本文用一个长样本、一套完整的极大似然估计，把这件事做到了底。</p></p></div>
 <h2 id="5">5 数据与「真值」基准</h2>
 <p>要检验波动率拟合得好不好，先得有个「真值」。</p>
 <p>收益率数据用月频连续复利零息债券收益率，期限覆盖 3 个月、6 个月，以及 1、2、3、4、5、10 年。其中 3 个月和 6 个月来自 <code>FRED</code>，1 到 5 年及 10 年来自 Gürkaynak, Sack and Wright (2007, GSW) 数据集。样本从 <code>1971 年 11 月到 2019 年 10 月</code>——之所以从 1971 年 11 月起步，是因为这是 10 年期收益率不间断可得的最早时点；而这段样本恰好把上世纪 80 年代初那段「货币实验」的高波动时期囊括进来。</p>
@@ -147,7 +147,7 @@ $$C_{i,n} = \frac{B_{i,n-1}^2}{2\left(1 - 2\alpha_i C_{i,n-1}\right)} + \beta_i 
 <div class="article-image"><img alt="Figure 5: presents the one-month conditional volatilities implied by" src="assets/figure-5.png" /></div>
 <p><em>Figure 5: presents the one-month conditional volatilities implied by</em></p>
 <p><strong>第二，它把基准模型甩开了一大截。</strong> 作为对照，作者估计了本质仿射的 <code>A₁(3)</code> 模型（Dai and Singleton, 2000; Duffee, 2002），以及一个状态变量动态与新模型尽可能接近、只在波动率设定上不同的「受限 <code>A₁(3)</code>」模型。这两个基准与已实现波动率（EGARCH）的相关性平均只有 <code>47%</code>（<code>68%</code>）。在收益率波动率 RMSE 上，无套利 GARCH 模型跨期限<strong>平均领先基准 40% 以上</strong>。所有模型都难以同时抓住 80 年代初的超高波动和其后的低波动，但 GARCH 模型明显更接近真相——<code>A₁(3)</code> 和受限 <code>A₁(3)</code> 在 80 年代中到 2000 年的低波动期会系统性地高估波动率。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>作者特别澄清：这个差距<strong>不是</strong>离散时间 vs 连续时间造成的。GARCH 模型的优势纯粹来自「把方差写成滞后平方扰动的函数」而非「因子水平的函数」这一设定差异。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>作者特别澄清：这个差距<strong>不是</strong>离散时间 vs 连续时间造成的。GARCH 模型的优势纯粹来自「把方差写成滞后平方扰动的函数」而非「因子水平的函数」这一设定差异。</p></p></div>
 <p><strong>第三，波动率拟合的改善，没有以收益率（一阶矩）拟合的恶化为代价。</strong> 新模型的收益率 RMSE 只比两个随机波动率基准略高一点；而且它还很好地复现了 Campbell and Shiller (1991) 回归所刻画的债券风险溢价模式。这说明模型对收益率的条件均值与条件方差<strong>同时</strong>给出了像样的拟合——这恰恰是开篇那个「偏科好学生」做不到的事。</p>
 <p><strong>第四，也是最有说服力的样本外检验：给期权定价。</strong> 如果一个模型真把波动率抓对了，那它在「payoff 高度依赖波动率」的证券上就该占优。作者用国债收益率估出的参数去给国债期货期权定价，结果 GARCH 模型的表现「远远优于」(vastly superior) <code>A₁(3)</code> 模型。如表 11 所示，期权定价的 RMSE 在 GARCH 模型下显著更低。</p>
 <div class="article-image"><img alt="Table 11: presents the RMSEs (root mean squared error) and the" src="assets/table-11.png" /></div>

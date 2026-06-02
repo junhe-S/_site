@@ -89,14 +89,14 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Cong, Feng, He &amp; He (2025, Journal of Financial Economics)</strong>：他们把「给股票排序」这件做了半个世纪的老事，重写成一棵「带着资产定价目标去生长」的决策树——面板树 (Panel Tree, P-Tree)。每一次分裂都只问一个问题：哪一刀能把均值-方差有效 (mean–variance efficient, MVE) 前沿往外推得最远？最终用一组稀疏、可解释的特征，构造出年化夏普比率从 <code>6.37</code> 到 <code>15.63</code> 的检验资产，对 Fama–French 五因子的 GRS 统计量高达 <code>141.27</code>。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Cong, Feng, He &amp; He (2025, Journal of Financial Economics)</strong>：他们把「给股票排序」这件做了半个世纪的老事，重写成一棵「带着资产定价目标去生长」的决策树——面板树 (Panel Tree, P-Tree)。每一次分裂都只问一个问题：哪一刀能把均值-方差有效 (mean–variance efficient, MVE) 前沿往外推得最远？最终用一组稀疏、可解释的特征，构造出年化夏普比率从 <code>6.37</code> 到 <code>15.63</code> 的检验资产，对 Fama–French 五因子的 GRS 统计量高达 <code>141.27</code>。</p></p></div>
 <h2 id="1">1 一个做了五十年、却始终没做完的动作</h2>
 <p>如果要在整个实证资产定价里挑一个最朴素、又最常用的动作，那一定是「排序」（sorting）。把股票按市值分成大、中、小，再按账面市值比分成高、中、低，交叉一下，就得到了我们再熟悉不过的 <code>ME-BM</code> 25 个组合。几乎所有因子模型的估计与检验，都建立在这样一小撮「检验资产」（test assets）之上。</p>
 <p>这个动作背后有一个朴素的信念：我们希望这二十五个组合，或者背后那几个因子，能够「张成」（span）和成千上万只个股一样的有效前沿。换句话说，我们希望用一把粗糙的尺子，量出整个市场最锋利的那条边界。</p>
 <p>可问题是，这把尺子真的够用吗？</p>
 <p>早在十几年前，Cochrane（2011）在他著名的美国金融学会主席演讲里就把话挑明了：预期收益、方差、协方差，都是资产特征（如规模、价值）的稳定函数；真正的难题，是如何系统性地利用<strong>高维</strong>的特征信息（关于这场「贴现率」之辩，可参见<a href="/research/presidential-address-discount-rates/">《贴现率：资产定价的中心议题》</a>）。而我们手上的排序，几乎从来没有越过「双变量」这道坎——按两个特征排序已经是极限，三个、五个、几十个特征同时排序，组合数会爆炸，每个格子里的股票会少到无法分散。于是非线性、不对称的交互作用（asymmetric interactions），就这样被我们系统性地漏掉了。</p>
 <p>更尴尬的是，Lewellen, Nagel &amp; Shanken（2010）早就警告过：这些<strong>临时拼凑</strong>（ad hoc）的检验资产，本身就让模型的估计和检验变得不可靠。我们一边抱怨因子动物园太吵，一边却还在用一把钝刀去裁剪它。</p>
-<div class="callout"><div class="callout-title">Note</div><p>这篇论文的野心，正是要把「排序」这个动作本身重新发明一遍——不是换一组更好的检验资产，而是换一套<strong>生成</strong>检验资产的方法。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>这篇论文的野心，正是要把「排序」这个动作本身重新发明一遍——不是换一组更好的检验资产，而是换一套<strong>生成</strong>检验资产的方法。</p></p></div>
 <h2 id="2">2 现成的机器学习树，为什么不行？</h2>
 <p>既然是高维、非线性、还带交互，很多人脑子里第一个蹦出来的工具就是机器学习。而在所有 ML 模型里，最适合「排序」直觉的，莫过于决策树——它干的事，本来就是「按某个变量的取值，把样本切成两半」，这和按特征排序几乎是同义词。</p>
 <p>最经典的版本是 分类与回归树 (Classification and Regression Trees, CART, Breiman et al., 1984)。它把预测变量空间切成互不重叠的叶节点，每个叶节点配一个常数参数。形式化地说，设有 \(K\) 个预测变量，第 \(i\) 个观测记为 \(\mathbf{z}_i=(z_{i,1},\dots,z_{i,K})\)，经过 \(J\) 次二元分裂后，整棵树就是一个高维阶梯函数：</p>
@@ -127,7 +127,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>为了让搜索可行，论文做了两点工程化处理：每一期把特征在横截面上统一标准化到 $[-1,1]\(；候选切点只取**五分位**（quintile）档位 \)c_m\in{-0.6,-0.2,0.2,0.6}$。四千只左右的股票、几十个高度相关的特征，用五分位切既压缩了搜索空间，又避免了切得太碎、某些组合里没几只股票而失去分散性。下面这张图，就把第一刀的样子画了出来：在一长串候选里（比如「标准化超预期盈余 SUE ≤ −0.2」「40% 分位」……）逐一计算判据值，选出最优的那一刀。</p>
 <div class="article-image"><img alt="Figure 2: Illustration of the first split" src="assets/figure-2.png" /></div>
 <p><em>Figure 2: Illustration of the first split</em></p>
-<div class="callout"><div class="callout-title">Tip</div><p>注意这里的对比：CART 是「先长一棵大树，再剪枝」，每刀只看局部；P-Tree 是「从根开始长，每刀都用全样本算一遍全局夏普」。前者是近视的贪心，后者是有目标的贪心——同样是贪心算法保证了计算可行，但目标函数从「预测误差」彻底换成了「有效前沿」。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>注意这里的对比：CART 是「先长一棵大树，再剪枝」，每刀只看局部；P-Tree 是「从根开始长，每刀都用全样本算一遍全局夏普」。前者是近视的贪心，后者是有目标的贪心——同样是贪心算法保证了计算可行，但目标函数从「预测误差」彻底换成了「有效前沿」。</p></p></div>
 <p>正因为分裂规则跨期不变、又显式写在树图上，P-Tree 还顺手保住了一样东西——<strong>可解释性</strong>。它能告诉你，到底是哪几个特征、以怎样的非对称方式交互，共同生成了这些检验资产。这一点，PCA 和深度学习给不了你（在「把黑箱拆成玻璃箱」这件事上，公司债市场也有类似的努力，可参见<a href="/research/glass-box-machine-learning-and-corporate-bond-returns/">《把机器学习的黑箱拆成玻璃箱：公司债收益率能被「看懂」地预测吗？》</a>）。下图用分区图（partition plot）展示了这种非线性交互长什么样子。</p>
 <div class="article-image"><img alt="Figure 5: Visualizing nonlinear interactions with partition plots" src="assets/figure-5.png" /></div>
 <p><em>Figure 5: Visualizing nonlinear interactions with partition plots</em></p>
@@ -138,7 +138,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <div class="article-image"><img alt="Figure 7: Characterizing the efficient frontier with P-Trees" src="assets/figure-7.png" /></div>
 <p><em>Figure 7: Characterizing the efficient frontier with P-Trees</em></p>
 <p>反过来，这组「难缠」的 P-Tree 检验资产，也给所有竞争性因子模型出了一道难题。针对第一棵 P-Tree、用 Fama–French 五因子模型（Fama and French, 2015）去解释时，GRS 检验（Gibbons–Ross–Shanken test, Gibbons, Ross &amp; Shanken, 1989）统计量高达 <code>141.27</code>，绝大多数月度 alpha 大于 <code>1%</code>。无论是其他可观测因子模型，还是 Kelly, Pruitt &amp; Su（2019）、Lettau &amp; Pelger（2020）这类基于 ML 的潜在因子模型，都难以把它们解释掉。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>必须诚实地提醒一句：上面这些惊人的夏普比率是<strong>样本内</strong>（in-sample）的。论文自己在脚注里点明，样本内外存在明显落差（「limits to learning」）。到了真正的样本外（OOS）检验里——无论是「用过去预测未来」还是「用未来预测过去」——P-Tree 因子的年化夏普比率回落到 <code>3</code> 以上，alpha 仍显著为正。3 也很高，但和 15.63 已不是一个量级。读这篇文章时，请把这两组数字分开看。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>必须诚实地提醒一句：上面这些惊人的夏普比率是<strong>样本内</strong>（in-sample）的。论文自己在脚注里点明，样本内外存在明显落差（「limits to learning」）。到了真正的样本外（OOS）检验里——无论是「用过去预测未来」还是「用未来预测过去」——P-Tree 因子的年化夏普比率回落到 <code>3</code> 以上，alpha 仍显著为正。3 也很高，但和 15.63 已不是一个量级。读这篇文章时，请把这两组数字分开看。</p></p></div>
 <h2 id="5">5 从一棵树，到一片森林</h2>
 <p>然后，一个自然的延伸是：一棵树会不会太「单薄」？P-Tree 框架在这里展示了它的弹性，把机器学习里的两大集成思想都接了进来。</p>
 <p>一路是<strong>提升</strong>（boosting）。提升 P-Tree（Boosted P-Tree）在前一棵树的基础上再长新树，要求每一棵新树都必须提供<strong>增量</strong>的贡献——多出来的因子和检验资产，得真的把尚未被张成的那部分前沿补上。这就给「多因子模型」提供了一个统一的生成框架，也是 6.37 一路涨到 15.63 的来源。</p>

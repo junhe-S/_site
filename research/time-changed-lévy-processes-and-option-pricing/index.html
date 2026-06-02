@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Carr &amp; Wu (2004, <em>Journal of Financial Economics</em>)</strong>：他们用「被随机时间改写过的列维过程」(time-changed Lévy process) 同时装下了资产收益中的三件怪事——跳跃、随机波动、以及收益与波动的负相关（杠杆效应）。更妙的是，他们引入了一个<strong>复值测度</strong>（命名为「杠杆中性测度」），把原本纠缠在一起的两重随机性一刀切开，让一个本来很难算的特征函数，退化成一道我们早就会解的「债券定价公式」。这套框架几乎囊括了此前期权定价文献里的所有主流模型。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Carr &amp; Wu (2004, <em>Journal of Financial Economics</em>)</strong>：他们用「被随机时间改写过的列维过程」(time-changed Lévy process) 同时装下了资产收益中的三件怪事——跳跃、随机波动、以及收益与波动的负相关（杠杆效应）。更妙的是，他们引入了一个<strong>复值测度</strong>（命名为「杠杆中性测度」），把原本纠缠在一起的两重随机性一刀切开，让一个本来很难算的特征函数，退化成一道我们早就会解的「债券定价公式」。这套框架几乎囊括了此前期权定价文献里的所有主流模型。</p></p></div>
 <h2 id="1-black-scholes">1 引言：Black-Scholes 错在哪三个地方</h2>
 <p>凡是对衍生品定价有点兴趣的人，都绕不开 Black-Scholes 公式。它的全部出发点只有一句话：股票收益服从布朗运动 (Brownian motion)。布朗运动美在它干净——增量独立、正态分布、连续无跳。可惜，真实世界的收益序列，几乎在每一个能被检验的维度上都跟这个基准过不去。</p>
 <p>文献里反复出现的「背叛」有三条，而且无论是在统计测度还是风险中性测度下都顽固地存在：</p>
@@ -114,7 +114,7 @@
 <p>这里 \(v(t)\) 是<strong>瞬时业务活跃度</strong> (instantaneous activity rate)，必须非负（否则钟会倒走）。最后，被改写过时间的过程就是</p>
 <p>$$Y_t \equiv X_{T_t}, \qquad t\ge 0,$$</p>
 <p>我们用它来描述经济体的不确定性（比如某资产的对数收益）。换不同的列维三元组、配不同的活跃度过程，就能批量生产出一大堆随机过程。Heston (1993) 不过是「布朗运动 + 均值回复平方根活跃度」的特例；Duffie, Pan &amp; Singleton (2000) 的仿射跳扩散，则是「复合泊松跳 + 满足仿射约束的活跃度」的特例。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这里的「volatility / 波动」是个一般化的词，指代经济体里那种不确定性的强弱，<strong>不是</strong>统计意义上收益的标准差。当 \(X_t\) 是布朗运动时，活跃度正比于瞬时方差率；当 \(X_t\) 是纯跳过程时，活跃度正比于跳跃的列维密度。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这里的「volatility / 波动」是个一般化的词，指代经济体里那种不确定性的强弱，<strong>不是</strong>统计意义上收益的标准差。当 \(X_t\) 是布朗运动时，活跃度正比于瞬时方差率；当 \(X_t\) 是纯跳过程时，活跃度正比于跳跃的列维密度。</p></p></div>
 <h2 id="3">3 难点：两重随机性纠缠在一起</h2>
 <p>模型搭好了，但定价要靠特征函数。麻烦也正在这里：\(Y_t = X_{T_t}\) 是「一个随机过程，在一个随机的时间点上取值」，它的特征函数要对<strong>两重</strong>随机性同时积分：</p>
 <p>$$\phi_{Y_t}(\theta) \equiv E\big[e^{i\theta\cdot X_{T_t}}\big] = E\Big[\,E\big[e^{i\theta\cdot X_u}\,\big|\,T_t = u\big]\Big].$$</p>
@@ -146,7 +146,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p><strong>第三步，主定理几乎是顺手就出来了。</strong> 在被求期望的指数上，凑出一个「加一项、减一项」的恒等变形：</p>
 <p>$$E\big[e^{i\theta\cdot Y_t}\big] = E\big[e^{i\theta\cdot Y_t + T_t\psi_x(\theta) - T_t\psi_x(\theta)}\big] = E\big[M_t(\theta)\,e^{-T_t\psi_x(\theta)}\big] = E^{\theta}\big[e^{-T_t\psi_x(\theta)}\big].$$</p>
 <p>最后一个等号，正是用 \(M_t(\theta)\) 作为测度变换的密度，把 \(P\) 下的期望换成 \(Q(\theta)\) 下的期望。证毕。</p>
-<div class="callout"><div class="callout-title">Note</div><p>注意一个漂亮的自洽性：当 \(T_t\) 与 \(X_t\) <strong>独立</strong>时，\(T_t\) 在 \(P\) 和 \(Q(\theta)\) 下服从同一个过程，于是 \(\mathcal{L}^{\theta}_{T_t} = \mathcal{L}_{T_t}\)，主定理自动退回第 3 节那个独立情形的结果。换句话说，<strong>没有杠杆效应时，根本不需要换测度。</strong> 测度变换只在「原始经济体确实带杠杆」时才出手，且只做一件事：把相关性吞进测度里。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>注意一个漂亮的自洽性：当 \(T_t\) 与 \(X_t\) <strong>独立</strong>时，\(T_t\) 在 \(P\) 和 \(Q(\theta)\) 下服从同一个过程，于是 \(\mathcal{L}^{\theta}_{T_t} = \mathcal{L}_{T_t}\)，主定理自动退回第 3 节那个独立情形的结果。换句话说，<strong>没有杠杆效应时，根本不需要换测度。</strong> 测度变换只在「原始经济体确实带杠杆」时才出手，且只做一件事：把相关性吞进测度里。</p></p></div>
 <h2 id="5-fft">5 装上资产、风险溢价与 FFT</h2>
 <p>有了特征函数这把钥匙，剩下的就是开几把锁。</p>
 <p><strong>资产价格建模。</strong> 设资产价格是不确定性 \(Y_t\) 的指数仿射函数，\(S_t = S_0\, e^{W^\top Y_t}\)。在风险中性测度下，为保证无套利，论文用 Doléans-Dade 指数 (Doléans-Dade exponential) 把价格项写成一个均值为一的鞅：</p>

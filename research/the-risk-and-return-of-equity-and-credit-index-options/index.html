@@ -89,13 +89,13 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Doshi, Ericsson, Fournier &amp; Seo (2024, <em>Journal of Financial Economics</em>)</strong>：作者从公司资产的动态出发，搭起一个能同时给股票指数、信用指数、以及二者的期权定价的结构化信用风险模型。用它去看市场，会发现一个近年广为流传的结论——「股票期权（SPX options）和信用指数期权（CDX options）定价互相矛盾、市场没有整合」——其实站不住脚。两类期权的回报虽然「极端」，却并不构成误定价 (mispricing) 的证据；真正的关键，是在估计中把<strong>资产风险、方差风险、跳跃风险</strong>这三种系统性风险分别归位。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Doshi, Ericsson, Fournier &amp; Seo (2024, <em>Journal of Financial Economics</em>)</strong>：作者从公司资产的动态出发，搭起一个能同时给股票指数、信用指数、以及二者的期权定价的结构化信用风险模型。用它去看市场，会发现一个近年广为流传的结论——「股票期权（SPX options）和信用指数期权（CDX options）定价互相矛盾、市场没有整合」——其实站不住脚。两类期权的回报虽然「极端」，却并不构成误定价 (mispricing) 的证据；真正的关键，是在估计中把<strong>资产风险、方差风险、跳跃风险</strong>这三种系统性风险分别归位。</p></p></div>
 <h2 id="1">1 一个让人不安的发现</h2>
 <p>先讲一个让做衍生品定价的人睡不着觉的故事。</p>
 <p>我们有两个市场。一个是股票这一侧——以标普 500 指数 (S&amp;P 500 Index, SPX) 及其期权为代表，这是期权定价文献几十年来的主战场。另一个是信用这一侧——以 <strong>CDX 北美投资级指数 (CDX North American Investment Grade Index, CDX)</strong> 及其期权（本质上是写在一篮子信用违约互换上的 swaption）为代表，2012 年以后才活跃起来。</p>
 <p>按理说，这两个市场背后站着的是<strong>同一批公司</strong>。股票是这些公司资产的看涨期权，债务是看跌期权的空头（这正是 Merton (1974) 的洞见）；而写在股票、债务上的期权，就是「期权的期权」，即复合期权 (compound option, Geske, 1979)。既然底层资产是同一套东西，那么股与债、以及它们的期权，价格就应当被同一个无套利体系串起来，彼此自洽。</p>
 <p>可偏偏，一篇与本文几乎同期的重磅论文——Collin-Dufresne, Junge &amp; Trolle (2024)（下文沿用作者们的简称 CDJT）——给出了一个针锋相对的结论：<strong>对不上</strong>。CDJT 用一个风险中性资产动态与本文几乎一致的模型去拟合，发现当模型被校准到匹配 SPX 期权的隐含波动率时，它给 CDX 期权生成的隐含波动率<strong>太低了</strong>。换句话说，市场上 CDX 期权的报价显得「过贵」。由此 CDJT 下了一个相当大胆的判断：股票市场和信用市场<strong>没有完全整合</strong>。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>这是个很重的指控。因为整整一代文献——Cremers et al. (2008)、Carr &amp; Wu (2011)、Collin-Dufresne et al. (2012)、Culp et al. (2018) 等——都在反复论证股票期权和各类信用工具之间的紧密联系。如果 CDJT 对了，这些工作的根基就被动摇了。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这是个很重的指控。因为整整一代文献——Cremers et al. (2008)、Carr &amp; Wu (2011)、Collin-Dufresne et al. (2012)、Culp et al. (2018) 等——都在反复论证股票期权和各类信用工具之间的紧密联系。如果 CDJT 对了，这些工作的根基就被动摇了。</p></p></div>
 <p>于是一个自然的问题是：到底是市场真的「裂开」了，还是我们<strong>看市场的那副镜片</strong>出了问题？</p>
 <p>本文的回答是后者。而要把这个回答讲清楚，得先把那副镜片——一个从公司资产长出来、能一口气给四个市场定价的结构模型——亲手搭起来。</p>
 <h2 id="2">2 把四个市场种在同一棵树上</h2>
@@ -124,7 +124,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>既然 P 和 Q 都在手上，模型就能谈「回报」与「风险溢价」，而不只是定价。把 Eq. (2) 和其 Q 对应式相减，得到无杠杆资产风险溢价：</p>
 <p>$$(\mu_t - r_f)\,dt = \left(\sqrt{1-\rho^2}\,\xi_{A\perp V} + \rho\,\xi_V\right)V_t\,dt + \lambda_t^m\,\mathbb{E}_{Z^m}\!\left[\left(1-e^{Z_t^m}\right)\left(e^{\xi_m Z_t^m}-1\right)\right]dt$$</p>
 <p>第一项是扩散性资产增长与方差风险的补偿，第二项是系统性资产跳跃风险溢价。<strong>任何</strong>工具（SPX、CDX、以及它们的期权）的预期超额回报，最终都能分解为这三种系统性风险——资产增长、方差、跳跃——的补偿，由它们各自的<strong>风险暴露</strong>决定。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这一步是「只有 Q、没有 P」的纯风险中性框架（如 CDJT）<strong>做不到</strong>的。在纯风险中性世界里，任何工具的预期回报恒等于无风险利率，根本无从谈论风险溢价的来源。本文之所以能对「高期权回报是不是误定价」这一争议发声，正是因为它把 P 也建模了。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这一步是「只有 Q、没有 P」的纯风险中性框架（如 CDJT）<strong>做不到</strong>的。在纯风险中性世界里，任何工具的预期回报恒等于无风险利率，根本无从谈论风险溢价的来源。本文之所以能对「高期权回报是不是误定价」这一争议发声，正是因为它把 P 也建模了。</p></p></div>
 <h3 id="2-4">2.4 公司证券：从资产到股与债</h3>
 <p>有了资产的 P/Q 动态，给公司证券定价就顺理成章。沿用 Leland (1994)，每家公司发行永续债 (consol bond)，当资产 \(A_t^j\) 首次触及违约门槛 \(A_D\) 时违约。一切证券价格都依赖两个量：违约时收到 1 美元的现值 \(P_D(A_t^j, V_t)\)，以及累计风险中性违约概率 \(G_t(A_t^j, V_t, T)\)。</p>
 <p>债务价值是未来票息加违约回收的现值：</p>
@@ -160,7 +160,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <li>同时，资产方差上升 → 写在公司资产上的期权（无论看涨看跌）价值都上升，这是「<strong>vega 效应</strong>」。于是股权（多头看涨）增值，债务（空头看跌）贬值。</li>
 </ol>
 <p>对 SPX 而言，这两个渠道<strong>方向相反、互相抵消</strong>；而对债务而言，两个渠道<strong>同向叠加</strong>，使得暴露<strong>重度为负</strong>。CDX 天然比 SPX 对方差风险更敏感——这个性质被 CDX 期权继承下来，于是卖 CDX 跨式（本质上是卖方差风险的保险）自然要求更高的补偿。</p>
-<div class="callout"><div class="callout-title">Note</div><p>换句话说：CDX 期权的高回报，不是市场「定错了价」，而是它<strong>承担了更多方差风险</strong>，理应拿到更高的风险溢价。把这笔账算清楚，「冒烟的枪」就熄火了。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>换句话说：CDX 期权的高回报，不是市场「定错了价」，而是它<strong>承担了更多方差风险</strong>，理应拿到更高的风险溢价。把这笔账算清楚，「冒烟的枪」就熄火了。</p></p></div>
 <p>而对「高期权回报 = 误定价吗」这个老问题，本文的总判断与 Broadie et al. (2009) 一脉相承：透过模型看，已实现的期权回报虽然<strong>极端</strong>（有些类别的数据与模型之差在经济量级上甚至超过 <code>100%</code> 个百分点），但由于期权回报的高偏度与高峰度，在统计上<strong>无法</strong>把数据估计与模型预测区分开。鉴于检验功效本就很低，作者把自己的检验定位为「最低限度的基准」。其贡献是双重的：用一个含定价方差与跳跃风险的更丰富模型，<strong>印证</strong>了 SPX 期权无误定价的旧结论；并<strong>首次</strong>对此前几乎一片空白的 CDX 期权得出同样结论。</p>
 <h2 id="5">5 文献脉络</h2>
 <p>把这条线索摆开看，它走过了一条相当清晰的路。</p>

@@ -89,13 +89,13 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Liu &amp; Wu (2021, <em>Journal of Financial Economics</em>)</strong>：作者用一种带「自适应带宽」的非参数核平滑方法，重新构造了一条美债零息收益率曲线。它在短端把定价误差从 GSW 的 7% 压到 0.2%；更要紧的是，换上这条曲线后，Cochrane–Piazzesi (2005) 的债券收益预测和 Giglio–Kelly (2018) 的超额波动率，结论都变了——前者的「帐篷形」载荷变稳健了，后者长债的方差比从 1.62 抬到 2.37。一句话：你喂给模型的那条曲线，本身就是结论的一部分。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Liu &amp; Wu (2021, <em>Journal of Financial Economics</em>)</strong>：作者用一种带「自适应带宽」的非参数核平滑方法，重新构造了一条美债零息收益率曲线。它在短端把定价误差从 GSW 的 7% 压到 0.2%；更要紧的是，换上这条曲线后，Cochrane–Piazzesi (2005) 的债券收益预测和 Giglio–Kelly (2018) 的超额波动率，结论都变了——前者的「帐篷形」载荷变稳健了，后者长债的方差比从 1.62 抬到 2.37。一句话：你喂给模型的那条曲线，本身就是结论的一部分。</p></p></div>
 <h2 id="1">1 一个被当成「事实」的数据集</h2>
 <p>做宏观和资产定价的人，几乎没有谁没用过「恒定期限的零息美债收益率」。它是研究利率期限结构、估计收益预测回归、刻画期限溢价、分析货币政策、给衍生品定价的起点。我们打开 CRSP，或者去 Gürkaynak、Sack、Swanson (2007)（下称 GSW）那个网页上下一份 csv，然后理直气壮地把它当成「市场利率」塞进回归里——仿佛它是一个从天上掉下来的、客观的事实。</p>
 <p>但它不是。</p>
 <p>零息收益率从来不是直接观测到的。我们能观测到的，是一堆带息的国债、票据、长债的<strong>成交价</strong>：期限七零八落、票息各不相同、短端密、长端稀。要从这堆原始价格里「反推」出一条光滑的、每个期限都有取值的零息曲线，<strong>必须</strong>做某种插值与平滑——也就是说，必须选一个<strong>方法</strong>。而一旦选了方法，方法的脾气就会渗进数据里。</p>
 <p>这就是本文的张力所在：<strong>最常用的两份曲线数据，各自的方法都有看不见的代价</strong>。Fama &amp; Bliss (1987) 只有 1–5 年、且只有月频；由于本身不光滑，想把它外推到更密或更长的期限很成问题——Joslin et al. (2014) 把它延到 1–120 个月，Cochrane (2015) 却指出这份延伸数据带着很大的特异测量误差。GSW 呢？它沿用 Nelson &amp; Siegel (1987) 经 Svensson (1994) 扩展的<strong>参数函数</strong>，把所有期限的曲线锁进同一个低维函数形式里。代价有三：第一，它剔除了所有剩余期限不足三个月的标的和全部国库券，于是<strong>短端是外推出来的</strong>，定价误差很大；第二，参数法把拟合重心放在中期，长端也靠外推；第三，自由度太小，容易<strong>漏掉局部信息</strong>——而那些局部信息，可能恰恰是经济上有意义的。</p>
-<div class="callout"><div class="callout-title">Note</div><p>一个常被忽略的细节：短端不准，不只是短端的事。一只 1.5 年期债券有两笔票息（0.5 年和 1 年）。如果一年以内的折现率有误差，这两笔票息都被定错价，于是 1.5 年的折现率也跟着错；1.5 年错了，2 年又跟着错……误差就这样<strong>顺着票息链条往长端传染</strong>。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>一个常被忽略的细节：短端不准，不只是短端的事。一只 1.5 年期债券有两笔票息（0.5 年和 1 年）。如果一年以内的折现率有误差，这两笔票息都被定错价，于是 1.5 年的折现率也跟着错；1.5 年错了，2 年又跟着错……误差就这样<strong>顺着票息链条往长端传染</strong>。</p></p></div>
 <h2 id="2">2 真正的主角不是曲线，而是「该多局部」</h2>
 <p>那么，怎么造一条更好的曲线？作者的答案，建立在 Linton et al. (2001) 开创的<strong>非参数核平滑 (non-parametric kernel-smoothing)</strong> 框架上。非参数法的好处一句话能说清：<strong>它不要求曲线在所有期限上长成同一个函数形式</strong>。典型地，收益率曲线的短端局部花样多，长端则平滑得多——参数法很难同时照顾这两头，只能折中；而非参数法天然允许「这一段贴得紧、那一段贴得松」。</p>
 <p>先看怎么把一份带息债券的价格，跟零息曲线联系起来。给定一只债券，它有观测价格 \(p\)、一串现金流 \(\{c_j\}_{j=1}^{J}\)、以及对应的现金流到期时点 \(\{\nu_j\}_{j=1}^{J}\)。若已知零息收益率 \(y(\nu_j)\)，则模型隐含价格是</p>
@@ -125,7 +125,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <div class="article-image"><img alt="Figure 1: Outstanding Treasury securities. Maturity distribution of outstanding securities, 1961–2019" src="assets/figure-1.png" /></div>
 <p><em>Figure 1: Outstanding Treasury securities. Maturity distribution of outstanding securities, 1961–2019</em></p>
 <p>更妙的是一个副产品：<strong>带宽文件本身就是一份「信息含量地图」</strong>。短端带宽最小，意味着观测充足；10 年以上常常带宽很大，因为发行断断续续。作者据此提醒：哪怕在 1990 年后的样本里，那条人人爱用的 30 年期收益率，有时也是从 10 年开外的债券「拼」出来的——无论你用参数法还是非参数法。他们建议研究者把带宽数据当作评估曲线质量的附加信息来用。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这条思路跟另一篇研究遥相呼应：曲线拟合得再「漂亮」，也可能对某些维度的信息充耳不闻（参见<a href="/research/modeling-volatility-in-dynamic-term-structure-models/">《收益率曲线拟合得再好，也可能对波动率「充耳不闻」》</a>）。本文的「带宽即信息」给了我们一把直接量度「这一段到底有多少原始信息」的尺子。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这条思路跟另一篇研究遥相呼应：曲线拟合得再「漂亮」，也可能对某些维度的信息充耳不闻（参见<a href="/research/modeling-volatility-in-dynamic-term-structure-models/">《收益率曲线拟合得再好，也可能对波动率「充耳不闻」》</a>）。本文的「带宽即信息」给了我们一把直接量度「这一段到底有多少原始信息」的尺子。</p></p></div>
 <h2 id="3">3 数据与离群点</h2>
 <p>原料是 <strong>CRSP Treasuries 时间序列</strong>里 CUSIP 级别的带息国债数据，覆盖国库券、中期国债、长债。输出是<strong>日频</strong>、期限 \(\{1,2,\dots,360\}\) 个月的零息曲线。作者还贡献了一套<strong>顺序式的离群点检测与剔除算法</strong>——相对于 Fama &amp; Bliss (1987)、GSW 所用的临时性 (ad hoc) 做法，这套算法透明、可复现。曲线数据在作者网页上公开维护、定期更新。</p>
 <h2 id="4">4 于是反转出现：换条曲线，结论就变了</h2>
@@ -134,7 +134,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <div class="article-image"><img alt="Figure 5: CP loadings of average excess returns. x-axis: independent variables one- to five-year forward rates yt , ft , ... , ft . Dependent variable" src="assets/figure-5.png" /></div>
 <p><em>Figure 5: CP loadings of average excess returns. x-axis: independent variables one- to five-year forward rates yt , ft , ... , ft . Dependent variable</em></p>
 <p>如图 5 所示，平均超额收益对一到五年远期利率的载荷，在本文数据下保持着干净的帐篷形；这正是 CP 单因子结论的实证基石。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>这里有个微妙之处值得长期预测回归的研究者警惕：当解释变量本身（远期利率）来自一条被过度平滑、又随样本漂移的曲线，回归系数的不稳定到底来自经济、还是来自数据构造？（关于小样本下长期预测回归的偏差，另见<a href="/research/biases-in-long-horizon-predictive-regressions/">《用更多的数据，买来更大的偏差》</a>。）</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这里有个微妙之处值得长期预测回归的研究者警惕：当解释变量本身（远期利率）来自一条被过度平滑、又随样本漂移的曲线，回归系数的不稳定到底来自经济、还是来自数据构造？（关于小样本下长期预测回归的偏差，另见<a href="/research/biases-in-long-horizon-predictive-regressions/">《用更多的数据，买来更大的偏差》</a>。）</p></p></div>
 <p><strong>接着，一个自然的延伸</strong>是「跨度假设 (spanning hypothesis)」检验：三个收益率因子是否足以预测债券收益？作者把超额收益回归在五个远期利率的五个主成分上。用本文曲线，<strong>第四、第五主成分仍有额外预测力</strong>——无论用标准推断，还是用 Bauer &amp; Hamilton (2018) 新近的自助法都成立。这与 CP 的结论、以及指向「未跨因子 (unspanned factors)」的文献（如 Duffee, 2011）一致。而用 GSW 数据，高阶主成分在 CP 原始样本里<strong>显示不出</strong>额外预测力，且载荷的符号和量级在原始与延长样本之间都变了——又一次指向 GSW 的不稳。</p>
 <p><strong>战场二：Giglio–Kelly (2018) 的长债超额波动率。</strong> GK 用「方差比」统计量来比较长债对数价格的<strong>无约束方差</strong>与施加无套利约束后的方差。GK 在许多资产类别里发现方差比常常<strong>高于 2</strong>，但唯独美债偏小。作者复现发现：用 GSW 数据，20、25、30 年债的方差比是 <strong>1.19、1.38、1.62</strong>；换上本文数据，对应变成 <strong>1.63、2.02、2.37</strong>——不但与 GK 的总体结论一致，还<strong>显著强化</strong>了美债这块原本偏弱的结果。也就是说，GK 在美债上偏小的方差比，<strong>很可能是 GSW 数据造成的</strong>。</p>
 <p>那么经济上，这两套数据的差异从何而来？会不会只是微观结构噪声 (microstructure noise)？GK 已经做了大量分析来排除噪声解释。所以更合理的解释是：<strong>本文数据更好地捕捉了关于风险因子的底层信号</strong>。而这背后，统计上的根源就是那一念之差——本文用非参数核平滑（基于 Linton et al., 2001），GSW 用 Svensson (1994) 扩展的参数函数。非参数法既能造出全局光滑的曲线，又能保留经济上有意义的<strong>局部变化</strong>；参数法则因为太光滑，反而把高阶主成分里的信息抹掉了——Cochrane &amp; Piazzesi (2009)、Gürkaynak et al. (2010) 早就提示过这一点。</p>

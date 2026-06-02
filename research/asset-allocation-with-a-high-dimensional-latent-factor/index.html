@@ -89,13 +89,13 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Han (2006, Review of Financial Studies)</strong>：作者提出一个能让 36 只股票的<strong>预期收益</strong>和<strong>协方差</strong>同时随时间变动的高维动态因子随机波动率（DFMSV）模型，再用它去做均值-方差配置。结果是，每天调仓、同时「择时收益 + 择时波动」的日内交易者，在风险调整后每年能比买入持有的被动投资者多赚 <strong>15.8%</strong>；被动投资者愿意为换到这个策略每年掏出高达 <strong>18%</strong> 的管理费。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Han (2006, Review of Financial Studies)</strong>：作者提出一个能让 36 只股票的<strong>预期收益</strong>和<strong>协方差</strong>同时随时间变动的高维动态因子随机波动率（DFMSV）模型，再用它去做均值-方差配置。结果是，每天调仓、同时「择时收益 + 择时波动」的日内交易者，在风险调整后每年能比买入持有的被动投资者多赚 <strong>15.8%</strong>；被动投资者愿意为换到这个策略每年掏出高达 <strong>18%</strong> 的管理费。</p></p></div>
 <h2 id="1">1 一个被「劈成两半」的文献</h2>
 <p>先讲一个略显尴尬的现实。</p>
 <p>过去几十年里，金融计量经济学其实已经把两件事说得相当清楚了。第一，股票的<strong>预期收益</strong>不是常数——它有可被预测的成分，股息率、短期国债利率这些变量，多多少少能告诉你未来的收益会高一点还是低一点。第二，股票的<strong>波动率</strong>也不是常数——这几乎是 ARCH/GARCH 和随机波动率（stochastic volatility, SV）模型几十年研究的共识，没人会再假设方差是一个固定的数。</p>
 <p>两件事都成立。可一旦研究者想把它们用到<strong>资产配置</strong>这个最实际的问题上时，文献却诡异地裂成了两半。</p>
 <p>研究收益可预测性的那一派——Kandel and Stambaugh (1996)、Barberis (2000) 这一脉——让预期收益动起来，却<strong>假设波动率是常数</strong>；而研究波动率择时（volatility timing）的那一派——Fleming, Kirby, and Ostdiek (2001)——让协方差动起来，却<strong>假设预期收益是常数</strong>。两边各执一词，各自漂亮，但谁也没把两件已知为真的事放进同一个模型里。</p>
-<div class="callout"><div class="callout-title">Note</div><p>偶有几篇试图让前两阶矩同时变动的——Gomes (2002)、Johannes, Polson, and Stroud (2002)、Marquering and Verbeek (2001)——但它们有一个共同的硬伤：<strong>只能处理一只风险资产</strong>。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>偶有几篇试图让前两阶矩同时变动的——Gomes (2002)、Johannes, Polson, and Stroud (2002)、Marquering and Verbeek (2001)——但它们有一个共同的硬伤：<strong>只能处理一只风险资产</strong>。</p></p></div>
 <p>于是问题就来了。真实世界里的投资者，尤其是机构投资者，手上从来不是一只股票，而是一大篮子。如果预期收益和波动率都在动，一个面对几十只、上百只股票的投资者，到底<strong>该怎么利用这个不断变化的投资机会</strong>？</p>
 <p>要回答这个问题，你需要一个模型，它得同时满足三个苛刻的条件：让预期收益时变、让协方差时变、并且——能在<strong>高维</strong>下估出来。文献里没有这样的模型。这篇论文的第一个贡献，就是造一个出来。</p>
 <h2 id="2">2 模型：把「会呼吸」的因子塞进协方差</h2>
@@ -120,7 +120,7 @@ f_t = c + A f_{t-1} + S_t^{1/2}\eta_t,\qquad \eta_t \sim N(0, I_k)
 $$</p>
 <p>这个 \(A f_{t-1}\) 项，就是整篇论文的「点睛之笔」。正因为因子有了 AR 结构，<strong>预期收益</strong>才真正动了起来——\(E[r_{t+1}\mid \mathcal{F}_t] = B\,E[f_{t+1}\mid \mathcal{F}_t] = B(c + A f_t)\)，今天的因子取值会预测明天的收益。而因子的随机波动 \(S_t = \mathrm{diag}(e^{h_{p+1,t}},\dots,e^{h_{p+k,t}})\) 又让<strong>协方差</strong>继续动。一箭双雕：前两阶矩，第一次在高维下同时时变。</p>
 <p>作者把它命名为<strong>动态因子多元随机波动率（dynamic factor multivariate stochastic volatility, DFMSV）模型</strong>。为识别潜在因子，载荷矩阵被加了约束：\(b_{ii}=1\)、\(b_{ij}=0\ (j>i)\)，\(A\) 取对角且 \(a_{ii}\in(-1,1)\) 保证平稳——这就是因子模型里熟悉的「旋转不确定性」约束，直觉上是用前 \(k\) 只资产去钉住 \(k\) 个因子。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>顺带一提：Johannes, Polson, and Stroud (2002) 那个让因子走 AR(1) 但没有随机波动的单变量模型，恰好是 DFMSV 的一个特例。本文是它的高维、带 SV 的推广。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>顺带一提：Johannes, Polson, and Stroud (2002) 那个让因子走 AR(1) 但没有随机波动的单变量模型，恰好是 DFMSV 的一个特例。本文是它的高维、带 SV 的推广。</p></p></div>
 <p><strong>怎么估？</strong> 麻烦在于规模：36 只收益序列 + 3 个因子，参数就有 <strong>222</strong> 个，再加上数以千计的潜在变量（因子和对数方差）。极大似然根本写不出似然函数。作者转向<strong>贝叶斯 + 马尔可夫链蒙特卡洛（MCMC）</strong>：把焦点从「参数的后验」转到「参数与潜在变量的增广后验」，对后者做 Gibbs 抽样。一个核心技巧来自 Kim, Shephard, and Chib (1998)——把对数卡方随机变量的分布用<strong>七个正态的混合</strong>去逼近，从而把模型线性化成一个条件高斯的状态空间模型，潜在的 \(h_{jt}\) 就能一条序列一条序列地抽出来了。</p>
 <h2 id="3">3 从模型到钱：均值-方差投资者的算盘</h2>
 <p>模型造好了，但它值不值钱，要靠经济检验来回答。作者让一个均值-方差投资者上场。</p>
@@ -142,7 +142,7 @@ M^2 = \frac{\sigma_b}{\sigma_p}\left(\bar{\mu}_p - r_f\right) - \left(\bar{\mu}_
 $$</p>
 <p>二是 Fleming, Kirby, and Ostdiek (2001) 的<strong>业绩费（performance fee）</strong>：被动投资者愿意每年付多少钱 \(F\)，换到动态策略后效用恰好不变。相对风险厌恶系数在实证中设为 \(\gamma = 6\)。</p>
 <h2 id="4">4 主要结果：日内、且要「双重择时」</h2>
-<div class="callout"><div class="callout-title">Note</div><p>一句话：<strong>所有</strong>主动投资者用<strong>两种</strong>动态策略都赚到了可观的经济收益，而<strong>日内交易者</strong>用<strong>收益-波动率双重择时</strong>赚得最多。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>一句话：<strong>所有</strong>主动投资者用<strong>两种</strong>动态策略都赚到了可观的经济收益，而<strong>日内交易者</strong>用<strong>收益-波动率双重择时</strong>赚得最多。</p></p></div>
 <p>具体到数字。当一个日内交易者最大化期望效用、同时对预期收益和波动率择时时，她在风险调整后每年能比被动投资者多赚 <strong>15.8%</strong>（这就是 \(M^2\)）。换个说法，被动投资者愿意每年付出高达 <strong>18%</strong> 的管理费，从买入持有切换到这个动态策略。这个量级在资产配置文献里是相当惊人的。</p>
 <p>如表 2 所示，日内交易者的各项表现指标——夏普比率、\(M^2\)、业绩费、胜率——在多种基准和目标函数下都稳健地优于买入持有。</p>
 <div class="article-image"><img alt="Table 2: compares the out-of-sample performance for the day traders" src="assets/table-2.png" /></div>

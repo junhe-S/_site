@@ -548,20 +548,41 @@ def process_word_annotations(html):
 # ---------------------------------------------------------------------------
 
 def process_callouts(html):
-    """Convert > [!note] blockquotes into styled callout divs."""
-    pattern = r"<blockquote>\s*<p>\[!(note|warning|tip|important)\]\s*\n?(.*?)</p>\s*</blockquote>"
+    """Convert > [!note] blockquotes into styled callout divs.
 
-    def replace_callout(match):
-        callout_type = match.group(1).capitalize()
-        content = match.group(2).strip()
-        return (
-            f'<div class="callout">'
-            f'<div class="callout-title">{callout_type}</div>'
-            f"<p>{content}</p>"
-            f"</div>"
-        )
+    Python-Markdown merges consecutive `>` blockquotes (separated by a single
+    blank line) into one <blockquote> with multiple <p>. So a blockquote may
+    contain several callouts; convert each `<p>[!type]...` marker, not just the
+    first. A trailing `-` on the type (e.g. `[!note]-`) makes a collapsible
+    <details> callout (used for proofs).
+    """
+    TYPES = "note|warning|tip|important"
+    marker = re.compile(r"<p>\[!(" + TYPES + r")\](-?)[ \t]*", re.IGNORECASE)
 
-    return re.sub(pattern, replace_callout, html, flags=re.DOTALL)
+    def convert_block(match):
+        inner = match.group(1)
+        starts = list(marker.finditer(inner))
+        if not starts:
+            return match.group(0)  # ordinary blockquote, leave unchanged
+        out = []
+        pre = inner[:starts[0].start()].strip()
+        if pre:
+            out.append(f"<blockquote>{pre}</blockquote>")
+        for i, mk in enumerate(starts):
+            ctype = mk.group(1).capitalize()
+            # A trailing `-` (e.g. `[!note]-`) is accepted and treated the same
+            # as a plain callout: render as a normal `<div class="callout">`,
+            # not a separate collapsible widget.
+            end = starts[i + 1].start() if i + 1 < len(starts) else len(inner)
+            seg = inner[mk.end():end].strip()
+            out.append(
+                f'<div class="callout">'
+                f'<div class="callout-title">{ctype}</div>'
+                f"<p>{seg}</p></div>"
+            )
+        return "".join(out)
+
+    return re.sub(r"<blockquote>\s*(.*?)\s*</blockquote>", convert_block, html, flags=re.DOTALL)
 
 
 # ---------------------------------------------------------------------------
@@ -812,6 +833,26 @@ def build_listing(posts_meta, section="posts"):
             totals[p.get("journal_label", "")] = totals.get(p.get("journal_label", ""), 0) + 1
         for p in posts_meta:
             p["journal_total"] = totals.get(p.get("journal_label", ""), 0)
+    elif section == "note":
+        # Group by book (category), then part, then chapter order. The listing
+        # shows only the first part of each book and a "more" link to the full
+        # per-book page when there is content beyond the first part.
+        posts_meta.sort(key=lambda p: (p.get("category", ""),
+                                       p.get("part", ""), p.get("order", 0)))
+        books = {}
+        for p in posts_meta:
+            books.setdefault(p.get("category", ""), []).append(p)
+        for cat, items in books.items():
+            parts = []
+            for p in items:
+                if p.get("part", "") not in parts:
+                    parts.append(p.get("part", ""))
+            first_part = parts[0] if parts else ""
+            n_first = sum(1 for p in items if p.get("part", "") == first_part)
+            has_more = len(items) > n_first
+            for p in items:
+                p["book_slug"] = note_book_slug(cat)
+                p["book_more"] = has_more
     else:
         posts_meta.sort(key=lambda p: p["date"], reverse=True)
 
@@ -874,6 +915,45 @@ def build_author_pages(posts_meta):
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "index.html").write_text(html, encoding="utf-8")
     print(f"  Built {len(authors)} author page(s)")
+
+
+def note_book_slug(category):
+    """URL slug for a Note book (category)."""
+    return re.sub(r"[^a-z0-9]+", "-", (category or "").lower()).strip("-") or "book"
+
+
+def build_note_book_pages(posts_meta):
+    """Generate one static page per Note book (category), listing all its
+    parts/chapters. The "more" link beside each book header on the Note listing
+    points here. Stale book dirs are pruned.
+    """
+    books = {}  # slug -> {label, posts}
+    for p in posts_meta:
+        cat = p.get("category", "")
+        if not cat:
+            continue
+        slug = note_book_slug(cat)
+        books.setdefault(slug, {"label": cat, "posts": []})
+        books[slug]["posts"].append(p)
+
+    base = ROOT / "note" / "book"
+    base.mkdir(parents=True, exist_ok=True)
+    for d in base.iterdir():
+        if d.is_dir() and d.name not in books:
+            shutil.rmtree(d, ignore_errors=True)
+
+    if not books:
+        return
+    template = env.get_template("note_book.html")
+    for slug, info in books.items():
+        posts = sorted(info["posts"],
+                       key=lambda p: (p.get("part", ""), p.get("order", 0)))
+        html = template.render(book=info["label"], posts=posts,
+                               section_title=info["label"])
+        out_dir = base / slug
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "index.html").write_text(html, encoding="utf-8")
+    print(f"  Built {len(books)} note book page(s)")
 
 
 def build_journal_pages(posts_meta):
@@ -1004,6 +1084,8 @@ def build_all(no_exec=False, single_post=None):
         if section == "research":
             build_author_pages(all_meta)
             build_journal_pages(all_meta)
+        if section == "note":
+            build_note_book_pages(all_meta)
 
     elapsed = time.time() - start
     print(f"\nDone in {elapsed:.1f}s")

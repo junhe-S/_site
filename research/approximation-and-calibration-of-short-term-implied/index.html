@@ -89,11 +89,11 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Medvedev &amp; Scaillet (2007, <em>Review of Financial Studies</em>)</strong>：他们在一个带跳跃的两因子随机波动率模型下，推导出当<strong>到期时间趋于零</strong>时隐含波动率的渐进展开式，并由此给出一个<strong>不含未观测瞬时波动率</strong>的校准公式——于是横跨不同交易日的期权数据可以被一次性"汇总"进同一套校准里。一个反直觉的结论是：跳跃不改变隐含波动率的极限值，却改变了它<strong>逼近极限的速度</strong>（从 \(\tau\) 变成 \(\sqrt{\tau}\)），而这恰恰可以用来<strong>检验跳跃是否存在</strong>。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Medvedev &amp; Scaillet (2007, <em>Review of Financial Studies</em>)</strong>：他们在一个带跳跃的两因子随机波动率模型下，推导出当<strong>到期时间趋于零</strong>时隐含波动率的渐进展开式，并由此给出一个<strong>不含未观测瞬时波动率</strong>的校准公式——于是横跨不同交易日的期权数据可以被一次性"汇总"进同一套校准里。一个反直觉的结论是：跳跃不改变隐含波动率的极限值，却改变了它<strong>逼近极限的速度</strong>（从 \(\tau\) 变成 \(\sqrt{\tau}\)），而这恰恰可以用来<strong>检验跳跃是否存在</strong>。</p></p></div>
 <h2 id="1">1 引言：一个"既要又要"的老难题</h2>
 <p>选择一个期权定价模型，几乎永远是一场拉锯：你想要它<strong>够灵活</strong>，能解释市场上千奇百怪的波动率微笑（implied volatility smile）；又想要它<strong>够好算</strong>，最好有闭式解，不用每天去解一堆偏微分方程或者跑漫长的蒙特卡洛。</p>
 <p>Black–Scholes 公式当然好算，但人尽皆知它解释不了真实的期权价格——波动率微笑就是它脸上抹不掉的那道裂痕。于是过去三十年，人们往里加了两样东西：<strong>随机波动率</strong>（stochastic volatility）和<strong>跳跃</strong>（jumps）。今天业界最常用的那一类——仿射跳跃扩散 (affine jump-diffusion)，由 Duffie, Pan &amp; Singleton (2000) 奠定——之所以流行，正是因为它能给出闭式期权价格。代价呢？它必须接受很强的参数约束：方差走一个平方根过程（即 Heston (1993) 的设定），跳跃强度被规定成方差的线性函数。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>问题是，这套"为了好算而强加的约束"，在实证里站不太住。Jones (2003)、Aït-Sahalia &amp; Kimmel (2004) 一旦把模型放宽到更一般的恒定弹性方差 (constant elasticity of variance, CEV) 设定，平方根过程（Heston）就被数据拒绝了。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>问题是，这套"为了好算而强加的约束"，在实证里站不太住。Jones (2003)、Aït-Sahalia &amp; Kimmel (2004) 一旦把模型放宽到更一般的恒定弹性方差 (constant elasticity of variance, CEV) 设定，平方根过程（Heston）就被数据拒绝了。</p></p></div>
 <p>那么，有没有办法既不被仿射约束绑住，又不必硬解 PDE？本文的答案是：<strong>别去碰整条期限结构，先把镜头怼到"快到期"那一端</strong>。当到期时间 \(\tau = T-t\) 很小时，隐含波动率会呈现出极其规整的渐进行为——规整到可以写成一个闭式展开。这条路，Lewis (2000)（假设小的波动率之波动率）和 Lee (2001)（假设波动率缓慢均值回复）都走过，但他们处理的都是<strong>没有跳跃</strong>的随机波动率。把他们的方法直接搬到跳跃情形，路并不通。本文真正的贡献，就是把这条展开推到了<strong>带跳跃</strong>的一般情形。</p>
 <h2 id="2">2 先把"价格"翻译成"波动率"的语言</h2>
 <p>约定一下记号。设股价 \(S\)、到期时间 \(\tau\)、行权价 \(K\)。Black–Scholes 隐含波动率 \(IV(K,T)\) 的定义，就是让 BS 公式算出来的价正好等于市场实际价 \(C(K,T)\) 的那个波动率参数：</p>
@@ -114,7 +114,7 @@
 <p>$$dS_t = \big[r-\delta-\eta(\sigma_t)\big]S_t\,dt + \sigma_t S_t\,dW_t^{(1)} + S_t\,dJ_t$$</p>
 <p>$$d\sigma_t = a(\sigma_t)\,dt + b(\sigma_t)\Big[\rho\,dW_t^{(1)} + \sqrt{1-\rho^2}\;dW_t^{(2)}\Big]$$</p>
 <p>其中 \(W^{(1)},W^{(2)}\) 是两个独立标准布朗运动，\(J_t\) 是独立的泊松跳跃过程，\(r,\delta,\rho\) 为常数，期望跳跃幅度 \(E(\Delta J)\) 为常数，而跳跃强度 \(\lambda=\lambda(\sigma_t)\) 可以依赖于波动率；记期望跳跃 \(\eta(\sigma)=\lambda(\sigma)E(\Delta J)\)。这个设定足够一般，能容纳实务里几乎所有常用的参数模型。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>注意 \(\rho\) 把波动率的随机性与股价的随机性"绑"在了同一个布朗运动 \(W^{(1)}\) 上——这就是著名的杠杆效应 (leverage effect)。下面会看到，正是这个 \(\rho\)，在一阶项里留下了微笑的斜率。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>注意 \(\rho\) 把波动率的随机性与股价的随机性"绑"在了同一个布朗运动 \(W^{(1)}\) 上——这就是著名的杠杆效应 (leverage effect)。下面会看到，正是这个 \(\rho\)，在一阶项里留下了微笑的斜率。</p></p></div>
 <p><strong>先看没有跳跃的纯扩散情形</strong>（Proposition 1）。作者证明，隐含波动率有如下渐进展开：</p>
 <div class="mathanno-block"><div class="mathanno-eq">$$
 I(\theta,\tau;\sigma) = \cssId{a1}{\sigma} + \cssId{a2}{I_1(\theta;\sigma)\sqrt{\tau}} + \cssId{a3}{I_2(\theta;\sigma)\,\tau} + O(\tau\sqrt{\tau})
@@ -141,7 +141,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>于是真正关键的一句话浮出水面——<strong>跳跃改变的不是极限，而是逼近极限的速度。</strong></p>
 <p>在纯扩散模型里，平价隐含波动率以 \(\tau\) 的速率收敛到 \(\sigma\)（因为 \(\theta=0\) 时 \(I_1(0)=0\)，\(\sqrt\tau\) 那一项消失了）。可一旦有跳跃，\(\theta=0\) 处 \(I_1(0)=-\eta\,g(0)+\mu\,h(0)\neq0\)，\(\sqrt\tau\) 那一项<strong>不再消失</strong>——平价隐含波动率改以 \(\sqrt\tau\) 的速率收敛。</p>
 <p>这正是检验跳跃的一把利器。Carr &amp; Wu (2003a) 在研究期权价格的短期行为时指出，用平价<strong>期权价格</strong>无法检测跳跃（除非是纯跳跃情形）；而本文的 Proposition 4 说明，换成平价<strong>隐含波动率</strong>就能做到——你只需看它逼近瞬时波动率的速度，是 \(\tau\) 还是 \(\sqrt\tau\)。</p>
-<div class="callout"><div class="callout-title">Note</div><p>在更一般的情形（Proposition 5，强度与跳跃分布都依赖于 \(\sigma\)），\(I_1\) 与上面相同，只是二阶项要做一个修正：\(\big[I_2(\theta;\sigma)-\tfrac12\rho b\,\eta'\big]\tau\)，\(\eta'\) 是期望跳跃 \(\eta\) 对 \(\sigma\) 的导数。跳跃强度随波动率变化的那部分信息，是从二阶项漏出来的。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>在更一般的情形（Proposition 5，强度与跳跃分布都依赖于 \(\sigma\)），\(I_1\) 与上面相同，只是二阶项要做一个修正：\(\big[I_2(\theta;\sigma)-\tfrac12\rho b\,\eta'\big]\tau\)，\(\eta'\) 是期望跳跃 \(\eta\) 对 \(\sigma\) 的导数。跳跃强度随波动率变化的那部分信息，是从二阶项漏出来的。</p></p></div>
 <h2 id="6">6 真正关键的一步：把"看不见的"换成"看得见的"</h2>
 <p>到这里，理论很漂亮，但有一个实务上的拦路虎：展开式 (18) 里含着<strong>未观测的瞬时波动率 \(\sigma\)</strong>，而它每天都在变。结果就是，这个公式只能<strong>逐日校准</strong>——而逐日校准需要每天都有足够多的短期期权报价。可现实里常常做不到，比如 S&amp;P 500 期权一个月才发行一次。</p>
 <p>本文最实用的一招在此登场：<strong>用一个能观测到的隐含波动率，替换掉看不见的瞬时波动率。</strong></p>
@@ -150,7 +150,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>接着，对 \(\hat\sigma=I(0,\tau;\sigma)\) 的渐进式做反演，把瞬时波动率写成 \(\sigma=\sigma(\tau,\hat\sigma)\) 的形式，再代回展开式。Proposition 6 由此给出一个<strong>修正后的隐含波动率函数</strong> \(\hat I(\hat\theta,\tau;\hat\sigma)\)——它<strong>完全不含任何隐变量</strong>。</p>
 <p>这一步的意义怎么强调都不为过。因为公式里不再有那个"每天都在变"的 \(\sigma\)，它就可以被用来对模型 (1) 的<strong>任意参数设定</strong>，把<strong>横跨不同交易日</strong>的期权价格<strong>一次性、同时</strong>校准——也就是说，我们能在一步里同时拟合波动率微笑<strong>及其动态</strong>。</p>
 <p>天下当然没有免费的午餐。代价是：波动率漂移 \(a\) 从公式里消失了，无法再从数据里识别出来。但作者诚实地指出，这个损失是合理的——反正在我们的近似所适用的那批短到期期权上，波动率漂移本来也无法被充分识别。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>由于近似只对近平价 (near-the-money) 期权才准，作者进一步对 \(\hat I\) 里那些高度非线性的函数 \(g(\theta)\)、\(h(\theta)\) 在 \(\theta=0\) 处再做一次二次展开，以避免远离平价时的大数值误差。Zhang &amp; Xiang (2006) 也用过类似的二次近似，但他们建立的是隐含波动率与风险中性密度的关系，<strong>没法从期权价反推出状态变量模型的设定</strong>，也无法摆脱逐日校准——这正是本文方法的两点不同。（从期权价格里"读"出风险中性分布这条路，另见<a href="/research/arbitrage-based-recovery/">《把概率从期权价格里「凭空」捞出来》</a>。）</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>由于近似只对近平价 (near-the-money) 期权才准，作者进一步对 \(\hat I\) 里那些高度非线性的函数 \(g(\theta)\)、\(h(\theta)\) 在 \(\theta=0\) 处再做一次二次展开，以避免远离平价时的大数值误差。Zhang &amp; Xiang (2006) 也用过类似的二次近似，但他们建立的是隐含波动率与风险中性密度的关系，<strong>没法从期权价反推出状态变量模型的设定</strong>，也无法摆脱逐日校准——这正是本文方法的两点不同。（从期权价格里"读"出风险中性分布这条路，另见<a href="/research/arbitrage-based-recovery/">《把概率从期权价格里「凭空」捞出来》</a>。）</p></p></div>
 <h2 id="7">7 数据与实证：跳跃显著，平方根过程出局</h2>
 <p>作者把这套方法用到一组 S&amp;P 500 期权价格上做校准，得到三个结论：</p>
 <ol>

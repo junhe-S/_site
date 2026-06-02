@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Breitung &amp; Müller (2025, <em>Journal of Financial Economics</em>)</strong>：他们让 GPT-3 替全球 67 个国家、6.3 万多家上市公司各写一张标准化的「业务名片」，再用 OpenAI 的嵌入模型把名片变成向量、按余弦相似度连成一张<strong>时变的全球商业网络</strong>。这张网在「先行—滞后」选股和并购目标预测上都跑出了与 Hoberg-Phillips 的 TNIC 相当的成绩；而真正精妙的一步，是他们用「掩码」处理了大模型自带的<strong>前视偏差 (look-ahead bias)</strong>——并意外发现：这个偏差在选股里几乎不存在，在并购预测里却真真切切。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Breitung &amp; Müller (2025, <em>Journal of Financial Economics</em>)</strong>：他们让 GPT-3 替全球 67 个国家、6.3 万多家上市公司各写一张标准化的「业务名片」，再用 OpenAI 的嵌入模型把名片变成向量、按余弦相似度连成一张<strong>时变的全球商业网络</strong>。这张网在「先行—滞后」选股和并购目标预测上都跑出了与 Hoberg-Phillips 的 TNIC 相当的成绩；而真正精妙的一步，是他们用「掩码」处理了大模型自带的<strong>前视偏差 (look-ahead bias)</strong>——并意外发现：这个偏差在选股里几乎不存在，在并购预测里却真真切切。</p></p></div>
 <h2 id="1">1 引言：两家车企，凭什么算「同行」</h2>
 <p>先想一个看似简单、其实很麻烦的问题：两家汽车制造商，一家只做电动车、卖给一线城市的高端用户，另一家做燃油车、主打县城的预算型买家。它们在 SIC 或 GICS 的分类表里被归进同一个「行业」，于是在几乎所有实证研究里，它们都被当成彼此的「同行 (peer)」。</p>
 <p>可它们真的相关吗？它们的供应链、数字化程度、地理布局、客户画像，可能毫无交集。反过来，一家电池厂、一家充电桩运营商、一家二手车平台，按行业代码分属三个不同的格子，但它们之间的经济联系，可能比那两家「同行」紧密得多。</p>
@@ -118,7 +118,7 @@
 <p>验证上他们做得很扎实：嵌入网络中，同行业、同国家的配对显著多于词袋网络（说明它确实抓住了相似性）；两个 OpenAI 模型之间，小模型 <code>58%</code> 的关系能在大模型里复现，两者竞争者组合的平均收益相关性高达 <code>0.85</code>（说明结果稳健）。在识别美国披露的竞争关系（来自年报、并购文件、FactSet Revere）这件事上，嵌入网络一律优于词袋网络，并与 TNIC 旗鼓相当。</p>
 <p>但在所有这些之前，有一个隐患必须先拆掉。</p>
 <h2 id="5">5 那个绕不开的麻烦：前视偏差与「掩码」</h2>
-<div class="callout"><div class="callout-title">Warning</div><p>这是全文的「核心」，也是我建议你读这篇论文时最该咬住不放的一点。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这是全文的「核心」，也是我建议你读这篇论文时最该咬住不放的一点。</p></p></div>
 <p>问题出在嵌入模型的「出身」。它背后的 GPT-3，训练数据一直延伸到 2021 年 9 月。也就是说，<strong>模型「知道未来」</strong>。</p>
 <p>作者举了一个绝佳的例子：宝洁 (P&amp;G) 在 2005 年收购了吉列 (Gillette)。如果模型的训练语料里包含了这桩并购，那么当它去嵌入两家公司<strong>收购之前</strong>（比如 2000 年）的历史业务描述时，很可能因为「它知道这俩后来成了一家」，而给出异常相似的向量——尽管在 2000 年，宝洁和吉列其实相当不同。同理，亚马逊从卖书到科技巨头的演化，也会让它 2000 年的描述与微软同期描述显得过分相似，凭空造出「不合时宜的关联 (anachronistic associations)」。</p>
 <p>这就是<strong>前视偏差</strong>：你以为在用历史信息选股，其实悄悄掺进了未来。对任何号称能「预测」的回测，这都是致命的。</p>
@@ -146,7 +146,7 @@
 <div class="article-image"><img alt="Figure 8: M&amp;A target firm detection (Masked networks). These figures examine the proportion of M&amp;A target firms that are included in the different US" src="assets/figure-8.png" /></div>
 <p><em>Figure 8: M&amp;A target firm detection (Masked networks). These figures examine the proportion of M&amp;A target firms that are included in the different US</em></p>
 <p>这一升一降之间，藏着全文最漂亮的一笔逻辑闭环：<strong>与选股不同，在并购预测里，前视偏差是真实存在的</strong>。这完全符合宝洁—吉列的直觉——模型确实「知道」谁后来收购了谁，于是未打码时它能「提前」把目标认出来；一旦打码，这部分「作弊分」就被扣掉了。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这正是这篇方法论文章最有价值的副产品：它不仅给了你一张网，还给了你一把尺子——<strong>通过对比掩码前后的表现，你能反过来诊断某个研究场景里前视偏差到底有多严重</strong>。在选股里可以忽略，在并购预测里必须当心。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这正是这篇方法论文章最有价值的副产品：它不仅给了你一张网，还给了你一把尺子——<strong>通过对比掩码前后的表现，你能反过来诊断某个研究场景里前视偏差到底有多严重</strong>。在选股里可以忽略，在并购预测里必须当心。</p></p></div>
 <h2 id="8">8 再进一步：区分竞争者、供应商与客户</h2>
 <p>到此为止，这张网只告诉你「A 与 B 相关」，却分不清这是<strong>竞争</strong>关系，还是<strong>供应—客户</strong>的上下游关系。可对很多研究问题（比如全球供应链的韧性、Covid-19 这类外生冲击下的传导）来说，这个区别至关重要。</p>
 <p>作者的最后一招，是<strong>微调 (fine-tuning)</strong> 一个开源语言模型：用 FactSet Revere 里<strong>真实记录的</strong>业务关系作标签，训练模型去判别两家公司之间是竞争者、供应商还是客户。在 AI 生成的描述上，这个三分类模型达到了 <code>85.73%</code> 的准确率。</p>

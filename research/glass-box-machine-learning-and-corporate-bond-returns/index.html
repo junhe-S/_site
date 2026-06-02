@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bell, Kakhbod, Lettau &amp; Nazemi (2026, Journal of Financial Economics)</strong>：作者用一类「玻璃箱」机器学习模型——可解释提升机 (Explainable Boosting Machine, EBM)——预测公司债收益率，在不牺牲解释力的前提下把样本外 <code>R²</code> 做到 <code>12%</code> 以上，与随机森林、XGBoost 这些黑箱旗鼓相当，却能把「哪个变量、以什么形状、在什么区间、和谁交互」一条条画给你看。核心发现：宏观与金融不确定性、期限结构因子是最重要的预测变量，且它们对收益的影响高度非线性、不对称，并集中体现在小公司、长久期、高风险的债券上。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bell, Kakhbod, Lettau &amp; Nazemi (2026, Journal of Financial Economics)</strong>：作者用一类「玻璃箱」机器学习模型——可解释提升机 (Explainable Boosting Machine, EBM)——预测公司债收益率，在不牺牲解释力的前提下把样本外 <code>R²</code> 做到 <code>12%</code> 以上，与随机森林、XGBoost 这些黑箱旗鼓相当，却能把「哪个变量、以什么形状、在什么区间、和谁交互」一条条画给你看。核心发现：宏观与金融不确定性、期限结构因子是最重要的预测变量，且它们对收益的影响高度非线性、不对称，并集中体现在小公司、长久期、高风险的债券上。</p></p></div>
 <h2 id="1">1 引言：一个让人左右为难的取舍</h2>
 <p>做实证资产定价的人，这些年大概都被同一个矛盾反复折磨过。</p>
 <p>一方面，因子动物园 (factor zoo) 越来越大。股票市场的因子早已数以百计，公司债市场也不甘示弱——Dickerson et al. (2023a) 干脆给它起名叫「公司债因子动物园」。面对几十上百个候选预测变量，线性回归早就力不从心：它既处理不了变量之间复杂的非线性，也容纳不了高维的预测集。于是机器学习登场了。Gu et al. (2020) 在股票上证明，允许非线性与变量交互的机器学习模型，能给投资者带来实打实的经济收益，远超传统统计方法。</p>
@@ -112,7 +112,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <div class="article-image"><img alt="Figure 1: EBM algorithm" src="assets/figure-1.png" /></div>
 <p><em>Figure 1: EBM algorithm</em></p>
 <p>于是，机器学习的精度被请了进来，GAM 的透明却被原封不动地保留了下来。这就是「玻璃箱」三个字的全部含义。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这里有个容易被忽略的细节：作者评价模型用的 <code>R²</code>（式 3）分母里<strong>不做去均值</strong>——即 \(R^2=1-\sum e_{l,t}^2 / \sum r_{l,t+1}^2\)。这等于把模型和「预测未来超额收益恒为零」这个朴素基准去比，跟随 Gu et al. (2020) 与 Kelly et al. (2023) 的做法，避免拿一个糟糕的均值基准把模型表现吹高。所以这里的 <code>12%</code> 已经是个相当扎实的数字。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这里有个容易被忽略的细节：作者评价模型用的 <code>R²</code>（式 3）分母里<strong>不做去均值</strong>——即 \(R^2=1-\sum e_{l,t}^2 / \sum r_{l,t+1}^2\)。这等于把模型和「预测未来超额收益恒为零」这个朴素基准去比，跟随 Gu et al. (2020) 与 Kelly et al. (2023) 的做法，避免拿一个糟糕的均值基准把模型表现吹高。所以这里的 <code>12%</code> 已经是个相当扎实的数字。</p></p></div>
 <h2 id="3">3 数据：一套拼起来的高维公司债面板</h2>
 <p>讲完方法，自然要问：拿什么数据喂它？</p>
 <p>作者的债券收益与特征，来自 Kelly et al. (2023) 基于 TRACE（经 WRDS）构建的<strong>久期调整月度债券收益</strong>。在此之上，他们把债券与公司层面的特征、各种风险因子、以及来自债市和股市的宏观变量拼到一起，凑成一套全新的高维数据集，一共 <code>81</code> 个预测变量。</p>

@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Phillips &amp; Yu (2005, <em>Review of Financial Studies</em>)</strong>：利率衍生品的价格高度依赖扩散过程的均值回复参数 <code>k</code>，而 <code>k</code> 的最大似然估计在有限样本里有惊人的向上偏差——真值取 <code>0.1</code>、用 600 个周度观测（十年出头的数据）时，<code>k</code> 的偏差高达 <code>391.2%</code>，并由此让一只贴现债券期权的价格被系统性低估 <code>60.6%</code>。更糟的是，这个偏差即使把数据拉到 50 年也不会消失。他们的解法，是一把 1956 年就有的老工具——刀切法 (jackknife)：它不需要写出偏差的解析表达式，甚至可以<strong>直接作用在期权价格本身</strong>上，而且几乎不增加任何计算成本。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Phillips &amp; Yu (2005, <em>Review of Financial Studies</em>)</strong>：利率衍生品的价格高度依赖扩散过程的均值回复参数 <code>k</code>，而 <code>k</code> 的最大似然估计在有限样本里有惊人的向上偏差——真值取 <code>0.1</code>、用 600 个周度观测（十年出头的数据）时，<code>k</code> 的偏差高达 <code>391.2%</code>，并由此让一只贴现债券期权的价格被系统性低估 <code>60.6%</code>。更糟的是，这个偏差即使把数据拉到 50 年也不会消失。他们的解法，是一把 1956 年就有的老工具——刀切法 (jackknife)：它不需要写出偏差的解析表达式，甚至可以<strong>直接作用在期权价格本身</strong>上，而且几乎不增加任何计算成本。</p></p></div>
 <h2 id="1">1 一个让人不安的开场</h2>
 <p>先设想一个让做衍生品的人都很熟悉的场景。</p>
 <p>你手里有一只期权——比如一只挂在三年期贴现债券上的一年期欧式看涨期权。它的定价不靠拍脑袋：Cox、Ingersoll 和 Ross (1985)（下称 CIR）早就给出了闭式解，价格是短期利率那条扩散过程参数的明确函数。你也不缺数据，手上摆着十年出头的周度利率序列。你用的更是计量经济学里的「金标准」——最大似然估计 (maximum likelihood estimation, MLE)，渐近性质好得无可挑剔。</p>
@@ -107,7 +107,7 @@
 <p>$$\phi = \exp(-k\Delta) \approx 1 - k\Delta$$</p>
 <p>这里 <code>Δ</code> 是观测间隔（周度 <code>Δ=1/52</code>，月度 <code>Δ=1/12</code>）。在实务里 <code>k</code> 往往非常接近零，于是 <code>φ</code> 就死死贴着 1——一个标准的「近单位根 (near unit root)」情形，正是 AR 偏差最猖獗的地带。</p>
 <p>但真正致命的一步在于<strong>换算</strong>。<code>k</code> 的偏差大致等于 <code>φ</code> 的偏差再乘上 <code>1/Δ</code>。周度数据 <code>1/Δ = 52</code>——<code>φ</code> 那点看起来不起眼的偏差，被放大了五十多倍。这就是为什么 Chapman &amp; Pearson (2000) 哪怕用了 7500 个观测，估出来的 <code>k</code> 仍然显著上偏；Ball &amp; Torous (1996) 也发现 <code>m</code>、<code>σ</code> 都能估得很准，唯独 <code>k</code> 的抽样分布严重上偏。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>「换一把尺子，老问题就翻案」是这条利率文献里反复出现的母题。利率漂移项到底是不是非线性的、波动率到底藏在曲线的哪一段，都对估计方法极其敏感（可参见<a href="/research/is-nonlinear-drift-implied-by-the-short-end-of-the-term/">《利率会不会「拐弯」？——一个被换了把尺子量出来的老问题》</a>与<a href="/research/identifying-term-structure-volatility-from-the-libor-swap/">《波动率到底藏在哪里？》</a>）。本文要补的，是这条线里被忽略的一块：偏差本身。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>「换一把尺子，老问题就翻案」是这条利率文献里反复出现的母题。利率漂移项到底是不是非线性的、波动率到底藏在曲线的哪一段，都对估计方法极其敏感（可参见<a href="/research/is-nonlinear-drift-implied-by-the-short-end-of-the-term/">《利率会不会「拐弯」？——一个被换了把尺子量出来的老问题》</a>与<a href="/research/identifying-term-structure-volatility-from-the-libor-swap/">《波动率到底藏在哪里？》</a>）。本文要补的，是这条线里被忽略的一块：偏差本身。</p></p></div>
 <h2 id="3-cir-k">3 模型这一节：CIR 里，价格如何「听命于」k</h2>
 <p>本文的舞台是一族常弹性方差 (constant elasticity of variance, CEV) 模型——也就是 Chan et al. (1992) 用来横向比拼各种短率模型的那个框架：</p>
 <p>$$dr(t) = k\big(m - r(t)\big)\,dt + s\,r^{g}(t)\,dB(t)$$</p>

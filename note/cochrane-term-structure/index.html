@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>19. Term Structure of Interest Rates – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>19. Term Structure of Interest Rates</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">利率期限结构</span><span class="lang en">Term Structure</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">预期假说</span><span class="lang en">Expectations Hypothesis</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">远期利率</span><span class="lang en">Forward Rate</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Vasicek与CIR</span><span class="lang en">Vasicek & CIR</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">仿射模型</span><span class="lang en">Affine Models</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>19. Term Structure of Interest Rates</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+期限结构模型出奇地简单:零息债价就是贴现因子的条件期望 \(P^{(j)}_t=\mathbb E_t(m_{t,t+j})\)。一旦指定单期贴现因子 \(m_{t,t+1}\) 的时序过程,把它们链接 \(P^{(j)}_t=\mathbb E_t(m_{t,t+1}\cdots m_{t+j-1,t+j})\) 即得任意债价——与期权定价一样,链接的两条等价路径是"前向解贴现因子取期望"或"前向求价格的 PDE 倒解"。本章(Cochrane 第 19 章,Part III 收官)§19.1 定义(价、收益率、持有期收益、远期利率、互换);§19.2 收益率曲线与<strong>预期假说</strong>(三种等价表述,及为何不等同于风险中性);§19.3 离散时间引论(AR(1)→几何收益率曲线);§19.4 连续时间(PDE / 期望 / 风险价格 / 风险中性);§19.5 三个<strong>线性(仿射)模型</strong>:Vasicek、CIR、一般仿射——log 债价皆为状态变量的线性函数。</p></p></div>
+</div>
+<div class="lang en">
+<h1>19. Term Structure of Interest Rates</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+Term-structure models are surprisingly simple: a zero-coupon bond price is just the conditional expectation of the discount factor, \(P^{(j)}_t=\mathbb E_t(m_{t,t+j})\). Once you specify a time-series process for the one-period discount factor \(m_{t,t+1}\), chaining them, \(P^{(j)}_t=\mathbb E_t(m_{t,t+1}\cdots m_{t+j-1,t+j})\), gives any bond price — as with options, the two equivalent paths for chaining are "solve the discount factor forward and take an expectation" or "find a PDE for prices and solve it backward." This chapter (Cochrane Ch 19, the capstone of Part III): §19.1 definitions (prices, yields, holding-period returns, forward rates, swaps); §19.2 the yield curve and the <strong>expectations hypothesis</strong> (three equivalent statements, and why it is not risk-neutrality); §19.3 a discrete-time introduction (AR(1) → geometric yield curve); §19.4 continuous time (PDE / expectation / price of risk / risk-neutral); §19.5 three <strong>linear (affine) models</strong>: Vasicek, CIR, and the general affine — log bond prices are all linear functions of the state variables.</p></p></div>
+</div>
+<div class="lang zh">
+<h2 id="19-1-definitions-and-notation">19.1 定义与记号 / Definitions and Notation</h2>
+<p>记 \(p^{(N)}_t=\ln P^{(N)}_t\)(N 期零息债对数价)。<strong>收益率</strong> \(y^{(N)}=-\tfrac1N p^{(N)}\) 是使报价合理的虚拟、恒定、年化利率(并非收益率,也不假设利率已知/恒定或债券无违约,只是报价的方便方式)。<strong>持有期收益</strong> \(hpr^{(N)}_{t+1}=p^{(N-1)}_{t+1}-p^{(N)}_t\)(买 N 期、一年后变 N-1 期卖出)。<strong>远期利率</strong>是今日就能锁定的"从 N 期到 N+1 期借贷"的利率,可由零息债合成:</p>
+</div>
+<div class="lang en">
+<h2 id="19-1-definitions-and-notation">19.1 Definitions and Notation</h2>
+<p>Write \(p^{(N)}_t=\ln P^{(N)}_t\) (the log price of an N-period zero). The <strong>yield</strong> \(y^{(N)}=-\tfrac1N p^{(N)}\) is the fictional, constant, annualized rate that justifies the quoted price (it is <em>not</em> the rate of return, and assumes nothing about rates being known/constant or the bond being default-free — just a convenient way to quote the price). The <strong>holding-period return</strong> \(hpr^{(N)}_{t+1}=p^{(N-1)}_{t+1}-p^{(N)}_t\) (buy an N-period bond, sell it a year later as an (N-1)-period bond). The <strong>forward rate</strong> is the rate you can lock in today for borrowing/lending from N to N+1, synthesized from zeros:</p>
+</div>
+<p>$$f^{(N\to N+1)}_t=p^{(N)}_t-p^{(N+1)}_t,\qquad p^{(N)}_t=-\sum_{j=0}^{N-1}f^{(j\to j+1)}_t.$$</p>
+<div class="lang zh">
+<p>即债价等于按今日可锁定的远期利率贴现的现值。收益率曲线上升时远期利率在曲线之上,反之亦然(\(f^{(N\to N+1)}_t=y^{(N+1)}_t+N(y^{(N+1)}_t-y^{(N)}_t)\))。<strong>互换 (swap)</strong>(如固定换浮动)交换支付而非债券本身,更安全,是管理利率风险的流行工具;"互换利率"等于可比附息债的收益率。许多固定收益证券含期权(可赎回、房贷的提前偿还期权、互换期权),其定价也是期限结构建模的任务。</p>
+<h2 id="19-2-yield-curve-and-expectations-hypothesis">19.2 收益率曲线与预期假说 / Yield Curve and Expectations Hypothesis</h2>
+</div>
+<div class="lang en">
+<p>That is, the bond price is the present value discounted at rates you can lock in today. When the yield curve rises, forward rates lie above it, and vice versa (\(f^{(N\to N+1)}_t=y^{(N+1)}_t+N(y^{(N+1)}_t-y^{(N)}_t)\)). A <strong>swap</strong> (e.g. fixed-for-floating) exchanges payments rather than the bonds themselves — safer, and a popular tool for managing interest-rate risk; the "swap rate" equals the yield on a comparable coupon bond. Many fixed-income securities embed options (callable bonds, the prepayment option in mortgages, swaptions), whose pricing is also a task of term-structure modeling.</p>
+<h2 id="19-2-the-yield-curve-and-the-expectations-hypothesis">19.2 The Yield Curve and the Expectations Hypothesis</h2>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>预期假说的三种等价表述 / Three equivalent statements of the expectations hypothesis
+<span class="lang zh"><strong>①</strong> N 期收益率是预期未来一期收益率的平均:\(y^{(N)}_t=\tfrac1N\mathbb E_t(y^{(1)}_t+y^{(1)}_{t+1}+\cdots+y^{(1)}_{t+N-1})\)(+风险溢价)。<strong>②</strong> 远期利率等于预期未来即期利率:\(f^{(N\to N+1)}_t=\mathbb E_t(y^{(1)}_{t+N})\)(+溢价)。<strong>③</strong> 各期限债券的预期持有期收益相等:\(\mathbb E_t(hpr^{(N)}_{t+1})=y^{(1)}_t\)(+溢价)。三者数学等价(若每种"从 t 到 t+1 取钱"的方式预期收益相同,则 t+1 到 t+2 亦然,链接即得 t 到 t+2)。它解释曲线形状:上升曲线意味着市场预期短期利率将上升(否则长债并不比滚动短债更优)。但 EH <strong>不</strong>等同于风险中性——它说预期<strong>对数</strong>收益相等,从 logs 到 levels 会冒出 \(\tfrac12\sigma^2\) 项(\(E(R)=e^{E(r)+\frac12\sigma^2(r)}\))。允许任意时变溢价则模型成同义反复,故全部内容都在对溢价的限制里;常数溢价模型实证表现不佳——量化溢价的大小与时变正是期限结构模型的要点。</span><span class="lang en"><strong>①</strong> The N-period yield is the average of expected future one-period yields: \(y^{(N)}_t=\tfrac1N\mathbb E_t(y^{(1)}_t+y^{(1)}_{t+1}+\cdots+y^{(1)}_{t+N-1})\) (+ risk premium). <strong>②</strong> The forward rate equals the expected future spot rate: \(f^{(N\to N+1)}_t=\mathbb E_t(y^{(1)}_{t+N})\) (+ premium). <strong>③</strong> Expected holding-period returns are equal across maturities: \(\mathbb E_t(hpr^{(N)}_{t+1})=y^{(1)}_t\) (+ premium). The three are mathematically equivalent (if every way of getting money from t to t+1 has the same expected return, so does t+1 to t+2, and chaining gives t to t+2). It explains the curve's shape: a rising curve means the market expects short rates to rise (else a long bond is no better than rolling over short ones). But the EH is <strong>not</strong> risk-neutrality — it says expected <em>log</em> returns are equal, and going from logs to levels throws up \(\tfrac12\sigma^2\) terms (\(E(R)=e^{E(r)+\frac12\sigma^2(r)}\)). Allowing an arbitrary time-varying premium makes the model a tautology, so all its content is in the restrictions on the premium; the constant-premium model fits poorly — quantifying the size and time-variation of the premium is the whole point of term-structure models.</span></p></p></div>
+<div class="lang zh">
+<h2 id="19-3-a-discrete-time-introduction">19.3 离散时间引论 / A Discrete-Time Introduction</h2>
+<p><strong>基于 EH 的最简模型。</strong> 设一期收益率服从 AR(1) \(y^{(1)}_{t+1}-\delta=\rho(y^{(1)}_t-\delta)+\varepsilon_{t+1}\),用 EH ① 算各期限收益率,得几何形式 \((y^{(N)}_t-\delta)=\tfrac1N\tfrac{1-\rho^N}{1-\rho}(y^{(1)}_t-\delta)\)。这暴露了反复出现的问题:能产生上升/下降曲线但无驼峰;预测平均曲线平坦(实际略上倾);所有收益率同向变动(单因子→完美因子结构);AR(1) 可让短率为负;无条件异方差。<strong>但此模型不从贴现因子出发,可能含套利。</strong> 如何无套利地建模收益率?用贴现因子存在定理:<strong>写一个正贴现因子的统计模型,债价取其期望</strong>,则按构造无套利(反之任何无套利收益率分布都可由某正贴现因子捕捉,不失一般性)。</p>
+<p><strong>最简贴现因子模型。</strong> 令对数贴现因子服从 AR(1)(对 log 而非 level 以保证正性):\((\ln m_{t+1}+\delta)=\rho(\ln m_t+\delta)+\varepsilon_{t+1}\)(可视为幂效用消费模型的产物)。前向迭代、用 \(E(e^x)=e^{E(x)+\frac12\sigma^2}\) 取期望,得所有收益率都是单一状态变量 \(\ln m_t+\delta\) 的线性函数,故可用最短利率作状态变量、把各期限收益率写成它的线性函数——这正是期限结构模型的惯用形式。(仍不够现实:平均曲线随 \(\sigma^2_\varepsilon\) 堆积而略下倾、只能产生平滑上升/下降。)</p>
+<h2 id="19-4-continuous-time-models">19.4 连续时间模型 / Continuous-Time Models</h2>
+</div>
+<div class="lang en">
+<h2 id="19-3-a-discrete-time-introduction">19.3 A Discrete-Time Introduction</h2>
+<p><strong>Simplest model based on the EH.</strong> Let the one-period yield follow an AR(1) \(y^{(1)}_{t+1}-\delta=\rho(y^{(1)}_t-\delta)+\varepsilon_{t+1}\); using EH ① for all maturities gives the geometric form \((y^{(N)}_t-\delta)=\tfrac1N\tfrac{1-\rho^N}{1-\rho}(y^{(1)}_t-\delta)\). This exposes recurring issues: it produces rising/falling curves but no humps; predicts a flat average curve (the real one slopes up slightly); all yields move together (one factor → a perfect factor structure); the AR(1) lets the short rate go negative; no conditional heteroskedasticity. <strong>But this model does not start from a discount factor, so may admit arbitrage.</strong> How to model yields arbitrage-free? Use the discount-factor existence theorem: <strong>write a statistical model for a positive discount factor and find bond prices as its expectation</strong> — arbitrage-free by construction (and conversely any arbitrage-free distribution of yields is captured by some positive discount factor, with no loss of generality).</p>
+<p><strong>Simplest discount-factor model.</strong> Let the log discount factor follow an AR(1) (in logs, not levels, to ensure positivity): \((\ln m_{t+1}+\delta)=\rho(\ln m_t+\delta)+\varepsilon_{t+1}\) (interpretable as a power-utility consumption model). Iterating forward and taking expectations with \(E(e^x)=e^{E(x)+\frac12\sigma^2}\) gives all yields as linear functions of a single state variable \(\ln m_t+\delta\), so one can use the shortest rate as the state variable and write all yields as linear functions of it — the usual form of a term-structure model. (Still unrealistic: the average curve slopes slightly down as \(\sigma^2_\varepsilon\) terms pile up, and only smooth rising/falling shapes are produced.)</p>
+<h2 id="19-4-continuous-time-models">19.4 Continuous-Time Models</h2>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>连续时间期限结构的三步 / The three steps of a continuous-time term structure
+<span class="lang zh"><strong>1. 写贴现因子过程</strong>(典型形式):\(\frac{d\Lambda}{\Lambda}=-r\,dt-\sigma(\cdot)\,dz\),\(dr=\mu_r(\cdot)dt+\sigma_r(\cdot)dz\)。\(r\) 起初是漂移的状态变量,但因 \(\mathbb E_t(d\Lambda/\Lambda)=-r^f dt\) 它就是短率。<strong>2. 前向解贴现因子取期望</strong>:\(P^{(N)}_t=\mathbb E_t(\Lambda_{t+N}/\Lambda_t)\),即 \(P^{(T)}_0=E_0[e^{-\int_0^T(r_s+\frac12\sigma_s^2)ds-\int_0^T\sigma_s dz_s}]\)(无风险时退化为现值 \(e^{-\int r ds}\))。<strong>3. 或解债价 PDE 倒推</strong>:由 \(0=\mathbb E[d(\Lambda P)]\)、对 \(P(N,r)\) 用 Ito,得基本债券微分方程 \(\frac{\partial P}{\partial r}\mu_r+\frac12\frac{\partial^2P}{\partial r^2}\sigma_r^2-\frac{\partial P}{\partial N}-rP=\frac{\partial P}{\partial r}\sigma_r\sigma\),从 \(P(0,r)=1\) 倒解。</span><span class="lang en"><strong>1. Write the discount-factor process</strong> (typical form): \(\frac{d\Lambda}{\Lambda}=-r\,dt-\sigma(\cdot)\,dz\), \(dr=\mu_r(\cdot)dt+\sigma_r(\cdot)dz\). \(r\) starts as a state variable for the drift, but since \(\mathbb E_t(d\Lambda/\Lambda)=-r^f dt\) it is the short rate. <strong>2. Solve the discount factor forward and take an expectation</strong>: \(P^{(N)}_t=\mathbb E_t(\Lambda_{t+N}/\Lambda_t)\), i.e. \(P^{(T)}_0=E_0[e^{-\int_0^T(r_s+\frac12\sigma_s^2)ds-\int_0^T\sigma_s dz_s}]\) (reducing to the present value \(e^{-\int r ds}\) when riskless). <strong>3. Or solve the bond-price PDE backward</strong>: from \(0=\mathbb E[d(\Lambda P)]\), applying Ito to \(P(N,r)\), get the fundamental bond differential equation \(\frac{\partial P}{\partial r}\mu_r+\frac12\frac{\partial^2P}{\partial r^2}\sigma_r^2-\frac{\partial P}{\partial N}-rP=\frac{\partial P}{\partial r}\sigma_r\sigma\), solved from \(P(0,r)=1\).</span></p></p></div>
+<div class="lang zh">
+<p><strong>风险价格与风险中性。</strong> 同一债券 PDE 常不借贴现因子导出:① <strong>市场风险价格</strong>法——写短率过程,规定任何载荷于 \(\sigma_r dz\) 的资产须提供夏普比率 \(\lambda(\cdot)\),得右端 \(\frac{\partial P}{\partial r}\sigma_r\lambda\)(取 \(\lambda=\sigma\) 即同)。CIR 警示:不要把右端直接写成 \(\frac{\partial P}{\partial r}\psi(\cdot)\)——这会在 \(\sigma_r=0\) 时产生正预期收益、即无穷夏普比率/套利;由"协方差生成预期收益"则自然避开。② <strong>风险中性概率</strong>法——用替代过程 \(\frac{d\Lambda}{\Lambda}=-r\,dt\)、\(dr=(\mu_r-\sigma_r\lambda)dt+\sigma_r dz\),贴现因子非随机、漂移非真实漂移,得 \(P^{(N)}_t=E^*_t[e^{-\int r_s ds}]\)。三法结果相同;贴现因子法的好处是把期限结构与其余资产定价连通、并提醒"风险价格"从何而来及其合理量级。</p>
+<h2 id="19-5-three-linear-affine-models">19.5 三个线性(仿射)模型 / Three Linear (Affine) Models</h2>
+<p>三个著名模型都给出 <strong>log 债价为状态变量的线性函数</strong>:\(\ln P(N,r)=A(N)-B(N)r\)。</p>
+</div>
+<div class="lang en">
+<p><strong>Price of risk and risk-neutral.</strong> The same bond PDE is conventionally derived without a discount factor: ① the <strong>market-price-of-risk</strong> approach — write the short-rate process, specify that any asset loading on \(\sigma_r dz\) must offer a Sharpe ratio \(\lambda(\cdot)\), giving the right-hand side \(\frac{\partial P}{\partial r}\sigma_r\lambda\) (with \(\lambda=\sigma\) it's the same). CIR warn: do <em>not</em> write the right side directly as \(\frac{\partial P}{\partial r}\psi(\cdot)\) — this could give a positive expected return when \(\sigma_r=0\), an infinite Sharpe ratio / arbitrage; generating expected returns as a covariance avoids this. ② the <strong>risk-neutral-probability</strong> approach — use the alternative process \(\frac{d\Lambda}{\Lambda}=-r\,dt\), \(dr=(\mu_r-\sigma_r\lambda)dt+\sigma_r dz\), with a non-stochastic discount factor and a non-true drift, giving \(P^{(N)}_t=E^*_t[e^{-\int r_s ds}]\). All three give the same result; the discount-factor approach has the benefit of connecting the term structure to the rest of asset pricing and reminding us where "prices of risk" come from and their reasonable magnitude.</p>
+<h2 id="19-5-three-linear-affine-models">19.5 Three Linear (Affine) Models</h2>
+<p>The three famous models all give <strong>log bond prices as linear functions of the state variables</strong>: \(\ln P(N,r)=A(N)-B(N)r\).</p>
+</div>
+<p>$$\textbf{Vasicek:}\quad \frac{d\Lambda}{\Lambda}=-r\,dt-\sigma\,dz,\quad dr=\phi(\bar r-r)\,dt+\sigma_r\,dz.$$</p>
+<p>$$\textbf{CIR:}\quad \frac{d\Lambda}{\Lambda}=-r\,dt-\sigma\sqrt r\,dz,\quad dr=\phi(\bar r-r)\,dt+\sigma_r\sqrt r\,dz.$$</p>
+<div class="lang zh">
+<p><strong>Vasicek (1977)</strong> 类似上节的 AR(1)。猜 \(P(N,r)=e^{A(N)-B(N)r}\) 代入债券 PDE,得 \(A,B\) 的常微分方程(可积分求解,边界 \(A(0)=B(0)=0\)):\(B(N)=\tfrac1\phi(1-e^{-\phi N})\),\(A(N)=(\tfrac12\tfrac{\sigma_r^2}{\phi^2}+\tfrac{\sigma_r\sigma}{\phi}-\bar r)(N-B(N))-\tfrac{\sigma_r^2}{4\phi}B(N)^2\)。也可前向解贴现因子取期望得同样结果(\(\ln\Lambda_t\) 条件正态,取对数正态期望)。<strong>CIR (1985)</strong> 在波动率中加 \(\sqrt r\):捕捉"高利率更波动"、且把利率挡在零之上(需 \(\sigma_r\le2\phi\bar r\))。\(B(N)\) 的常微分方程因方差乘 \(r\) 而多出 \(B(N)^2\) 项,解含 \(\gamma=\sqrt{(\phi+\sigma_r\sigma)^2+2\sigma_r^2}\);按期望解则利率服从非中心 \(\chi^2\) 分布,积分更繁。</p>
+</div>
+<div class="lang en">
+<p><strong>Vasicek (1977)</strong> resembles the previous AR(1). Guessing \(P(N,r)=e^{A(N)-B(N)r}\) and substituting into the bond PDE gives ODEs for \(A,B\) (solvable by integration, boundary \(A(0)=B(0)=0\)): \(B(N)=\tfrac1\phi(1-e^{-\phi N})\), \(A(N)=(\tfrac12\tfrac{\sigma_r^2}{\phi^2}+\tfrac{\sigma_r\sigma}{\phi}-\bar r)(N-B(N))-\tfrac{\sigma_r^2}{4\phi}B(N)^2\). Solving the discount factor forward and taking the expectation (\(\ln\Lambda_t\) conditionally normal, a lognormal expectation) gives the same result. <strong>CIR (1985)</strong> adds \(\sqrt r\) in the volatility: capturing "higher rates are more volatile" and keeping the rate above zero (needs \(\sigma_r\le2\phi\bar r\)). The \(B(N)\) ODE gains a \(B(N)^2\) term (the variance now multiplies \(r\)), with a solution involving \(\gamma=\sqrt{(\phi+\sigma_r\sigma)^2+2\sigma_r^2}\); by expectation, the rate has a noncentral \(\chi^2\) distribution, making the integral messier.</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>多因子仿射模型 / Multifactor affine models
+<span class="lang zh">Vasicek 与 CIR 都是<strong>仿射类</strong>(Duffie-Kan 1996, Dai-Singleton 2000)的特例,允许多个因子(所有收益率不止是短率的函数),并保持"log 债价为状态变量线性函数"的便利——于是可直接取 \(K\) 个债券收益率本身作状态变量。设 \(dy=\phi(\bar y-y)dt+\Sigma\,dw\)、\(r=\delta_0+\delta'y\)、\(\frac{d\Lambda}{\Lambda}=-r\,dt-b'\Sigma\,dw\)、\(dw_i=\sqrt{\alpha_i+\beta_i'y}\,dz_i\)。\(\beta_i\) 影响波动率(\(\alpha_i=0\) 退回 CIR 平方根型,\(\beta_i=0\) 退回 Vasicek 高斯型,须保证 \(\alpha_i+\beta_i'y>0\) 的"可容许性")。猜 \(P(N,y)=e^{A(N)-B(N)'y}\) 仍得 \(A,B\) 的常微分方程,数值积分极快(远快于解 PDE)。<strong>实证警示</strong>:实际收益率协方差阵并非精确 \(K\) 因子结构,故不能直接用 ML 估计期限结构模型(否则随机奇异),只能用 GMM 忽略奇异、或加测量误差。利率风险价格反映实际利率与通胀风险价格之和——其相对构成决定债券持有者面临的风险性质(1970 年代多为通胀驱动,近年多为实际利率驱动)。</span><span class="lang en">Vasicek and CIR are special cases of the <strong>affine class</strong> (Duffie-Kan 1996, Dai-Singleton 2000), allowing multiple factors (all yields are not just functions of the short rate) and preserving the convenience that "log bond prices are linear in the state variables" — so one can take \(K\) bond yields themselves as state variables. With \(dy=\phi(\bar y-y)dt+\Sigma\,dw\), \(r=\delta_0+\delta'y\), \(\frac{d\Lambda}{\Lambda}=-r\,dt-b'\Sigma\,dw\), \(dw_i=\sqrt{\alpha_i+\beta_i'y}\,dz_i\). The \(\beta_i\) govern volatility (\(\alpha_i=0\) recovers the CIR square-root type, \(\beta_i=0\) the Vasicek Gaussian type, subject to an "admissibility" condition \(\alpha_i+\beta_i'y>0\)). Guessing \(P(N,y)=e^{A(N)-B(N)'y}\) again gives ODEs for \(A,B\), solved numerically very quickly (far faster than a PDE). <strong>Empirical caveat</strong>: the actual yield covariance matrix is not an exact \(K\)-factor structure, so one cannot estimate a term-structure model directly by ML (a stochastic singularity), only by GMM ignoring the singularity or by adding measurement errors. The price of interest-rate risk reflects the prices of real-rate and inflation risk combined — their relative contributions determine the nature of the risk bondholders face (mostly inflation-driven in the 1970s, mostly real-rate-driven more recently).</span></p></p></div>
+<div class="lang zh">
+<h2 id="summary">小结 / Summary</h2>
+<p>期限结构在贴现因子框架下极简:\(P^{(N)}_t=\mathbb E_t(\Lambda_{t+N}/\Lambda_t)\)。<strong>预期假说</strong>(三等价式)解释曲线形状但实证不足,其全部内容在对(时变)风险溢价的限制。无套利建模的正道是"写正贴现因子、债价取期望"。连续时间三步:写 \(\Lambda\) 过程→前向积分或倒解债券 PDE;风险价格法与风险中性法殊途同归。三个<strong>仿射模型</strong>(Vasicek 高斯、CIR 平方根、一般多因子仿射)给出 log 债价为状态变量的线性函数,\(A(N),B(N)\) 由常微分方程求解。下一部分(Part IV 实证综述)考察改变我们对风险与风险溢价理解的实证证据。</p>
+</div>
+<div class="lang en">
+<h2 id="summary">Summary</h2>
+<p>The term structure is extremely simple in the discount-factor framework: \(P^{(N)}_t=\mathbb E_t(\Lambda_{t+N}/\Lambda_t)\). The <strong>expectations hypothesis</strong> (three equivalent statements) explains the curve's shape but fits poorly, and all its content is in the restrictions on the (time-varying) risk premium. The arbitrage-free way to model yields is "write a positive discount factor and take an expectation for bond prices." The three continuous-time steps: write the \(\Lambda\) process → integrate forward or solve the bond PDE backward; the price-of-risk and risk-neutral approaches converge. The three <strong>affine models</strong> (Gaussian Vasicek, square-root CIR, general multifactor affine) give log bond prices as linear functions of the state variables, with \(A(N),B(N)\) solved from ODEs. The next part (Part IV, an empirical survey) examines the evidence reshaping our understanding of risk and risk premia.</p>
+</div>
+<div class="lang zh">
+<h2 id="problems">习题 / Problems</h2>
+<ol>
+<li>完成"预期假说三表述互相蕴含"的证明。加常数风险溢价时是否仍成立?三式中的风险溢价同号吗?</li>
+<li>EH 下,若长率高于短率,这意味未来长率应上升、下降还是不变?(提示:画预期对数债价随时间的图。)</li>
+<li>从风险中性 \(E(HPR^{(N)}_{t+1})=Y^{(1)}_t\) 出发,试推 EH 的其他表述——由此理解为何须用"预期对数收益相等"。</li>
+<li>看 (19.13),证明给贴现因子加正交 \(dw\) 不影响债券定价公式。</li>
+<li>证明若 \(d\Lambda/\Lambda=-r\,dt+\sigma\,dz\) 且利率恒定,则 \(P=e^{-rT}\)。</li>
+<li>证明若 \(dr=\phi(\bar r-r)dt+\sigma\,dz\) 且利率风险价格为零(\(d\Lambda/\Lambda=-r\,dt\)),则带常数风险溢价的预期假说成立。</li>
+<li>证明"平坦且上下平移的收益率曲线"不可能:从 (19.2) 出发,设 \(y(N,t)=y(t)\)、\(dy=\mu\,dt+\sigma\,dz\),求 N 年零息债持有期收益,证明其夏普比率随 N 增至无穷。</li>
+</ol>
+</div>
+<div class="lang en">
+<h2 id="problems">Problems</h2>
+<ol>
+<li>Complete the proof that the three statements of the expectations hypothesis imply each other. Does it still hold with a constant risk premium? Are the risk premia in the three statements of the same sign?</li>
+<li>Under the EH, if long yields exceed short yields, do future long rates go up, down, or stay the same? (Hint: plot expected log bond prices over time.)</li>
+<li>Start from risk neutrality \(E(HPR^{(N)}_{t+1})=Y^{(1)}_t\) and try to derive the other statements of the EH — this shows why we specify equal expected <em>log</em> returns.</li>
+<li>From (19.13), show that adding orthogonal \(dw\) to the discount factor has no effect on bond-pricing formulas.</li>
+<li>Show that if \(d\Lambda/\Lambda=-r\,dt+\sigma\,dz\) and interest rates are constant, then \(P=e^{-rT}\).</li>
+<li>Show that if \(dr=\phi(\bar r-r)dt+\sigma\,dz\) and the price of interest-rate risk is zero (\(d\Lambda/\Lambda=-r\,dt\)), then the expectations hypothesis with constant risk premia holds.</li>
+<li>Show that a flat yield curve that shifts up and down is impossible: starting from (19.2), with \(y(N,t)=y(t)\), \(dy=\mu\,dt+\sigma\,dz\), find holding-period returns on N-year zeros and show the Sharpe ratio grows to infinity as N grows.</li>
+</ol>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#19-1-definitions-and-notation">19.1 定义与记号 / Definitions and Notation</a></li>
+        <li><a href="#19-1-definitions-and-notation">19.1 Definitions and Notation</a></li>
+        <li><a href="#19-2-yield-curve-and-expectations-hypothesis">19.2 收益率曲线与预期假说 / Yield Curve and Expectations Hypothesis</a></li>
+        <li><a href="#19-2-the-yield-curve-and-the-expectations-hypothesis">19.2 The Yield Curve and the Expectations Hypothesis</a></li>
+        <li><a href="#19-3-a-discrete-time-introduction">19.3 离散时间引论 / A Discrete-Time Introduction</a></li>
+        <li><a href="#19-4-continuous-time-models">19.4 连续时间模型 / Continuous-Time Models</a></li>
+        <li><a href="#19-3-a-discrete-time-introduction">19.3 A Discrete-Time Introduction</a></li>
+        <li><a href="#19-4-continuous-time-models">19.4 Continuous-Time Models</a></li>
+        <li><a href="#19-5-three-linear-affine-models">19.5 三个线性(仿射)模型 / Three Linear (Affine) Models</a></li>
+        <li><a href="#19-5-three-linear-affine-models">19.5 Three Linear (Affine) Models</a></li>
+        <li><a href="#summary">小结 / Summary</a></li>
+        <li><a href="#summary">Summary</a></li>
+        <li><a href="#problems">习题 / Problems</a></li>
+        <li><a href="#problems">Problems</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

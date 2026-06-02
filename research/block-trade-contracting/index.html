@@ -84,11 +84,11 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Baldauf, Frei &amp; Mollner (2024, Journal of Financial Economics)</strong>：当养老金把一笔大单外包给交易商执行、却只能盯着市场价格（看不见交易商到底怎么下单）来付钱时，最优的「加权平均价」合约不是业内常用的 TWAP，也不是 MOC，而是一条<strong>对称的 U 形</strong>——把重量压在交易窗口的<strong>头和尾</strong>。在连续时间极限下，它简化成一个惊人干净的形状：两端各放一个等大的「原子」，中间是一条常数密度。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Baldauf, Frei &amp; Mollner (2024, Journal of Financial Economics)</strong>：当养老金把一笔大单外包给交易商执行、却只能盯着市场价格（看不见交易商到底怎么下单）来付钱时，最优的「加权平均价」合约不是业内常用的 TWAP，也不是 MOC，而是一条<strong>对称的 U 形</strong>——把重量压在交易窗口的<strong>头和尾</strong>。在连续时间极限下，它简化成一个惊人干净的形状：两端各放一个等大的「原子」，中间是一条常数密度。</p></p></div>
 <h2 id="1">1 引言：两种摩擦，第一次被放在同一张桌子上</h2>
 <p>设想你管着一只养老金，今天要买入一大笔某证券。你当然可以自己慢慢买——这正是「最优执行 (optimal execution)」这条文献研究了几十年的问题：因为有 价格冲击 (price impact)，一次性砸下去会把价格买飞，所以聪明的做法是把一张「母单 (parent order)」拆成若干「子单 (child order)」，分散在一段时间里执行。</p>
 <p>但现实里，养老金、共同基金、捐赠基金往往<strong>不</strong>自己做这件事，而是把执行<strong>外包</strong>给一家交易商 (dealer)。于是事情就有了第二层摩擦：交易商的利益和你并不一致。这就是 代理冲突 (agency conflict)。</p>
-<div class="callout"><div class="callout-title">Note</div><p>这篇论文真正的野心，是把这两种摩擦——<strong>价格冲击</strong>与<strong>代理冲突</strong>——第一次放进同一个模型里，看它们如何相互纠缠。在此之前，最优执行文献几乎只谈前者，假设你自己执行；而委托代理文献谈后者，却很少触及交易里那套精巧的价格动态。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>这篇论文真正的野心，是把这两种摩擦——<strong>价格冲击</strong>与<strong>代理冲突</strong>——第一次放进同一个模型里，看它们如何相互纠缠。在此之前，最优执行文献几乎只谈前者，假设你自己执行；而委托代理文献谈后者，却很少触及交易里那套精巧的价格动态。</p></p></div>
 <p>外包是怎么定价的？实务中，一笔「大宗交易 (block trade)」常常按执行窗口内市场价的某种<strong>加权平均</strong>来结算。最常见的两种：一种是按窗口内的 时间加权平均价 (time-weighted average price, TWAP) 结算，即所谓「保证 TWAP 合约」；另一种是按窗口结束时刻的收盘价结算，即「保证收盘价合约 (market-on-close, MOC)」。这些合约之所以存在，一个经济学上的理由是交易商<strong>厌恶风险</strong>——大单风险大，加上监管要求交易商为敞口持有资本，他们确实有动机把一部分价格风险转回给客户。</p>
 <p>可问题来了：<strong>这两种业内通用的合约，对客户而言是最优的吗？哪怕只是在「加权平均价」这一类里最优？如果不是，客户怎样才能为自己做得更好？</strong></p>
 <p>这个问题绝不是吹毛求疵。Nasdaq (2022) 与 SIFMA (2021) 估计，美国股票市场上机构投资者每年的交易成本约 <code>$70 billion</code>，其中几乎全部来自价格冲击。而执行环节的利益冲突有多真实？FINRA 第 5270 号规则一边禁止交易商利用「迫在眉睫的大宗交易」的非公开信息抢跑 (front-running)，一边又开了一个口子：为「履行或便利客户大宗订单的执行」而做的交易不在此限——这就给「下单时机」留足了博弈空间。2024 年摩根士丹利为大宗交易调查支付 <code>$249 million</code> 和解金，正是这种冲突真金白银的注脚。</p>
@@ -105,7 +105,7 @@ p_t = p_0 + \cssId{a1}{\gamma x_t} + \cssId{a2}{\theta \sum_{s=1}^{t} x_s} + \cs
 $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>临时冲击 (temporary impact)：只与当期交易量有关，下一期就消散，刻画瞬时流动性成本</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>永久冲击 (permanent impact)：随累计买入量累积，把价格「永远」推高，是模型动态性的根源</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>随机游走式的价格噪声：正因为有它，价格才只是 dealer 行动的「噪声信号」</div></aside><svg class="mathanno-lines"></svg></div>
 
 <p>这里 \(\theta\ge 0\) 是永久价格冲击，\(\gamma\ge 0\) 是临时价格冲击，\(p_0\) 是初始价位，\(\varepsilon_s\) 是第 \(s\) 期独立同分布的价格冲击，\(\varepsilon_s\sim N(0,\sigma^2)\)，\(\sigma>0\)。为避免退化，假设 \(\theta\) 与 \(\gamma\) 至少有一个严格为正。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>请记住 \(a1\) 和 \(a2\) 的区别，这是全篇的胜负手。<strong>临时冲击</strong>像水里的涟漪，你这一桨划下去水面凸起，桨一抬就平了；<strong>永久冲击</strong>像往池子里倒水，每倒一瓢，水位就<strong>永久</strong>抬高一截，而且后面所有的价格都被垫高了。正是后者，让「先买还是后买」这件事变得<strong>真正动态</strong>——时间的先后顺序开始有了实质含义。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>请记住 \(a1\) 和 \(a2\) 的区别，这是全篇的胜负手。<strong>临时冲击</strong>像水里的涟漪，你这一桨划下去水面凸起，桨一抬就平了；<strong>永久冲击</strong>像往池子里倒水，每倒一瓢，水位就<strong>永久</strong>抬高一截，而且后面所有的价格都被垫高了。正是后者，让「先买还是后买」这件事变得<strong>真正动态</strong>——时间的先后顺序开始有了实质含义。</p></p></div>
 <p><strong>客户的问题</strong>。客户要选一份合约 \(\boldsymbol{\tau}\) 和一条「建议给交易商的交易策略」\(\boldsymbol{x}\)，在个体理性 (IR) 与激励相容 (IC) 两个约束下最小化自己的期望支付：</p>
 <p>$$\min_{\boldsymbol{\tau}\in\mathcal{T},\,\boldsymbol{x}\in\mathcal{X}} \;\mathbb{E}[\tau(\boldsymbol{p})]$$</p>
 <p>$$\mathbb{E}\!\left[u\big(\tau(\boldsymbol{p})-\boldsymbol{x}\cdot\boldsymbol{p}\big)\right]\ge u(0) \tag{IR}$$</p>
@@ -127,7 +127,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>此时客户可以用一份「强制合约」：只要交易商偏离建议的策略就罚他一大笔。由 \(u\) 的凹性，满足 (IR) 的最优做法是让交易商恰好不赚不亏，即在他听话时令 \(\tau(\boldsymbol{p},\boldsymbol{x})=\boldsymbol{x}\cdot\boldsymbol{p}\)。代入目标，客户的问题塌缩成</p>
 <p>$$\min_{\boldsymbol{x}\in\mathcal{X}}\;\mathbb{E}[\boldsymbol{x}\cdot\boldsymbol{p}].$$</p>
 <p>这正是一个<strong>纯粹的最优执行问题</strong>。它的经典解众所周知：<strong>在每一期买入等量</strong>（匀速执行），借此把永久冲击带来的「自己把价格越买越高」的成本摊平。换句话说，第一最优下，交易商应当 \(x_t=1/T\)，恰好等于 TWAP 的形状。</p>
-<div class="callout"><div class="callout-title">Note</div><p>这里埋下了一个非常漂亮的伏笔：<strong>如果没有代理冲突，TWAP 式的匀速执行就是对的。</strong> 所以业内偏爱 TWAP 并非毫无道理。问题在于，一旦交易商的手藏到了暗处，匀速还成立吗？</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>这里埋下了一个非常漂亮的伏笔：<strong>如果没有代理冲突，TWAP 式的匀速执行就是对的。</strong> 所以业内偏爱 TWAP 并非毫无道理。问题在于，一旦交易商的手藏到了暗处，匀速还成立吗？</p></p></div>
 <h2 id="4">4 核心张力：交易商想「前置」，客户该怎么把他掰回来</h2>
 <p>现在把隐藏行动放回去。这是全篇的引擎，我们慢慢拆。</p>
 <p><strong>首先，看交易商的激励。</strong> 给定一份加权平均价合约 \(\boldsymbol{\tau}\)，他的利润是 \((\boldsymbol{\tau}-\boldsymbol{x})\cdot\boldsymbol{p}\)。一个保底策略是让自己的交易权重<strong>完全镜像</strong>合约权重，即 \(\boldsymbol{x}=\boldsymbol{\tau}\)，这样稳赚零利润。但他能做得更好：把交易量<strong>从期望价格高的时期挪到期望价格低的时期</strong>——在便宜的时候多买，在贵的时候少买，差额就是利润。</p>
@@ -140,7 +140,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p><strong>于是反转出现了。</strong> 这两股「想压早期」和「想压后期」的力量叠加，产物既不是 TWAP，也不是 MOC，而是一条<strong>对称的、U 形的</strong>最优合约：</p>
 <p>$$\tau^*_1 \ge \tau^*_2 \ge \cdots \ge \tau^*_{\lceil T/2\rceil} \le \cdots \le \tau^*_{T-1} \le \tau^*_T,$$</p>
 <p>并且 \(\tau^*_t = \tau^*_{T+1-t}\)（对称）。论文证明：永久冲击会<strong>加深</strong> U 形的严峻程度，而临时冲击与交易商的风险厌恶会<strong>削弱</strong>它。直觉上，永久冲击是这一切力量的源头，所以它既加深合约的 U 形，也加剧交易商最终的前置；临时冲击和风险厌恶则给交易商引入了别的动机，方向相反。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>别把这条 U 形误读成「客户在赌价格」。客户是风险中性的，她不在乎价格波动本身。U 形纯粹是<strong>激励</strong>的产物：两端的高权重，是同时回应「自己想占早期便宜」和「想把交易商从前置里拉回来」这两件事的最经济的方式。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>别把这条 U 形误读成「客户在赌价格」。客户是风险中性的，她不在乎价格波动本身。U 形纯粹是<strong>激励</strong>的产物：两端的高权重，是同时回应「自己想占早期便宜」和「想把交易商从前置里拉回来」这两件事的最经济的方式。</p></p></div>
 <h2 id="5">5 连续时间极限：一个惊人干净的形状</h2>
 <p>离散时间下 \(\boldsymbol{\tau}^*\) 虽有闭式解，却复杂难读。真正让这篇论文「好看」的，是它的<strong>连续时间极限</strong>。在这个极限里，最优合约坍缩成一个极简的形状，可以看成 U 形的极端版本：</p>
 <blockquote>
@@ -148,7 +148,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 </blockquote>
 <p>而交易商对此的最优反应同样干净：内点也是同一条常数密度，两端各有一个原子——但<strong>初始端的原子是终端原子的 3 倍</strong>，这正是他前置冲动的精确刻画。</p>
 <p>这一节里还藏着我认为全文最反直觉的一个结论：</p>
-<div class="callout"><div class="callout-title">Note</div><p><strong>在连续时间极限下，临时价格冲击 \(\gamma\) 对最优合约完全没有影响。</strong> 为什么？因为它触发了两股恰好抵消的力：一方面，临时冲击抬高价格、抬高客户成本（若交易商交易固定）；另一方面，临时冲击又<strong>部分抵消了交易商的前置冲动</strong>（早买的临时成本更高，逼他买得平缓些），反而降低客户成本。两相抵消，净效应归零。相应地，两端原子的质量——也就是 U 形的严峻程度——只<strong>随永久冲击递增，随风险厌恶递减</strong>。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p><strong>在连续时间极限下，临时价格冲击 \(\gamma\) 对最优合约完全没有影响。</strong> 为什么？因为它触发了两股恰好抵消的力：一方面，临时冲击抬高价格、抬高客户成本（若交易商交易固定）；另一方面，临时冲击又<strong>部分抵消了交易商的前置冲动</strong>（早买的临时成本更高，逼他买得平缓些），反而降低客户成本。两相抵消，净效应归零。相应地，两端原子的质量——也就是 U 形的严峻程度——只<strong>随永久冲击递增，随风险厌恶递减</strong>。</p></p></div>
 <p>下图把这件事画得很清楚：在不同的临时冲击水平下，最优合约权重与交易商的最优反应策略各自长什么样。可以直观看到合约两端的「翘起」与交易商前置的那一端。</p>
 <div class="article-image"><img alt="Figure 2: The optimal contract weights and best-responding trading strategy for different levels of temporary price impact. Without temporary price im" src="assets/figure-2.png" /></div>
 <p><em>Figure 2: The optimal contract weights and best-responding trading strategy for different levels of temporary price impact. Without temporary price im</em></p>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5. Numerical Methods in Economics – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>5. Numerical Methods in Economics</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">数值方法</span><span class="lang en">Numerical Methods</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">多项式插值</span><span class="lang en">Polynomial Interpolation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">数值积分</span><span class="lang en">Quadrature</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">高斯求积</span><span class="lang en">Gaussian Quadrature</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">离散化</span><span class="lang en">Discretization</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>5. Numerical Methods in Economics</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本讲导读
+本讲（Toda 第 5 讲）介绍求解资产定价/动态经济问题所需的数值方法。§1 <strong>多项式插值</strong>：Lagrange 插值（Prop 1）、误差界（Prop 2）、<strong>Chebyshev 多项式</strong>（Thm 3：极小化 \(\max|\prod(x-x_k)|\) 的最优节点 \(x_k=\cos\frac{2k-1}{2n}\pi\)）。§2 <strong>数值积分 (quadrature)</strong>：Newton-Cotes（梯形法、Simpson 法）、复合法则、<strong>高斯求积</strong>（正交多项式 Prop 4、根 Lemma 5、Thm 6：\(n\) 个根作节点可精确积分至 \(2n-1\) 阶、Golub-Welsch Thm 7、Gauss-Legendre/Chebyshev/Hermite/Laguerre）。§3 <strong>离散化</strong>（把连续随机过程近似为有限状态马尔可夫链）：3.1 早期方法（Tauchen 1986 不准、Rouwenhorst 1995、Tauchen-Hussey 1991）；3.2 <strong>Farmer-Tanaka-Toda 最大熵法</strong>（KL 相对熵最小化精确匹配矩，原始 (P)/对偶 (D)、Thm 8、Markov 推广、Algorithm 1）。含每讲参考文献。</p></p></div>
+</div>
+<div class="lang en">
+<h1>5. Numerical Methods in Economics</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+This lecture (Toda's Lecture 5) covers numerical methods needed to solve asset-pricing / dynamic economic problems. §1 <strong>polynomial interpolation</strong>: Lagrange interpolation (Prop 1), an error bound (Prop 2), <strong>Chebyshev polynomials</strong> (Thm 3: the optimal nodes minimizing \(\max|\prod(x-x_k)|\) are \(x_k=\cos\frac{2k-1}{2n}\pi\)). §2 <strong>quadrature</strong>: Newton-Cotes (trapezoidal, Simpson), the compound rule, <strong>Gaussian quadrature</strong> (orthogonal polynomials Prop 4, roots Lemma 5, Thm 6: the \(n\) roots as nodes integrate polynomials up to degree \(2n-1\) exactly, Golub-Welsch Thm 7, Gauss-Legendre/Chebyshev/Hermite/Laguerre). §3 <strong>discretization</strong> (approximating a continuous process by a finite-state Markov chain): 3.1 earlier methods (Tauchen 1986 inaccurate, Rouwenhorst 1995, Tauchen-Hussey 1991); 3.2 the <strong>Farmer-Tanaka-Toda maximum entropy method</strong> (minimize KL relative entropy to match moments exactly, primal (P)/dual (D), Thm 8, the Markov extension, Algorithm 1). Includes per-lecture references.</p></p></div>
+</div>
+<div class="lang zh">
+<h2 id="1-polynomial-interpolation">1 多项式插值 / Polynomial Interpolation</h2>
+</div>
+<div class="lang en">
+<h2 id="1-polynomial-interpolation">1 Polynomial Interpolation</h2>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>命题 1（Lagrange 插值）/ Proposition 1 (Lagrange interpolation)
+<span class="lang zh">多项式易于微分积分。\(n-1\) 次多项式由 \(n\) 个系数确定，故给定 \(n\) 个点至多有一个多项式经过它们。设 \(x_1<\dots<x_n\)，定义第 \(k\) 个 <strong>Lagrange 多项式</strong> \(L_k(x)=\dfrac{\prod_{l\neq k}(x-x_l)}{\prod_{l\neq k}(x_k-x_l)}\)，则</span><span class="lang en">Polynomials are easy to differentiate and integrate. A degree \(n-1\) polynomial is determined by \(n\) coefficients, so given \(n\) points there is at most one polynomial through them. Let \(x_1<\dots<x_n\) and define the \(k\)-th <strong>Lagrange polynomial</strong> \(L_k(x)=\dfrac{\prod_{l\neq k}(x-x_l)}{\prod_{l\neq k}(x_k-x_l)}\); then</span></p>
+<p>$$p(x)=\sum_{k=1}^n y_k L_k(x)$$</p>
+<p><span class="lang zh">是满足 \(p(x_k)=y_k\) 的唯一次数 \(\le n-1\) 的多项式。（证明：\(L_k(x_l)=\delta_{kl}\)，故 \(p(x_l)=\sum_k y_k\delta_{kl}=y_l\)。）</span><span class="lang en">is the unique polynomial of degree up to \(n-1\) with \(p(x_k)=y_k\). (Proof: \(L_k(x_l)=\delta_{kl}\), so \(p(x_l)=\sum_k y_k\delta_{kl}=y_l\).)</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>命题 2（插值误差界）/ Proposition 2 (interpolation error bound)
+<span class="lang zh">设 \(f\) 是 \(C^n\)、\(p_{n-1}\) 是 \(f\) 在 \(x_1,\dots,x_n\) 处的插值多项式。则对任意 \(x\)，存在 \(\xi\in\mathrm{co}\{x,x_1,\dots,x_n\}\) 使</span><span class="lang en">Let \(f\) be \(C^n\) and \(p_{n-1}\) the interpolating polynomial of \(f\) at \(x_1,\dots,x_n\). Then for any \(x\) there is \(\xi\in\mathrm{co}\{x,x_1,\dots,x_n\}\) with</span></p>
+<p>$$f(x)-p_{n-1}(x)=\frac{f^{(n)}(\xi)}{n!}\prod_{k=1}^n(x-x_k).$$</p></p></div><div class="callout"><div class="callout-title">Note</div><p>命题 2 证明（Rolle 定理）/ Proof of Proposition 2 (Rolle's theorem)
+<span class="lang zh">记 \(I=\mathrm{co}\{x,x_1,\dots,x_n\}\)，\(R(t)=f(t)-p_{n-1}(t)\)，\(S(t)=\prod_{k=1}^n(t-x_k)\)。令 \(g(t)=R(t)S(x)-R(x)S(t)\)，则 \(g(x)=0\) 且 \(g(x_k)=0\)（因 \(R(x_k)=S(x_k)=0\)）。由 Rolle 定理反复应用，存在 \(\xi\in I\) 使 \(g^{(n)}(\xi)=0\)。因 \(S\) 是首项系数 1 的 \(n\) 次多项式，\(S^{(n)}=n!\)，故 \(0=g^{(n)}(\xi)=R^{(n)}(\xi)S(x)-R(x)n!\)。又 \(\deg p_{n-1}\le n-1\) 故 \(R^{(n)}(\xi)=f^{(n)}(\xi)\)，得 \(f(x)-p_{n-1}(x)=\frac{f^{(n)}(\xi)}{n!}\prod_k(x-x_k)\)。\(\blacksquare\)</span><span class="lang en">Let \(I=\mathrm{co}\{x,x_1,\dots,x_n\}\), \(R(t)=f(t)-p_{n-1}(t)\), \(S(t)=\prod_{k=1}^n(t-x_k)\). Set \(g(t)=R(t)S(x)-R(x)S(t)\); then \(g(x)=0\) and \(g(x_k)=0\) (since \(R(x_k)=S(x_k)=0\)). By repeated application of Rolle's theorem, there is \(\xi\in I\) with \(g^{(n)}(\xi)=0\). As \(S\) is a degree-\(n\) polynomial with leading coefficient 1, \(S^{(n)}=n!\), so \(0=g^{(n)}(\xi)=R^{(n)}(\xi)S(x)-R(x)n!\). Since \(\deg p_{n-1}\le n-1\), \(R^{(n)}(\xi)=f^{(n)}(\xi)\), giving \(f(x)-p_{n-1}(x)=\frac{f^{(n)}(\xi)}{n!}\prod_k(x-x_k)\). \(\blacksquare\)</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>1.2 Chebyshev 多项式（定理 3）/ 1.2 Chebyshev polynomials (Theorem 3)
+<span class="lang zh">在区间（不失一般性取 $[-1,1]$）上插值时如何选节点？因 \(f^{(n)}(\xi)\) 依赖 \(f\) 而 \(\prod(x-x_k)\) 不依赖，应选节点极小化 \(\max_{x\in[-1,1]}|\prod_{k=1}^n(x-x_k)|\)。<strong>Chebyshev 多项式</strong> \(T_n(x)\)：把 \(\cos n\theta\) 展为 \(\cos\theta\) 的 \(n\) 次多项式并令 \(x=\cos\theta\)（\(T_0=1,T_1=x,T_2=2x^2-1\)，递推 \(T_{n+1}(x)=2xT_n(x)-T_{n-1}(x)\)）。<strong>定理 3</strong>：</span><span class="lang en">When interpolating on an interval (WLOG $[-1,1]\(), how to choose nodes? Since \)f^{(n)}(\xi)$ depends on \(f\) but \(\prod(x-x_k)\) does not, choose nodes to minimize \(\max_{x\in[-1,1]}|\prod_{k=1}^n(x-x_k)|\). The <strong>Chebyshev polynomial</strong> \(T_n(x)\): expand \(\cos n\theta\) as a degree-\(n\) polynomial of \(\cos\theta\) and set \(x=\cos\theta\) (\(T_0=1,T_1=x,T_2=2x^2-1\), recursion \(T_{n+1}(x)=2xT_n(x)-T_{n-1}(x)\)). <strong>Theorem 3</strong>:</span></p>
+<p>$$\min_{x_1,\dots,x_n}\max_{x\in[-1,1]}\left|\prod_{k=1}^n(x-x_k)\right|\ \text{is attained at}\ x_k=\cos\frac{2k-1}{2n}\pi,\quad\text{where}\ \prod_{k=1}^n(x-x_k)=2^{1-n}T_n(x).$$</p></p></div><div class="callout"><div class="callout-title">Note</div><p>定理 3 证明（等振荡）/ Proof of Theorem 3 (equioscillation)
+<span class="lang zh">令 \(p(x)=2^{1-n}T_n(x)\)。由递推，\(T_n\) 首项系数 \(2^{n-1}\)，故 \(p\) 首项系数 1。\(p(\cos\theta)=2^{1-n}\cos n\theta\)，故 \(\sup_{[-1,1]}|p|=2^{1-n}\)。若存在首项系数 1 的 \(n\) 次多项式 \(q\) 使 \(\sup|q|<2^{1-n}\)：\(p\) 在 \(y_k=\cos(k\pi/n)\)（\(k=0,\dots,n\)）处取 \((-1)^k 2^{1-n}\)，由介值定理在 \(y_0,\dots,y_n\) 间有 \(z_1,\dots,z_n\) 使 \(p(z_k)-q(z_k)=0\)；但 \(r=p-q\) 次数 \(\le n-1\) 却有 \(n\) 个根，故 \(r\equiv0\) 即 \(p\equiv q\)，矛盾。故最优节点为 \(x_k=\cos\frac{2k-1}{2n}\pi\)。\(\blacksquare\)</span><span class="lang en">Let \(p(x)=2^{1-n}T_n(x)\). By the recursion, \(T_n\) has leading coefficient \(2^{n-1}\), so \(p\) has leading coefficient 1. \(p(\cos\theta)=2^{1-n}\cos n\theta\), so \(\sup_{[-1,1]}|p|=2^{1-n}\). Suppose a degree-\(n\) polynomial \(q\) with leading coefficient 1 had \(\sup|q|<2^{1-n}\): \(p\) takes \((-1)^k 2^{1-n}\) at \(y_k=\cos(k\pi/n)\) (\(k=0,\dots,n\)), so by the intermediate value theorem there are \(z_1,\dots,z_n\) between \(y_0,\dots,y_n\) with \(p(z_k)-q(z_k)=0\); but \(r=p-q\) has degree \(\le n-1\) yet \(n\) roots, so \(r\equiv0\), i.e. \(p\equiv q\), a contradiction. Hence the optimal nodes are \(x_k=\cos\frac{2k-1}{2n}\pi\). \(\blacksquare\)</span></p></p></div>
+<h2 id="2-quadrature">2 数值积分 / Quadrature</h2>
+<div class="callout"><div class="callout-title">Important</div><p>Newton-Cotes：梯形法与 Simpson 法 / Newton-Cotes: trapezoidal and Simpson
+<span class="lang zh">许多经济问题涉及最大化期望（如 \(\max_\theta\mathbb E[u(R(\theta)w)]\)）。期望是积分，多数积分无显式解，需<strong>数值积分 (quadrature)</strong> \(\int_a^b f(x)\,dx\approx\sum_{n=1}^N w_n f(x_n)\)（\(\{x_n\}\) 节点、\(\{w_n\}\) 权重）。<strong>Newton-Cotes</strong>：取等距节点、选权重使能精确积分 \(N-1\) 次以下多项式。\(N=2\)（<strong>梯形法</strong>）：\(w_1=w_2=\frac12\)，</span><span class="lang en">Many economic problems maximize an expectation (e.g. \(\max_\theta\mathbb E[u(R(\theta)w)]\)). Expectations are integrals, most without closed form, requiring <strong>quadrature</strong> \(\int_a^b f(x)\,dx\approx\sum_{n=1}^N w_n f(x_n)\) (\(\{x_n\}\) nodes, \(\{w_n\}\) weights). <strong>Newton-Cotes</strong>: take evenly spaced nodes, choose weights to integrate polynomials up to degree \(N-1\) exactly. \(N=2\) (<strong>trapezoidal rule</strong>): \(w_1=w_2=\frac12\),</span></p>
+<p>$$\int_a^b f(x)\,dx\approx\frac{b-a}2(f(a)+f(b)).$$</p>
+<p><span class="lang zh">\(N=3\)（<strong>Simpson 法</strong>）：\(w_1=w_3=\frac16,w_2=\frac23\)，</span><span class="lang en">\(N=3\) (<strong>Simpson's rule</strong>): \(w_1=w_3=\frac16,w_2=\frac23\),</span></p>
+<p>$$\int_a^b f(x)\,dx\approx\frac{b-a}6\left(f(a)+4f\!\left(\frac{a+b}2\right)+f(b)\right),$$</p>
+<p><span class="lang zh">它实际能精确积分 3 次多项式，误差界 \(\left|\int_a^b f-\frac{b-a}6(\dots)\right|\le\frac{\|f^{(4)}\|}{2880}(b-a)^5\)。</span><span class="lang en">which actually integrates degree-3 polynomials exactly, with error bound \(\left|\int_a^b f-\frac{b-a}6(\dots)\right|\le\frac{\|f^{(4)}\|}{2880}(b-a)^5\).</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>复合法则 / Compound rule
+<span class="lang zh">\(N\ge4\) 的 Newton-Cotes 几乎不用（高阶时部分权重变负、引入舍入误差）。<strong>复合法则</strong>把 \([a,b]\) 分成 \(N\) 个等距子区间，对每段用梯形/Simpson。\((N+1)\)-点梯形法误差 \(\frac{\|f''\|}{12}N^{-2}\)；\((2N+1)\)-点 Simpson 法误差 \(\frac{\|f^{(4)}\|}{2880}N^{-4}\)。被积函数越光滑、Simpson 比梯形越准。</span><span class="lang en">Newton-Cotes with \(N\ge4\) is almost never used (beyond some order some weights turn negative, introducing rounding errors). The <strong>compound rule</strong> divides \([a,b]\) into \(N\) even subintervals and applies trapezoidal/Simpson to each. The \((N+1)\)-point trapezoidal error is \(\frac{\|f''\|}{12}N^{-2}\); the \((2N+1)\)-point Simpson error is \(\frac{\|f^{(4)}\|}{2880}N^{-4}\). The smoother the integrand, the more accurate; Simpson beats trapezoidal.</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>高斯求积：正交多项式、根、定理 6 / Gaussian quadrature
+<span class="lang zh">设权函数 \(w\) 下的内积 \((p,q)=\int w(x)p(x)q(x)\,dx\) 与正交多项式 \(\{p_n^*\}\)。<strong>命题 4</strong>：正交多项式满足三项递推 (TTRR) \(p_{n+1}(x)=xp_n^*(x)-(xp_n^*,p_n^*)p_n^*(x)-(p_n,p_n)^{1/2}p_{n-1}^*(x)\)。<strong>引理 5</strong>：\(p_n^*(x)\) 在 \((a,b)\) 上恰有 \(n\) 个实根。<strong>定理 6（高斯求积）</strong>：取 \(p_n^*\) 的 \(n\) 个根 \(a<x_1<\dots<x_n<b\) 为节点，权重 \(w_k=\int w(x)L_k(x)\,dx\)，则对所有次数 \(\le2n-1\) 的多项式 \(p\)，</span><span class="lang en">Let the inner product \((p,q)=\int w(x)p(x)q(x)\,dx\) under weight \(w\) define orthogonal polynomials \(\{p_n^*\}\). <strong>Proposition 4</strong>: they satisfy a three-term recurrence (TTRR) \(p_{n+1}(x)=xp_n^*(x)-(xp_n^*,p_n^*)p_n^*(x)-(p_n,p_n)^{1/2}p_{n-1}^*(x)\). <strong>Lemma 5</strong>: \(p_n^*(x)\) has exactly \(n\) real roots on \((a,b)\). <strong>Theorem 6 (Gaussian quadrature)</strong>: take the \(n\) roots \(a<x_1<\dots<x_n<b\) of \(p_n^*\) as nodes and weights \(w_k=\int w(x)L_k(x)\,dx\); then for all polynomials \(p\) of degree up to \(2n-1\),</span></p>
+<p>$$\int w(x)p(x)\,dx=\sum_{k=1}^n w_k p(x_k).$$</p>
+<p><span class="lang zh">（证明：写 \(p=p_n^* q+r\)，\(\deg q,r\le n-1\)，由正交性 \((p_n^*,q)=0\)，\(p(x_k)=r(x_k)\)，再对 \(r\) 用 \(L_k\) 表示。）</span><span class="lang en">(Proof: write \(p=p_n^* q+r\) with \(\deg q,r\le n-1\); by orthogonality \((p_n^*,q)=0\), \(p(x_k)=r(x_k)\), and represent \(r\) via the \(L_k\).)</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>定理 7（Golub-Welsch）与四类高斯求积 / Theorem 7 (Golub-Welsch) and four Gaussian quadratures
+<span class="lang zh"><strong>定理 7（Golub-Welsch）</strong>：设 \(p_n^*\) 首项系数 \(k_n>0\)、\(\alpha_n=k_{n-1}/k_n>0\)、\(\beta_n=(xp_n^*,p_n^*)\)，构造 \(N\times N\) 对称三对角 <strong>Jacobi 矩阵</strong> \(J_N\)（对角 \(\beta_0,\dots,\beta_{N-1}\)、次对角 \(\alpha_1,\dots,\alpha_{N-1}\)）。则求积节点 \(\{x_n\}\) 是 \(J_N\) 的特征值，权重满足 \(\frac1{w_n}=\sum_{k=0}^{N-1}p_k^*(x_n)^2>0\)。<strong>常见四类</strong>：Gauss-Legendre（$(-1,1)$，\(w=1\)）；Gauss-Chebyshev（$(-1,1)$，\(w=1/\sqrt{1-x^2}\)，算 Fourier 系数）；Gauss-Hermite（\((-\infty,\infty)\)，\(w=e^{-x^2}\)，算正态期望）；Gauss-Laguerre（\((0,\infty)\)，\(w=e^{-x}\)，算指数分布期望）。</span><span class="lang en"><strong>Theorem 7 (Golub-Welsch)</strong>: with \(p_n^*\) leading coefficient \(k_n>0\), \(\alpha_n=k_{n-1}/k_n>0\), \(\beta_n=(xp_n^*,p_n^*)\), build the \(N\times N\) symmetric tridiagonal <strong>Jacobi matrix</strong> \(J_N\) (diagonal \(\beta_0,\dots,\beta_{N-1}\), off-diagonal \(\alpha_1,\dots,\alpha_{N-1}\)). Then the quadrature nodes \(\{x_n\}\) are eigenvalues of \(J_N\), and the weights satisfy \(\frac1{w_n}=\sum_{k=0}^{N-1}p_k^*(x_n)^2>0\). <strong>Four common types</strong>: Gauss-Legendre ($(-1,1)$, \(w=1\)); Gauss-Chebyshev ($(-1,1)$, \(w=1/\sqrt{1-x^2}\), for Fourier coefficients); Gauss-Hermite (\((-\infty,\infty)\), \(w=e^{-x^2}\), for normal expectations); Gauss-Laguerre (\((0,\infty)\), \(w=e^{-x}\), for exponential expectations).</span></p></p></div>
+<h2 id="3-discretization">3 离散化 / Discretization</h2>
+<div class="callout"><div class="callout-title">Important</div><p>3.1 早期方法与 Tauchen-Hussey / 3.1 Earlier methods and Tauchen-Hussey
+<span class="lang zh">若仅解单个含期望的优化（如静态组合问题），高精度高斯求积自然合适；但动态问题需算<strong>条件期望</strong>，且希望求积节点<strong>预先固定</strong>（不依赖模型状态）以降复杂度。<strong>离散化</strong>（把连续随机过程近似为有限状态马尔可夫链）正是工具。以 Gaussian AR(1) \(x_t=\rho x_{t-1}+\varepsilon_t\)（\(\varepsilon_t\sim N(0,\sigma^2)\)）为例，\(x_t\mid x_{t-1}\sim N(\rho x_{t-1},\sigma^2)\)。Tauchen (1986) 经典但不准（勿用）；Rouwenhorst (1995) 好（条件矩精确至 2 阶、构造性、\(\rho\ge0.99\) 时尤佳）。<strong>Tauchen-Hussey (1991)</strong> 用 Gauss-Hermite：以节点 \(\{x_n\}\)、权重 \(\{w_n\}\) 离散 \(N(0,\sigma^2)\)，由 \(\mathbb E[g(X)]=\int g(x)\frac1{\sqrt{2\pi\sigma^2}}e^{-x^2/2\sigma^2}dx\approx\sum_n\frac{w_n}{\sqrt\pi}g(\sqrt2\sigma x_n)\)，取节点 \(x_n'=\sqrt2\sigma x_n\)、权重 \(w_n'=w_n/\sqrt\pi\)。AR(1) 转移矩阵</span><span class="lang en">If one only solves a single optimization with an expectation (e.g. a static portfolio problem), a high-accuracy Gaussian quadrature is natural; but dynamic problems need <strong>conditional expectations</strong>, and it is desirable for the quadrature nodes to be <strong>preassigned</strong> (independent of the model state) to cut complexity. <strong>Discretization</strong> (approximating a continuous process by a finite-state Markov chain) is the tool. Take the Gaussian AR(1) \(x_t=\rho x_{t-1}+\varepsilon_t\) (\(\varepsilon_t\sim N(0,\sigma^2)\)), so \(x_t\mid x_{t-1}\sim N(\rho x_{t-1},\sigma^2)\). Tauchen (1986) is classic but inaccurate (do not use); Rouwenhorst (1995) is good (conditional moments exact to order 2, constructive, especially for \(\rho\ge0.99\)). <strong>Tauchen-Hussey (1991)</strong> uses Gauss-Hermite: discretize \(N(0,\sigma^2)\) with nodes \(\{x_n\}\), weights \(\{w_n\}\) via \(\mathbb E[g(X)]=\int g(x)\frac1{\sqrt{2\pi\sigma^2}}e^{-x^2/2\sigma^2}dx\approx\sum_n\frac{w_n}{\sqrt\pi}g(\sqrt2\sigma x_n)\), taking nodes \(x_n'=\sqrt2\sigma x_n\), weights \(w_n'=w_n/\sqrt\pi\). The AR(1) transition matrix is</span></p>
+<p>$$p_{mn}\propto w_n'\,e^{-\frac{\mu^2-2x_n'\mu}{2\sigma^2}},\qquad \mu=\rho x_m',\quad \sum_{n=1}^N p_{mn}=1.$$</p>
+<p><span class="lang zh">\(\rho\le0.5\) 时不错，但假设高斯冲击，且 \(\rho\) 大时变差。</span><span class="lang en">It is decent for \(\rho\le0.5\), but assumes Gaussian shocks and deteriorates for large \(\rho\).</span></p></p></div><div class="callout"><div class="callout-title">Important</div><p>3.2 Farmer-Tanaka-Toda 最大熵法 / 3.2 Farmer-Tanaka-Toda maximum entropy
+<span class="lang zh">Tanaka-Toda (2013, 2015)、Farmer-Toda (2017) 给出更准、更通用的离散化（应作首选）。<strong>3.2.1 离散概率分布</strong>：给定密度 \(f\)，先取求积公式 \(\mathbb E[g(X)]=\int g(x)f(x)dx\approx\sum_{n=1}^N w_n g(x_n)f(x_n)\) (1)，得粗近似 \(q_n=\frac{w_n f(x_n)}{\sum_n w_n f(x_n)}\) (2)。但 \(\{q_n\}\) 的矩一般不匹配 \(f\)。Tanaka-Toda (2013) 通过更新概率精确匹配一组矩：设矩函数 \(T:\mathbb R^K\to\mathbb R^L\)、精确矩 \(\bar T=\int T(x)f(x)dx\)，解</span><span class="lang en">Tanaka-Toda (2013, 2015), Farmer-Toda (2017) give a more accurate and general discretization (should be the first choice). <strong>3.2.1 Discretizing a distribution</strong>: given density \(f\), first pick a quadrature \(\mathbb E[g(X)]=\int g(x)f(x)dx\approx\sum_{n=1}^N w_n g(x_n)f(x_n)\) (1), giving a coarse approximation \(q_n=\frac{w_n f(x_n)}{\sum_n w_n f(x_n)}\) (2). But the moments of \(\{q_n\}\) generally do not match \(f\). Tanaka-Toda (2013) match a finite set of moments exactly by updating the probabilities: with a moment function \(T:\mathbb R^K\to\mathbb R^L\) and exact moments \(\bar T=\int T(x)f(x)dx\), solve</span></p>
+<p>$$\min_{\{p_n\}}\sum_{n=1}^N p_n\log\frac{p_n}{q_n}\quad\text{s.t.}\quad\sum_{n=1}^N p_n T(x_n)=\bar T,\ \sum_{n=1}^N p_n=1,\ p_n\ge0.\tag{P}$$</p>
+<p><span class="lang zh">目标是 \(\{p_n\}\) 相对 \(\{q_n\}\) 的 <strong>Kullback-Leibler 信息（相对熵）</strong>：在精确匹配矩的同时尽量贴近初始近似。(P) 是凸最小化，解唯一。转为低维（\(L\) 个未知）无约束凹最大化<strong>对偶问题</strong></span><span class="lang en">The objective is the <strong>Kullback-Leibler information (relative entropy)</strong> of \(\{p_n\}\) relative to \(\{q_n\}\): match the moments exactly while staying as close to the initial approximation as possible. (P) is convex, so the solution is unique. Convert to the low-dimensional (\(L\) unknowns) unconstrained concave maximization <strong>dual</strong></span></p>
+<p>$$\max_{\lambda\in\mathbb R^L}\left[\lambda'\bar T-\log\left(\sum_{n=1}^N q_n e^{\lambda'T(x_n)}\right)\right].\tag{D}$$</p>
+<p><span class="lang zh"><strong>定理 8</strong>：(P) 有解当且仅当 \(\bar T\in\mathrm{co}\,T(D_N)\)；有解则唯一。可由对偶解 \(\lambda_N\) 算更新概率 \(p_n\propto q_n e^{\lambda_N'T(x_n)}\)；若无解则正则性 \(\bar T\in\mathrm{int}\,\mathrm{co}\,T(D_N)\) 不成立，须选更少的矩。<strong>3.2.2 离散一般马尔可夫过程</strong>：对时齐一阶马尔可夫过程 \(P(x_t\le x'\mid x_{t-1}=x)=F(x',x)\)，对<strong>每个</strong>条件分布分别施用上法——给定网格 \(D_N=\{x_n\}\) 与初始转移矩阵 \(Q=(q_{nn'})\)、条件矩 \(\bar T_n=\mathbb E[T(x_t)\mid x_n]\)，对每个 \(n\) 解 (P\(_n\))/(D\(_n'\))，正则性 \(\bar T_n\in\mathrm{int}\,\mathrm{co}\,T(D_N)\)。即 <strong>Algorithm 1</strong>（选网格与初始近似 → 选矩函数 → 逐行解对偶 → 得转移矩阵）。</span><span class="lang en"><strong>Theorem 8</strong>: (P) has a solution iff \(\bar T\in\mathrm{co}\,T(D_N)\); if so, it is unique. From the dual solution \(\lambda_N\) one computes the updated probabilities \(p_n\propto q_n e^{\lambda_N'T(x_n)}\); if no solution exists, the regularity condition \(\bar T\in\mathrm{int}\,\mathrm{co}\,T(D_N)\) fails and one must select fewer moments. <strong>3.2.2 Discretizing a general Markov process</strong>: for a time-homogeneous first-order Markov process \(P(x_t\le x'\mid x_{t-1}=x)=F(x',x)\), apply the above to <strong>each</strong> conditional distribution separately — given a grid \(D_N=\{x_n\}\), an initial transition matrix \(Q=(q_{nn'})\), and conditional moments \(\bar T_n=\mathbb E[T(x_t)\mid x_n]\), solve (P\(_n\))/(D\(_n'\)) for each \(n\), with regularity \(\bar T_n\in\mathrm{int}\,\mathrm{co}\,T(D_N)\). This is <strong>Algorithm 1</strong> (choose grid and initial approximation → choose moment function → solve the dual row by row → obtain the transition matrix).</span></p></p></div>
+<h2 id="references">References</h2>
+<div class="refs-wide">
+<ul>
+<li>Adda, J. and R. Cooper (2003). <em>Dynamic Economics: Quantitative Methods and Applications</em>. MIT Press.</li>
+<li>Borwein, J. M. and A. S. Lewis (1991). Duality Relationships for Entropy-Like Minimization Problems. <em>SIAM Journal on Control and Optimization</em> 29(2), 325–338.</li>
+<li>Davis, P. J. and P. Rabinowitz (1984). <em>Methods of Numerical Integration</em> (2nd ed.). Academic Press.</li>
+<li>Farmer, L. E. and A. A. Toda (2017). Discretizing Nonlinear, Non-Gaussian Markov Processes with Exact Conditional Moments. <em>Quantitative Economics</em> 8(2), 651–683.</li>
+<li>Kullback, S. and R. A. Leibler (1951). On Information and Sufficiency. <em>Annals of Mathematical Statistics</em> 22(1), 79–86.</li>
+<li>Rouwenhorst, K. G. (1995). Asset Pricing Implications of Equilibrium Business Cycle Models. In T. F. Cooley (Ed.), <em>Frontiers of Business Cycle Research</em>. Princeton University Press.</li>
+<li>Tanaka, K. and A. A. Toda (2013). Discrete Approximations of Continuous Distributions by Maximum Entropy. <em>Economics Letters</em> 118(3), 445–450.</li>
+<li>Tanaka, K. and A. A. Toda (2015). Discretizing Distributions with Exact Moments: Error Estimate and Convergence Analysis. <em>SIAM Journal on Numerical Analysis</em> 53(5), 2158–2177.</li>
+<li>Tauchen, G. (1986). Finite State Markov-Chain Approximations to Univariate and Vector Autoregressions. <em>Economics Letters</em> 20(2), 177–181.</li>
+<li>Tauchen, G. and R. Hussey (1991). Quadrature-Based Methods for Obtaining Approximate Solutions to Nonlinear Asset Pricing Models. <em>Econometrica</em> 59(2), 371–396.</li>
+</ul>
+</div>
+</div>
+<div class="lang en"></div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1-polynomial-interpolation">1 多项式插值 / Polynomial Interpolation</a></li>
+        <li><a href="#1-polynomial-interpolation">1 Polynomial Interpolation</a></li>
+        <li><a href="#2-quadrature">2 数值积分 / Quadrature</a></li>
+        <li><a href="#3-discretization">3 离散化 / Discretization</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

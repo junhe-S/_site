@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Chen &amp; McCoy (2024, <em>Journal of Financial Economics</em>)</strong>：把 159 个横截面收益预测变量喂进机器学习模型时，「该拿缺失值怎么办」是个绕不过去的脏活。作者发现，最朴素的<strong>横截面均值填补 (cross-sectional mean imputation)</strong> 与教科书力荐的<strong>期望最大化 (expectation-maximization, EM)</strong> 算法，给出的组合收益几乎一模一样——而且 EM 有时还会因为引入估计噪声而<strong>跑输</strong>。背后的原因，是关于这批数据的三个朴素事实。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Chen &amp; McCoy (2024, <em>Journal of Financial Economics</em>)</strong>：把 159 个横截面收益预测变量喂进机器学习模型时，「该拿缺失值怎么办」是个绕不过去的脏活。作者发现，最朴素的<strong>横截面均值填补 (cross-sectional mean imputation)</strong> 与教科书力荐的<strong>期望最大化 (expectation-maximization, EM)</strong> 算法，给出的组合收益几乎一模一样——而且 EM 有时还会因为引入估计噪声而<strong>跑输</strong>。背后的原因，是关于这批数据的三个朴素事实。</p></p></div>
 <h2 id="1">1 一个没人愿意谈的脏活</h2>
 <p>机器学习进入资产定价，是过去十年最热闹的一条线。故事的主线大家都熟：把预测变量(predictor)的数量往上堆。Freyberger et al. (2020) 用了 62 个，Kelly et al. (2023) 用了 138 个，Han et al. (2022) 一口气堆到 193 个；每一篇都告诉你，把变量集扩到 Fama and French (2015) 那五个之外，是有经济回报的——Sharpe 比率能从 0.8 一路冲到 1.8 甚至 2.4。</p>
 <p>但热闹背后，埋着一件没人愿意拿到台面上说的脏活：<strong>缺失值 (missing values)</strong>。</p>
@@ -99,7 +99,7 @@
 <h2 id="2">2 张力：教科书的「最优」，和华尔街的「将就」</h2>
 <p>这里就出现了本文的核心张力。</p>
 <p>填补缺失值这件事，统计学有一套成熟的理论。最权威的教科书 Little and Rubin (2019) 力荐的是 <strong>EM 算法</strong>——它在合适的假设下<strong>更少偏误、更有效率</strong>，理论上能给出更准的预测。可在资产定价的实践里，几乎所有人用的却是最「将就」的办法：<strong>横截面均值填补</strong>——一个变量这个月缺了，就用这个月所有其他股票在该变量上的横截面均值去补。Gu et al. (2020)、Freyberger et al. (2020)、Kozak et al. (2020)，全都这么干。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>一个值得记住的小技巧：本文在填补前先把每个变量标准化成零均值、单位方差。于是「均值填补」实际上等价于——<strong>缺失的地方一律填 0</strong>。它简单到近乎偷懒。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>一个值得记住的小技巧：本文在填补前先把每个变量标准化成零均值、单位方差。于是「均值填补」实际上等价于——<strong>缺失的地方一律填 0</strong>。它简单到近乎偷懒。</p></p></div>
 <p>教科书说 EM 更好，实践里大家用最笨的均值——这两者之间，到底谁对？一个自然的问题是：如果认真用上 EM，机器学习组合的表现会不会显著更好？</p>
 <p>作者把这个问题摆上了实验台。他们用 159 个预测变量，搭配主成分回归 (principal component regression, PCR)、神经网络、梯度提升等多种预测方法，把均值填补和 EM 正面对撞。结果令人意外：</p>
 <ul>
@@ -120,7 +120,7 @@
 <div class="article-image"><img alt="Figure 4: Imputation Errors in a Random Masking Exercise. We measure" src="assets/figure-4.png" /></div>
 <p><em>Figure 4: Imputation Errors in a Random Masking Exercise. We measure</em></p>
 <p>三条合在一起，结论就水落石出了：<strong>观测到的变量，几乎不携带关于缺失变量的信息</strong>。既然如此，那 EM 辛辛苦苦估计出来的那点「线索」，本质上都是噪声。你一刀切地填上横截面均值，反而干净利落。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>更糟的是，在某些设定下，EM 不只是「没用」，而是<strong>有害</strong>。作者按微盘、小盘、大盘分别建模时一切尚好；可一旦把所有股票放在一起同时建模，EM 给出的市值加权收益常常<strong>小于</strong>朴素均值填补。原因正是：EM 引入的估计噪声，在预测结构没搭好的时候会被放大；而随机掩码 (random masking) 实验显示，EM 的填补误差恰恰在小股票里最大。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>更糟的是，在某些设定下，EM 不只是「没用」，而是<strong>有害</strong>。作者按微盘、小盘、大盘分别建模时一切尚好；可一旦把所有股票放在一起同时建模，EM 给出的市值加权收益常常<strong>小于</strong>朴素均值填补。原因正是：EM 引入的估计噪声，在预测结构没搭好的时候会被放大；而随机掩码 (random masking) 实验显示，EM 的填补误差恰恰在小股票里最大。</p></p></div>
 <h2 id="4-em">4 EM 到底在做什么：把最核心的那个方程拆开看</h2>
 <p>为了让上面的直觉落地，我们把本文方法的核心方程拆开讲一遍。它不是一个结构经济模型，而是一套填补算法，但其几何含义非常清晰。</p>
 <p>设有 \(N\) 只股票，股票 \(i\) 在第 \(t\) 月有一个预测变量向量 \(X_{i,t}\)。把它拆成缺失的子向量 \(X_{miss|i,t}\) 和观测到的子向量 \(X_{obs|i,t}\)。比如 \(X_{i,t}=\begin{bmatrix}1&2&3&4\end{bmatrix}'\)，若第一、三个元素缺失，则 \(X_{miss|i,t}=[1\ 3]\)、\(X_{obs|i,t}=[2\ 4]\)。</p>

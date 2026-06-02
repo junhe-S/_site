@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Christoffersen &amp; Jacobs (2004, <em>Journal of Financial Economics</em>)</strong>：在期权定价里，你「估参数」用的损失函数和「评模型」用的损失函数必须是同一把尺子——否则你拿到的参数对那把评价的尺子来说就是次优的。作者用最简单的 Practitioner Black-Scholes 模型在 S&amp;P 500 期权上演示：把两端的损失函数对齐，评价损失能改善 <strong>50% 以上</strong>；而一旦对齐，这个被人当作「陪练」的模型，竟反过来打赢了结构化的随机波动率模型。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Christoffersen &amp; Jacobs (2004, <em>Journal of Financial Economics</em>)</strong>：在期权定价里，你「估参数」用的损失函数和「评模型」用的损失函数必须是同一把尺子——否则你拿到的参数对那把评价的尺子来说就是次优的。作者用最简单的 Practitioner Black-Scholes 模型在 S&amp;P 500 期权上演示：把两端的损失函数对齐，评价损失能改善 <strong>50% 以上</strong>；而一旦对齐，这个被人当作「陪练」的模型，竟反过来打赢了结构化的随机波动率模型。</p></p></div>
 <h2 id="1">1 一桩没人在意的「公案」</h2>
 <p>先讲一个让人有点困惑的场景。</p>
 <p>假设你是一位审稿人，手上有两篇关于期权定价的论文。第一篇（Dumas, Fleming, and Whaley, 1998，下称 DFW）告诉你：那个被业界称作「特设模型」（Ad-Hoc model）的简单做法——也就是本文要反复提到的 实务者布莱克-斯科尔斯模型 (Practitioner Black-Scholes, PBS)——表现相当不错，跟正经的确定性波动率模型比起来毫不逊色。第二篇（Heston and Nandi, 2000）却告诉你：同样这个 PBS 模型，被一个 GARCH 期权定价模型轻松超越。</p>
@@ -116,7 +116,7 @@ $$</p>
 <p>但真正关键的一步在于：这个「无关」的假设，是错的。</p>
 <p>作者搬出了统计学里一句被反复证明、却在期权定价里被反复忽略的话（Granger, 1969；Engle, 1993）：<strong>改变损失函数，等价于改变模型设定</strong>。一个标准的期权定价模型只会吐出一个确定性的价格，它从来没告诉你误差项长什么样（Renault, 1997）。而你一旦选定了损失函数，你就隐含地替这个模型选定了误差结构——也就是说，你替它补完了「统计模型」的另一半。</p>
 <p>于是结论顺理成章：如果你用 IVMSE 估参数、却用 \$MSE 来评价模型，你做的事情并不是「估好一个模型再换个角度考它」，而是<strong>先设定了一个模型、再偷偷把它换成另一个模型，却不允许参数跟着调整</strong>。常识告诉我们，要想在某把尺子下表现最好，就该用那把尺子去估。可正因为损失函数的后果不像「换个理论模型」那样显眼，这条常识在实证里被一忽再忽。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这正是全文反复敲打的那一个核心：<strong>损失函数不是评价工具，它是模型设定的一部分。</strong> 把它当成可以随意更换的「视角」，你就在不知不觉中比较着两个不同的模型。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这正是全文反复敲打的那一个核心：<strong>损失函数不是评价工具，它是模型设定的一部分。</strong> 把它当成可以随意更换的「视角」，你就在不知不觉中比较着两个不同的模型。</p></p></div>
 <h2 id="3">3 用最朴素的模型，把话说透</h2>
 <p>要演示一个方法论上的道理，最好的载体不是花哨的模型，而是最朴素的那个。作者选了 PBS。</p>
 <p>PBS 的实现只有三步，简单到近乎「作弊」：第一步，对每个观察到的期权算出 Black-Scholes 隐含波动率；第二步，把这些隐含波动率对到期时间 \(T\) 和执行价 \(X\) 的多项式做一个普通最小二乘 (ordinary least squares, OLS) 回归；第三步，把拟合出来的波动率再塞回 Black-Scholes 公式，得到「实务者价格」。DFW 用的最一般形式是：</p>
@@ -170,7 +170,7 @@ $$</p>
 <div class="article-image"><img alt="Table 3: presents average RMSE losses for the Heston model using the same 716" src="assets/table-3.png" /></div>
 <p><em>Table 3: presents average RMSE losses for the Heston model using the same 716</em></p>
 <p>于是文章的三点贡献也就立住了：第一，实现期权模型时，对齐估计与评价损失至关重要（改善 50%+）；第二，跨模型比较时，估计损失必须统一；第三，作者顺手「公平地」重新实现了 PBS，造出了一个表现好得多的新 PBS——一个更难被打败的基准，留给未来的结构模型去挑战。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>注意作者的措辞非常克制：他们说错位损失函数「可能」（may）导致问题，而非「必然」。没有定理保证「设定正确」的模型在样本外一定最优——样本外，一个设定有误、但参数估得很准的模型，完全可能打赢那个设定正确、参数却没对齐尺子的模型。所以「对齐损失函数」是一条<strong>经验法则（rule-of-thumb）</strong>，它好不好用本身是个实证问题。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>注意作者的措辞非常克制：他们说错位损失函数「可能」（may）导致问题，而非「必然」。没有定理保证「设定正确」的模型在样本外一定最优——样本外，一个设定有误、但参数估得很准的模型，完全可能打赢那个设定正确、参数却没对齐尺子的模型。所以「对齐损失函数」是一条<strong>经验法则（rule-of-thumb）</strong>，它好不好用本身是个实证问题。</p></p></div>
 <h2 id="5">5 文献脉络</h2>
 <p>把这条线索拉直，会发现它其实横跨了两个看似无关的领域。</p>
 <p>一端是<strong>期权定价模型的演进</strong>。源头当然是 Black and Scholes (1973)。为了修补 BS 的经验缺陷，确定性波动率函数（Derman &amp; Kani, 1994；Dupire, 1994；Rubinstein, 1994）、随机波动率模型（Scott, 1987；Hull &amp; White, 1987；Heston, 1993）、跳跃模型（Bates, 1996a）、以及离散时间的 GARCH 期权模型（Duan, 1995；Heston &amp; Nandi, 2000）相继登场。Bakshi, Cao, and Chen (1997) 则做了一次集大成的实证横评。</p>

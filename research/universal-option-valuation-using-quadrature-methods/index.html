@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Andricopoulos, Widdicks, Duck &amp; Newton (2003, JFE)</strong>：他们提出一种叫 QUAD 的数值方法，把期权定价从树和有限差分那种「时间上必须密密麻麻一步一挪」的牢笼里解放出来——离散监测的奇异期权，<strong>两次观察之间只需一个时间步</strong>，节点可以精确落在「不连续点」上，于是步数翻一倍误差最多能降到 1/256，比既有方法快上<strong>几个数量级</strong>。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Andricopoulos, Widdicks, Duck &amp; Newton (2003, JFE)</strong>：他们提出一种叫 QUAD 的数值方法，把期权定价从树和有限差分那种「时间上必须密密麻麻一步一挪」的牢笼里解放出来——离散监测的奇异期权，<strong>两次观察之间只需一个时间步</strong>，节点可以精确落在「不连续点」上，于是步数翻一倍误差最多能降到 1/256，比既有方法快上<strong>几个数量级</strong>。</p></p></div>
 <h2 id="1">1 一个被忽视的算术常识</h2>
 <p>先讲一件几乎人人都知道、却很少有人认真追问的事。</p>
 <p>任何一个买过期权定价教科书的人都见过两套数值方法：一套是格点法 (lattice)——二叉树、三叉树；一套是有限差分 (finite-difference)。它们的共同点是，<strong>把时间切成很多很多小片</strong>，然后从到期日往回，一格一格地把期权价值「倒推」回今天。树越密，差分网格越细，答案越准。</p>
@@ -131,7 +131,7 @@ V(x,t) = \cssId{a1}{A(x)} \int_{-\infty}^{\infty} \cssId{a2}{B(x,y)}\; \cssId{a3
 $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>折现与漂移因子，把 t+Δt 的价值贴现回 t，只依赖当前价位 x</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>转移核：从 x 走到 y 的（风险中性）概率密度，本质是一个高斯钟形</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>下一观察时刻 t+Δt、标的为 y 时的期权价值——也就是积分要&quot;加权平均&quot;的对象</div></aside><svg class="mathanno-lines"></svg></div>
 
 <p>这个方程对<strong>纯欧式期权</strong>在全时段都成立；但对任何带特殊条款的期权，它只在「两次观察之间」<strong>局部成立</strong>。QUAD 的全部智慧就在这一句话里：把期权的生命切成「相邻观察点之间」的若干段，<strong>每一段内部都用上面这个精确积分一步跨过</strong>，只在观察点处施加期权的特殊条款（敲出、提前行权……）作为衔接。于是——</p>
-<div class="callout"><div class="callout-title">Tip</div><p>树和差分要在「两次观察之间」塞进成百上千个中间时间步；QUAD 在两次观察之间<strong>只用一个时间步</strong>。中间那一整段连续时间的随机性，被那个高斯核一次性精确积分掉了。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>树和差分要在「两次观察之间」塞进成百上千个中间时间步；QUAD 在两次观察之间<strong>只用一个时间步</strong>。中间那一整段连续时间的随机性，被那个高斯核一次性精确积分掉了。</p></p></div>
 <h2 id="4">4 剩下的，只是「把一个积分算准」</h2>
 <p>把定价问题化成积分之后，期权定价就退化成了一个一维数值积分问题。论文用的是辛普森法则 (Simpson's rule)——古老（1743 年就有了）、简单、稳健，而且收敛极快：误差以 \((\delta y)^4\) 的速度下降（\(\delta y\) 是积分格距）。也就是说，<strong>积分点数翻一倍，误差降到 1/16</strong>。对比一下三叉树的 \(N^{-1}\)，高下立判。</p>
 <p>$$
@@ -139,7 +139,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 $$</p>
 <p>但辛普森法则有个前提：被积函数得光滑。而期权 payoff 在执行价处恰恰<strong>不光滑</strong>（看涨期权的一阶导在 \(S=E\) 处从 0 跳到 1）。这正是第二类「非线性误差」的根。</p>
 <p>于是真正关键的一步出现了，也是 QUAD 区别于树的地方：<strong>把积分从拐点处一刀切成两段</strong>。对看涨期权，就在 \(y=0\)（即 \(S=E\)）处切开——左边那段 payoff 恒为零、对积分毫无贡献，右边那段则完全光滑。因为节点可以<strong>任意放置</strong>，所以这一刀永远能精确落在拐点上，非线性误差被<strong>彻底铲除</strong>，而不是像树那样只能「尽量靠近」。</p>
-<div class="callout"><div class="callout-title">Note</div><p>还有一个收尾的小技巧：积分的 \(y\) 区间本是双向无穷的，但高斯核衰减极快，所以只需截到「一个时间步内标的上下移动十个标准差」即可，\(q = 10\sigma\sqrt{T}\)。十个标准差之外的概率小到可以忽略。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>还有一个收尾的小技巧：积分的 \(y\) 区间本是双向无穷的，但高斯核衰减极快，所以只需截到「一个时间步内标的上下移动十个标准差」即可，\(q = 10\sigma\sqrt{T}\)。十个标准差之外的概率小到可以忽略。</p></p></div>
 <p>把非线性误差清零还带来一个意外红利：<strong>外推 (extrapolation) 现在可以放心用了</strong>。用两个格距 \(\delta y_1, \delta y_2\) 各算一次得 \(V_1, V_2\)，再按</p>
 <p>$$
 V_{ext} = \frac{(\delta y_1)^d V_2 - (\delta y_2)^d V_1}{(\delta y_1)^d - (\delta y_2)^d}

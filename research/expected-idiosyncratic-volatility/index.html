@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bekaert, Bergbrant &amp; Kassa (2025, JFE)</strong>：用近 8000 万条日度收益、19000 多家公司，他们给「特质波动率」做了一场预测模型的赛马，发现最流行的 <strong>鞅模型 (martingale model)</strong> 预报最差，而 <code>ARMA(1,1)</code> 最好。更要命的是——当你换上一个像样的预测模型，困扰学界二十年的「IVOL 之谜」竟然消失了。整个谜团，原来只是被一小撮「预报失灵」的观测撑起来的。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bekaert, Bergbrant &amp; Kassa (2025, JFE)</strong>：用近 8000 万条日度收益、19000 多家公司，他们给「特质波动率」做了一场预测模型的赛马，发现最流行的 <strong>鞅模型 (martingale model)</strong> 预报最差，而 <code>ARMA(1,1)</code> 最好。更要命的是——当你换上一个像样的预测模型，困扰学界二十年的「IVOL 之谜」竟然消失了。整个谜团，原来只是被一小撮「预报失灵」的观测撑起来的。</p></p></div>
 <h2 id="1">1 一个被默认、却从没被认真对待的假设</h2>
 <p>先抛一个问题：当我们说「这只股票下个月的特质波动率（idiosyncratic volatility, IVOL）很高」，我们究竟是怎么知道的？</p>
 <p>绝大多数人——包括二十年来无数篇资产定价论文——给出的答案其实出奇地简单：因为它<strong>上个月</strong>很高。也就是说，我们用本月已实现的特质方差，去预测下个月的特质方差。在时间序列的语言里，这叫 <strong>鞅模型 (martingale model)</strong>：</p>
@@ -112,7 +112,7 @@ $$</p>
 $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>常数项（无条件均值水平），鞅模型里被强行设为 0</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>自回归 (AR) 项：方差的持续性，系数 b_i 介于 0 与 1 之间</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>移动平均 (MA) 项：让上一期的&quot;意外冲击&quot;在本期被部分回吐——这是鞅模型完全没有的机制</div><div class="mathanno-card" data-target="a4"><span class="mathanno-num">4</span>本期新息 (innovation)，零均值噪声</div></aside><svg class="mathanno-lines"></svg></div>
 
 <p>对照着看就懂了：鞅模型其实是 <code>ARMA(1,1)</code> 在 \(a_i=0\)、\(b_i=1\)、\(\theta_i=0\) 时的极端特例——它假设方差的持续性是 <strong>100%</strong>，而且<strong>没有任何回吐机制</strong>。可现实里，方差冲击常常是暂时的：一家公司爆出一次盈余意外、波动率瞬间飙升，但这种尖峰理应在下个月退潮。鞅模型看不见这种回退（mean reversion），于是在那些「大冲击之后」的月份里，它会<strong>系统性地高估</strong>未来方差。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>直觉上，<code>ARMA(1,1)</code> 那个为正的 \(\theta\) 系数，正是用来「对冲」自回归项的过度外推：当本期出现一个大正残差（波动率尖峰），MA 项会在下一期把预测往回拉。这正是鞅模型缺失的那块拼图。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>直觉上，<code>ARMA(1,1)</code> 那个为正的 \(\theta\) 系数，正是用来「对冲」自回归项的过度外推：当本期出现一个大正残差（波动率尖峰），MA 项会在下一期把预测往回拉。这正是鞅模型缺失的那块拼图。</p></p></div>
 <h2 id="3-8000">3 一场 8000 万条数据的赛马</h2>
 <p>光有理论还不够，作者把它做成了一场货真价实的赛马。</p>
 <p>数据这边：他们从 <code>CRSP</code> 取了 1926 年 1 月到 2022 年 12 月、NYSE/AMEX/NASDAQ 全部个股的日度收益，合计 <strong><code>78,304,731</code> 条日度</strong>（约 <code>3,715,261</code> 条月度）观测，覆盖 <code>26,493</code> 家公司。特质收益冲击 \(\varepsilon_{i,d,t}\) 用 Fama-French (1993) 三因子模型逐月在个股上估出，再把月内日度平方残差加总，得到月度特质已实现方差 <code>IVAR</code>：</p>
@@ -145,7 +145,7 @@ $$</p>
 <li>关键是，对 <code>ARMA(1,1)</code> 做<strong>完全相同</strong>的样本剔除，它本就不显著的结论纹丝不动。</li>
 </ul>
 <p>换句话说，IVOL 之谜并非一个弥漫全市场的定价规律，而是<strong>集中在那些「上月 <code>IVAR</code> 暴涨、本月回退」的公司</strong>——正是鞅模型因为看不见回退而严重高估的那些月份。鞅模型在这些点上把方差预报得离谱地高，而这些股票随后收益偏低，于是回归里就「长」出了一条虚假的负相关。<code>ARMA(1,1)</code> 因为有 MA 项替它消化了这些暂时冲击，反而不会制造这种坏点。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>这意味着「IVOL 之谜」在很大程度上不是一个<strong>风险定价</strong>现象，而是一个<strong>度量误差/预测误设</strong>现象。把测量工具修好，谜就蒸发了。（关于「异象其实常常源自预期误差、而非玄学风险」这一更大的主题，可参见<a href="/research/finance-without-exotic-risk/">《不需要那些「玄学风险」》</a>；关于「一根 t 值能否撑起一个结论」的方法论隐忧，亦可对照<a href="/research/past-is-prologue-inference-from-the-cross-section-of/">《事件研究里的「假阳性」》</a>。）</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这意味着「IVOL 之谜」在很大程度上不是一个<strong>风险定价</strong>现象，而是一个<strong>度量误差/预测误设</strong>现象。把测量工具修好，谜就蒸发了。（关于「异象其实常常源自预期误差、而非玄学风险」这一更大的主题，可参见<a href="/research/finance-without-exotic-risk/">《不需要那些「玄学风险」》</a>；关于「一根 t 值能否撑起一个结论」的方法论隐忧，亦可对照<a href="/research/past-is-prologue-inference-from-the-cross-section-of/">《事件研究里的「假阳性」》</a>。）</p></p></div>
 <h2 id="5">5 那些「坏点」长什么样？</h2>
 <p>一个聪明的读者此刻会追问：这些让鞅模型翻车的「坏点」，是随机散落的吗？如果是，那不过是噪声；可如果它们和我们熟悉的某些公司特征系统相关，事情就有意思了——因为那意味着，过去种种对 IVOL 之谜的「解释」，本质上都在解释<strong>同一批预报失灵的观测</strong>。</p>
 <p>作者把鞅模型的极端预测误差，对 Hou &amp; Loh (2016) 用过的那一整套解释变量做回归。结果：这些坏点与<strong>高买卖价差 (bid-ask spread)</strong>、小规模指示变量、各种流动性度量、以及<strong>反转效应 (reversal)</strong> 强相关。而与极端误差关系<strong>最戏剧化</strong>的，是 Bali et al. (2011) 的 <strong><code>MAX</code> 变量</strong>——过去一个月的最高单日收益。<code>MAX</code> 几乎像一个探照灯，专门照出那些「特质方差被暂时性地、过度地推高」的公司月。</p>

@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Armstrong, Nicoletti &amp; Zhou (2022, JFE)</strong>：银行高管股权组合的 vega（薪酬价值对股价波动率的敏感度）会推高银行的<strong>系统性风险</strong>——但这种风险有个古怪的脾气，它<strong>只在经济收缩期发作，在扩张期几乎看不见</strong>。作者用一种无需工具变量的「修正控制函数回归」处理了银行与高管的内生匹配，发现简单 OLS 看到的那条正相关，相当一部分其实是匹配带来的假象；真正的因果效应，藏在一个跟着商业周期开关的「定时」机制里。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Armstrong, Nicoletti &amp; Zhou (2022, JFE)</strong>：银行高管股权组合的 vega（薪酬价值对股价波动率的敏感度）会推高银行的<strong>系统性风险</strong>——但这种风险有个古怪的脾气，它<strong>只在经济收缩期发作，在扩张期几乎看不见</strong>。作者用一种无需工具变量的「修正控制函数回归」处理了银行与高管的内生匹配，发现简单 OLS 看到的那条正相关，相当一部分其实是匹配带来的假象；真正的因果效应，藏在一个跟着商业周期开关的「定时」机制里。</p></p></div>
 <h2 id="1">1 一张让人心里一紧的图</h2>
 <p>先讲一个画面。</p>
 <p>把 2007–2009 金融危机爆发前（2005、2006 两年）每家银行高管的 vega 算出来，按五分位排好，然后看两件事：一是这家银行在危机里拿了多少 <code>TARP</code>（问题资产救助计划）救助款——用 2007 年的股权市值做标准化；二是它从 2007 年 6 月到 2008 年 12 月，股权市值蒸发了多少。</p>
@@ -119,7 +119,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p>直觉是这样的：假设你拿两个不同的银行子样本（比如经营市场不同）分别跑回归，如果两组<strong>残差的方差</strong> \(\sigma_u/\sigma_x\) 差别很大，而内生性又很严重（\(|\rho|\) 很大），那么这两组估出来的 \(\beta\) 就应该明显不同——因为偏误项 \(\rho\,\sigma_u/\sigma_x\) 的大小跟着方差一起变。</p>
 <p>反过来，<strong>如果残差方差明明差很多，两组的 \(\beta\) 却差不多，那只能说明 \(|\rho|\) 很小、内生性其实不严重</strong>。Klein 和 Vella 正是抓住这一点：利用残差里的<strong>异方差 (heteroskedasticity)</strong>，构造出一个控制函数，把那段 \(\rho\,\sigma_u/\sigma_x\) 的偏误「减掉」，从而在没有工具变量的情况下，逼近平均处理效应 \(\beta_0\)。</p>
 <p>这套方法天然契合这个研究场景——既然找不到一个对银行和高管都外生的工具，那就干脆不找，转而向残差的异方差结构借力。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>一句话记住它和 IV 的区别：IV 需要你<strong>从外部</strong>塞进一个外生变量；控制函数则是<strong>从误差项内部</strong>的异方差里榨出识别力。前者要排他性约束，后者要异方差性。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>一句话记住它和 IV 的区别：IV 需要你<strong>从外部</strong>塞进一个外生变量；控制函数则是<strong>从误差项内部</strong>的异方差里榨出识别力。前者要排他性约束，后者要异方差性。</p></p></div>
 <h2 id="4-ols">4 反转：OLS 看到的，大半是幻觉</h2>
 <p>方法到位，结果就开始有意思了。</p>
 <p><strong>首先</strong>，用两个最主流的市场化系统性风险度量——边际期望损失 <code>MES</code>（marginal expected shortfall, Acharya et al., 2017）和 <code>ΔCoVaR</code>（Adrian and Brunnermeier, 2016）——跑 OLS：vega 和银行一、二、三年后的 MES、ΔCoVaR 都呈<strong>显著正相关</strong>。和那张危机图一脉相承，看起来铁证如山。</p>
@@ -149,7 +149,7 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <div class="article-image"><img alt="Table 4" src="assets/table-4.png" /></div>
 <p><em>Table 4</em></p>
 <p>把这两组拼起来，故事就闭环了：vega → 鼓励顺周期、易挤兑的放贷与融资 → 这些活动在收缩期集中兑现损失 → 系统性风险上升。作者还专门验证了最后一环：vega 越高的银行，<strong>在随后的收缩期里，在 C&amp;I 贷款、整体贷款组合、MBSNA 投资上遭受大额损失的概率确实更高</strong>。</p>
-<div class="callout"><div class="callout-title">Note</div><p>这里有一个容易被忽略的微妙之处：银行的<strong>资本充足要求</strong>反而可能在帮倒忙。论文给出了「风险瞄准 (risk targeting)」(Keppo and Korte, 2018) 的解释——危机前 MBSNA 和 C&amp;I 的资本要求差不多，但 MBSNA 风险更高、危机前回报也更高。于是高 vega、又受到强风控约束的银行，有动机从 C&amp;I「平移」到 MBSNA：<strong>在不必多占资本的前提下，把风险偷偷加上去</strong>。监管的资本要求，本意是约束风险，却被冒险激励钻了空子。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>这里有一个容易被忽略的微妙之处：银行的<strong>资本充足要求</strong>反而可能在帮倒忙。论文给出了「风险瞄准 (risk targeting)」(Keppo and Korte, 2018) 的解释——危机前 MBSNA 和 C&amp;I 的资本要求差不多，但 MBSNA 风险更高、危机前回报也更高。于是高 vega、又受到强风控约束的银行，有动机从 C&amp;I「平移」到 MBSNA：<strong>在不必多占资本的前提下，把风险偷偷加上去</strong>。监管的资本要求，本意是约束风险，却被冒险激励钻了空子。</p></p></div>
 <p>为什么薪酬能放大<strong>系统性</strong>风险，而不只是单家银行的风险？作者搬出了一条理论线索：薪酬合约不仅直接激励某位高管冒险，它<strong>公开、可见</strong>，因此还充当了一种「承诺机制」——别家银行的高管能据此推断你会去冒什么险，从而做出<strong>相关的 (correlated)</strong> 决策，强化了银行间冒险的<strong>战略互补性 (strategic complementarities)</strong>。一家的风险上升，会抬高所有家一起冒同类险的概率，这正是系统性风险的来源（Acharya, 2009; Farhi and Tirole, 2012）。（关于薪酬合约如何被用作协调彼此行为的「承诺」，可参见<a href="/research/motivating-collusion/">《把「合谋」写进高管的工资条：当反垄断的门悄悄关上》</a>；关于「大家一起冒同一种险」的系统脆弱性，也可对照<a href="/research/stress-tests-and-model-monoculture/">《当所有银行都去猜同一张考卷：压力测试与系统的「单一栽培」》</a>与<a href="/research/bank-heterogeneity-and-financial-stability/">《异质性，反而是金融体系的「稳定器」？》</a>。）</p>
 <h2 id="6">6 数据</h2>
 <ul>

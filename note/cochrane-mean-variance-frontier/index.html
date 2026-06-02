@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5. Mean-Variance Frontier and Beta Representations – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>5. Mean-Variance Frontier and Beta Representations</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">均值方差前沿</span><span class="lang en">Mean-Variance Frontier</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">贝塔表示</span><span class="lang en">Beta Representation</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">正交分解</span><span class="lang en">Orthogonal Decomposition</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Hansen-Jagannathan界</span><span class="lang en">Hansen-Jagannathan Bound</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">夏普比率</span><span class="lang en">Sharpe Ratio</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>5. Mean-Variance Frontier and Beta Representations</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+大量实证资产定价用<strong>期望收益-贝塔表示</strong>与<strong>均值方差前沿</strong>写成。本章（Cochrane 第 5 章）介绍这两套语言并打通它们与贴现因子的关系。§5.1 期望收益-贝塔表示 \(E(R^i)=\gamma+\beta_{i}'\lambda\)，其本质是"时间序列回归的截距对所有资产相同"；§5.2 用经典 <strong>Lagrange 方法</strong> 刻画均值方差前沿；§5.3 给出 Hansen-Richard (1987) 的<strong>正交分解</strong> \(R^i=R^*+w^iR^{e*}+n^i\)，前沿无需代数即可"浮现"；§5.4 前沿的<strong>张成</strong>；§5.5 汇编 \(R^*,R^{e*},x^*\) 的诸多性质；§5.6 <strong>Hansen-Jagannathan 界</strong>——贴现因子的均值方差前沿，把夏普比率读成对 \(\sigma(m)/E(m)\) 的约束。</p></p></div>
+</div>
+<div class="lang en">
+<h1>5. Mean-Variance Frontier and Beta Representations</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+Much empirical asset pricing is written in terms of <strong>expected return-beta representations</strong> and <strong>mean-variance frontiers</strong>. This chapter (Cochrane Ch 5) introduces both languages and connects them to the discount factor. §5.1 the expected return-beta representation \(E(R^i)=\gamma+\beta_{i}'\lambda\), which is really "the time-series regression intercept is the same for all assets"; §5.2 the classic <strong>Lagrangian</strong> characterization of the mean-variance frontier; §5.3 the <strong>orthogonal decomposition</strong> \(R^i=R^*+w^iR^{e*}+n^i\) of Hansen and Richard (1987), from which the frontier "pops out" with no algebra; §5.4 <strong>spanning</strong> the frontier; §5.5 a compilation of the properties of \(R^*,R^{e*},x^*\); §5.6 the <strong>Hansen-Jagannathan bounds</strong> — the mean-variance frontier of discount factors, reading the Sharpe ratio as a restriction on \(\sigma(m)/E(m)\).</p></p></div>
+</div>
+<div class="lang zh">
+<h2 id="5-1-expected-return-beta-representations">5.1 期望收益-贝塔表示 / Expected Return-Beta Representations</h2>
+<p>线性因子定价模型常写成期望收益-贝塔形式：</p>
+</div>
+<div class="lang en">
+<h2 id="5-1-expected-return-beta-representations">5.1 Expected Return-Beta Representations</h2>
+<p>A linear factor pricing model is often written in expected return-beta form:</p>
+</div>
+<p>$$E(R^i)=\gamma+\beta_{i,a}\lambda_a+\beta_{i,b}\lambda_b+\cdots,\qquad i=1,2,\dots,N.\tag{5.1}$$</p>
+<div class="lang zh">
+<p>其中 \(\beta\) 是把收益对因子做<strong>时间序列回归</strong>的系数：</p>
+</div>
+<div class="lang en">
+<p>where the \(\beta\)'s are the coefficients in a <strong>time-series regression</strong> of returns on factors:</p>
+</div>
+<p>$$R^i_t=a_i+\beta_{i,a}f^a_t+\beta_{i,b}f^b_t+\cdots+\varepsilon^i_t,\qquad t=1,2,\dots,T.\tag{5.2}$$</p>
+<div class="lang zh">
+<p>要点：\(\beta_{i,a}\) 度量资产 \(i\) 对因子 \(a\) 的<strong>暴露</strong>，\(\lambda_a\) 是该风险暴露的<strong>价格</strong>。(5.1) 解释的是<strong>截面上</strong>平均收益的差异——把 \((E(R^i),\beta_i)\) 画出来应落在一条斜率 \(\lambda\)、截距 \(\gamma\) 的直线上。关键在于 \(\beta\) 是回归系数，<strong>不能</strong>是公司特征（规模、账面市值比、甚至股票代码首字母）：只有当收益取决于你"如何表现"（\(\beta\)）而非你"是谁"（特征），市场均衡才能抵御简单的重新打包。</p>
+<p>(5.1) 与 (5.2) 形式相似，差别微妙却关键：时间序列回归 (5.2) 的截距 \(a_i\) 一般<strong>各资产不同</strong>，而贝塔定价 (5.1) 的截距 \(\gamma\) 对所有资产<strong>相同</strong>。因此贝塔定价是对截距的一个<strong>限制</strong>。估计 \((\gamma,\lambda)\) 的一种方法是跑平均收益对 \(\beta\) 的<strong>截面回归</strong>：</p>
+</div>
+<div class="lang en">
+<p>The key reading: \(\beta_{i,a}\) measures asset \(i\)'s <strong>exposure</strong> to factor \(a\), and \(\lambda_a\) is the <strong>price</strong> of that risk exposure. Equation (5.1) explains the variation in average returns <strong>across assets</strong> — plotting \((E(R^i),\beta_i)\) should line them up on a straight line with slope \(\lambda\) and intercept \(\gamma\). Crucially the \(\beta\)'s are regression coefficients and must <strong>not</strong> be firm characteristics (size, book-to-market, even the first letter of the ticker): only if returns depend on how you <em>behave</em> (\(\beta\)) rather than who you <em>are</em> (characteristics) can a market equilibrium survive simple repackaging schemes.</p>
+<p>Equations (5.1) and (5.2) look alike, but the difference is subtle and crucial: the time-series regression (5.2) generally has a different intercept \(a_i\) for <strong>each</strong> asset, while the beta-pricing intercept \(\gamma\) is the <strong>same</strong> for all assets. So beta pricing is a <strong>restriction</strong> on those intercepts. One way to estimate \((\gamma,\lambda)\) is a <strong>cross-sectional regression</strong> of average returns on betas:</p>
+</div>
+<p>$$E(R^i)=\gamma+\beta_{i,a}\lambda_a+\beta_{i,b}\lambda_b+\cdots+\alpha_i,\qquad i=1,2,\dots,N.\tag{5.3}$$</p>
+<div class="lang zh">
+<p>\(\alpha_i\) 是<strong>定价误差</strong>，模型预测 \(\alpha_i=0\)。几个常见特例：若存在无风险利率，它对所有因子的 \(\beta\) 为零，故截距 \(\gamma=R^f\)；无无风险利率时 \(\gamma\) 称为<strong>零贝塔利率</strong>。常直接用超额收益，差分 (5.1) 消去截距得 \(E(R^{ei})=\beta_{i,a}\lambda_a+\cdots\)；当因子本身就是超额收益时，\(\lambda_a=E(f^a)\)，于是</p>
+</div>
+<div class="lang en">
+<p>The \(\alpha_i\) are <strong>pricing errors</strong>, and the model predicts \(\alpha_i=0\). Some common special cases: if a risk-free rate exists, its betas on all factors are zero, so the intercept \(\gamma=R^f\); with no risk-free rate, \(\gamma\) is the <strong>zero-beta rate</strong>. One often uses excess returns directly — differencing (5.1) removes the intercept, \(E(R^{ei})=\beta_{i,a}\lambda_a+\cdots\); and when the factors are themselves excess returns, \(\lambda_a=E(f^a)\), so</p>
+</div>
+<p>$$E(R^{ei})=\beta_{i,a}E(f^a)+\beta_{i,b}E(f^b)+\cdots,\qquad i=1,2,\dots,N.\tag{5.5}$$</p>
+<div class="lang zh">
+<p>此时无自由参数，时间序列回归的截距应全为零，连截面回归都不必做。</p>
+<h2 id="5-2-lagrange-mean-variance-frontier-intuition-and-lagrangian-characterization">5.2 均值方差前沿：直觉与 Lagrange 刻画 / Mean-Variance Frontier: Intuition and Lagrangian Characterization</h2>
+<p>一组资产的<strong>均值方差前沿</strong>，是其所有组合的收益均值与方差所构成集合的边界，可由"给定均值、最小化方差"定义。下图是典型前沿：双曲线区域是<strong>所有风险资产</strong>的前沿；若有无风险利率，则前沿扩成更大的楔形区域（射线为切线，切点即切线组合）。</p>
+</div>
+<div class="lang en">
+<p>There are then no free parameters, the time-series intercepts should all be zero, and one can skip the cross-sectional regression entirely.</p>
+<h2 id="5-2-mean-variance-frontier-intuition-and-lagrangian-characterization">5.2 Mean-Variance Frontier: Intuition and Lagrangian Characterization</h2>
+<p>The <strong>mean-variance frontier</strong> of a set of assets is the boundary of the set of means and variances of all portfolios of those assets, defined by minimizing variance for a given mean. The figure below shows a typical frontier: the hyperbolic region is the frontier of <strong>all risky assets</strong>; if a risk-free rate exists, the frontier expands to the larger wedge (the rays are the lines through the risk-free rate, tangent to the risky frontier at the tangency portfolio).</p>
+</div>
+<div class="lang zh"></div>
+<div class="lang en"></div>
+
+<div class="article-image"><img alt="Figure 5.1 — Mean-variance frontier" src="assets/fig-5-1.png" /></div>
+<div class="lang zh">
+<p><em>图 5.1　均值方差前沿。双曲线为风险资产前沿；含无风险利率 \(R^f\) 时扩成楔形，两条射线在切线组合处与风险前沿相切。</em></p>
+</div>
+<div class="lang en">
+<p><em>Figure 5.1　Mean-variance frontier. The hyperbola is the risky-asset frontier; with a risk-free rate \(R^f\) it widens into the wedge, the two rays tangent to the risky frontier at the tangency portfolio.</em></p>
+</div>
+<div class="lang zh">
+<p><strong>前沿何时存在？</strong> 只要剔除冗余证券、收益的方差-协方差矩阵 \(\Sigma\) 非奇异，前沿就存在。（两个完全相关却均值不同的收益会让人做空一买一空、无风险获无穷收益——这恰是违反一价定律。故一价定律既给出贴现因子，也给出前沿。）</p>
+<p><strong>Lagrange 解法。</strong> 设收益向量 \(R\)、均值 \(E\equiv E(R)\)、协方差 \(\Sigma=E[(R-E)(R-E)']\)，组合权重 \(w\)（\(w'1=1\)）。问题为</p>
+</div>
+<div class="lang en">
+<p><strong>When does the frontier exist?</strong> As long as redundant securities are removed and the variance-covariance matrix \(\Sigma\) of returns is nonsingular. (Two perfectly correlated returns with different means would let you short one and buy the other for infinite riskless return — exactly a law-of-one-price violation. So the law of one price delivers both a discount factor and a frontier.)</p>
+<p><strong>Lagrangian solution.</strong> With return vector \(R\), means \(E\equiv E(R)\), covariance \(\Sigma=E[(R-E)(R-E)']\), and portfolio weights \(w\) (with \(w'1=1\)), the problem is</p>
+</div>
+<p>$$\min_{\{w\}}\ w'\Sigma w\quad\text{s.t.}\quad w'E=\mu,\ \ w'1=1.\tag{5.6}$$</p>
+<div class="lang zh">
+<p>定义 \(A=E'\Sigma^{-1}E\)，\(B=E'\Sigma^{-1}1\)，\(C=1'\Sigma^{-1}1\)，则给定均值 \(\mu\) 的最小方差为</p>
+</div>
+<div class="lang en">
+<p>Define \(A=E'\Sigma^{-1}E\), \(B=E'\Sigma^{-1}1\), \(C=1'\Sigma^{-1}1\). Then for a given mean \(\mu\) the minimum variance is</p>
+</div>
+<p>$$\operatorname{var}(R^p)=\frac{C\mu^2-2B\mu+A}{AC-B^2}.\tag{5.7}$$</p>
+<div class="lang zh">
+<p>方差是均值的二次函数——抛物线开根号就是双曲线，这正是均值-标准差空间里画双曲线的原因。最小方差组合在 \(\mu_{\min}=B/C\)，权重 \(w=\Sigma^{-1}1/(1'\Sigma^{-1}1)\)。前沿可由任意两个前沿收益<strong>张成</strong>：因权重 \(w\) 是 \(\mu\) 的线性函数，第三个组合 \(\mu_3=\lambda\mu_1+(1-\lambda)\mu_2\) 的权重就是 \(w_3=\lambda w_1+(1-\lambda)w_2\)。</p>
+<h2 id="5-3-an-orthogonal-characterization">5.3 均值方差前沿的正交刻画 / An Orthogonal Characterization</h2>
+<p>Lagrange 法直接但繁琐。Hansen and Richard (1987) 的几何方法更利落，且在无穷维支付空间（加入条件信息、动态交易或期权时）仍然成立。先定义两个特殊收益。\(R^*\) 是对应贴现因子 \(x^*\) 的收益：</p>
+</div>
+<div class="lang en">
+<p>Variance is a quadratic in the mean — the square root of a parabola is a hyperbola, which is why we draw hyperbolas in mean-standard deviation space. The minimum-variance portfolio sits at \(\mu_{\min}=B/C\), with weights \(w=\Sigma^{-1}1/(1'\Sigma^{-1}1)\). The frontier is <strong>spanned</strong> by any two frontier returns: since the weights \(w\) are linear in \(\mu\), a third portfolio with \(\mu_3=\lambda\mu_1+(1-\lambda)\mu_2\) has weights \(w_3=\lambda w_1+(1-\lambda)w_2\).</p>
+<h2 id="5-3-an-orthogonal-characterization-of-the-mean-variance-frontier">5.3 An Orthogonal Characterization of the Mean-Variance Frontier</h2>
+<p>The Lagrangian is straightforward but cumbersome. Hansen and Richard's (1987) geometric approach is cleaner and stays valid in infinite-dimensional payoff spaces (conditioning information, dynamic trading, options). Define two special returns. \(R^*\) is the return corresponding to the discount-factor payoff \(x^*\):</p>
+</div>
+<p>$$R^*\equiv\frac{x^*}{p(x^*)}=\frac{x^*}{E(x^{*2})}.\tag{5.9}$$</p>
+<div class="lang zh">
+<p>\(R^{e*}\) 是单位向量 1 在超额收益空间上的投影：</p>
+</div>
+<div class="lang en">
+<p>\(R^{e*}\) is the projection of the unit vector 1 onto the space of excess returns:</p>
+</div>
+<p>$$R^{e*}\equiv\operatorname{proj}(1\mid R^e),\qquad R^e\equiv\{x\in X:\ p(x)=0\}.\tag{5.10}$$</p>
+<div class="lang zh">
+<p>正如 \(x^*\) 用内积<strong>代表价格</strong>（\(p(x)=E(x^*x)\)），\(R^{e*}\) 用内积<strong>代表均值</strong>：\(E(R^e)=E(R^{e*}R^e)\) 对所有超额收益成立。由此得到一个漂亮的正交分解。</p>
+</div>
+<div class="lang en">
+<p>Just as \(x^*\) <strong>represents prices</strong> via an inner product (\(p(x)=E(x^*x)\)), \(R^{e*}\) <strong>represents means</strong> via an inner product: \(E(R^e)=E(R^{e*}R^e)\) for all excess returns. This yields a beautiful orthogonal decomposition.</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>正交分解与前沿 / Orthogonal decomposition and the frontier
+<span class="lang zh">每个收益都可分解为 \(R^i=R^*+w^iR^{e*}+n^i\)，其中 \(w^i\) 是常数、\(n^i\) 是超额收益且 \(E(n^i)=0\)，三者两两正交：\(E(R^*R^{e*})=E(R^*n^i)=E(R^{e*}n^i)=0\)。于是 \(R^{mv}\) 在均值方差前沿上 \(\iff R^{mv}=R^*+wR^{e*}\)（对某实数 \(w\)）。变动 \(w\) 即扫出整条前沿——这是前沿的"两基金定理"。</span><span class="lang en">Every return decomposes as \(R^i=R^*+w^iR^{e*}+n^i\), where \(w^i\) is a number, \(n^i\) is an excess return with \(E(n^i)=0\), and the three pieces are mutually orthogonal: \(E(R^*R^{e*})=E(R^*n^i)=E(R^{e*}n^i)=0\). Hence \(R^{mv}\) is on the mean-variance frontier \(\iff R^{mv}=R^*+wR^{e*}\) for some real \(w\). Varying \(w\) sweeps out the whole frontier — a "two-fund" theorem.</span></p></p></div>
+<p>$$R^{mv}=R^*+wR^{e*}.\tag{5.11}$$</p>
+<div class="lang zh">
+<p>下图（状态空间）说明分解：\(R^*\) 垂直于收益平面（如 \(x^*\) 垂直于等价格平面）；\(R^{e*}\) 是超额收益空间内最接近 1 的向量，垂直于等均值平面；沿 \(R^{e*}\) 走 \(w^i\)、再沿正交的 \(n^i\) 走，即到达 \(R^i\)。因为向量长度就是二阶矩 \(E(R^2)=\sigma^2(R)+E(R)^2\)，给定均值时最短（\(n=0\)）的向量即落在 \(R^*+wR^{e*}\) 线上——这就是前沿。</p>
+</div>
+<div class="lang en">
+<p>The figure (in state space) shows the decomposition: \(R^*\) is perpendicular to the plane of returns (as \(x^*\) is perpendicular to constant-price planes); \(R^{e*}\) is the excess return closest to 1, perpendicular to constant-mean planes; step \(w^i\) along \(R^{e*}\), then an orthogonal amount \(n^i\), to reach \(R^i\). Since a vector's length is its second moment \(E(R^2)=\sigma^2(R)+E(R)^2\), the shortest vector (\(n=0\)) for a given mean lies on the line \(R^*+wR^{e*}\) — that is the frontier.</p>
+</div>
+<div class="lang zh"></div>
+<div class="lang en"></div>
+
+<div class="article-image"><img alt="Figure 5.2 — Orthogonal decomposition and mean-variance frontier" src="assets/fig-5-2.png" /></div>
+<div class="lang zh">
+<p><em>图 5.2　正交分解与均值方差前沿。收益平面（\(p=1\)）在上、超额收益平面（\(p=0\)）在下；\(R^i=R^*+w^iR^{e*}+n^i\) 三分量两两正交。</em></p>
+</div>
+<div class="lang en">
+<p><em>Figure 5.2　Orthogonal decomposition and mean-variance frontier. The plane of returns (\(p=1\)) is on top, the plane of excess returns (\(p=0\)) below; \(R^i=R^*+w^iR^{e*}+n^i\) with all three components orthogonal.</em></p>
+</div>
+<div class="lang zh">
+<p>值得一记的反直觉之处：\(R^*\) 是<strong>最小二阶矩</strong>收益（图中离原点最近），它落在前沿的<strong>下半段（"无效"段）</strong>，并非市场组合或财富组合。沿 \(R^{e*}\) 移动改变均值与方差；加 \(n\) 不改均值、只增方差，把资产推离前沿。</p>
+<h2 id="5-4-spanning-the-mean-variance-frontier">5.4 张成均值方差前沿 / Spanning the Mean-Variance Frontier</h2>
+<p>用 \(R^*,R^{e*}\) 刻画最自然，但前沿可由任意两个前沿组合张成。取 \(R^\alpha=R^*+\gamma R^{e*}\)（\(\gamma\ne0\)），则</p>
+</div>
+<div class="lang en">
+<p>A counterintuitive point worth noting: \(R^*\) is the <strong>minimum second-moment</strong> return (closest to the origin in the figure), and it sits on the <strong>lower ("inefficient") segment</strong> of the frontier — it is not the market or wealth portfolio. Moving along \(R^{e*}\) changes both mean and variance; adding \(n\) changes only variance, pushing an asset off the frontier.</p>
+<h2 id="5-4-spanning-the-mean-variance-frontier">5.4 Spanning the Mean-Variance Frontier</h2>
+<p>The \(R^*,R^{e*}\) characterization is most natural, but the frontier can be spanned by any two frontier portfolios. Take \(R^\alpha=R^*+\gamma R^{e*}\) (\(\gamma\ne0\)); then</p>
+</div>
+<p>$$R^*+wR^{e*}=(1-y)R^*+yR^\alpha,\qquad y=w/\gamma.\tag{5.13}$$</p>
+<div class="lang zh">
+<p>最常见的做法是用无风险利率（或某个"类无风险"的风险收益）替代 \(R^{e*}\)。有无风险利率时它在前沿上，表示为 \(R^f=R^*+R^fR^{e*}\)；无无风险利率时常用零贝塔收益、常数模仿组合 \(\hat R=\operatorname{proj}(1|X)/p[\operatorname{proj}(1|X)]\) 或最小方差收益作为替代。</p>
+<h2 id="5-5-r-r-e-x-a-compilation-of-properties">5.5 \(R^*,R^{e*},x^*\) 的性质汇编 / A Compilation of Properties</h2>
+<p>这些特殊收益有诸多有用性质（很多要对照图才直观）。择要列出：</p>
+</div>
+<div class="lang en">
+<p>The most common alternative replaces \(R^{e*}\) with a risk-free rate (or a "risk-free-like" risky return). With a risk-free rate it lies on the frontier as \(R^f=R^*+R^fR^{e*}\); without one, common substitutes are a zero-beta return, the constant-mimicking portfolio \(\hat R=\operatorname{proj}(1|X)/p[\operatorname{proj}(1|X)]\), or the minimum-variance return.</p>
+<h2 id="5-5-a-compilation-of-properties-of-r-r-e-x">5.5 A Compilation of Properties of \(R^*,R^{e*},x^*\)</h2>
+<p>These special returns have many useful properties (most are intuitive only with the pictures). The key ones:</p>
+</div>
+<p>$$E(R^{*2})=\frac{1}{E(x^{*2})},\qquad x^*=\frac{R^*}{E(R^{*2})}.\tag{5.14--5.15}$$</p>
+<div class="lang zh">
+<p>\(R^*\) 可像 \(x^*\) 一样代表价格：\(E(R^{*2})=E(R^*R)\) 对所有收益成立 (5.16)。\(R^{e*}\) 代表均值：\(E(R^e)=E(R^{e*}R^e)\) (5.17)。有无风险利率时</p>
+</div>
+<div class="lang en">
+<p>\(R^*\) represents prices just like \(x^*\): \(E(R^{*2})=E(R^*R)\) for all returns (5.16). \(R^{e*}\) represents means: \(E(R^e)=E(R^{e*}R^e)\) (5.17). With a risk-free rate,</p>
+</div>
+<p>$$R^f=\frac{1}{E(x^*)}=\frac{E(R^{*2})}{E(R^*)},\qquad R^{e*}=1-\frac{1}{R^f}R^*,\qquad R^f=R^*+R^fR^{e*}.\tag{5.18--5.20}$$</p>
+<div class="lang zh">
+<p>\(R^{e*}\) 还有"自身一二阶矩相等"的奇特性质：\(E(R^{e*})=E(R^{e*2})\)，故 \(\operatorname{var}(R^{e*})=E(R^{e*})[1-E(R^{e*})]\)。最后，可从基础资产显式构造：</p>
+</div>
+<div class="lang en">
+<p>\(R^{e*}\) also has the curious property that its first and second moments coincide: \(E(R^{e*})=E(R^{e*2})\), so \(\operatorname{var}(R^{e*})=E(R^{e*})[1-E(R^{e*})]\). Finally, both can be built explicitly from basis assets:</p>
+</div>
+<p>$$R^*=\frac{p'E(xx')^{-1}x}{p'E(xx')^{-1}p},\qquad R^{e*}=E(R^e)'E(R^eR^{e\prime})^{-1}R^e.$$</p>
+<div class="lang zh">
+<p>后者与 \(x^*=p'E(xx')^{-1}x\) 的构造如出一辙，只是把价格 \(p\) 换成均值 \(E\)——因为 \(R^{e*}\) 代表的是均值而非价格。</p>
+<h2 id="5-6-hansen-jagannathan-the-hansen-jagannathan-bounds">5.6 贴现因子的均值方差前沿：Hansen-Jagannathan 界 / The Hansen-Jagannathan Bounds</h2>
+<p>第 1 章已得到夏普比率与贴现因子波动率的关系：</p>
+</div>
+<div class="lang en">
+<p>The latter mirrors \(x^*=p'E(xx')^{-1}x\) exactly, with the mean \(E\) in place of the price \(p\) — because \(R^{e*}\) represents means rather than prices.</p>
+<h2 id="5-6-mean-variance-frontiers-for-discount-factors-the-hansen-jagannathan-bounds">5.6 Mean-Variance Frontiers for Discount Factors: The Hansen-Jagannathan Bounds</h2>
+<p>Chapter 1 gave the relation between the Sharpe ratio and discount-factor volatility:</p>
+</div>
+<p>$$\frac{\sigma(m)}{E(m)}\ge\frac{|E(R^e)|}{\sigma(R^e)}.\tag{5.23}$$</p>
+<div class="lang zh">
+<p>推导一行即得：\(0=E(mR^e)=E(m)E(R^e)+\rho_{m,R^e}\sigma(m)\sigma(R^e)\)，再用 \(|\rho|\le1\)。Hansen and Jagannathan (1991) 的天才之处，是把它<strong>反过来</strong>读作对"能给定资产定价的贴现因子集合"的约束：要解释股票收益，需要均值近 1、<strong>波动很大</strong>的贴现因子——这是理解股权溢价之谜（第 21 章）的核心工具。对每个假设的无风险利率，最高夏普比率（切线组合）给出 \(\sigma(m)/E(m)\) 的下界，于是有一个优美的<strong>对偶</strong>：</p>
+</div>
+<div class="lang en">
+<p>The one-line derivation: \(0=E(mR^e)=E(m)E(R^e)+\rho_{m,R^e}\sigma(m)\sigma(R^e)\), with \(|\rho|\le1\). Hansen and Jagannathan's (1991) brilliant move was to read it <strong>the other way</strong> — as a restriction on the set of discount factors that can price given assets: to explain stock returns we need discount factors with mean near 1 and <strong>very high volatility</strong> — the central tool for the equity premium puzzle (Ch 21). For each hypothetical risk-free rate, the highest Sharpe ratio (the tangency portfolio) gives a lower bound on \(\sigma(m)/E(m)\), yielding a beautiful <strong>duality</strong>:</p>
+</div>
+<p>$$\min_{\{m:\,p=E(mx)\}}\frac{\sigma(m)}{E(m)}=\max_{\{R^e\in X\}}\frac{E(R^e)}{\sigma(R^e)}.\tag{5.24}$$</p>
+<div class="lang zh"></div>
+<div class="lang en"></div>
+
+<div class="article-image"><img alt="Figure 5.4 — Graphical construction of the Hansen-Jagannathan bound" src="assets/fig-5-4.png" /></div>
+<div class="lang zh">
+<p><em>图 5.4　Hansen-Jagannathan 界的图解。左：收益的均值方差前沿，切线斜率即 \(\sigma(m)/E(m)\) 之逆向约束；右：贴现因子落在 \(\{E(m),\sigma(m)\}\) 空间的双曲区域内。</em></p>
+</div>
+<div class="lang en">
+<p><em>Figure 5.4　Graphical construction of the Hansen-Jagannathan bound. Left: the return mean-variance frontier, whose tangent slope governs \(\sigma(m)/E(m)\); right: discount factors lie in a hyperbolic region of \(\{E(m),\sigma(m)\}\) space.</em></p>
+</div>
+<div class="lang zh">
+<p>要显式计算，仿照 (4.2) 把任意贴现因子写成对支付空间的回归加误差：</p>
+</div>
+<div class="lang en">
+<p>For an explicit calculation, following the logic of (4.2), write any discount factor as a regression on the payoff space plus an error:</p>
+</div>
+<p>$$m=E(m)+[p-E(m)E(x)]'\Sigma^{-1}[x-E(x)]+\varepsilon,\qquad \Sigma\equiv\operatorname{cov}(x,x'),\ E(\varepsilon)=E(\varepsilon x)=0.\tag{5.25}$$</p>
+<div class="lang zh">
+<p>由 \(\sigma^2(\varepsilon)\ge0\) 立刻得到 <strong>Hansen-Jagannathan 界</strong>的显式形式：</p>
+</div>
+<div class="lang en">
+<p>Since \(\sigma^2(\varepsilon)\ge0\), this immediately gives the explicit <strong>Hansen-Jagannathan bound</strong>:</p>
+</div>
+<p>$$\sigma^2(m)\ge[p-E(m)E(x)]'\Sigma^{-1}[p-E(m)E(x)].\tag{5.26}$$</p>
+<div class="lang zh">
+<p>与收益侧完全对偶：贴现因子也有三分解 \(m=x^*+we^*+n\)，其中 \(e^*\equiv1-\operatorname{proj}(1|X)=\operatorname{proj}(1|E)\)（\(E=\{m-x^*\}\)）代表 \(m\) 的均值（恰如 \(R^{e*}\) 之于收益），\(n\) 均值为零。前沿上的贴现因子为</p>
+</div>
+<div class="lang en">
+<p>This is perfectly dual to the return side: discount factors also decompose three ways, \(m=x^*+we^*+n\), where \(e^*\equiv1-\operatorname{proj}(1|X)=\operatorname{proj}(1|E)\) (with \(E=\{m-x^*\}\)) represents the mean of \(m\) (just as \(R^{e*}\) does for returns), and \(n\) has mean zero. The frontier discount factors are</p>
+</div>
+<p>$$m^*=w+[p-wE(x)]'E(xx')^{-1}x.\tag{5.28}$$</p>
+<div class="lang zh">
+<p>变动 \(w\) 即扫出 \(\{E(m),\sigma(m)\}\) 空间中的双曲前沿。<strong>HJ 界等价于均值方差前沿</strong>：加资产抬升 HJ 界 = 加资产扩张前沿。HJ 还能更进一步——加上正性约束 \(m>0\) 求 \(\min\sigma^2(m)\) 得"带正性的 HJ 界"（在股票中提升不大，但在期权应用里至关重要，见第 18 章）。</p>
+<h2 id="summary">小结 / Summary</h2>
+<p>本章把三套等价语言摆在一起：<strong>贝塔表示</strong>（截距对所有资产相同）、<strong>收益的均值方差前沿</strong>（\(R^*+wR^{e*}\)）、<strong>贴现因子的均值方差前沿</strong>（\(x^*+we^*\)，即 HJ 界）。Hansen-Richard 的正交几何把它们统一在同一张状态空间图里，\(R^*\leftrightarrow x^*\)、\(R^{e*}\leftrightarrow e^*\) 一一对应。HJ 界是后续股权溢价之谜与因子模型检验的核心工具。</p>
+</div>
+<div class="lang en">
+<p>Varying \(w\) sweeps out the hyperbolic frontier in \(\{E(m),\sigma(m)\}\) space. <strong>The HJ bound is equivalent to the mean-variance frontier</strong>: adding assets to raise the HJ bound = adding assets to expand the frontier. HJ goes one step further — adding positivity \(m>0\) to \(\min\sigma^2(m)\) gives the "HJ bound with positivity" (not very informative for stocks, but crucial for options, Ch 18).</p>
+<h2 id="summary">Summary</h2>
+<p>This chapter lines up three equivalent languages: the <strong>beta representation</strong> (same intercept for all assets), the <strong>return mean-variance frontier</strong> (\(R^*+wR^{e*}\)), and the <strong>discount-factor mean-variance frontier</strong> (\(x^*+we^*\), the HJ bound). Hansen-Richard's orthogonal geometry unifies them in one state-space picture, with \(R^*\leftrightarrow x^*\) and \(R^{e*}\leftrightarrow e^*\) in one-to-one correspondence. The HJ bound is the central tool for the equity premium puzzle and factor-model tests to come.</p>
+</div>
+<div class="lang zh">
+<h2 id="problems">习题 / Problems</h2>
+<ol>
+<li><strong>均值-标准差几何。</strong> 证明 \(R^{e*}\) 在 \(R^e\) 中垂直于等均值平面（图 5.2）。</li>
+<li><strong>\(x^*\) 在收益平面上方还是下方？</strong> 分别考虑：(a) 无风险经济；(b) 风险中性经济；(c) 市场夏普比率约 0.5、\(R^f=0.01\) 的真实经济。（提示：看 \(p(x^*)\) 大于还是小于 1。）</li>
+<li><strong>无风险利率下的 \(R^{e*}\)。</strong> 证明若单位支付在支付空间内，则 \(R^{e*}=(R^f-R^*)/R^f\)。</li>
+<li><strong>风险中性极限。</strong> 投资者风险中性时，\(R^*,R^{e*}\) 与均值方差前沿会怎样？分有/无无风险利率两种情形。</li>
+<li><strong>对偶的紧性。</strong> 证明 (5.24)：先做有无风险利率的情形，找到使不等式取等的收益与 \(m\)，再做无无风险利率的情形。</li>
+</ol>
+</div>
+<div class="lang en">
+<h2 id="problems">Problems</h2>
+<ol>
+<li><strong>Mean-standard-deviation geometry.</strong> Prove that \(R^{e*}\) lies at right angles to planes of constant mean return in \(R^e\) (Figure 5.2).</li>
+<li><strong>Is \(x^*\) above, below, or on the plane of returns?</strong> Consider (a) a risk-free economy; (b) a risky but risk-neutral economy; (c) our economy with market Sharpe ratio \(\approx0.5\) and \(R^f=0.01\). (Hint: check whether \(p(x^*)\) is greater or less than 1.)</li>
+<li><strong>\(R^{e*}\) with a risk-free rate.</strong> Show that if the unit payoff is in the payoff space \(X\), then \(R^{e*}=(R^f-R^*)/R^f\).</li>
+<li><strong>Risk-neutral limit.</strong> What happens to \(R^*,R^{e*}\), and the mean-variance frontier if investors are risk neutral? Do the cases with and without a risk-free rate.</li>
+<li><strong>Tightness of the duality.</strong> Prove (5.24): find returns and an \(m\) for which the inequality is tight, doing the risk-free-rate case first, then the no-risk-free-rate case.</li>
+</ol>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#5-1-expected-return-beta-representations">5.1 期望收益-贝塔表示 / Expected Return-Beta Representations</a></li>
+        <li><a href="#5-1-expected-return-beta-representations">5.1 Expected Return-Beta Representations</a></li>
+        <li><a href="#5-2-lagrange-mean-variance-frontier-intuition-and-lagrangian-characterization">5.2 均值方差前沿：直觉与 Lagrange 刻画 / Mean-Variance Frontier: Intuition and Lagrangian Characterization</a></li>
+        <li><a href="#5-2-mean-variance-frontier-intuition-and-lagrangian-characterization">5.2 Mean-Variance Frontier: Intuition and Lagrangian Characterization</a></li>
+        <li><a href="#5-3-an-orthogonal-characterization">5.3 均值方差前沿的正交刻画 / An Orthogonal Characterization</a></li>
+        <li><a href="#5-3-an-orthogonal-characterization-of-the-mean-variance-frontier">5.3 An Orthogonal Characterization of the Mean-Variance Frontier</a></li>
+        <li><a href="#5-4-spanning-the-mean-variance-frontier">5.4 张成均值方差前沿 / Spanning the Mean-Variance Frontier</a></li>
+        <li><a href="#5-4-spanning-the-mean-variance-frontier">5.4 Spanning the Mean-Variance Frontier</a></li>
+        <li><a href="#5-5-r-r-e-x-a-compilation-of-properties">5.5 \(R^*,R^{e*},x^*\) 的性质汇编 / A Compilation of Properties</a></li>
+        <li><a href="#5-5-a-compilation-of-properties-of-r-r-e-x">5.5 A Compilation of Properties of \(R^*,R^{e*},x^*\)</a></li>
+        <li><a href="#5-6-hansen-jagannathan-the-hansen-jagannathan-bounds">5.6 贴现因子的均值方差前沿：Hansen-Jagannathan 界 / The Hansen-Jagannathan Bounds</a></li>
+        <li><a href="#5-6-mean-variance-frontiers-for-discount-factors-the-hansen-jagannathan-bounds">5.6 Mean-Variance Frontiers for Discount Factors: The Hansen-Jagannathan Bounds</a></li>
+        <li><a href="#summary">小结 / Summary</a></li>
+        <li><a href="#summary">Summary</a></li>
+        <li><a href="#problems">习题 / Problems</a></li>
+        <li><a href="#problems">Problems</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

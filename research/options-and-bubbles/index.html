@@ -84,16 +84,16 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Heston, Loewenstein &amp; Willard (2007, Review of Financial Studies)</strong>：Black-Scholes-Merton 的「列出偏微分方程再求解」这套流程，并不能唯一地确定期权价格——同一个偏微分方程 (PDE) 往往有<strong>多个</strong>满足边界条件的解。多出来的那些解，并非数学瑕疵，而恰恰对应着资产价格里的<strong>泡沫</strong>、被「占优」的投资、以及（可能根本无法执行的）套利。作者用 CIR、CEV、Heston 三个最经典的模型给出了显式的反例，并给出三条层层递进的条件，告诉你什么时候这些泡沫会被排除掉。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Heston, Loewenstein &amp; Willard (2007, Review of Financial Studies)</strong>：Black-Scholes-Merton 的「列出偏微分方程再求解」这套流程，并不能唯一地确定期权价格——同一个偏微分方程 (PDE) 往往有<strong>多个</strong>满足边界条件的解。多出来的那些解，并非数学瑕疵，而恰恰对应着资产价格里的<strong>泡沫</strong>、被「占优」的投资、以及（可能根本无法执行的）套利。作者用 CIR、CEV、Heston 三个最经典的模型给出了显式的反例，并给出三条层层递进的条件，告诉你什么时候这些泡沫会被排除掉。</p></p></div>
 <h2 id="1">1 引言：一个我们以为早就解决了的问题</h2>
 <p>每一个学过金融工程的人，都背过同一套口诀：用 Black 和 Scholes (1973) 与 Merton (1973) 的<strong>Δ 对冲 (delta-hedging)</strong> 论证，构造一个瞬时无风险的组合，于是期权价值必须满足一个偏微分方程；剩下的，就是「解这个 PDE」。教科书把这一步写得云淡风轻——仿佛 PDE 一旦写出，价格就被钉死了。</p>
 <p>但本文要问一个让人有点不舒服的问题：<strong>解出这个 PDE，你得到的真的只有一个价格吗？</strong></p>
 <p>答案是否定的。Δ 对冲只保证了「没有瞬时的无风险利润」，它给出的是一个 PDE；而一个 PDE，配上看似完整的边界条件，<strong>仍然可能有不止一个非负解</strong>。更要命的是，这些不同的解，对应着<strong>复制同一份期权收益、却花费不同成本</strong>的交易策略。既然终端收益一模一样、成本却不同，那么必有一个解的回报在到期日「占优 (dominate)」另一个。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>这正是全文的张力所在：PDE 方法本身——单凭数学——无法在这些解里挑出「那个对的」。要挑出来，你必须额外引入经济学的判断：哪些交易策略是<strong>可行的</strong>？什么样的负财富是被允许的？这就是为什么一篇看似纯数学的论文，最后落在了「泡沫」与「套利的极限」上。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这正是全文的张力所在：PDE 方法本身——单凭数学——无法在这些解里挑出「那个对的」。要挑出来，你必须额外引入经济学的判断：哪些交易策略是<strong>可行的</strong>？什么样的负财富是被允许的？这就是为什么一篇看似纯数学的论文，最后落在了「泡沫」与「套利的极限」上。</p></p></div>
 <p>让我先把这篇文章的<strong>一个核心</strong>讲清楚，然后我们一路追下去。</p>
 <h2 id="2">2 一个核心：泡沫，就是两个解之间的那道缝</h2>
 <p>作者给了一个干净到近乎朴素的定义：</p>
-<div class="callout"><div class="callout-title">Note</div><p><strong>定义 (Asset Pricing Bubble)</strong>：一个价格非负的资产，如果存在一个自融资 (self-financing)、路径上财富恒非负的组合，它的成本<strong>低于</strong>该资产，却在某个固定的未来日期<strong>复制</strong>出该资产的价格，那么这个资产就含有一个「泡沫 (bubble)」。泡沫的大小，等于资产价格与「最便宜的复制策略成本」之差。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p><strong>定义 (Asset Pricing Bubble)</strong>：一个价格非负的资产，如果存在一个自融资 (self-financing)、路径上财富恒非负的组合，它的成本<strong>低于</strong>该资产，却在某个固定的未来日期<strong>复制</strong>出该资产的价格，那么这个资产就含有一个「泡沫 (bubble)」。泡沫的大小，等于资产价格与「最便宜的复制策略成本」之差。</p></p></div>
 <p>把这句话翻译成本文的语言就是：<strong>PDE 的每一个解，都对应一个复制成本；泡沫，就是「某个给定解」与「最便宜的那个非负解」之间的差</strong>。</p>
 <p>于是逻辑链条就清楚了。多个 PDE 解 ⟹ 复制成本不同 ⟹ 贵的那个解相对便宜的那个含有泡沫 ⟹ 看上去存在一个套利（卖空贵的、买入便宜的复制策略）。但——这里是第一个反转——<strong>这个套利未必真的能做</strong>。它可能要求你在中途承受无界的浮亏，正是为了排除「翻倍策略 (doubling strategy)」而被各种制度设定挡在门外的那种风险。泡沫能不能被套走，取决于你<strong>允许什么样的交易</strong>。</p>
 <p>接下来，作者不讲空话，直接甩出三个反例。</p>

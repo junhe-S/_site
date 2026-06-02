@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>理性的贝叶斯学习，为什么会长出「行为偏差」的脸 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>理性的贝叶斯学习，为什么会长出「行为偏差」的脸</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2002 RFS]</span> Competing Theories of Financial Anomalies</div>
+        <div class="paper-source-authors"><a href="/research/author/alon-brav/">Alon Brav</a>, <a href="/research/author/jb-heaton/">J.b. Heaton</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">行为金融</span>
+        
+        
+        
+        
+        <span class="tag">贝叶斯学习</span>
+        
+        
+        
+        
+        <span class="tag">市场异象</span>
+        
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Brav &amp; Heaton (2002, <em>Review of Financial Studies</em>)</strong>：作者把「行为」理论（投资者非理性）和「理性结构不确定性」理论（投资者完全理性、却不知道经济的真实结构）放进同一个极简模型里对照，发现这两套看似对立的解释——一个放松「理性」、一个放松「完全信息」——在数学形式和实证预测上竟是<strong>一对双胞胎</strong>，难以区分。更妙的反转是：即便异象真的由非理性引起，它要不要消失，仍然取决于理性套利者能不能<strong>否决掉那个与之孪生的理性解释</strong>。</p></p></div>
+<h2 id="1">1 一个吵了二十年的架</h2>
+<p>先把舞台搭起来。</p>
+<p>所谓金融异象 (financial anomaly)，是一种被反复记录下来的价格行为模式，它和传统的有效市场、理性预期资产定价理论的预测对不上。而那套传统理论，骨子里立着两根柱子：第一，投资者<strong>几乎完全知道</strong>自己所处经济的基本结构；第二，投资者是<strong>完全理性的信息处理器</strong>，做的是最优的统计决策。用 Friedman (1979) 的话说，理性预期世界里的投资者「既掌握『真实』经济模型的正确设定，又掌握其系数的无偏估计量」。</p>
+<p>证据一旦开始和这套理论作对，人们就动手拆柱子。</p>
+<p><strong>首先</strong>，最有名的一拆，是行为金融。它拆掉的是第二根柱子——完全理性的信息处理。投资者保留着对经济结构的丰富知识，却被认知偏差绑住了手脚：Shiller (1981) 发现股价相对未来股利的变化「动得太多」；DeBondt and Thaler (1985) 拿心理学证据立起「过度反应」假说，发现过去的极端输家会跑赢极端赢家；到 Barberis, Shleifer, and Vishny (1998) 与 Daniel, Hirshleifer, and Subrahmanyam (1998)，干脆把保守性、过度自信这些偏差直接写进了代表性投资者的脑子里。</p>
+<p><strong>接着，一个自然的问题是</strong>：非要让投资者「犯傻」吗？</p>
+<p>于是有了第二拆。它保留第二根柱子（投资者照样是完美的贝叶斯学习者），转而拆掉第一根——投资者其实<strong>不知道</strong>经济的真实结构。这就是作者所称的「理性结构不确定性 (rational structural uncertainty)」理论。Merton (1987) 让投资者只了解一部分证券，借此解释小公司效应；Barsky and DeLong (1993)、Timmerman (1993) 让理性投资者去估计未知的股利增长率，学习过程本身就造出了波动；Kurz (1994) 则系统地讨论了「不知道结构」的预期如何形成。这条线的共同点是：投资者一点都不傻，他只是<strong>不知道这个世界长什么样</strong>，于是在学习的路上犯下系统性的错误，或者要求一份额外的风险溢价。</p>
+<p>两拆方向相反——一个动「理性」，一个动「信息」。直觉上，它们应该是泾渭分明的两套故事。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>但这篇论文要讲的，恰恰是这个直觉错了。</p></p></div>
+<h2 id="2">2 把两套故事塞进同一个最小模型</h2>
+<p>要比较两个理论，最干净的办法是让它们在同一张桌子上、用同一套语言说话。作者搭的模型简单到近乎吝啬，但正因为吝啬，才把焦点死死钉在「投资者如何用先验、旧数据和新数据去估计一个估值相关参数」这件事上。</p>
+<h3 id="2-1">2.1 资产与投资者</h3>
+<p>每一期 \(t\) 开始，都有唯一一只一期期限的风险资产 \(A_t\) 凭空出现。它在期末支付 \(x_t\)，然后退场。假设</p>
+<p>$$x_t \sim N(\mu_t,\ \sigma^2).$$</p>
+<p>代表性投资者是风险中性的，于是他把每期资产定价在其期望支付 \(\mu_t\) 上——这个 \(\mu_t\) 就是「估值相关参数 (valuation-relevant parameter)」。关键在于：<strong>投资者并不知道 \(\mu_t\)</strong>。</p>
+<p>那么，区分两个阵营的，是哪一件事？是 \(\mu\) 的<strong>稳定性</strong>。若 \(\mu_t = \mu^*\ \forall t\)，称 \(\mu\)「稳定」；若它随时间变化，则称「不稳定」。为了可解，作者假设到任意时刻 \(t=n\)，\(\mu\) 在过去 \(n\) 期里<strong>至多变过一次</strong>（也可能从未变）。所谓「完全的结构知识」，就是知道 \(\mu\) 到底稳不稳定；若不稳定，还知道那个变点 (change point) \(r \in \{1,\dots,n\}\) 落在哪里。</p>
+<p>于是分工清楚了：</p>
+<ul>
+<li><strong>行为投资者</strong>：知道结构（知道稳不稳、变点在哪），但处理信息时犯认知偏差。</li>
+<li><strong>理性结构不确定性投资者</strong>：处理信息完全用贝叶斯方法，却<strong>不知道</strong>结构。</li>
+</ul>
+<p>同一张桌子，三种估计量。</p>
+<h3 id="2-2">2.2 行为之一：代表性启发式</h3>
+<p>代表性启发式 (representativeness heuristic, RH)，源自 Kahneman and Tversky (1972)：人们指望关键的总体参数「被代表」在任何一小段近期数据里，于是高估近期证据、忽略基率与旧数据。作者把它极端化——投资者干脆<strong>只看最近一半的数据</strong>，先验和更早的数据一概不要：</p>
+<p>$$\hat{\mu}_{Beh,RH} = \bar{x}_{n/2},$$</p>
+<p>其中 \(\bar{x}_{n/2}\) 是最近 \(n/2\) 个支付的均值。注意这有多激进：一半的历史，连同全部先验，被直接扔进了垃圾桶。（关于「凭价格反推投资者到底有多外推」，可参见<a href="/research/extracting-extrapolative-beliefs-from-market-prices-an/">《想知道投资者信什么？去问价格，别问问卷》</a>。）</p>
+<h3 id="2-3">2.3 行为之二：保守性</h3>
+<p>保守性 (conservatism, Edwards 1968) 恰是代表性启发式的反面：基率（先验和旧数据）被赋予<strong>过高</strong>的权重，新数据被低估。要刻画它，先得有一把「正确」的尺子。</p>
+<p>假设 \(\mu\) 已知稳定，已实现支付相互独立，则似然为正态：</p>
+<p>$$l(x_1,\dots,x_n \mid \mu,\sigma) \propto \sigma^{-n}\exp\!\left(-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(x_i-\mu)^2\right).$$</p>
+<p>取共轭先验</p>
+<p>$$\mu \mid \sigma^2 \sim N(\mu_0,\ \sigma^2/\kappa_0), \qquad \sigma^2 \sim \text{Inv-}\chi^2(\nu_0,\ \sigma_0^2),$$</p>
+<p>对 \(\sigma^2\) 积分后，\(\mu\) 的边际分布是 Student-t，风险中性投资者关心它的均值：</p>
+<p>$$\hat{\mu} = \frac{\kappa_0\mu_0 + n\bar{x}_n}{\kappa_0+n}. \tag{2}$$</p>
+<p>把它改写成先验均值与样本均值的<strong>加权平均</strong>，结构一目了然：</p>
+<p>$$\hat{\mu} = \left(\frac{\kappa_0}{\kappa_0+n}\right)\mu_0 + \left(\frac{n}{\kappa_0+n}\right)\bar{x}_n. \tag{3}$$</p>
+<p>权重随观测数 \(n\) 变化。保守性投资者无非是把先验那一头的「重量」人为加大——用一个 \(c>\kappa_0\) 替换 \(\kappa_0\)：</p>
+<p>$$\hat{\mu}_{Beh,C} = \left(\frac{c}{c+n}\right)\mu_0 + \left(\frac{n}{c+n}\right)\bar{x}_n, \qquad c>\kappa_0. \tag{4}$$</p>
+<p>只要 \(c>\kappa_0\)，先验永远被压上了比最优更高的砝码——这就是「保守」。</p>
+<p><strong>到这里为止，剧情还很常规</strong>：两种偏差，一种死盯近期（RH），一种死抱先验（C），分别对应过度反应和反应不足。真正关键的一步，在第三种估计量。</p>
+<h3 id="2-4">2.4 理性结构不确定性：会侦测变点的贝叶斯人</h3>
+<p>理性投资者和上面两位有两点根本不同：他用<strong>完全</strong>贝叶斯的方法；他<strong>不知道</strong> \(\mu_t\) 稳不稳定，因此他的估计量必须把这份「无知」纳进来。</p>
+<p>他怎么做？他假设支付 \(x_1,\dots,x_n\) 是这样生成的：在 \(t\in\{1,\dots,r\}\) 由均值 \(\mu_A\) 生成，在 \(t\in\{r+1,\dots,n\}\) 由新均值 \(\mu_B\) 生成。\(r\) 就是那个（理性投资者并不知道的）变点；\(r=n\) 表示「从未改变」，即 \(\mu_A\) 生成了全部支付。沿用 Smith (1975) 的单变点贝叶斯框架，他先对 \(n\) 个可能的变点设一个<strong>均匀先验</strong>——这意味着「从未变过」(\(r=n\)) 只拿到先验概率 \(1/n\)，而「发生过某种改变」的总概率高达 \((n-1)/n\)。换句话说，这个看似中立的均匀先验，其实是一个<strong>强烈相信 \(\mu\) 不稳定</strong>的「信息性先验」。</p>
+<p>观测到数据后，变点的后验分布就是整套机制的引擎：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+p_n(r) = \frac{\cssId{a1}{p(x_1,\dots,x_n \mid r)}\;\cssId{a2}{p_0(r)}}{\cssId{a3}{\sum_{r} p(x_1,\dots,x_n \mid r)\;p_0(r)}}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>似然：若变点真落在 r 处，这一串已实现的支付有多「像样」</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>先验：变点落在各个位置的事前概率（均匀先验，含 r=n 的「从未变过」）</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>归一化常数：对所有可能的变点求和，把后验拉回到 1</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>其中似然要对未知的 \(\mu_A,\mu_B,\sigma\) 积分掉：</p>
+<p>$$p(x_1,\dots,x_n\mid r) = \int p(x_1,\dots,x_n\mid r,\mu_A,\mu_B,\sigma)\,p_0(\mu_A\mid\sigma)\,p_0(\mu_B\mid\sigma)\,p_0(\sigma)\,d\mu_A\,d\mu_B\,d\sigma. \tag{6}$$</p>
+<p>最终对 \(\mu\) 的估计，是各条件后验按变点后验概率的加权平均：</p>
+<p>$$p_n(\mu_i) = \sum_r p_n(\mu_i\mid r)\,p_n(r), \qquad (i=A,B). \tag{7}$$</p>
+<p>抽象掉预测问题后，投资者用 \(\mu_n\) 的边际分布定价：</p>
+<p>$$\sum_{r=1}^{n-1} p_n(\mu_B\mid r)\,p_n(r) \;+\; p_n(\mu_A\mid r=n)\,p_n(n).$$</p>
+<p>请盯着这个加权结构看一眼，反转就在这里。</p>
+<h2 id="3">3 反转：理性的人，会犯「行为」的错</h2>
+<p>现在把三种估计量放进同一条样本路径里走一遍。如图 1 所示，作者画出了这三个估计量在一段典型路径上的轨迹。</p>
+<div class="article-image"><img alt="Figure 1: reflects a typical sample path for these three estimators, given" src="assets/figure-1.png" /></div>
+<p><em>Figure 1: reflects a typical sample path for these three estimators, given</em></p>
+<p>魔术在于：那个<strong>完全贝叶斯</strong>的理性投资者，会在不同的数据环境下，自发地长出两张不同的「行为」面孔——</p>
+<p><strong>当数据看起来很平稳</strong>时，变点后验把绝大部分概率压在「从未变过」(\(r=n\)) 上。于是理性投资者会动用<strong>全部</strong>历史数据、连同先验一起来估计 \(\mu\)。结果？他显得迟钝、黏着旧观点、对新消息反应不足——这正是<strong>保守性</strong>、正是反应不足的长相。</p>
+<p><strong>而当近期出现了极端、异常的支付</strong>时，变点后验迅速倒向「最近发生了改变」。理性投资者于是<strong>抛弃变点之前的旧数据</strong>，把权重重重压在近期那几个观测上——这恰恰是<strong>代表性启发式</strong>、是过度反应的长相。不仅如此，一旦他「认定」变点已过，他对新均值 \(\mu_B\) 的后验会收得很窄，表现出<strong>过度的确定性</strong>——这正是行为文献里的第三种效应：过度自信 (overconfidence)。</p>
+<p>一句话：<strong>一个从头到尾严守贝叶斯纪律、只是不知道结构的理性人，会内生地表演出保守性、代表性启发式与过度自信这三套行为偏差。</strong> 它对老数据与先验时而过度加权、时而极端轻视，全看变点后验当下倒向哪一边。两套理论放松的是相反的假设，长出来的预测却是同一副模样。</p>
+<p>这就是论文标题里「competing」二字真正的分量——它们竞争，却又彼此难分。区分之所以难，一半是因为这种数学上的相似，另一半是因为实证证据本身被低估的特征：经验上，过度反应出现在较长期近期表现之后，反应不足出现在<strong>非常</strong>近期的极端表现或异常事件之后——而这两种环境，恰好同时符合两套理论里产生过度/反应不足的理由。（关于「过度反应」的另一种微观机制，可参见<a href="/research/associative-memory-beliefs-and-market-interactions/">《好消息让你想起好消息：把「过度反应」拆回记忆的联想》</a>；关于人在「被告知是随机游走」时仍忍不住预测，可参见<a href="/research/predicting-the-next-step-of-a-random-walk-experimental/">《被告知是随机游走，他们还是忍不住预测下一步》</a>。）</p>
+<h2 id="4">4 既然分不清，那还分它做什么？</h2>
+<p>到这里，一个尖锐的问题逼到面前：<strong>如果两套理论在数学和预测上都难以区分，我们何必纠结到底是哪一套？</strong></p>
+<p>作者的回答，是全文最漂亮的一笔，也是它真正的贡献：<strong>区分它们，对「异象会不会消失」这件事，关系重大。</strong></p>
+<p>一探到底，异象的长期消失，本质上是在追问学习与套利在每套理论里各自扮演什么角色。</p>
+<p><strong>如果异象由理性结构不确定性引起</strong>，那么它的消失，取决于理性投资者能不能逐渐校准到数据的结构特征。这在短期内绝非易事——哪怕经济的结构特征始终稳定；若这些特征本身在以不可预测的方式变化，这种学习甚至可能根本不可能完成。这其实是「收敛到理性预期均衡」那一大支文献的特例，而那支文献早已说清：理性预期均衡<strong>不会自动「发生」</strong>，哪怕给了主体学习的机会 [Blume and Easley (1982); Bray and Savin (1986)]。</p>
+<p><strong>而如果异象由非理性引起</strong>呢？这才是反转的反转：它的消失，<strong>仍然</strong>取决于理性学习——取决于理性套利者及其投资者，能不能<strong>否决掉那些为价格模式提供理性解释的竞争假说</strong>。</p>
+<p>逻辑是这样的：非理性引起的异象，本撑不过理性套利者的存在，除非存在「套利的极限 (limits of arbitrage)」。而最有说服力的套利极限，恰恰建立在套利者的短期视野上 [Shleifer and Vishny (1997)]：套利者也许无法向投资者<strong>可信地传达</strong>自己的策略，因而无法把资金长期锁定在套利上；有些时候，套利者甚至说服不了<strong>自己</strong>那里真有可利用的错误定价。无论哪种情形，套利之所以受限，都卡在同一个难处——套利者和（或）他们的投资者，难以<strong>排除掉那个与行为解释孪生的、competing 的理性解释</strong>。</p>
+<p>于是理性结构不确定性理论在这里获得了第二次生命：<strong>它正是套利者必须击败的那个「零假设」。</strong> 当理性解释容易被区分、被否决时，有效套利的极限就很小，非理性引起的异象也就不太可能存活；反之，当那个理性的孪生兄弟难以排除时，套利者就不敢下重注，异象便得以苟延。换句话说，哪怕你是个坚定的行为派，你也绕不开这套理性理论——因为它就是悬在你套利头上的那把剑。（关于套利者「也会怕」从而无法抹平异象，可参见<a href="/research/arbitrage-risk-and-the-book-to-market-anomaly/">《无风险的钱没人捡，是因为捡它的人也会怕》</a>；关于不相信自己模型的投资者如何行动，可参见<a href="/research/robust-portfolio-rules-and-asset-pricing/">《当投资者不再相信自己的模型：稳健性如何撑起股权溢价》</a>。）</p>
+<h2 id="5">5 文献脉络</h2>
+<p>把这条线捋直，它的来路其实很清晰。</p>
+<p>源头是 Friedman (1979) 划下的那道分界：<strong>理性 (rationality) ≠ 理性预期 (rational expectations)</strong>——前者讲信息的利用，后者讲信息的可得。这道分界，正是日后「理性结构不确定性」一支得以立足的逻辑缝隙。</p>
+<p><strong>接着</strong>，两股力量分头生长。行为一支从 Shiller (1981) 的「波动过度」、DeBondt and Thaler (1985) 的「过度反应」出发，经 Lakonishok, Shleifer, and Vishny (1994) 的反向投资证据，到 Barberis, Shleifer, and Vishny (1998)、Daniel, Hirshleifer, and Subrahmanyam (1998) 与 Hong and Stein (1999)，把认知偏差正式模型化。理性一支则从 Merton (1987) 的不完全信息均衡起步，借 Smith (1975) 的变点贝叶斯工具，发展出一整套「学习生成异象」的故事。中间还横着 Shleifer and Vishny (1997) 的「套利的极限」——它本是为行为派护航的，却在本文里成了连接两支的枢纽。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p><strong>这篇论文所处的位置</strong>，不在任何一支的延长线上，而是站在两支之间，做了一件别人没做的事：用一个共同的极小模型，证明它们是孪生的，并由此重新定义了「异象消失」这个问题的提法。</p>
+<h2>6 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：这不就是「贝叶斯学习能产生异象」的老话吗，新在哪？</strong></p>
+<blockquote>
+<p>新在「对照」与「不可区分性」。Timmerman (1993)、Lewis (1989) 早已说明学习能造出波动与可预测性，但本文的贡献是把行为模型与理性学习模型<strong>放进同一个估值参数估计的框架</strong>，证明二者在数学形式与实证预测上彼此孪生，并据此论证：识别之难，本身就有经济后果。</p>
+</blockquote>
+<p><strong>Q：把代表性启发式硬设成「只用最近一半数据」、把保守性设成「\(c>\kappa_0\)」，是不是太随意？</strong></p>
+<blockquote>
+<p>作者自己也承认这是「相当任意」的设定。但论文的目的不是要拟合数据，而是用最透明的方式展示<strong>机制</strong>：先验、旧数据、新数据三者的权重如何被不同假设拨动。设定的具体数值不重要，重要的是三种估计量在加权结构上的可比性。</p>
+</blockquote>
+<p><strong>Q：那个「均匀先验」真的中立吗？</strong></p>
+<blockquote>
+<p>不中立，这恰是精妙处。对 \(n\) 个变点取均匀先验，意味着「从未变过」只占 \(1/n\)、「变过」占 \((n-1)/n\)——它其实是个<strong>强烈相信不稳定</strong>的信息性先验。正是这份先验，让理性投资者天然倾向于「侦测到变化」，从而频繁表演出过度反应。</p>
+</blockquote>
+<p><strong>Q：理性投资者「看起来过度自信」，和真的过度自信，有区别吗？</strong></p>
+<blockquote>
+<p>在可观测行为上几乎没有——这正是论文的要害。一旦变点后验收窄，理性贝叶斯人对新均值的确定性会陡增，外人看来与 Odean (1998)、Daniel-Hirshleifer-Subrahmanyam (1998) 笔下的过度自信无异。区别只在「为什么」，而「为什么」恰恰是数据难以分辨的。</p>
+</blockquote>
+<p><strong>Q：如果两者预测一样，这篇论文是不是在说「行为金融没意义」？</strong></p>
+<blockquote>
+<p>恰恰相反。它说的是：要判定异象由非理性引起，你必须先<strong>否决</strong>那个孪生的理性解释；而能否否决，决定了套利能否生效、异象能否消失。所以它抬高了行为派的举证门槛，却也赋予了理性理论一个不可替代的角色——做那个必须被击败的对手。</p>
+</blockquote>
+<p><strong>Q：风险中性、一期资产这套极简设定，会不会把结论做窄了？</strong></p>
+<blockquote>
+<p>作者论证它应当能推广：任何资产定价模型——无论对跨期权衡和多期支付怎么假设——都需要投资者对支付与参数的某种估计。只要先验与历史数据在这种估计里起作用，本文关于「权重如何被拨动」的结论就该适用。这是辩护，不是证明，留有余地。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把「孪生不可区分性」搬到公司债市场</strong></p>
+<blockquote>
+<p>【经济故事】公司债里有大量「反应不足/过度反应」式的异象（如评级调整后的漂移、发行后的长期表现）。若行为解释与「投资者在学习违约结构（违约率、回收率的变点）」的理性解释同样能拟合，那么二者在债市是否也孪生？
+【可行性】中。数据可得（TRACE 成交、Moody's/S&amp;P 评级历史、违约数据），可把本文的变点贝叶斯估计量直接套到违约强度上。难点在于把「结构不确定性」与「流动性溢价」分离——债市的价差里混着太多流动性成分。</p>
+</blockquote>
+<p><strong>2. 用外资持有人作为「学习者」的自然实验</strong></p>
+<blockquote>
+<p>【经济故事】外国投资者对本地市场的「结构知识」天然更少，按本文逻辑，他们应当更频繁地「侦测变点」，表现出更强的过度反应/过度自信。这给了一个区分「非理性」与「结构不确定性」的杠杆：偏差强度应随<strong>结构知识的可得性</strong>单调变化，而非随「认知能力」变化。
+【可行性】中高。可投资度 (investability) 提升、指数纳入等事件提供准自然实验；交易簿层面的数据（如韩国、台湾）能识别外资 vs 本地的反应差异。识别的关键是论证外资与本地在「认知偏差」上无系统差异，差的只是结构知识。</p>
+</blockquote>
+<p><strong>3. 异象消失速度 ~ 竞争性理性解释的「可否决性」</strong></p>
+<blockquote>
+<p>【经济故事】本文预测：一个异象越容易被一个 competing 理性解释解释掉，套利就越难、它消失得越慢。能否构造一个「理性可解释度」的代理变量（比如该异象是否伴随可观测的结构变化、基本面变点），去预测异象在样本外的衰减速度？
+【可行性】中。需要一个异象面板（如已发表异象的样本外表现，参见相关「异象衰减」文献）外加一个结构不确定性代理。难在「可否决性」难以客观度量，容易落入事后叙事。</p>
+</blockquote>
+<p><strong>4. 把变点贝叶斯人放进有限套利的均衡里</strong></p>
+<blockquote>
+<p>【经济故事】本文把「理性学习」与「有限套利」分别论述，但没把它们装进同一个均衡。若套利者本身也是变点贝叶斯人——他既要套非理性者的利，又说服不了自己「这不是一次结构变化」——套利的极限会内生地有多大？
+【可行性】低到中。纯理论，可在 Shleifer-Vishny (1997) 框架上叠加变点学习。挑战是可解性：变点后验与套利资本约束的耦合很可能没有闭式解，得靠数值。</p>
+</blockquote>
+<h2 id="7">7 我的判断</h2>
+<p>这篇论文的贡献，不在于提出又一个能拟合数据的新模型，而在于<strong>重新框定了问题</strong>。它用一个吝啬到极致的模型说清了一件容易被忽视的事：行为与理性结构不确定性是孪生兄弟，而正因为孪生，「异象会不会消失」就被翻译成了「理性套利者能否否决那个孪生的理性解释」。这个视角的转换，比任何单个系数都更有分量——它把行为金融的举证责任，和有效市场的存活条件，扣在了同一个扣子上。</p>
+<p>要说担忧，主要有两处。其一是<strong>识别</strong>：论文最强的论点恰恰是「两者不可区分」，这在哲学上锋利，在实证上却近乎一个不可证伪的命题——如果什么都解释得通，那它对数据的约束就很弱。真正的进展，得靠找到能把两者<strong>撬开</strong>的额外矩条件（比如本文提示的「结构知识可得性」这个杠杆）。其二是<strong>设定的任意性</strong>：三种估计量的具体形式是手工挑的，结论对这些选择有多稳健，文中并未系统检验。</p>
+<p>后续我最想看到的，是有人把这套「孪生」逻辑搬进一个<strong>可识别</strong>的实证场景——外资持有人、债市违约学习，都是天然的候选——去回答那个本文只在理论上点到的问题：现实里，套利者究竟有没有、以及多快，否决掉了那个理性的孪生兄弟。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Barberis, N., A. Shleifer, and R. W. Vishny (1998). A Model of Investor Sentiment. <em>Journal of Financial Economics</em> 49, 307–343.</li>
+<li>Blume, L. E., and D. Easley (1982). Learning to be Rational. <em>Journal of Economic Theory</em> 26, 340–351.</li>
+<li>Brav, A., and J. B. Heaton (2002). Competing Theories of Financial Anomalies. <em>Review of Financial Studies</em> 15(2), 575–606.</li>
+<li>Bray, M. M., and E. N. Savin (1986). Rational Expectations Equilibria, Learning and Model Specification. <em>Econometrica</em> 54, 1129–1160.</li>
+<li>Daniel, K., D. Hirshleifer, and A. Subrahmanyam (1998). Investor Psychology and Security Market Under- and Overreactions. <em>Journal of Finance</em> 53, 1839–1886.</li>
+<li>DeBondt, W. F. M., and R. H. Thaler (1985). Does the Stock Market Overreact? <em>Journal of Finance</em> 40, 793–807.</li>
+<li>Edwards, W. (1968). Conservatism in Human Information Processing. In B. Kleinmutz (ed.), <em>Formal Representation of Human Judgement</em>, John Wiley &amp; Sons, 17–52.</li>
+<li>Friedman, B. M. (1979). Optimal Expectations and the Extreme Information Assumptions of Rational Expectations' Macromodels. <em>Journal of Monetary Economics</em> 5, 23–41.</li>
+<li>Hong, H., and J. Stein (1999). A Unified Theory of Underreaction, Momentum Trading, and Overreaction in Asset Markets. <em>Journal of Finance</em> 54, 2143–2184.</li>
+<li>Kahneman, D., and A. Tversky (1972). Subjective Probability: A Judgement of Representativeness. <em>Cognitive Psychology</em> 3(3), 430–454.</li>
+<li>Kurz, M. (1994). On the Structure and Diversity of Rational Beliefs. <em>Economic Theory</em> 4, 877–900.</li>
+<li>Lakonishok, J., A. Shleifer, and R. W. Vishny (1994). Contrarian Investment, Extrapolation, and Risk. <em>Journal of Finance</em> 49, 1541–1578.</li>
+<li>Merton, R. C. (1987). A Simple Model of Capital Market Equilibrium with Incomplete Information. <em>Journal of Finance</em> 42, 483–510.</li>
+<li>Shiller, R. J. (1981). Do Stock Prices Move Too Much to be Justified By Subsequent Changes in Dividends? <em>American Economic Review</em> 71, 421–436.</li>
+<li>Shleifer, A., and R. W. Vishny (1997). The Limits of Arbitrage. <em>Journal of Finance</em> 52, 35–55.</li>
+<li>Smith, A. F. M. (1975). A Bayesian Approach to Inference About a Change-Point in a Sequence of Random Variables. <em>Biometrika</em> 62, 407–416.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个吵了二十年的架</a></li>
+        <li><a href="#2">2 把两套故事塞进同一个最小模型</a></li>
+          <li><a href="#2-1">2.1 资产与投资者</a></li>
+          <li><a href="#2-2">2.2 行为之一：代表性启发式</a></li>
+          <li><a href="#2-3">2.3 行为之二：保守性</a></li>
+          <li><a href="#2-4">2.4 理性结构不确定性：会侦测变点的贝叶斯人</a></li>
+        <li><a href="#3">3 反转：理性的人，会犯「行为」的错</a></li>
+        <li><a href="#4">4 既然分不清，那还分它做什么？</a></li>
+        <li><a href="#5">5 文献脉络</a></li>
+        <li><a href="#6-q-a">6 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#7">7 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

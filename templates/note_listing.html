@@ -33,12 +33,16 @@
 
 <ul class="note-list">
   {% for category, citems in posts|groupby('category') %}
-    {% if category %}<li class="note-book">{{ category }}</li>{% endif %}
-    {% for part, items in citems|groupby('part') %}
-      {% if part %}<li class="note-part">{{ part }}</li>{% endif %}
-      {% for post in items|sort(attribute='order') %}
-      <li class="note-chapter"><a href="/{{ post.section|default('note') }}/{{ post.slug }}/">{{ post.title }}</a><span class="post-list-date">{{ post.date_short }}</span></li>
-      {% endfor %}
+    {% set chapters = citems|list %}
+    {% set first = chapters[0] %}
+    {% if category %}<li class="note-book">{{ category }}{% if first.book_more %}<a class="book-more" href="/note/book/{{ first.book_slug }}/">more</a>{% endif %}</li>{% endif %}
+    {% for part, items in chapters|groupby('part') %}
+      {% if loop.first %}
+        {% if part %}<li class="note-part">{{ part }}</li>{% endif %}
+        {% for post in items|sort(attribute='order') %}
+        <li class="note-chapter"><a href="/{{ post.section|default('note') }}/{{ post.slug }}/">{{ post.title }}</a><span class="post-list-date">{{ post.date_short }}</span></li>
+        {% endfor %}
+      {% endif %}
     {% endfor %}
   {% endfor %}
 </ul>

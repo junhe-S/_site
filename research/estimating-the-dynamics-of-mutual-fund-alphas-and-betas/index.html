@@ -84,13 +84,13 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Mamaysky, Spiegel &amp; Zhang (2008, <em>Review of Financial Studies</em>)</strong>：当我们用一个会随时间「呼吸」的卡尔曼滤波 (Kalman filter) 模型去追踪基金的 alpha 和 beta，而不是用静态的 OLS 去硬套，关于「基金经理到底有没有市场择时能力」这个老问题，答案会发生反转——在月度数据里，静态择时模型几乎全是「狼来了」（假阳性率高达 14%–17%），卡尔曼滤波则把假阳性压回了该有的水平（3%），并且在这之上，它真的捞出了一批（也许高达 <code>20%</code>）看起来有择时本事的基金。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Mamaysky, Spiegel &amp; Zhang (2008, <em>Review of Financial Studies</em>)</strong>：当我们用一个会随时间「呼吸」的卡尔曼滤波 (Kalman filter) 模型去追踪基金的 alpha 和 beta，而不是用静态的 OLS 去硬套，关于「基金经理到底有没有市场择时能力」这个老问题，答案会发生反转——在月度数据里，静态择时模型几乎全是「狼来了」（假阳性率高达 14%–17%），卡尔曼滤波则把假阳性压回了该有的水平（3%），并且在这之上，它真的捞出了一批（也许高达 <code>20%</code>）看起来有择时本事的基金。</p></p></div>
 <h2 id="1">1 一个让人不安的问题</h2>
 <p>先讲一件听起来有点荒谬、但每天都在发生的事。</p>
 <p>你想检验一位基金经理有没有「市场择时 (market timing)」的本事——所谓择时，就是市场要涨的时候他提前加仓（把 beta 调高），市场要跌的时候他提前减仓（把 beta 调低）。这是投资者花高价请主动管理的核心理由之一。检验的办法看上去再标准不过：拿基金的月度收益，对市场超额收益做一个回归，再加上一个能捕捉「凸性」的择时项。Treynor 和 Mazuy (1966)（下称 TM）加的是一个平方项 \(\gamma r_{mt}^2\)，Henriksson 和 Merton (1981)（下称 HM）加的是一个分段项 \(\gamma\, r_{mt} I\{r_{mt}>0\}\)。\(\gamma\) 显著为正，就说明这位经理「会看天」。</p>
 <p>问题来了。把这套模型拿去跑一批<strong>本来就不可能有择时能力</strong>的东西——比如 <code>CRSP</code> 的市值十分位组合（size deciles），它们只是机械地按市值分档、被动持有，谈何择时——结果呢？在月度数据里，TM 模型有 <code>17%</code> 的概率报告出一个显著的择时系数，HM 是 <code>14%</code>。</p>
 <p>这就尴尬了。所谓「在 5% 的显著性水平上显著」，本来的含义是：在原假设为真（没有择时能力）时，模型只会有 5% 的概率误报。可这里的误报率是 14%–17%，<strong>整整高出三倍</strong>。换句话说，一个标准的统计模型，在面对一堆「死」的被动组合时，三次里有一次会信誓旦旦地告诉你「这家伙会择时」。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>这意味着，当 TM 或 HM 在真实基金里找到一个显著的择时系数时，你根本分不清那到底是基金经理的本事，还是模型自己「制造」出来的幻觉。一把会随机走火的尺子，量出来的数你敢信吗？</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>这意味着，当 TM 或 HM 在真实基金里找到一个显著的择时系数时，你根本分不清那到底是基金经理的本事，还是模型自己「制造」出来的幻觉。一把会随机走火的尺子，量出来的数你敢信吗？</p></p></div>
 <p>于是这篇文章真正要回答的，并不是「基金经理会不会择时」这个老问题，而是一个更底层、也更要命的问题：</p>
 <p><strong>有没有可能造出一个模型，它既能检测择时能力，又不会以高得离谱的概率「狼来了」？</strong></p>
 <h2 id="2-beta">2 病根在哪：beta 本来就不该是个常数</h2>
@@ -101,7 +101,7 @@
 <p>$$r_{Pt} = w_{A,t-1}\, r_A + w_{B,t-1}\, r_B$$</p>
 <p>接着，一个自然的问题是：组合的 beta 是常数吗？答案是——<strong>几乎肯定不是</strong>。哪怕基金经理什么都不做、完全不交易，只要 A 和 B 在 \(t\) 期的收益不一样，到了 \(t+1\) 期，两只股票在组合里的权重 \(w\) 就被「行情」自动改变了（涨得多的那只占比变大）。权重一变，组合的 beta 自然就变了。</p>
 <p>这是个很深刻的观察：<strong>「权重会动」是组合的天性，根本不需要经理主动择时</strong>。而一旦经理真的在主动调仓——尤其是为了择时而调——beta 的时变就更剧烈。所以，用一个常数 beta 的线性模型去拟合一只基金，从一开始就是<strong>模型设定错误 (misspecification)</strong>。设定错了的模型，产出怪异结果（比如过高的假阳性）也就不奇怪了。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>这一点其实是一条更宽的暗线：资产定价里大量「常系数」的实证范式，对会动的载荷都是有偏的。关于时变 beta 被长期低估这件事，可参见<a href="/research/conditional-risk/">《时变的 beta，被低估了二十年的风险》</a>。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>这一点其实是一条更宽的暗线：资产定价里大量「常系数」的实证范式，对会动的载荷都是有偏的。关于时变 beta 被长期低估这件事，可参见<a href="/research/conditional-risk/">《时变的 beta，被低估了二十年的风险》</a>。</p></p></div>
 <p>那把固定窗口的滚动 OLS（rolling regression）拿来不就行了？也不行。滚动回归是用一段历史窗口去「平均」beta，它永远滞后于基金<strong>当下</strong>的真实暴露——当经理刚刚把仓位调高时，滚动 OLS 还停留在过去那段窗口的平均水平上。我们需要的，是一个能<strong>实时</strong>追踪基金当前载荷的模型。</p>
 <h2 id="3">3 真正关键的一步：把「看不见的信号」写进模型</h2>
 <p>到这里，作者埋下了全文最漂亮的一步棋。</p>
@@ -129,7 +129,7 @@
 <p>$$\alpha_{Pt} = \alpha_P F_{t-1} + b_P F_{t-1}^2 - k_t$$</p>
 <p>$$\beta_{Pt} = \beta_P + c_P F_{t-1}$$</p>
 <p>这里每个参数都有干净的经济含义。\(\alpha_P\) 是线性项，衡量基金策略与个股瞬时 alpha 的相关程度；由于 \(F\) 可正可负，\(\alpha_P \neq 0\) <strong>并不代表</strong>基金整体跑赢或跑输。真正代表择时本事的，是那个<strong>二次项 \(b_P\)</strong>——它衡量基金「在发现一批正 alpha 股票时系统性地做多、发现负 alpha 时系统性地做空」的能力。作者给了一个很妙的直觉：</p>
-<div class="callout"><div class="callout-title">Note</div><p>\(b_P\) 可以理解为基金的证券权重 \(w_t\) 与个股 alpha 之间的<strong>协方差</strong>。能在好股票上加仓、坏股票上减仓，这个协方差就是正的——这正是「选股/择时」本事的数学化身。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>\(b_P\) 可以理解为基金的证券权重 \(w_t\) 与个股 alpha 之间的<strong>协方差</strong>。能在好股票上加仓、坏股票上减仓，这个协方差就是正的——这正是「选股/择时」本事的数学化身。</p></p></div>
 <p>\(\beta_{Pt}\) 这边同理：\(\beta_P\) 是稳态 beta，\(c_P\) 衡量 beta 随信号 \(F\) 的摆动幅度——这正是<strong>市场择时</strong>的载荷。</p>
 <p><strong>第三步：合并成观测方程。</strong> 把 (8)、(9) 代回 (3)，消去 \(\alpha_{Pt}\) 和 \(\beta_{Pt}\)，得到全文计量分析的核心——观测方程（方程 10）：</p>
 <div class="mathanno-block"><div class="mathanno-eq">$$
@@ -149,9 +149,9 @@ $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1
 <p><strong>先说一个反直觉的坏消息：日度数据下，卡尔曼滤波同样很糟。</strong> 用日度数据、5% 临界值，单因子卡尔曼模型的假阳性率高达 <code>58%</code>，四因子模型 <code>30%</code>——糟得和 TM、HM 不相上下。</p>
 <p><strong>但月度数据下，反转出现了。</strong> 在月度数据里，单因子卡尔曼模型的假阳性率掉到了 <code>3%</code>，四因子模型 <code>6%</code>——这两个数字都和「一个设定正确的统计模型该有的水平」吻合。作为对照，同样月度数据，TM 是 <code>17%</code>、HM 是 <code>14%</code>。</p>
 <p>为什么日度和月度差这么多？作者把矛头指向了<strong>微观结构噪声 (microstructure issues)</strong>——买卖价差跳动 (bid–ask bounce)、陈旧定价 (stale pricing) 等会在日度数据里制造<strong>虚假的序列相关</strong>，卡尔曼滤波误把这种序列相关当成了「择时」。这给整个用日度数据研究基金业绩的做法泼了一盆冷水：日度数据看似提供了更多统计功效（这正是 Bollen 和 Busse 2001 用日度数据找到择时证据的依据），但这份「功效」里混进了微观结构的脏东西。</p>
-<div class="callout"><div class="callout-title">Note</div><p>一个很漂亮的旁证：作者发现，当前期择时系数越大时，<strong>滞后</strong>收益对应的择时系数就越负、且数量级大致相等、符号相反。在没有微观结构问题时，滞后收益本应与当期收益无关、系数应为零；可一旦微观结构制造了假阳性，滞后项就会站出来「对冲」掉它。一正一负、大小相当——这正是「假阳性」的指纹。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>一个很漂亮的旁证：作者发现，当前期择时系数越大时，<strong>滞后</strong>收益对应的择时系数就越负、且数量级大致相等、符号相反。在没有微观结构问题时，滞后收益本应与当期收益无关、系数应为零；可一旦微观结构制造了假阳性，滞后项就会站出来「对冲」掉它。一正一负、大小相当——这正是「假阳性」的指纹。</p></p></div>
 <p>于是关键结论浮现：<strong>在干净的月度数据上</strong>，卡尔曼滤波不再「狼来了」。而正因为它不再乱报，它报出来的「真」就值得信了——在月度数据里，它捞出了一批（也许高达 <code>20%</code>）真正具备市场择时能力的基金。这恰恰与 Bollen 和 Busse (2001)（下称 BB）形成对照：BB 用 TM、HM 在月度数据里<strong>找不到</strong>任何择时能力。差别就在于，卡尔曼滤波能实时贴合基金<strong>当下</strong>的市场载荷，而滚动 OLS 做不到。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>注意这里的微妙之处：BB 认为月度数据「没功效」所以找不到择时，于是转向日度数据。这篇文章反过来说——不是月度没功效，是 OLS 模型设定错了；换上对的模型，月度数据里的择时本来就在那儿。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>注意这里的微妙之处：BB 认为月度数据「没功效」所以找不到择时，于是转向日度数据。这篇文章反过来说——不是月度没功效，是 OLS 模型设定错了；换上对的模型，月度数据里的择时本来就在那儿。</p></p></div>
 <h2 id="6-omnibus">6 还不够：一个「全因子一起考」的 Omnibus 检验</h2>
 <p>故事到这里其实可以收尾了，但作者又往前推了一步，处理一个更隐蔽的陷阱。</p>
 <p>Jagannathan 和 Korajczyk (1986) 早就指出：TM、HM 的估计往往在<strong>择时参数的误差</strong>和<strong>alpha 的误差</strong>之间「拆东墙补西墙」——高择时估计常常伴随低 alpha 估计。这意味着，<strong>一次只检验一个因子的预测力，可能漏掉另一个因子里的问题</strong>；反过来，一个模型整体预测力不错，底层的因子估计却可能各自都很可疑。</p>

@@ -89,7 +89,7 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Durham (2003, <em>Journal of Financial Economics</em>)</strong>：用模拟极大似然把一整套短期利率的连续时间模型逐一对账后，作者发现——短率建模的胜负手不是大家争了十年的「漂移是否非线性」，而是波动率的设定；常数漂移就已足够，所谓的平稳性其实是「波动率诱导」出来的。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Durham (2003, <em>Journal of Financial Economics</em>)</strong>：用模拟极大似然把一整套短期利率的连续时间模型逐一对账后，作者发现——短率建模的胜负手不是大家争了十年的「漂移是否非线性」，而是波动率的设定；常数漂移就已足够，所谓的平稳性其实是「波动率诱导」出来的。</p></p></div>
 <h2 id="1">1 一个争了十年的问题</h2>
 <p>先把场景摆出来。短期利率（short-term interest rate）大概是整个固定收益领域里被研究得最透的一个变量了：它是贴现的起点，是利率期限结构的锚，几乎每一个债券与衍生品定价模型都要先假设它服从某个随机微分方程 (stochastic differential equation, SDE)。可偏偏就是这么一个被反复咀嚼的对象，有一个最基本的问题，吵了十年都没吵明白——</p>
 <p><strong>短率的漂移 (drift) 到底是不是非线性的？</strong></p>
@@ -102,7 +102,7 @@
 <p>为什么这个问题这么难？因为大家用的尺子都不够好。</p>
 <p>统计学里有一个几乎是「天条」的结论：在正则条件下，极大似然估计 (maximum likelihood estimation, MLE) 是渐近有效的，似然比检验 (likelihood ratio test, LR) 有一系列最优性质。换句话说，<strong>如果你能写出似然函数，你就该用它</strong>，别的矩方法、非参数方法都是退而求其次。</p>
 <p>可问题恰恰在这里：对连续时间扩散过程，离散观测下的转移密度 (transition density) 几乎没有闭式解，似然函数你根本写不出来。所以过去二十年，大家被迫绕道——Chan et al. (1992) 用广义矩 (GMM)、Tauchen (1995) 与 Gallant and Tauchen (1998) 用有效矩方法 (EMM)、Aït-Sahalia (1996) 和 Stanton (1997) 用非参数密度。这些方法各有各的偏误，也各有各的「盲点」。</p>
-<div class="callout"><div class="callout-title">Note</div><p>一个被反复提到的盲点是：Tauchen (1995) 和 Conley et al. (1997) 都发现，他们的准则函数在波动率指数 \(\beta_2\) 这个方向上是「平」的——也就是说，他们根本估不准波动率到底有多陡。这一点，后面会成为整篇文章的转折点。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>一个被反复提到的盲点是：Tauchen (1995) 和 Conley et al. (1997) 都发现，他们的准则函数在波动率指数 \(\beta_2\) 这个方向上是「平」的——也就是说，他们根本估不准波动率到底有多陡。这一点，后面会成为整篇文章的转折点。</p></p></div>
 <p>那 Durham 凭什么能把似然算出来？他用的是 Durham and Gallant (2002) 的模拟极大似然 (simulated maximum likelihood, SMLE)。核心思路是 Pedersen (1995) 与 Santa-Clara (1995) 提出的：既然两个相邻观测点之间，过程走过的中间状态看不见，那就<strong>把这些看不见的中间态用模拟「积分」掉</strong>，从而逼近真实的转移密度。这个想法直觉上极美，但早期实现慢得让人却步。Durham and Gallant (2002) 在数值技巧上做了大量加速，使得对 \(N=10{,}000\) 个观测、误差可忽略的对数似然，在一台 750 MHz 的 PC 上大约一秒就能算完。</p>
 <p>有了这把尺子，Durham 做了一件此前没人能做的事：把所有候选模型<strong>嵌套</strong>进同一个最大模型里，用 LR、AIC、SC 逐一对账、排座次。这种「老老实实做嵌套序列检验」的做法，在别的领域稀松平常，可在短率这个被非参数和矩方法统治的角落里，竟是头一回。</p>
 <p>（关于「换一把更准的尺子，老问题就翻案」这件事，本博客已有不少例子，比如 <a href="/research/identifying-term-structure-volatility-from-the-libor-swap/">《波动率到底藏在哪里？》</a> 与 <a href="/research/nonparametric-specification-testing-for-continuous-time/">《残差不会撒谎：一把能戳穿利率模型的「万能尺」》</a>。）</p>
@@ -150,7 +150,7 @@ $$\text{CEV4}: dX = (\alpha_1+\alpha_2 X+\alpha_3 X^2+\alpha_4/X)\,dt + \beta_1 
 <p>还有一个副产品值得一提。第三份数据是 Aït-Sahalia (1996) 的七天欧洲美元（Eurodollar）日频利率，<code>5,505</code> 个观测。Durham 发现这批数据「噪声极大」，波动率大约是两份国债数据的<strong>两倍</strong>，多半不是真实短率的可靠代理。这一点呼应了 Chapman et al. (1999) 的警告：你拿什么利率当「短率」的代理，是会出大事的。</p>
 <div class="article-image"><img alt="Figure 7: Drift and volatility of Eurodollar data: (a) estimated drift function for the GEN4 model; (b)" src="assets/figure-7.png" /></div>
 <p><em>Figure 7: Drift and volatility of Eurodollar data: (a) estimated drift function for the GEN4 model; (b)</em></p>
-<div class="callout"><div class="callout-title">Warning</div><p>别误读这里的「漂移无关紧要」。它说的是：在<strong>估计与拟合</strong>短率的物理过程时，漂移的函数形式贡献甚微，而不是说漂移在经济上无意义。下一节会看到，漂移之所以「不需要」往回拉，恰恰是因为波动率替它干了活——这是一种更深的关联，而非漂移真的消失了。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>别误读这里的「漂移无关紧要」。它说的是：在<strong>估计与拟合</strong>短率的物理过程时，漂移的函数形式贡献甚微，而不是说漂移在经济上无意义。下一节会看到，漂移之所以「不需要」往回拉，恰恰是因为波动率替它干了活——这是一种更深的关联，而非漂移真的消失了。</p></p></div>
 <h2 id="6">6 平稳性，原来是波动率「诱导」出来的</h2>
 <p>文献里一直有个让人犯迷糊的地方：常数漂移，看上去不就意味着利率没有均值回复、于是非平稳、于是会随机游走到天涯海角吗？</p>
 <p>Durham 说：不对。对 Table 2 里估出来的 CEV1，可以证明它其实是<strong>平稳</strong>的，而平稳性是<strong>波动率诱导</strong>（volatility-induced）出来的。直觉是这样的：</p>

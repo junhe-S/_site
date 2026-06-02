@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>「不必看见市场组合」就能检验 CAPM？——一桩被自家数据反将一军的方法论公案 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>「不必看见市场组合」就能检验 CAPM？——一桩被自家数据反将一军的方法论公案</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[1989 JFE]</span> A Critique of Latent Variable Tests of Asset Pricing Models</div>
+        <div class="paper-source-authors"><a href="/research/author/simon-m-wheatley/">Simon M. Wheatley</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 03, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">CAPM 检验</span>
+        
+        
+        
+        
+        <span class="tag">计量方法</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Wheatley (1989, <em>Journal of Financial Economics</em>)</strong>：潜变量检验（latent variable tests）号称不必观测「市场组合」就能检验 CAPM，听上去像是绕过了 Roll 批判的一条捷径。Wheatley 却证明，这类检验真正检验的，不过是「某个成分未知的均值-方差有效组合，是否满足你强加给市场的那个分布假设」——它既会在模型为假时「冤枉地接受」，也无法告诉你拒绝到底是因为模型错了还是假设错了。更狠的是，他用 Gibbons-Ferson 自己的道指 30 日度数据，在四个子区间里的至少三个，复现出了「检验毫无功效」的情形。</p></p></div>
+<h2 id="1">1 引言：一桩本该「无法检验」的悬案</h2>
+<p>资产定价理论里，几乎所有模型最后都会落到同一句话上：某个<strong>基准组合（benchmark portfolio）</strong>是均值-方差有效的。CAPM 说这个基准是市场组合，跨期 CAPM (intertemporal CAPM, ICAPM) 说它是与代表性投资者边际效用最相关的那个组合，多因子模型说它是由若干因子张成的那个组合。理论给了你一个漂亮的预言，可一旦要拿数据去验证，麻烦就来了——这些基准组合的收益，往往根本测不准，甚至根本观测不到。</p>
+<p>这正是 1977 年 Roll 那篇著名批判的核心。Roll 指出，CAPM 检验真正检验的，是「市场组合到底在不在有效前沿上」；而真正的市场组合——把全世界所有可投资财富都装进去的那一篮子——你永远凑不齐。于是他撂下一句近乎判决书的话：「实际上几乎没有可能……完成一次（对该模型的）检验。」</p>
+<p>这句话像一道幽灵，缠了资产定价实证整整十几年。（关于在没有无风险资产、市场组合又不可观测时，人们如何换着花样想给「市场组合有没有效」下判决，可参见<a href="/research/small-sample-tests-of-portfolio-efficiency/">《没有无风险资产的世界里，怎样给「市场组合有没有效」下判决》</a>与<a href="/research/bayesian-inference-in-asset-pricing-tests/">《九十重积分，只为问一句：市场组合到底有没有效》</a>。）</p>
+<p>接着，一条看似聪明的逃逸路线出现了。Gibbons 和 Ferson（1985）说：既然测不准市场收益，那我干脆<strong>不用</strong>市场收益的时间序列。我只要对「可观测的资产收益」和「不可观测的市场收益」的<strong>联合分布</strong>做一个假设，CAPM 加在条件期望收益上的限制，就能被改写成一组只涉及可观测变量的、可检验的约束。他们因此自信地宣称：「（我们建议的）方法……不受 Roll 批判之困。」</p>
+<p>这就是本文要拆的那块招牌。Wheatley 的全部工作，就是要说明这条逃逸路线其实是一种<strong>错觉</strong>——而且他不是靠嘴说，而是回到 Gibbons-Ferson 的原始数据，把「这套检验可能毫无功效」这件事，结结实实地演示了一遍。</p>
+<h2 id="2">2 一个看似漂亮的逃逸：潜变量检验怎么绕开市场组合</h2>
+<p>要看懂这场争论，得先弄明白潜变量检验那一步「偷天换日」究竟换掉了什么。</p>
+<p>我们用 Gibbons-Ferson 检验的 Black（1972）版 CAPM 来讲。这个版本说：市场组合落在均值-方差有效前沿正斜率的那一段上。设市场组合在 <code>t-1</code> 时刻所有可用信息 \(\phi_{t-1}\) 下都是有效的，那么对任意一组资产 \(j=1,2,\ldots,N\)，条件期望收益满足</p>
+<p>$$E(r_{jt}\mid \phi_{t-1}) - E(r_{0t}\mid \phi_{t-1}) = \beta_{jt}\big[E(r_{mt}\mid \phi_{t-1}) - E(r_{0t}\mid \phi_{t-1})\big]$$</p>
+<p>这就是论文的式 (1)：\(r_{mt}\) 是市场收益，\(r_{0t}\) 是与市场不相关的<strong>零 beta 组合（zero-beta portfolio）</strong>收益，\(\beta_{jt}\) 是条件 beta。麻烦显而易见：右边那个 \(r_{mt}\)，正是 Roll 说你永远观测不到的东西。</p>
+<p>那怎么把它「消掉」？这里是第一步关键。式 (1) 是一条<strong>直线</strong>：在「期望收益—beta」平面上，所有资产都排在一条直线上。既然是直线，任意第三只资产的期望收益，就能写成另外两只资产期望收益的线性组合——直线只要两点就能定。于是论文得到式 (2)：</p>
+<p>$$E(r_{jt}\mid \phi_{t-1}) = E(r_{1t}\mid \phi_{t-1}) + a_{jt}\big[E(r_{2t}\mid \phi_{t-1}) - E(r_{1t}\mid \phi_{t-1})\big],\qquad a_{jt}=\frac{\beta_{jt}-\beta_{1t}}{\beta_{2t}-\beta_{1t}}$$</p>
+<p>看这一步妙在哪里：式 (2) 里<strong>再也没有</strong> \(r_{mt}\)，也没有 \(r_{0t}\) 了。市场收益和零 beta 收益，被这条「共线性」一笔勾掉，只剩下可观测资产 1、2、\(j\) 的期望收益，外加一组斜率系数 \(a_{jt}\)。</p>
+<p>然后，一个自然的问题是：\(a_{jt}\) 本身还带着下标 \(t\)，它会随时间变，仍然不好对付。Gibbons-Ferson 于是补上两个假设。</p>
+<p>第一个是<strong>常数 beta 假设（A1）</strong>：条件 beta 向量 \((\beta_{2t},\beta_{3t},\ldots,\beta_{Nt})\) 不随时间变化，于是 \(a_{jt}=a_j\) 也成了常数。第二个是<strong>线性假设（A2）</strong>：期望收益对信息 \(x_{t-1}\) 线性，</p>
+<p>$$r_{jt}=\delta_j' x_{t-1}+\varepsilon_{jt},\qquad E(\varepsilon_{jt}\mid x_{t-1})=0,\quad j=1,2,\ldots,N$$</p>
+<p>其中 \(x_{t-1}\) 是一个 \(L\times 1\) 的信息向量，\(\delta_j\) 是 \(L\times 1\) 的常数系数向量。A2 是可以检验的（它只涉及可观测收益），而 A1——注意——是一个关于<strong>收益与不可观测市场收益之联合分布</strong>的假设。</p>
+<h2 id="3">3 模型设定与那「一个秩条件」</h2>
+<p>把 A1、A2 代回式 (2)，就走到了整篇论文方法论上的命门。</p>
+<p>由 A2，\(E(r_{jt}\mid\phi_{t-1})=\delta_j' x_{t-1}\)。代入式 (2)，并要求它对<strong>所有可能的</strong> \(x_{t-1}\) 都成立，于是括号外的 \(x_{t-1}\) 可以约去，得到一组只关于回归系数的限制——论文的假设 \(H_1\)：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+H_1:\quad \cssId{a1}{\delta_j - \delta_1} \;=\; \cssId{a2}{a_j}\,\cssId{a3}{(\delta_2 - \delta_1)}, \qquad j = 3,4,\ldots,N
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>asset j 相对参照资产 1 的「收益对信息的敏感度」之差（回归系数向量之差）</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>一个不随时间变的标量，由各资产 beta 决定：a_j=(β_j-β_1)/(β_2-β_1)</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>资产 2 相对资产 1 的同一敏感度之差——H1 要求所有 j 的左边都落在这唯一一个方向上</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这个 \(H_1\) 的几何含义极其干净：它说矩阵 \((\delta_2-\delta_1,\ \delta_3-\delta_1,\ \ldots,\ \delta_N-\delta_1)\) 的<strong>秩等于 1</strong>——所有资产「相对资产 1 的敏感度之差」都共线，都只指向 \((\delta_2-\delta_1)\) 这一个方向，区别只在一个标量 \(a_j\)。论文指出，当 \(L\ge 2\)、\(N\ge 3\) 时，这个<strong>秩条件</strong>对多元回归的参数施加了 \((L-1)(N-2)\) 个可检验的限制。</p>
+<p>到这里，Gibbons-Ferson 的逻辑链就闭合了：</p>
+<blockquote>
+<p>首先，对资产收益与市场收益的联合分布做一个假设（A1）；接着，在此假设下，CAPM 的限制等价于一个只含可观测量的秩条件 \(H_1\)；然后，用多元回归把 \(H_1\) 检验出来——全程不需要市场收益序列。最后，如果拒绝 \(H_1\)，就一并拒绝「市场组合均值-方差有效」。</p>
+</blockquote>
+<p>逻辑无懈可击。问题恰恰出在它太无懈可击了。</p>
+<h2 id="4-roll">4 Roll 的幽灵：为什么这其实什么都没检验</h2>
+<p>但真正关键的一步在于：<strong>这个秩条件，到底属于谁？</strong></p>
+<p>Roll 在 1977 年还证明过另一件事——CAPM 那样的「期望收益—beta」线性关系，并非市场组合的专利，它对<strong>任意一个</strong>均值-方差有效组合都成立。把式 (1) 里的「市场组合」换成有效前沿上任何一个组合，等式照样成立。</p>
+<p>于是反转出现了。Wheatley 顺着这条线推下去：既然 CAPM 式的限制对任意有效组合都成立，那么秩条件 \(H_1\)，也就会在<strong>任何一个满足常数 beta 假设、且期望收益对信息线性的有效组合存在时</strong>成立。换句话说——</p>
+<blockquote>
+<p>对秩条件 \(H_1\) 的检验，根本不是在检验「市场组合有没有效」。它检验的是：「<strong>存不存在某个成分未知的均值-方差有效组合，其收益满足你强加给市场的那个分布假设</strong>。」</p>
+</blockquote>
+<p>这就把 Gibbons-Ferson 的检验逻辑彻底改写了。他们以为自己在问「市场组合有效吗」，实际上问的是「有没有<strong>某个</strong>有效组合恰好满足 A1」。这两个问题之间，隔着 Roll 的整条批判。</p>
+<p>具体而言，这套检验真正的工作方式是这样的：第一，对资产收益与市场收益的联合分布做个假设；第二，检验「存在一个满足该假设的均值-方差有效组合」这一命题；第三，只有当你<strong>额外</strong>愿意相信「市场的条件 beta 确实是常数」时，拒绝秩条件才能被读成拒绝 CAPM——因为此时若没有任何有效组合满足常数 beta，而市场 beta 又恰是常数，那市场组合就不可能有效。</p>
+<p>而这个「额外愿意相信」的桥，恰恰塌了。问题有两层：</p>
+<p><strong>第一层，假设本身不可检验。</strong> A1 是关于市场收益分布的假设，可市场收益不可观测——你没法检验一个你看不见的东西的分布。</p>
+<p><strong>第二层，没有任何理论替你挑这个假设。</strong> 没有哪个资产定价模型会告诉你「市场的条件 beta 应该是常数」而不是别的什么。所以当检验拒绝时，你永远分不清，是模型错了，还是这个凭空挑来的分布假设错了。这正是「联合假设问题」最纯粹的形态。（一个相关的认识论提醒是：检验「不能拒绝」并不等于「支持」，反过来「拒绝」也可能只在打那个分布假设的脸，参见<a href="/research/posterior-predictive-and-utility-based-approaches-to/">《「不能拒绝」就等于「支持」吗？——给套利定价理论换一把尺子》</a>。）</p>
+<p>值得停一下的是常数 beta 这个假设。需要市场收益序列的传统 CAPM 检验，也常假设 beta 不变（Gibbons 1982、Stambaugh 1982、Shanken 1985a 都这么做）；但它们把市场收益当作<strong>可观测</strong>的，所以这个假设能被检验。潜变量检验把市场收益当作不可观测的，于是同一个假设就成了无法证伪的前提。而 Cox-Ingersoll-Ross（1985）的一般均衡框架里，既能造出 A1 成立的例子，也能轻松造出它<strong>不成立</strong>的例子——比如当条件期望收益依赖状态变量、条件方差-协方差矩阵不变、收益又与状态变量条件不相关时，市场组合是有效的，可它的<strong>成分会随时间变</strong>，常数 beta 假设根本不成立。（条件 beta 究竟有多「会动」、被当成常数会漏掉多少风险，可参见<a href="/research/conditional-risk/">《时变的 beta，被低估了二十年的风险》</a>。）</p>
+<div class="callout"><div class="callout-title">Warning</div><p>这一节是全文的「核」：潜变量检验最多只是「关于某个成分未知的有效组合的分布假设检验」，而不是对某个具体资产定价模型的检验。它没有逃出 Roll 批判，只是把批判藏进了一个不可观测的分布假设里。</p></p></div>
+<h2 id="5">5 用对手自己的数据反将一军</h2>
+<p>讲到这里，怀疑论者可能会说：你说检验「可能」无功效，可那只是逻辑上的可能性，现实里未必发生啊。</p>
+<p>Wheatley 的回应漂亮且不容回避：那就用 Gibbons-Ferson <strong>自己的数据</strong>来看，这个「可能性」是不是真的发生了。</p>
+<p>Gibbons-Ferson 当年没能拒绝 CAPM。他们用的是道琼斯 30 只成分股的日度收益，信息集 \(x_{t-1}\) 里放了一个常数、CRSP 价值加权指数的滞后收益、以及一个「周一为 1、其余为 0」的虚拟变量。Wheatley 抓住一个简单的事实：道指 30 只是全部资产里的一个<strong>子集</strong>，所以从这 30 只股票构造出的任何有效组合，<strong>都不可能是真正的市场组合</strong>。那么——若能证明「从道指 30 构造的每一个有效组合都满足那个分布假设」，就等于证明了：在这批数据上，Gibbons-Ferson 的检验确实毫无功效，因为它会被一堆「冒牌有效组合」满足，而这些组合没有一个是市场。</p>
+<p>为把这件事落到可操作的检验上，Wheatley 把分布假设具体化为两条「常数比率假设」，并放进下面这个多元回归（论文表 1）：</p>
+<p>$$r_{jt}=\delta_{0j}+\delta_{1j}D_t+\delta_{2j}r_{m,t-1}+\varepsilon_{jt},\qquad j=1,2,\ldots,30$$</p>
+<p>$$(\varepsilon_{1t},\ldots,\varepsilon_{30t})'\sim N\big(0,\ \Omega_0+\Omega_1 r_{m,t-1}^2\big)$$</p>
+<p>这里 \(D_t\) 是周一虚拟变量，\(r_{m,t-1}\) 是 CRSP 价值加权指数滞后收益，\(\Omega_0\)、\(\Omega_1\) 是 \(30\times30\) 的参数矩阵——注意条件方差被允许随 \(r_{m,t-1}^2\) 变动，这与 French、Schwert、Stambaugh（1987）的波动率建模一脉相承。两条假设是：</p>
+<ul>
+<li><strong>(A3) 条件期望收益比率恒定</strong>：\(\delta_j=\gamma_j\,\delta_1,\ j=2,3,\ldots,30\)，\(\gamma_j\) 为标量。</li>
+<li><strong>(A4) 条件收益波动率比率恒定</strong>：\(\Omega_1=\psi\,\Omega_0\)，\(\psi\) 为标量。</li>
+</ul>
+<p>如果 A3、A4 都成立，那么从道指 30 构造的有效组合，其 beta 就都是常数——常数 beta 假设在这个子集上成立，检验也就无功效了。两条假设用<strong>拉格朗日乘子（Lagrange multiplier, LM）统计量</strong>检验，样本是 1962 年 8 月 17 日到 1980 年 12 月 31 日的日度数据，分成四个子区间，每段约 1150 天（\(T=1149,1151,1150,1151\)）。</p>
+<p>结果是这样的（表 1 的 A 栏）：</p>
+<p><strong>条件期望收益比率恒定（A3）在四个子区间里全都没被拒绝。</strong> 四段的 LM 统计量是 <code>68.933</code>、<code>58.756</code>、<code>68.253</code>、<code>69.141</code>，对应的 p 值分别是 <code>0.172</code>、<code>0.492</code>、<code>0.180</code>、<code>0.184</code>；合并四段后总统计量 <code>265.083</code>，p 值 <code>0.109</code>。这组限制的自由度恰好是 \((L-1)(N-2)=2\times28=56\) 上下（渐近均值约 58），统计量都老老实实落在分布里。</p>
+<p><strong>条件波动率比率恒定（A4）只在第一个子区间被拒绝。</strong> 四段 LM 统计量是 <code>2020.037</code>、<code>883.357</code>、<code>901.449</code>、<code>1056.358</code>，p 值 <code>0.000</code>、<code>0.220</code>、<code>0.800</code>、<code>0.660</code>；合并后 <code>4862.201</code>，p 值 <code>0.011</code>。也就是说，A4 在第二、三、四段都不被拒绝，只在第一段被压倒性地拒绝，从而拖累了整体。</p>
+<p>把两条放在一起：在四个子区间里的<strong>三个</strong>，A3 和 A4 同时不被拒绝——这意味着 Wheatley 那个「检验无功效」的例子，和 Gibbons-Ferson 的数据是<strong>相容</strong>的。于是结论落地：Gibbons-Ferson 虽然没拒绝 CAPM，但至少在四段中的三段，数据完全支持「他们的检验根本没有功效」这一假说。顺带一提，表 1 的 B 栏（极大似然估计）显示，「条件期望收益恒定」与「条件方差-协方差矩阵恒定」这两个限制，在所有子区间都被强烈拒绝（\(\delta_{21}\) 的整体检验量高达 <code>11.127</code>，\(\psi\) 高达 <code>14.524</code>）——收益的条件矩确实在随信息变动，模型设定不是退化的。</p>
+<p>那第一段里 A4 的那个「拒绝」呢？这正是附录里 bootstrap 模拟（表 2）要回答的，而它给出的答案，反而让 Wheatley 的结论更稳。基于第一子区间、250 次重抽样，A3 的 LM 统计量表现良好：在 50%、10%、5%、1% 名义水平上的实际拒绝频率分别是 <code>0.552</code>、<code>0.124</code>、<code>0.080</code>、<code>0.024</code>，几乎贴着名义水平；它的模拟均值 <code>59.010</code> 也和渐近均值 <code>58.000</code> 吻合。可 A4 的 LM 统计量则彻底失控：在<strong>所有</strong>名义水平上的拒绝频率都是 <code>1.000</code>——也就是说，哪怕原假设为真，这个检验也几乎必然拒绝。它的模拟均值 <code>864.422</code> 是渐近均值 <code>464.000</code> 的将近两倍，模拟标准误 <code>148.581</code> 更是渐近值 <code>30.463</code> 的五倍，学生化极差 <code>8.519</code> 远超分布的 0.99 分位。</p>
+<p>换句话说，A4 在第一子区间的那次「拒绝」，极可能只是小样本里检验严重<strong>过度拒绝（over-rejection）</strong>的产物，而非真有证据。把这一点考虑进去，数据与「检验无功效」相容的，恐怕就不止三个子区间了。对手用来「接受 CAPM」的数据，反过来成了「这套方法可能压根测不出东西」的证据——这一招反将得相当干净。</p>
+<h2 id="6">6 文献脉络</h2>
+<p>把这场争论放回时间线上，它的位置就格外清楚了。</p>
+<p>源头是 Black（1972）的零 beta CAPM，它给出了「市场组合落在有效前沿正斜率段上」这个可供检验的预言。紧接着，Roll（1977）那篇 Part 1 批判像一盆冷水：市场组合不可观测，所有 CAPM 检验其实都是「市场组合有没有效」的联合检验，而且 CAPM 式限制对任意有效组合都成立——这两点，正是本文反复借用的两把刀。</p>
+<p>接着是「正面强攻」的一脉：Gibbons（1982）、Stambaugh（1982）、Shanken（1985a）发展了在<strong>可观测</strong>市场代理下的多元 CAPM 检验，它们老实地承认要用市场收益序列，也因此能检验常数 beta 假设。</p>
+<p>然后，一个自然的问题是：能不能干脆不用市场收益？Gibbons-Ferson（1985）的潜变量检验给出了一条「绕道」的答案，并宣称摆脱了 Roll 批判。几乎同时，Kandel-Stambaugh（1987）与 Shanken（1987）走的是另一条「带着 Roll 批判生活」的路——用可观测代理加上「代理与市场相关性」的假设来做检验；可那个相关系数同样不可观测，所以他们也并未完全绕过 Roll。Hansen-Richard（1987）则厘清了条件有效与无条件有效之间的微妙关系，提醒人们「条件有效的组合可能无条件无效」。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>本文（Wheatley 1989）所处的位置，就是给这条「潜变量逃逸路线」盖棺定论：它把 Gibbons-Ferson 的逻辑拆开，证明这套检验顶多是「关于未知成分有效组合的分布假设检验」；并且这一批评不限于 CAPM——Lucas（1978）、Breeden（1979）那一脉的跨期/消费 CAPM，乃至 Shanken（1985b, 1987）、Campbell（1987）讨论的多因子模型，其潜变量检验都面临同样的解释困境，区别只在于所依赖的那个不可观测分布假设换了对象。</p>
+<h2>7 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：潜变量检验「无功效」，是不是等于说它一无是处？</strong></p>
+<blockquote>
+<p>不完全是。Wheatley 自己指出了一条退路：如果你<strong>先验地假定</strong>某个资产定价模型成立，那么潜变量检验可以被重新解读为关于「风险随时间如何变化」的假设检验。只是即便这样，它也可能没有功效——在 CAPM 框架下，当相对市场度量的风险时变时，相对<strong>其他</strong>有效组合度量的风险却可能恒定，于是检验照样测不出名堂。</p>
+</blockquote>
+<p><strong>Q：这跟直接说「CAPM 检验是联合假设检验」有什么新意？</strong></p>
+<blockquote>
+<p>Roll 说的是「模型 + 市场组合代理」的联合假设。Wheatley 多走了一步：潜变量检验自以为通过「不使用市场代理」摆脱了联合假设，结果只是把代理换成了一个<strong>不可观测且无理论指导</strong>的分布假设（A1）。新意在于点明——逃避观测市场组合，并不能逃避联合假设，反而让那一半假设变得更不可检验。</p>
+</blockquote>
+<p><strong>Q：式 (2) 把市场收益消掉，这一步本身有问题吗？</strong></p>
+<blockquote>
+<p>这一步在数学上没问题，它只是有效前沿线性结构的直接推论。真正的问题在 A1：把 \(a_{jt}\) 钉成常数 \(a_j\)，等价于对市场 beta 的时间行为下了一个不可检验的断言。消掉 \(r_{mt}\) 是合法的，但代价是把识别的重担全压在了 A1 上。</p>
+</blockquote>
+<p><strong>Q：实证里 A4 被拒绝了，为什么还说「数据与无功效相容」？</strong></p>
+<blockquote>
+<p>因为 bootstrap 显示 A4 的 LM 检验在小样本里几乎 100% 过度拒绝——它的拒绝不可信。而表现良好的 A3 在四段全都不被拒绝。把可信的证据（A3）和不可信的证据（被过度拒绝的 A4）分开看，结论是数据并不能把「无功效」这个假说推翻。</p>
+</blockquote>
+<p><strong>Q：那 Kandel-Stambaugh、Shanken 的「代理 + 相关性假设」路线，是不是好一些？</strong></p>
+<blockquote>
+<p>方向上更诚实——他们明说自己「带着 Roll 批判生活」。但 Wheatley 的脚注点破：他们假设的「代理与市场收益的（多重）相关系数」同样不可观测，所以也没有完全绕开 Roll。差别更多是程度而非性质。</p>
+</blockquote>
+<p><strong>Q：这篇 1989 年的批判，对今天的因子模型还有意义吗？</strong></p>
+<blockquote>
+<p>有。任何「某组因子张成的组合是均值-方差有效的」之类的论断，一旦因子组合不可直接观测、或要靠分布假设来识别，都会落入同样的解释陷阱：你检验的可能只是「存在某个满足该假设的有效组合」，而非你心仪的那个因子模型。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把这套批判搬到公司债的因子模型上。</strong>
+【经济故事】公司债的「市场组合」比股票更难观测——成交稀疏、报价噪声大，常用的债券指数本身就是一个粗糙代理。若有人用潜变量式的方法去检验信用因子模型，Wheatley 的批判几乎原样适用：拒绝可能只是在打那个不可观测分布假设的脸。
+【可行性】中。需要 TRACE 成交数据与债券特征，识别策略上可借鉴本文——构造「子集有效组合」并检验其分布假设是否被数据相容地满足；难点在债券收益的条件矩估计噪声大，需要审慎的小样本/bootstrap 校准（正如本文表 2 的做法）。</p>
+<p><strong>2. 用 bootstrap「体检」表，系统排查当代资产定价检验里的过度拒绝。</strong>
+【经济故事】本文最被低估的一笔，是表 2 揭示的 LM 统计量在大维度下的严重过度拒绝（\(N=30\)、限制数达数百时）。如今因子动物园里的 GRS、GMM 检验动辄面对成百上千个测试资产，渐近临界值是否还可信，是个真问题。
+【可行性】高。纯方法论 + 模拟，数据现成（已发布的因子与组合收益），识别清晰：对一批主流检验做统一的有限样本校准，报告「名义 5% 实际是多少」。这是一个 doable 且有现实影响的项目。</p>
+<p><strong>3. 外资持有人能否充当「可观测的有效组合代理」？</strong>
+【经济故事】Roll 批判的死结是市场组合不可观测。但在某些跨境市场里，全球机构投资者的总持仓接近「可投资财富」的一个干净切片。若把外资可投资组合当作代理，是否能在一个特定市场上做出比纯潜变量更可检验的资产定价检验？
+【可行性】中偏低。需要细颗粒的跨境持仓数据（如某市场的外资持仓登记），且代理与「真市场」的差距仍需假设——本质上仍未完全逃出 Roll，但比纯潜变量多了一层可观测性，值得一试。</p>
+<p><strong>4. 流动性因子的「有效组合」身份检验。</strong>
+【经济故事】流动性被广泛当作定价因子，但「流动性模仿组合」的成分高度依赖构造方法。把本文的秩条件思路反过来用：检验不同构造法得到的流动性组合，是否都落在同一条「期望收益—beta」直线上——若是，则它们的定价含义无法区分，正对应 Wheatley 的「无功效」。
+【可行性】高。数据为股票/债券收益与流动性度量，方法为秩检验，识别明确。</p>
+<p><strong>5. 把「分布假设不可检验」量化成一个敏感性区间。</strong>
+【经济故事】本文是定性批判：假设不可检验。能否更进一步，给定一族合理的 A1 替代假设，刻画出检验结论（接受/拒绝 CAPM）随假设变动的<strong>取值范围</strong>？这相当于给潜变量检验配一个「假设敏感性带」。
+【可行性】中。属偏理论+模拟，需在 CIR（1985）这类一般均衡框架里参数化「市场 beta 的时变方式」，再追踪结论如何随之翻转——本文已经指出该框架既能造出 A1 成立也能造出不成立的例子，这是天然的起点。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Black, F. (1972). Capital market equilibrium with restricted borrowing. <em>Journal of Business</em> 45, 444–454.</li>
+<li>Breeden, D. T. (1979). An intertemporal asset pricing model with stochastic consumption and investment opportunities. <em>Journal of Financial Economics</em> 7, 265–296.</li>
+<li>Breusch, T. S., &amp; Pagan, A. R. (1979). A simple test for heteroskedasticity and random coefficient variation. <em>Econometrica</em> 47, 1287–1294.</li>
+<li>Campbell, J. Y. (1987). Stock returns and the term structure. <em>Journal of Financial Economics</em> 18, 373–400.</li>
+<li>Cox, J. C., Ingersoll, J. E., &amp; Ross, S. A. (1985). An intertemporal general equilibrium model of asset prices. <em>Econometrica</em> 53, 363–384.</li>
+<li>Efron, B. (1982). <em>The Jackknife, the Bootstrap and Other Resampling Plans</em>. SIAM, Philadelphia.</li>
+<li>French, K. R., Schwert, G. W., &amp; Stambaugh, R. F. (1987). Expected stock returns and volatility. <em>Journal of Financial Economics</em> 19, 3–29.</li>
+<li>Gibbons, M. R. (1982). Multivariate tests of financial models: A new approach. <em>Journal of Financial Economics</em> 10, 3–27.</li>
+<li>Hansen, L. P., &amp; Richard, S. F. (1987). The role of conditioning information in deducing testable restrictions implied by dynamic asset pricing models. <em>Econometrica</em> 55, 587–613.</li>
+<li>Kandel, S., &amp; Stambaugh, R. F. (1987). On correlations and inferences about mean-variance efficiency. <em>Journal of Financial Economics</em> 18, 61–90.</li>
+<li>Lucas, R. E., Jr. (1978). Asset prices in an exchange economy. <em>Econometrica</em> 46, 1429–1446.</li>
+<li>Merton, R. C. (1973). An intertemporal capital asset pricing model. <em>Econometrica</em> 41, 867–887.</li>
+<li>Roll, R. (1977). A critique of the asset pricing theory's tests — Part 1: On past and potential testability of the theory. <em>Journal of Financial Economics</em> 4, 129–176.</li>
+<li>Shanken, J. (1985a). Multivariate tests of the zero-beta CAPM. <em>Journal of Financial Economics</em> 14, 327–348.</li>
+<li>Shanken, J. (1985b). Multi-beta CAPM or equilibrium APT? A reply. <em>Journal of Finance</em> 40, 1189–1196.</li>
+<li>Shanken, J. (1987). Multivariate proxies and asset pricing relations: Living with the Roll critique. <em>Journal of Financial Economics</em> 18, 91–110.</li>
+<li>Stambaugh, R. F. (1982). On the exclusion of assets from tests of the two-parameter model: A sensitivity analysis. <em>Journal of Financial Economics</em> 10, 237–268.</li>
+<li>Wheatley, S. M. (1989). A critique of latent variable tests of asset pricing models. <em>Journal of Financial Economics</em> 23, 325–338.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 引言：一桩本该「无法检验」的悬案</a></li>
+        <li><a href="#2">2 一个看似漂亮的逃逸：潜变量检验怎么绕开市场组合</a></li>
+        <li><a href="#3">3 模型设定与那「一个秩条件」</a></li>
+        <li><a href="#4-roll">4 Roll 的幽灵：为什么这其实什么都没检验</a></li>
+        <li><a href="#5">5 用对手自己的数据反将一军</a></li>
+        <li><a href="#6">6 文献脉络</a></li>
+        <li><a href="#7-q-a">7 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

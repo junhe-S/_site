@@ -89,18 +89,18 @@
       
     </div>
 
-    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Opie &amp; Riddiough (2020, <em>Journal of Financial Economics</em>)</strong>：他们提出一套「动态货币因子对冲」(dynamic currency factor hedging, DCF) 的方法——不去硬猜单个汇率，而是先预测 <strong>美元 (dollar)</strong> 与 <strong>套利 (carry)</strong> 两个全球货币因子的可预测成分，再反推出每种货币的对冲头寸。结果是：股票组合的夏普比率比「完全不对冲」高 <strong>90% 以上</strong>、比「完全对冲」高 <strong>40% 以上</strong>；独立运行这套信号还能拿到 <strong>0.78</strong> 的夏普比率。</p></div>
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Opie &amp; Riddiough (2020, <em>Journal of Financial Economics</em>)</strong>：他们提出一套「动态货币因子对冲」(dynamic currency factor hedging, DCF) 的方法——不去硬猜单个汇率，而是先预测 <strong>美元 (dollar)</strong> 与 <strong>套利 (carry)</strong> 两个全球货币因子的可预测成分，再反推出每种货币的对冲头寸。结果是：股票组合的夏普比率比「完全不对冲」高 <strong>90% 以上</strong>、比「完全对冲」高 <strong>40% 以上</strong>；独立运行这套信号还能拿到 <strong>0.78</strong> 的夏普比率。</p></p></div>
 <h2 id="1">1 一个绕不开的问题：钱出了国，汇率怎么办</h2>
 <p>先看一组数字。美国投资者持有的海外股票和债券，过去几十年的增速是本国 GDP 增速的十几倍，而且其中绝大部分是用<strong>外币计价</strong>的（见下文图示）。这意味着一个美国投资者买了一篮子德国股票、日本国债，他真正承担的风险，并不只是这些资产本身的涨跌，还有欧元、日元兑美元的汇率波动。一旦把收益折回美元，整条风险—收益曲线都会被汇率重新「揉」一遍。</p>
 <p>于是那个一阶的问题就摆在桌面上：<strong>外汇敞口 (FX exposure) 到底该怎么管？</strong></p>
 <p>最省事的答案有两个极端。一是全部对冲——在远期市场 (forward market) 上把所有外币敞口锁死。可这么做不便宜，而且把货币本身可能带来的收益、以及外币对底层资产的「天然对冲」作用 (Campbell et al., 2010) 一并扔掉了。二是干脆不对冲——如果投资期足够长，汇率均值回复，索性躺平 (Froot, 1993)。</p>
-<div class="callout"><div class="callout-title">Note</div><p>学界更精致的做法是把汇率和底层资产的<strong>联合分布</strong>塞进一个均值方差优化器，让它吐出「最优的、逐币种的」对冲头寸。理论上很美，可一旦拿到样本外 (out-of-sample, OOS) 去做，就栽在一个老问题上。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>学界更精致的做法是把汇率和底层资产的<strong>联合分布</strong>塞进一个均值方差优化器，让它吐出「最优的、逐币种的」对冲头寸。理论上很美，可一旦拿到样本外 (out-of-sample, OOS) 去做，就栽在一个老问题上。</p></p></div>
 <p>接着，一个自然的问题是：既然均值方差框架理论上最优，为什么实践里它常常打不过「全对冲」甚至「不对冲」这种笨办法？</p>
 <h2 id="2">2 病根：汇率，本就是出了名的「测不准」</h2>
 <p>答案藏在均值方差优化对<strong>输入参数</strong>的极端敏感上。优化器要的是预期收益向量和协方差矩阵，而其中最难估的，就是预期<strong>货币收益</strong>。</p>
 <p>汇率预测有多难？这是国际金融里的一桩公案。Meese and Rogoff (1983) 那篇经典论文给出过一个让无数人沮丧的结论：在样本外，再花哨的汇率模型也跑不赢一个「随机游走」。换句话说，逐个去预测欧元、日元下个月怎么走，得到的几乎全是噪声。把这种满是估计误差的预期收益喂进优化器，输出的对冲头寸自然东倒西歪，样本外表现一塌糊涂 (Gardner and Stone, 1995; Larsen Jr. and Resnick, 2000)。</p>
 <p>这正是 DeMiguel et al. (2009) 那个著名教训的货币版本：当输入噪声太大，复杂的优化反而不如朴素的等权。</p>
-<div class="callout"><div class="callout-title">Warning</div><p>所以问题从来不是「均值方差框架本身错了」，而是「喂给它的预期货币收益太脏了」。要救它，得换一种<strong>更干净</strong>的方式去估计货币收益。</p></div>
+<div class="callout"><div class="callout-title">Warning</div><p>所以问题从来不是「均值方差框架本身错了」，而是「喂给它的预期货币收益太脏了」。要救它，得换一种<strong>更干净</strong>的方式去估计货币收益。</p></p></div>
 <p>但真正关键的一步，是作者绕开了「直接预测单个汇率」这条死路。</p>
 <h2 id="3">3 反转：不猜汇率，去猜「因子」</h2>
 <p>近十年国际宏观金融的突破，给了一把新钥匙。Lustig et al. (2011) 和 Verdelhan (2018) 发现：货币收益的<strong>横截面</strong>，可以用一个线性因子模型干净地解释，模型里只有两个全球货币风险因子——</p>
@@ -110,7 +110,7 @@
 </ul>
 <p>更关键的是，这两个因子在<strong>同期回归</strong>里还能解释汇率时间序列变动的很大一部分。作者顺着这条线推出一个朴素却有力的逻辑链：<strong>如果因子收益是可预测的，那么货币收益也就部分可预测了。</strong></p>
 <p>这就是 DCF 的全部巧思所在。我们不必去预测「欧元下个月涨不涨」这种几乎不可能的事；我们只需要预测两个全球因子的走向，再借助每种货币对因子的<strong>暴露 (factor beta)</strong>，把因子预测「翻译」成对单币种收益的预测。预测的维度一下子从「N 个汇率」压缩到「2 个因子」，估计误差被大大稀释。</p>
-<div class="callout"><div class="callout-title">Tip</div><p>把它想成一次降维：与其在 N 维的噪声海里捞针，不如先在 2 维的因子空间里做预测，再用 beta 矩阵线性地映射回 N 维。脏的预期收益，就这么被「洗」干净了。</p></div>
+<div class="callout"><div class="callout-title">Tip</div><p>把它想成一次降维：与其在 N 维的噪声海里捞针，不如先在 2 维的因子空间里做预测，再用 beta 矩阵线性地映射回 N 维。脏的预期收益，就这么被「洗」干净了。</p></p></div>
 <p>（关于「货币动量其实只是因子在重复自己」、以及汇率里那块找不到的风险溢价，本博客分别讨论过<a href="/research/dissecting-currency-momentum/">《货币动量的真身：它不过是因子在「重复自己」》</a>与<a href="/research/the-missing-risk-premium-in-exchange-rates/">《汇率里那块「找不到」的风险溢价》</a>，可对照着读。）</p>
 <h2 id="4">4 识别与构造：从因子预测到对冲头寸</h2>
 <p>这篇论文不是一篇因果识别 (causal identification) 的实证文章，它的「识别」其实是一整套<strong>样本外的构造与检验流程</strong>。我们一步步拆开。</p>
@@ -127,7 +127,7 @@ w^{*}_{f,t}(f\,|\,x) = \cssId{a1}{\frac{1}{\gamma}\,\Sigma_{ff,t}^{-1}\,\mu_{f,t
 $$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>投机性对冲需求：由预期货币收益 μ_f,t 驱动，这一项正是 DCF 创新所在</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>δ_t = Σ_ff,t⁻¹ Σ_fx,t，把底层资产收益投影到远期合约上得到的回归系数</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>预先给定的底层资产权重；δ_t·w_x,t 即「风险管理」式的最小方差对冲需求</div></aside><svg class="mathanno-lines"></svg></div>
 
 <p>这条方程把对冲拆成了两股力量。第二项 \(\delta_t w_{x,t}\) 是纯粹的<strong>风险管理</strong>：它告诉你为了最小化方差应该对冲多少，这正是 Campbell et al. (2010) 那类「最小方差对冲」的做法。第一项 \(\tfrac{1}{\gamma}\Sigma_{ff,t}^{-1}\mu_{f,t}\) 才是<strong>投机性</strong>的——它依赖于预期货币收益 \(\mu_{f,t}\)，而 DCF 的全部功夫，就花在把这个 \(\mu_{f,t}\) 估准上。</p>
-<div class="callout"><div class="callout-title">Note</div><p>注意这里的约束：实践中货币 overlay 经理通常被限制「只能对冲已有敞口」，所以对每个币种，权重被限制在 \(-w_{x,t}\)（完全对冲）和 \(0\)（完全不对冲）之间——既不能过度对冲，也不能反过来加杠杆。</p></div>
+<div class="callout"><div class="callout-title">Note</div><p>注意这里的约束：实践中货币 overlay 经理通常被限制「只能对冲已有敞口」，所以对每个币种，权重被限制在 \(-w_{x,t}\)（完全对冲）和 \(0\)（完全不对冲）之间——既不能过度对冲，也不能反过来加杠杆。</p></p></div>
 <h3 id="4-3">4.3 预期货币收益怎么来</h3>
 <p>货币 \(i\) 的（对美国投资者而言的）超额收益定义为现货收益减去远期升水：</p>
 <p>$$

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>14. Maximum Likelihood – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>14. Maximum Likelihood</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">最大似然</span><span class="lang en">Maximum Likelihood</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">信息矩阵</span><span class="lang en">Information Matrix</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">得分</span><span class="lang en">Score</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">似然比检验</span><span class="lang en">Likelihood Ratio Test</span></span>
+        
+        
+        
+        
+        <span class="tag">GMM</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>14. Maximum Likelihood</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+最大似然 (ML) 与 GMM 一样，是选参数、评模型的通用组织原则，自带渐近分布理论。本章（Cochrane 第 14 章）的核心结论：<strong>ML 是 GMM 的特例</strong>——给定数据的统计描述，ML 指出哪些矩在统计上信息量最大；用了那些矩后，ML 与 GMM 完全相同。因此 ML（配以精心选定的统计模型）<strong>为前面的回归检验提供了正当性辩护</strong>。但 ML 不易让你用"非有效"的稳健矩（比如它会告诉你怎么做 GLS，却不告诉你怎么为非标准误差修正 OLS 标准误）。§14.1 ML 原理（似然、信息矩阵、似然比检验）；§14.2 ML = 对得分 (scores) 做 GMM；§14.3 因子是收益时 ML 规定<strong>时序回归</strong>；§14.4 因子非收益时 ML 规定<strong>截面回归</strong>。</p></p></div>
+</div>
+<div class="lang en">
+<h1>14. Maximum Likelihood</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+Maximum likelihood (ML), like GMM, is a general organizing principle for choosing parameters and evaluating models, with its own asymptotic distribution theory. The key result of this chapter (Cochrane Ch 14): <strong>ML is a special case of GMM</strong> — given a statistical description of the data, ML prescribes which moments are statistically most informative; given those moments, ML and GMM are the same. So ML (paired with carefully chosen statistical models) <strong>justifies the regression tests</strong> of the previous chapters. But ML does not easily let you use "non-efficient" robust moments (it tells you how to do GLS, but not how to correct OLS standard errors for nonstandard error terms). §14.1 the ML principle (likelihood, information matrix, likelihood-ratio test); §14.2 ML = GMM on the scores; §14.3 when factors are returns, ML prescribes a <strong>time-series regression</strong>; §14.4 when factors are not returns, ML prescribes a <strong>cross-sectional regression</strong>.</p></p></div>
+</div>
+<div class="lang zh">
+<h2 id="14-1-maximum-likelihood">14.1 最大似然 / Maximum Likelihood</h2>
+<p>ML 原理：选使<strong>观测数据最可能</strong>的参数（注意：不是"给定数据最可能的参数"——经典统计里参数是数而非随机变量）。需先求出在参数 \(\theta\) 下看到数据 \(\{x_t\}\) 的概率，即<strong>似然函数</strong> \(f(\{x_t\};\theta)\)，然后 \(\hat\theta=\arg\max_\theta f\)。用对数 \(L=\ln f\) 更方便。时序情形最好先求条件似然，因联合概率是条件概率之积：\(L=\sum_{t=1}^T\ln f(x_t|x_{t-1},\dots;\theta)\)。正态误差下</p>
+</div>
+<div class="lang en">
+<h2 id="14-1-maximum-likelihood">14.1 Maximum Likelihood</h2>
+<p>The ML principle: pick the parameters that make the <strong>observed data most likely</strong> (note: not "the parameters most likely given the data" — in classical statistics parameters are numbers, not random variables). First find the probability of seeing the data \(\{x_t\}\) given parameters \(\theta\) — the <strong>likelihood function</strong> \(f(\{x_t\};\theta)\) — then \(\hat\theta=\arg\max_\theta f\). Working with the log \(L=\ln f\) is easier. In a time series, find the conditional likelihood first, since joint probability is a product of conditionals: \(L=\sum_{t=1}^T\ln f(x_t|x_{t-1},\dots;\theta)\). With normal errors,</p>
+</div>
+<p>$$L=-\frac{T}{2}\ln(2\pi|\Sigma|)-\frac12\sum_{t=1}^T\varepsilon_t'\Sigma^{-1}\varepsilon_t,\qquad \varepsilon_t=x_t-E(x_t|x_{t-1},\dots;\theta),\ \Sigma=E(\varepsilon_t\varepsilon_t').\tag{14.2}$$</p>
+<div class="lang zh">
+<p>这给出构造似然的简单配方：从生成 \(x_t\) 的模型（如 \(x_t=\rho x_{t-1}+\varepsilon_t\)）反解出误差 \(\varepsilon_t\)、代入 (14.2)。ML 自带渐近分布理论：</p>
+</div>
+<div class="lang en">
+<p>This gives a simple recipe: from a model generating \(x_t\) (e.g. \(x_t=\rho x_{t-1}+\varepsilon_t\)), invert to express the errors \(\varepsilon_t\) and plug into (14.2). ML comes with an asymptotic distribution theory:</p>
+</div>
+<p>$$\hat\theta\sim N\!\left(\theta,\ \left(-\frac{\partial^2L}{\partial\theta\,\partial\theta'}\right)^{-1}\right).\tag{14.3}$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>信息矩阵与似然比检验 / Information matrix and the likelihood-ratio test
+<span class="lang zh"><strong>信息矩阵</strong> \(\mathcal I=-\tfrac1T\partial^2L/\partial\theta\partial\theta'\) (14.4)——似然在 \(\hat\theta\) 处峰越尖、对参数知道得越多。它也可由得分外积估计 \(\mathcal I=\tfrac1T\sum(\partial\ln f/\partial\theta)(\partial\ln f/\partial\theta)'\)。ML 估计<strong>渐近有效</strong>（无其他估计能给出更小协方差阵）。若加约束估计，似然最大值必降低，但约束为真时不应降"太多"——<strong>似然比检验</strong> \(2(L_{\text{unrestricted}}-L_{\text{restricted}})\sim\chi^2(\#\text{restrictions})\) (14.5)，形式与思想都很像 §11.1 的 GMM χ² 差检验。</span><span class="lang en">The <strong>information matrix</strong> \(\mathcal I=-\tfrac1T\partial^2L/\partial\theta\partial\theta'\) (14.4) — the sharper the peak of the likelihood at \(\hat\theta\), the more we know about the parameters. It can also be estimated as an outer product of scores, \(\mathcal I=\tfrac1T\sum(\partial\ln f/\partial\theta)(\partial\ln f/\partial\theta)'\). ML estimates are <strong>asymptotically efficient</strong> (no estimator gives a smaller covariance matrix). Restricting parameters necessarily lowers the maximum likelihood, but not "much" if the restriction is true — the <strong>likelihood-ratio test</strong> \(2(L_{\text{unrestricted}}-L_{\text{restricted}})\sim\chi^2(\#\text{restrictions})\) (14.5), much like the GMM χ²-difference test of §11.1.</span></p></p></div>
+<div class="lang zh">
+<h2 id="14-2-ml-gmm-ml-is-gmm-on-the-scores">14.2 ML = 对得分做 GMM / ML is GMM on the Scores</h2>
+<p>ML 是 GMM 的特例。最大化似然的一阶条件 \(\partial L/\partial\theta=\sum_t\partial\ln f(x_t|\dots;\theta)/\partial\theta=0\) 正是一个 GMM 估计，对应总体矩条件 \(g(\theta)=E[\partial\ln f/\partial\theta]=0\)。其中 \(\partial\ln f/\partial\theta\) 称为<strong>得分 (score)</strong>。故 ML 就是 GMM 的一种特定矩选择。</p>
+</div>
+<div class="lang en">
+<h2 id="14-2-ml-is-gmm-on-the-scores">14.2 ML is GMM on the Scores</h2>
+<p>ML is a special case of GMM. The first-order condition for maximizing the likelihood, \(\partial L/\partial\theta=\sum_t\partial\ln f(x_t|\dots;\theta)/\partial\theta=0\), is exactly a GMM estimate, the sample counterpart of the population moment \(g(\theta)=E[\partial\ln f/\partial\theta]=0\). The term \(\partial\ln f/\partial\theta\) is the <strong>score</strong>. So ML is GMM with a particular choice of moments.</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>得分应不可预测 / Scores should be unforecastable
+<span class="lang zh">得分有一个关键性质：\(E_{t-1}[\partial\ln f/\partial\theta]=0\)（条件密度积分为 1，对 \(\theta\) 求导即得）。直觉：若某 \(x\) 的组合可预测，就能再造一个工具/矩来榨取更多参数信息。AR(1) 例子里得分 \(=(x_t-\rho x_{t-1})x_{t-1}/\sigma^2\)，其 FOC 正是 OLS 估计 \(\rho\)。把 GMM 分布公式 (11.2) 用于得分矩：\(d=\tfrac1T\sum\partial^2\ln f/\partial\theta\partial\theta'=-\mathcal I\)，\(S=\mathcal I\)（得分不可预测⟹无超前滞后项），故 \(\sqrt T(\hat\theta-\theta)\to N(0,d^{-1}Sd^{-1\prime})=N(0,\mathcal I^{-1})\)——正好复现 ML 的逆信息矩阵渐近分布。</span><span class="lang en">The scores have a key property: \(E_{t-1}[\partial\ln f/\partial\theta]=0\) (the conditional density integrates to 1; differentiate in \(\theta\)). Intuition: if some combination of \(x\) were forecastable, we could form another instrument/moment to extract more parameter information. In the AR(1) example the score is \((x_t-\rho x_{t-1})x_{t-1}/\sigma^2\), whose FOC is exactly the OLS estimate of \(\rho\). Applying the GMM distribution formula (11.2) to the score moments: \(d=\tfrac1T\sum\partial^2\ln f/\partial\theta\partial\theta'=-\mathcal I\), \(S=\mathcal I\) (scores unforecastable ⟹ no lead/lag terms), so \(\sqrt T(\hat\theta-\theta)\to N(0,d^{-1}Sd^{-1\prime})=N(0,\mathcal I^{-1})\) — exactly the inverse-information-matrix asymptotic distribution of ML.</span></p></p></div>
+<div class="lang zh">
+<h2 id="14-3-ml-factors-are-returns-time-series-regression">14.3 因子是收益时 ML 规定时序回归 / Factors Are Returns ⟹ Time-Series Regression</h2>
+<p>经济模型 \(E(R^e)=\beta E(f)\)。加上明确的统计模型：市场收益与回归误差 i.i.d. 正态、\(\varepsilon\) 与 \(f\) 不相关，</p>
+</div>
+<div class="lang en">
+<h2 id="14-3-when-factors-are-returns-ml-prescribes-a-time-series-regression">14.3 When Factors Are Returns, ML Prescribes a Time-Series Regression</h2>
+<p>The economic model is \(E(R^e)=\beta E(f)\). Add an explicit statistical model: the market return and regression errors are i.i.d. normal, \(\varepsilon\) uncorrelated with \(f\),</p>
+</div>
+<p>$$R^e_t=\alpha+\beta f_t+\varepsilon_t,\qquad f_t=E(f)+u_t,\qquad \begin{pmatrix}\varepsilon_t\\ u_t\end{pmatrix}\sim N\!\left(0,\begin{bmatrix}\Sigma&0\\0&\sigma_u^2\end{bmatrix}\right).\tag{14.10}$$</p>
+<div class="lang zh">
+<p>(14.10) 除正态外无其他内容；\(\varepsilon,u\) 零相关把 \(\beta\) 识别为回归系数。经济模型的唯一限制是<strong>所有截距 \(\alpha=0\)</strong>。最有原则的做法是全程施加零假设：在 \(\alpha=0\) 下写似然并最大化，得</p>
+</div>
+<div class="lang en">
+<p>(14.10) has no content beyond normality; the zero correlation of \(\varepsilon,u\) identifies \(\beta\) as a regression coefficient. The economic model's only restriction is that <strong>all intercepts \(\alpha=0\)</strong>. The most principled approach imposes the null throughout: write the likelihood under \(\alpha=0\) and maximize, giving</p>
+</div>
+<p>$$\hat\beta=\Bigl(\textstyle\sum f_t^2\Bigr)^{-1}\sum R^e_tf_t\ \ (\text{OLS, no constant}),\qquad \hat\lambda=\widehat{E(f)}=\frac1T\sum f_t.$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>受限 ML = 无常数时序回归；非受限 = 带常数 + GRS / Restricted ML = TS regression w/o constant; unrestricted = with constant + GRS
+<span class="lang zh"><strong>受限 ML</strong>（\(\alpha=0\)）就是<strong>无常数的 OLS 时序回归</strong>，\(\hat\beta\) 方差 \(\operatorname{cov}(\hat\beta)=\tfrac1T\tfrac1{E(f^2)}\) (14.11)。要做定价误差检验，则估<strong>非受限</strong>模型（带截距）：\(\hat\alpha,\hat\beta\) 即带常数的 OLS，\(\operatorname{cov}(\hat\alpha)=\tfrac1T(1+(E(f)/\sigma(f))^2)\)、\(\operatorname{cov}(\hat\beta)=\tfrac1T\tfrac1{\sigma^2(f)}\) (14.12)——正是 §12.1 的 OLS 标准误。Wald 检验 \(T(1+(E(f)/\sigma(f))^2)^{-1}\hat\alpha'\Sigma^{-1}\hat\alpha\sim\chi^2_N\) (14.13) 即 (12.3) 与其有限样本对应 GRS F 检验。注意：求 \(\hat\alpha\) 的协方差<strong>必须</strong>反转整个信息矩阵（否则忽略了估计 \(\beta\) 对 \(\hat\alpha\) 分布的影响）。<strong>警示</strong>：ML 会无情利用零假设——为一点效率不惜跑无常数回归。</span><span class="lang en"><strong>Restricted ML</strong> (\(\alpha=0\)) is an <strong>OLS time-series regression without a constant</strong>, with \(\operatorname{cov}(\hat\beta)=\tfrac1T\tfrac1{E(f^2)}\) (14.11). For pricing-error tests, estimate the <strong>unrestricted</strong> model (with intercept): \(\hat\alpha,\hat\beta\) are OLS with a constant, \(\operatorname{cov}(\hat\alpha)=\tfrac1T(1+(E(f)/\sigma(f))^2)\), \(\operatorname{cov}(\hat\beta)=\tfrac1T\tfrac1{\sigma^2(f)}\) (14.12) — exactly the §12.1 OLS standard errors. The Wald test \(T(1+(E(f)/\sigma(f))^2)^{-1}\hat\alpha'\Sigma^{-1}\hat\alpha\sim\chi^2_N\) (14.13) is (12.3) and its finite-sample counterpart the GRS F-test. Note: to get the covariance of \(\hat\alpha\) you <strong>must</strong> invert the entire information matrix (else you ignore the effect of estimating \(\beta\) on the distribution of \(\hat\alpha\)). <strong>A warning</strong>: ML ruthlessly exploits the null — it will run a regression without a constant for any small efficiency gain.</span></p></p></div>
+<div class="lang zh">
+<p>受限估计的 \(\hat\beta\) 方差比非受限小，比值正是熟悉的 \(1+E(f)^2/\sigma^2(f)\)：CAPM 年度数据效率增益约 25%（可观），但月度数据小得多（均值与方差都随期限缩放）。</p>
+<h2 id="14-4-ml-factors-not-returns-cross-sectional-regression">14.4 因子非收益时 ML 规定截面回归 / Factors Not Returns ⟹ Cross-Sectional Regression</h2>
+<p>因子非收益时，截距不为零，故无"时序 vs 截面"之选——ML 规定<strong>截面回归</strong>。模型 \(E(R^{ei})=\alpha_i+\beta_i'\lambda\)，时序回归 \(R^{ei}_t=a_i+\beta_i'f_t+\varepsilon^i_t\) 的截距 \(a_i\) 不必为零（模型不适用于因子），但受约束：\(\alpha=0\) 蕴含 \(a_i=\beta_i'(\lambda-E(f))\) (14.16)，故时序回归须取受限形式 \(R^{ei}_t=\beta_i'\lambda+\beta_i'(f_t-E(f))+\varepsilon^i_t\)（\(\beta_i'\lambda\) 决定均值收益，因子少于收益故构成限制）。在 i.i.d. 正态假设下最大化似然得</p>
+</div>
+<div class="lang en">
+<p>The restricted \(\hat\beta\) variance is smaller than the unrestricted, the ratio being the familiar \(1+E(f)^2/\sigma^2(f)\): in the CAPM with annual data the efficiency gain is ~25% (notable), but much smaller monthly (mean and variance both scale with horizon).</p>
+<h2 id="14-4-when-factors-are-not-excess-returns-ml-prescribes-a-cross-sectional-regression">14.4 When Factors Are Not Excess Returns, ML Prescribes a Cross-Sectional Regression</h2>
+<p>When factors are not returns the intercepts are not zero, so there is no "time-series vs. cross-sectional" choice — ML prescribes a <strong>cross-sectional regression</strong>. The model is \(E(R^{ei})=\alpha_i+\beta_i'\lambda\), and the time-series regression \(R^{ei}_t=a_i+\beta_i'f_t+\varepsilon^i_t\) has intercepts \(a_i\) that need not be zero (the model does not apply to the factors), but are restricted: \(\alpha=0\) implies \(a_i=\beta_i'(\lambda-E(f))\) (14.16), so the regression must take the restricted form \(R^{ei}_t=\beta_i'\lambda+\beta_i'(f_t-E(f))+\varepsilon^i_t\) (\(\beta_i'\lambda\) sets the mean return; with fewer factors than returns this is a restriction). Maximizing the likelihood under the i.i.d. normal assumption gives</p>
+</div>
+<p>$$\widehat{E(f)}=E_T(f_t),\qquad \hat\lambda=(B'\Sigma^{-1}B)^{-1}B'\Sigma^{-1}E_T(R^e_t).\tag{14.19}$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>ML 给出 GLS 截面回归 / ML gives a GLS cross-sectional regression
+<span class="lang zh"><strong>因子风险溢价的 ML 估计是平均收益对 β 的 GLS 截面回归</strong> (14.19)。但回归系数 \(B\) 的 ML 估计<strong>不是</strong>标准 OLS——ML 再次施加零假设以提效，\(B\) 须与 \(\hat\lambda\)、\(\Sigma\) 联立求解（通常迭代：从 OLS 的 \(B\) 起、跑 OLS 截面回归得 \(\hat\lambda\)、构造 \(\Sigma\)、再迭代）。这与第 12、13 章的 GLS 截面回归一脉相承。</span><span class="lang en"><strong>The ML estimate of the factor risk premium is a GLS cross-sectional regression of average returns on betas</strong> (14.19). But the ML estimate of the regression coefficients \(B\) is <strong>not</strong> standard OLS — ML again imposes the null to gain efficiency, and \(B\) must be solved simultaneously with \(\hat\lambda\) and \(\Sigma\) (usually iteratively: start with OLS \(B\), run an OLS cross-sectional regression for \(\hat\lambda\), form \(\Sigma\), iterate). This is of a piece with the GLS cross-sectional regressions of Chapters 12 and 13.</span></p></p></div>
+<div class="lang zh">
+<h2 id="summary">小结 / Summary</h2>
+<p>ML 选使数据最可能的参数，自带渐近分布（逆信息矩阵）与似然比检验。其与本部分主线的统一在于：<strong>ML 就是对得分做 GMM</strong>——得分即统计上信息量最大的矩，故 ML 为前面的回归检验提供了正当性。具体地：因子是收益时 ML 规定<strong>时序回归</strong>（受限=无常数，非受限+Wald=GRS 检验）；因子非收益时 ML 规定 <strong>GLS 截面回归</strong>。ML 的代价是会无情利用零假设、且不易容纳稳健的非有效矩。下一章比较时序、截面、GMM-DF 各法。</p>
+</div>
+<div class="lang en">
+<h2 id="summary">Summary</h2>
+<p>ML picks the parameters that make the data most likely, with its own asymptotic distribution (the inverse information matrix) and likelihood-ratio test. Its unity with this part's theme: <strong>ML is GMM on the scores</strong> — the scores are the statistically most informative moments, so ML justifies the earlier regression tests. Concretely: when factors are returns ML prescribes a <strong>time-series regression</strong> (restricted = no constant, unrestricted + Wald = the GRS test); when factors are not returns ML prescribes a <strong>GLS cross-sectional regression</strong>. The cost of ML is that it ruthlessly exploits the null and does not easily accommodate robust non-efficient moments. The next chapter compares the time-series, cross-sectional, and GMM-DF methods.</p>
+</div>
+<div class="lang zh">
+<h2 id="problems">习题 / Problems</h2>
+<ol>
+<li>为何因子是收益时用受限 ML、非收益时用非受限 ML？试为"因子非收益"的非受限回归 (12.1) 构造 ML 估计：像因子是收益的情形那样加入定价误差 \(\alpha_i\)，再求 \(B,\lambda,\alpha,E(f)\) 的 ML 估计（把 \(V,\Sigma\) 当已知以简化）。</li>
+<li>不写回归，更正式地为 CAPM 构造 ML：把统计模型写成"个体收益与市场收益联合正态" \([R^e;R^{em}]\sim N([E(R^e);E(R^{em})],[\Sigma\ \operatorname{cov};\operatorname{cov}\ \sigma_m^2])\)，模型限制为 \(E(R^e)=\gamma\operatorname{cov}(R^{em},R^e)\)。估计 \(\gamma\) 并证明它与预设回归得到的时序估计相同。</li>
+</ol>
+</div>
+<div class="lang en">
+<h2 id="problems">Problems</h2>
+<ol>
+<li>Why use restricted ML when the factor is a return, but unrestricted ML when it is not? Try to formulate an ML estimator based on the unrestricted regression (12.1) when factors are not returns: add pricing errors \(\alpha_i\) as in the returns case, then find ML estimators for \(B,\lambda,\alpha,E(f)\) (treat \(V,\Sigma\) as known to simplify).</li>
+<li>Instead of writing a regression, build the CAPM ML more formally: write the statistical model as individual and market returns jointly normal, \([R^e;R^{em}]\sim N([E(R^e);E(R^{em})],[\Sigma\ \operatorname{cov};\operatorname{cov}\ \sigma_m^2])\), with the model's restriction \(E(R^e)=\gamma\operatorname{cov}(R^{em},R^e)\). Estimate \(\gamma\) and show it is the same time-series estimator derived by presupposing a regression.</li>
+</ol>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#14-1-maximum-likelihood">14.1 最大似然 / Maximum Likelihood</a></li>
+        <li><a href="#14-1-maximum-likelihood">14.1 Maximum Likelihood</a></li>
+        <li><a href="#14-2-ml-gmm-ml-is-gmm-on-the-scores">14.2 ML = 对得分做 GMM / ML is GMM on the Scores</a></li>
+        <li><a href="#14-2-ml-is-gmm-on-the-scores">14.2 ML is GMM on the Scores</a></li>
+        <li><a href="#14-3-ml-factors-are-returns-time-series-regression">14.3 因子是收益时 ML 规定时序回归 / Factors Are Returns ⟹ Time-Series Regression</a></li>
+        <li><a href="#14-3-when-factors-are-returns-ml-prescribes-a-time-series-regression">14.3 When Factors Are Returns, ML Prescribes a Time-Series Regression</a></li>
+        <li><a href="#14-4-ml-factors-not-returns-cross-sectional-regression">14.4 因子非收益时 ML 规定截面回归 / Factors Not Returns ⟹ Cross-Sectional Regression</a></li>
+        <li><a href="#14-4-when-factors-are-not-excess-returns-ml-prescribes-a-cross-sectional-regression">14.4 When Factors Are Not Excess Returns, ML Prescribes a Cross-Sectional Regression</a></li>
+        <li><a href="#summary">小结 / Summary</a></li>
+        <li><a href="#summary">Summary</a></li>
+        <li><a href="#problems">习题 / Problems</a></li>
+        <li><a href="#problems">Problems</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>
