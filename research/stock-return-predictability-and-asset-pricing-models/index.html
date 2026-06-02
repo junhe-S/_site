@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>半信半疑的资产定价：当一个投资者既不全信模型，也不全信数据 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>半信半疑的资产定价：当一个投资者既不全信模型，也不全信数据</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2004 RFS]</span> Stock Return Predictability and Asset Pricing Models</div>
+        <div class="paper-source-authors"><a href="/research/author/doron-avramov/">Doron Avramov</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">贝叶斯方法</span>
+        
+        
+        
+        
+        <span class="tag">收益可预测性</span>
+        
+        
+        
+        
+        <span class="tag">组合选择</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Avramov (2004, <em>Review of Financial Studies</em>)</strong>：作者把「资产定价模型对可预测性的约束」当成投资者的<strong>先验锚点</strong>，让样本证据去更新这份信念，再据此配置资产。核心发现有点反直觉——在事后样本里，<strong>死信模型</strong>的组合夏普比最低，<strong>完全无视模型</strong>次低；真正赢的，是把模型与数据各取一半的「收缩」配置。而且，这一切都是在<strong>承认预期收益随时间变化</strong>的前提下做的。</p></div>
+<h2 id="1">1 一道「非黑即白」的旧题</h2>
+<p>把一个资产定价模型拿去检验，统计学只会给你两种答案：拒绝，或者不拒绝。</p>
+<p>这是金融计量这几十年的标准动作。你跑一个 Gibbons-Ross-Shanken (1989) 检验，或者用 Hansen (1982) 的广义矩估计 (generalized method of moments, GMM) 去检定一组定价约束，最后落到一张 p 值上——模型「成立」或「不成立」，二选一。</p>
+<p>可问题是，没有哪个真实的投资者活在这样一个非黑即白的世界里。</p>
+<p>一个面对真金白银的人，心里想的从来不是「这个模型在 5% 显著性水平上被拒绝了吗」，而是「我该<strong>多大程度上</strong>相信它，然后据此把钱怎么分」。模型也许有偏误，但偏误也许很小;数据里也许藏着真信号，但也可能只是噪声。在「全信」与「全不信」之间，是一整片被传统检验粗暴抹平的灰色地带。</p>
+<p>Avramov (2004) 这篇文章，做的就是一件事：<strong>把这片灰色地带重新铺开，并且给它装上一把可以度量的尺子</strong>。而那把尺子，不是 t 值，而是一个投资者最终愿意怎样配置他的组合。</p>
+<h2 id="2">2 可预测性，到底是「风险」还是「错」</h2>
+<p>故事要从一个老争论说起。</p>
+<p>金融经济学家早就发现，一些经济变量——比如 股利收益率 (dividend yield)、期限利差 (term spread)——能够预测未来的股票收益 [Campbell (1987)]。（关于股利收益率到底能不能预测收益这桩公案，可参见<a href="/research/stock-return-predictability-is-it-there/">《股利收益率真能预测收益吗？》</a>与<a href="/research/predicting-returns-with-financial-ratios/">《股利收益率到底能不能预测收益？》</a>。）</p>
+<p>但「能预测」这件事，有两种截然相反的解读。</p>
+<p>一派说：这是<strong>理性定价</strong>。预期收益本来就该随时间变化，因为风险溢价 (risk premia) 在变。股利收益率高的时候，正是市场要求更高补偿的时候——可预测性，是风险的影子。</p>
+<p>另一派说：这是<strong>定价错误</strong>。模型抓不住的那部分系统性偏差（mispricing），恰好被这些变量捕捉到了——可预测性，是模型失灵的证据。</p>
+<p>Campbell (1987)、Ferson and Korajczyk (1995)、Kirby (1998) 这些研究，都在用统计手段去裁决这场官司。但它们仍然没跳出「拒绝/不拒绝」的框。</p>
+<p>Avramov 的切入点是：<strong>先别急着站队。把这两种解读，写成同一个方程里的两个加项。</strong></p>
+<h2 id="3">3 一个把可预测性「拆成两半」的框架</h2>
+<p>这就是本文模型一节的核心。我们一步步来看。</p>
+<p><strong>第一步，给收益建模。</strong> 把 <code>N</code> 个资产的超额收益写成一个带时变截距的因子模型：</p>
+<p>$$ r_t = a(z_{t-1}) + b\,f_t + u_{rt} $$</p>
+<p>$$ a(z_{t-1}) = a_0 + a_1 z_{t-1} $$</p>
+<p>这里 <code>f_t</code> 是 <code>K</code> 个组合型因子（如 FF 三因子）的超额收益，<code>z_{t-1}</code> 是上期末观测到的预测变量，<code>b</code> 是（时不变的）beta，而 <code>a(z_{t-1})</code> 是定价误差——它由一个固定部分 <code>a_0</code> 和一个随预测变量变化的时变部分 <code>a_1 z_{t-1}</code> 组成。把 alpha 写成信息变量的线性函数，这一招最早可追溯到 Rosenberg and Marathe (1979)。</p>
+<p><strong>第二步，给因子和预测变量建模。</strong> 因子的条件期望就是风险溢价，也允许它随 <code>z</code> 变化：</p>
+<p>$$ f_t = l(z_{t-1}) + u_{ft}, \qquad l(z_{t-1}) = l_0 + l_1 z_{t-1} $$</p>
+<p>预测变量本身则服从一阶向量自回归 (vector autoregression, VAR)——这套设定在 Kandel and Stambaugh (1996)、Stambaugh (1999)、Avramov (2002) 里都用过：</p>
+<p>$$ z_t = a_z + A_z z_{t-1} + u_{zt} $$</p>
+<p><strong>第三步，请出定价模型。</strong> 一个条件版本的资产定价模型，断言的是：</p>
+<p>$$ E(r_t \mid z_{t-1}) = b\,l(z_{t-1}) $$</p>
+<p>也就是说，资产的条件期望收益，<strong>只能</strong>等于 beta 乘以风险溢价。多一分都不行。</p>
+<p><strong>第四步，也是最关键的一步——对照。</strong> 把上面的收益过程，与一个普通的 预测回归 (predictive regression)</p>
+<p>$$ r_t = m_0 + m_1 z_{t-1} + v_t $$</p>
+<p>逐项匹配，作者得到了一组漂亮的恒等式：</p>
+<p>$$ m_0 = a_0 + b\,l_0, \qquad m_1 = a_1 + b\,l_1 $$</p>
+<p>我们盯住第二个看。它把「收益的可预测性」（回归斜率 <code>m_1</code>，这是数据里能直接量出来的东西）干净地拆成了两半：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{a1}{m_1} \;=\; \cssId{a2}{a_1} \;+\; \cssId{a3}{b\,l_1}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>predictive regression 里收益对预测变量的斜率——这是数据中可观测的&quot;可预测性&quot;</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>时变的定价误差 mispricing，定价模型要求它恰好为零</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>beta 乘以风险溢价对预测变量的斜率，是模型&quot;许可&quot;的那部分可预测性</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这个分解，就是整篇文章的灵魂。</p>
+<p>可预测性 <code>m_1</code> 一旦存在，要么来自 <code>a_1</code>（模型错了，且错得随经济状况变化），要么来自 <code>b\,l_1</code>（风险溢价在动，模型没错）。而一个定价模型成立，等价于 <code>a(z_{t-1}) = 0</code>，于是约束就收紧为：</p>
+<p>$$ m_0 = b\,l_0, \qquad m_1 = b\,l_1 $$</p>
+<p>换句话说：<strong>在一个模型成立的世界里，预测回归的截距和斜率，必须等于 beta 乘以「因子对预测变量回归」的截距和斜率。</strong> 这正是 Kirby (1998) 笔下「理性定价对可预测性施加的约束」。</p>
+<p>到这里，故事的张力被彻底点亮了：Campbell 们用统计检验去问「<code>a_1</code> 是不是显著不为零」，而 Avramov 要问的是——<strong>如果我只是半信这个约束，我会怎么投资？</strong></p>
+<h2 id="4">4 把「信几分」写成一个先验</h2>
+<p>接着，一个自然的问题是：怎么把「半信半疑」这件事，数学化？</p>
+<p>作者请出贝叶斯框架，构造了三类投资者：</p>
+<ul>
+<li><strong>完全怀疑论者</strong>：把定价模型当废纸，<code>a_0</code>、<code>a_1</code> 自由游走，先验无信息。</li>
+<li><strong>完全信徒</strong>：把 <code>a_0 = a_1 = 0</code> 当成铁律，模型精确成立。</li>
+<li><strong>中间派</strong>：既不把模型奉为教条，也不弃如敝屣。</li>
+</ul>
+<p>中间派才是主角。沿用 Pastor and Stambaugh (1999, 2000) 和 Pastor (2000) 的思路，作者用一个先验，把「定价误差有多大」这件事的不确定性参数化。对固定定价误差 <code>a_0</code>，先验是：</p>
+<p>$$ P(a_0 \mid \Sigma_{RR}) \;\propto\; |\,\sigma^2 \Sigma_{RR}\,|^{-1/2}\,\exp\!\left(-\tfrac{1}{2}\,a_0'\,(\sigma^2 \Sigma_{RR})^{-1}\,a_0\right) $$</p>
+<p>这里的 <code>σ</code> 是<strong>信心参数</strong>：<code>σ</code> 越小，先验越紧地把 <code>a_0</code> 摁在零附近，意味着越相信模型。注意先验把定价误差与残差协方差矩阵 <code>Σ_RR</code> 绑在一起——这是 MacKinlay (1995) 的洞见：若两者独立，光靠把检验资产塞进组合就能造出高得离谱的夏普比，所以先验必须压住这种可能。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>这个「信心」<code>σ</code>，有一个特别直观的翻译。作者证明，本文第二种（更强的）先验等价于：投资者在看真实数据之前，先看了一个长度为 <code>T_0</code> 的「假想样本」，而这个假想样本是<strong>刻意倾向于「模型对、且没有可预测性」</strong>的。<code>σ</code> 越小，<code>T_0</code> 越大——你脑子里预装的、偏向模型的「数据」就越多。</p></div>
+<p>这层等价关系，落到一个公式上：</p>
+<p>$$ T_0 = \frac{s^2}{\sigma^2}\,(1 + SR^2) $$</p>
+<p>其中 <code>s^2</code> 是残差方差的横截面均值，<code>SR^2</code> 是仅用基准资产构造的切点组合的平方夏普比。作者给了一组让人印象深刻的数字：取 <code>s^2 = 0.0011</code>（同 Pastor (2000)）、<code>SR^2 = 0.09</code>，则信心 <code>σ = 1%</code>、<code>0.5%</code>、<code>0.1%</code> 分别对应 <code>T_0 = 12</code>、<code>48</code>、<code>1200</code> 个月的假想样本。</p>
+<p>你看，「我有多信这个模型」这种含混的心理状态，被翻译成了「我心里预装了 12 个月、还是 100 年的、偏向模型的假数据」——一把可以拧动的旋钮。</p>
+<h2 id="5">5 收缩：藏在两个极端之间的甜点</h2>
+<p>然后，真正关键的一步出现了。</p>
+<p>把先验和真实数据一组合，后验均值呈现出一种<strong>收缩 (shrinkage)</strong> 的形态。以定价误差 <code>a</code> 为例，当风险溢价斜率的样本估计 <code>l_1</code> 为零时，可以证明：后验均值是先验均值与样本估计的加权平均，权重分别是 <code>T_0/(T+T_0)</code> 和 <code>T/(T+T_0)</code>。</p>
+<p>也就是说，<code>a</code> 的后验均值被<strong>朝零收缩</strong>——零，正是定价约束所要求的值。<code>σ</code> 越小（越信模型），<code>T_0</code> 越大，收缩得越狠。这台机器，自动地把「模型」与「数据」按你的信心配比掺在一起。</p>
+<p>这种收缩思想本身并不新——Black and Litterman (1992)、Pastor (2000) 都做过类似的事。<strong>但 Avramov 这里有一个别人没有的东西：预期收益是会动的。</strong></p>
+<p>Black-Litterman 也好，Pastor 也好，都假设预期收益时不变。而本文的整套框架，预期收益既因时变风险溢价（<code>l_1 ≠ 0</code>）而动，也因潜在的时变定价误差（<code>a_1 ≠ 0</code>）而动。这就是它和 Kandel-Stambaugh「纯数据」路径、以及 Pastor-Stambaugh「常预期收益」路径的分水岭。</p>
+<p>（关于「在参数与模型都不确定时该怎么配组合」这个更一般的母题，可参见<a href="/research/portfolio-selection-with-parameter-and-model-uncertainty-a/">《当你不再相信自己估出来的那个均值》</a>；而把动态组合问题交给模拟器求解的思路，见<a href="/research/a-simulation-approach-to-dynamic-portfolio-choice-with-an/">《把「天书」一样的动态组合，交给一台会做回归的模拟器》</a>。）</p>
+<h2 id="6">6 于是反转出现</h2>
+<p>那么，把这套框架拿去跑真实数据，会发生什么？</p>
+<p>作者用三因子的 Fama and French (1993) 模型，外加两个扩展版本——一个加入 Jegadeesh and Titman (1993) 的动量因子 WML，一个按 Chen, Roll, and Ross (1986) 加入期限利差 TERM 与信用利差 DEF——在两组可投资资产上做实验（一组含 CRSP 市值加权指数、SMB、HML、WML、TERM、DEF 与 25 个规模/账面市值组合;另一组把后者换成 25 个行业组合）。</p>
+<p>结论一个比一个有意思：</p>
+<p><strong>其一，资产配置对定价约束极度敏感。</strong> 一个<strong>真心相信</strong>约束成立、却被强迫无视它去配资的投资者，会蒙受巨大的效用损失。模型一旦被请进来，组合就天翻地覆。</p>
+<p><strong>其二，「些许」偏离就足以掀桌子。</strong> 只要先验允许哪怕极小的偏离，最优配置就会大幅偏离模型所规定的持仓。不过，一旦加上卖空约束或 Regulation T 的 50% 保证金要求，这种偏离会显著收窄、有时甚至消失——但往往仍在经济上显著。</p>
+<p><strong>其三，也是最漂亮的反转——在事后样本外检验里：</strong></p>
+<blockquote>
+<p>死信条件定价模型（dogmatic belief）的组合，夏普比<strong>最低</strong>;
+完全无视定价模型的组合，夏普比<strong>第二低</strong>;
+而把模型与数据掺在一起的<strong>收缩</strong>配置，夏普比显著更高。</p>
+</blockquote>
+<p>两个极端，双双垫底;中庸的收缩，反而登顶。</p>
+<p>这不是一句鸡汤式的「中庸之道」。它说的是一件具体的事：一个聪明的投资者，<strong>既不该把资产定价模型当圣经，也不该把它扔进垃圾桶</strong>。模型提供了一个有纪律的先验锚点，把组合从「纯数据」那种动辄极端、剧烈做多做空的疯狂里拉回来;而数据又把模型从它过于干净、却可能偏误的世界里拽出来。</p>
+<p><strong>其四，条件 &gt; 无条件。</strong> 在从「完全信任」到「彻底怀疑」的一大片先验信念下，<strong>基于条件模型（承认可预测性）的配置，普遍跑赢忽略条件信息的无条件配置</strong>。换句话说，预期收益确实在动，而把这种变动算进来，实打实地改善了事后表现。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这条线索捋一遍，能看清这篇文章站在哪儿。</p>
+<p>最早，是把 alpha 写成信息变量线性函数的 Rosenberg and Marathe (1979)，和把「对模型的不同信念程度」第一次形式化的 Shanken (1987)——他用「指数夏普比 / 切点组合夏普比」之比来刻画信念，开了「半信半疑」的先河。</p>
+<p>接着，一支转向「检验」：Gibbons, Ross, and Shanken (1989) 的 GRS 检验、Campbell (1987) 与 Kirby (1998) 对可预测性约束的统计检定，把问题钉在「拒绝/不拒绝」上。另一支转向「效用」：McCulloch and Rossi (1990) 用基于效用的指标检验套利定价理论，但他们假设收益不可预测，且只比「全信」与「全不信」两极。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>然后，Kandel and Stambaugh (1996) 把可预测性证据放进一个贝叶斯投资者「在单一风险资产与现金间配资」的视角;Pastor and Stambaugh (1999, 2000) 和 Pastor (2000) 则提出「用金融理论形成信息性先验」。Avramov 自己的 Avramov (2002) 处理了模型不确定性。</p>
+<p>而本文真正关键的一步在于：它<strong>第一次</strong>把「对定价模型的不同信念程度」、「多资产配置」、与「时变预期收益」这三件事，焊在了同一个框架里。相对于 Pastor-Stambaugh 和 Shanken，它多算了预期收益的变动;而正是这一点，显著改善了事后组合表现。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：这套框架和传统的 GRS / GMM 检验，本质区别到底在哪？</strong></p>
+<blockquote>
+<p>三点。其一，它是<strong>有限样本</strong>的指标，而 GMM 这类带条件信息的检验只在渐近意义上有效。其二，它天然容得下卖空、保证金这类<strong>组合约束</strong>（约束下均衡期望收益未必线性于 beta，传统检验难做）。其三，也是最根本的——它<strong>不输出二元判决</strong>，而是把样本证据如何更新「不同程度的先验信念」这件事，映射成资产配置的差异。</p>
+</blockquote>
+<p><strong>Q：「收缩配置最优」是不是只是「正则化总能改善样本外表现」的老生常谈？</strong></p>
+<blockquote>
+<p>不完全是。普通的统计收缩（如把均值往大盘缩）是无经济内容的;这里的收缩<strong>锚点是资产定价模型的理论约束</strong> <code>a = 0</code>，方向有经济含义。而且收缩的力度由一个可解释的信心参数 <code>σ</code>（等价于假想样本长度 <code>T_0</code>）控制，并被 MacKinlay (1995) 式的「压制高夏普比」先验所约束。它收缩的是「定价误差」，不是「均值」。</p>
+</blockquote>
+<p><strong>Q：为什么死信条件模型的组合，事后夏普比反而最低？</strong></p>
+<blockquote>
+<p>因为「死信」意味着把全部可预测性都归给风险溢价变动、把定价误差强行设零。一旦模型其实有偏，这个过强的约束就会系统性地把组合往错误方向推，且毫无数据纠错的余地。而「完全无视模型」又走向另一个极端：纯数据估计噪声大、持仓极端，样本外同样脆弱。两头都吃亏。</p>
+</blockquote>
+<p><strong>Q：beta 被设成时不变，会不会埋下隐患？</strong></p>
+<blockquote>
+<p>这是作者明确的建模取舍。他援引 Ferson and Harvey (1991)、Evans (1994) 的证据，认为可预测性主要由风险溢价的时变驱动，beta 变动是二阶的。但他也诚实地指出 Ferson and Harvey (1999) 发现了 beta 变动的证据，Tamayo (2002) 则允许 beta 变。若 beta 其实在随 <code>z</code> 变，被归给 <code>a_1</code> 的那部分「定价误差」就可能被高估。</p>
+</blockquote>
+<p><strong>Q：结论会不会被 Stambaugh 偏误（预测变量高度持久带来的小样本偏差）污染？</strong></p>
+<blockquote>
+<p>这是所有用持久预测变量做预测回归的研究都绕不开的隐忧（参见<a href="/research/biases-in-long-horizon-predictive-regressions/">《用更多的数据，买来更大的偏差》</a>）。本文是贝叶斯框架，预测变量的 VAR 动态被显式建模、并对参数不确定性积分，这在一定程度上缓和了「把估计当真值」的过度自信;但先验设定本身（尤其无信息先验那一支）仍可能继承这类偏差，值得警惕。</p>
+</blockquote>
+<p><strong>Q：加上卖空和保证金约束后，「偏离模型」的现象大幅收窄，这是不是说明前面的结论很脆弱？</strong></p>
+<blockquote>
+<p>恰恰相反，这是文章更可信的地方。它承认在 Regulation T 的现实约束下，偏离会显著变小、有时消失——但<strong>往往仍在经济上显著</strong>。这意味着「模型 vs 数据」的张力不是无约束优化造出来的数值幻觉，在真实可执行的组合里依然存在。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把这套框架搬到公司债（信用市场）。</strong>
+【经济故事】公司债收益同样被一组变量（信用利差、期限利差、流动性）预测，而信用市场有没有一个「对」的定价模型，争议比股票更大。把「对结构化信用模型的信念程度」当先验锚点，看投资者该如何在投资级/高收益债间配资，会是 <code>a_1</code>-<code>b l_1</code> 分解的一个天然新战场。
+【可行性】中。数据可得（TRACE 成交、Bloomberg 利差），识别上的主要难点是公司债因子模型本身尚不稳健（参见<a href="/research/the-cross-section-of-expected-corporate-bond-returns-betas/">《贝塔还是特征？》</a>），先验锚点不如 FF 三因子那样有共识。</p>
+<p><strong>2. 外资持有人作为一个时变定价误差的来源。</strong>
+【经济故事】若某类资产的边际投资者结构在变（如外资份额上升），定价误差 <code>a(z)</code> 可能恰好随这一结构性变量系统地漂移。可以把「外资可投资度」一类变量放进 <code>z</code>，检验它解释的究竟是风险溢价变动还是 mispricing。
+【可行性】中。需要跨国持仓数据（如 TIC、各国登记数据）。识别难点在于外资份额本身内生，可借助指数纳入这类外生冲击做工具。</p>
+<p><strong>3. 用信心参数 <code>σ</code> 反推市场的「隐含模型信念」。</strong>
+【经济故事】本文是「给定信念 → 推配置」。反过来，能否从机构实际持仓里反推他们隐含的 <code>σ</code>？这等于用真金白银，量出市场到底「多信」某个资产定价模型——一个被价格揭示的、关于理论可信度的市场观点。
+【可行性】低到中。需要细粒度机构持仓（13F 或更细），且反推是个识别不足的逆问题，要靠对效用函数和约束的强假设。但方向上很诱人。</p>
+<p><strong>4. 时变 beta 版本：把 <code>a_1</code> 与 beta 变动分离。</strong>
+【经济故事】本文把 beta 钉死，于是 beta 的潜在变动可能被错记成定价误差。沿 Tamayo (2002) 让 beta 随 <code>z</code> 变，重做事后夏普比比较，可以检验「收缩最优」这一结论对 beta 设定的稳健性。
+【可行性】高。纯计量扩展，数据与本文一致，是一个干净、doable 的稳健性研究。</p>
+<h2 id="9">9 我的判断</h2>
+<p>这篇文章最漂亮的地方，是它把一个<strong>哲学问题</strong>（我该多信一个模型）变成了一个<strong>可计算、可度量、还能拿去赚钱的问题</strong>。「拒绝/不拒绝」的二元世界，被替换成一条从教条到怀疑的连续光谱，而光谱上每一点都对应一个真实的组合、一个真实的夏普比。那个「两个极端双双垫底、收缩居中夺魁」的事后结果，既反直觉又有说服力——它给「资产定价模型对投资决策到底有没有用」这个争论，提供了一个不站队却有分量的答案：有用，但只在你同时握住数据这只手的时候。</p>
+<p>对识别的担忧，我有两点。其一是<strong>时不变 beta</strong> 的假设：在 <code>m_1 = a_1 + b l_1</code> 这个核心分解里，一旦 beta 其实在动，被归入 <code>a_1</code> 的「定价误差」就可能被系统性高估，而文章对模型偏误的全部度量都建立在这个分解上。其二是<strong>先验设定的主观性</strong>：信心参数 <code>σ</code>（及其等价的假想样本 <code>T_0</code>）虽然直观，但「s = 0.0011、SR² = 0.09」这类校准本身带着研究者的选择，结论对这些选择有多敏感，值得更系统的稳健性呈现。</p>
+<p>后续我最想看到的，是把这套「信念 × 配置」的尺子，从股票搬到<strong>信用市场</strong>——那里既缺一个有共识的定价模型，又有大量被流动性和持有人结构搅动的可预测性。在一个「连模型对不对都吵不清」的市场里，Avramov 这把「半信半疑」的尺子，或许比在股票里更有用武之地。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Avramov, D. (2002). Stock Return Predictability and Model Uncertainty. <em>Journal of Financial Economics</em> 64, 423–458.</li>
+<li>Black, F., and R. Litterman (1992). Global Portfolio Optimization. <em>Financial Analysts Journal</em> September–October, 28–43.</li>
+<li>Campbell, J. (1987). Stock Returns and the Term Structure. <em>Journal of Financial Economics</em> 18, 373–399.</li>
+<li>Chen, N. F., R. Roll, and S. Ross (1986). Economic Forces and the Stock Market. <em>Journal of Business</em> 59, 383–404.</li>
+<li>Fama, E., and K. French (1993). Common Risk Factors in the Returns on Stocks and Bonds. <em>Journal of Financial Economics</em> 33, 3–56.</li>
+<li>Ferson, W., and C. Harvey (1991). The Variation in Economic Risk Premiums. <em>Journal of Political Economy</em> 99, 385–415.</li>
+<li>Ferson, W., and C. Harvey (1999). Conditioning Variables and the Cross Section of Stock Returns. <em>Journal of Finance</em> 54, 1325–1360.</li>
+<li>Ferson, W., and R. Korajczyk (1995). Do Arbitrage Pricing Models Explain the Predictability of Stock Returns? <em>Journal of Business</em> 68, 309–349.</li>
+<li>Gibbons, M. R., S. A. Ross, and J. Shanken (1989). A Test of the Efficiency of a Given Portfolio. <em>Econometrica</em> 57, 1121–1152.</li>
+<li>Jegadeesh, N., and S. Titman (1993). Returns to Buying Winners and Selling Losers. <em>Journal of Finance</em> 48, 65–91.</li>
+<li>Kandel, S., and R. Stambaugh (1996). On the Predictability of Stock Returns: An Asset Allocation Perspective. <em>Journal of Finance</em> 51, 385–424.</li>
+<li>Kirby, C. (1998). The Restriction on Predictability Implied by Rational Asset Pricing Models. <em>Review of Financial Studies</em> 11, 343–382.</li>
+<li>MacKinlay, A. C. (1995). Multifactor Models Do Not Explain the CAPM. <em>Journal of Financial Economics</em> 38, 3–28.</li>
+<li>McCulloch, R., and P. E. Rossi (1990). Posterior, Predictive, and Utility-Based Approaches to Testing the Arbitrage Pricing Theory. <em>Journal of Financial Economics</em> 28, 7–38.</li>
+<li>Pastor, L. (2000). Portfolio Selection and Asset Pricing Models. <em>Journal of Finance</em> 55, 179–223.</li>
+<li>Pastor, L., and R. Stambaugh (1999). Costs of Equity Capital and Model Mispricing. <em>Journal of Finance</em> 54, 67–121.</li>
+<li>Pastor, L., and R. Stambaugh (2000). Comparing Asset Pricing Models: An Investment Perspective. <em>Journal of Financial Economics</em> 56, 335–381.</li>
+<li>Rosenberg, B., and V. Marathe (1979). Tests of Capital Asset Pricing Hypotheses. <em>Research in Finance</em> 1, 115–224.</li>
+<li>Shanken, J. (1987). A Bayesian Approach to Testing Portfolio Efficiency. <em>Journal of Financial Economics</em> 19, 195–215.</li>
+<li>Stambaugh, R. (1999). Predictive Regressions. <em>Journal of Financial Economics</em> 54, 375–421.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一道「非黑即白」的旧题</a></li>
+        <li><a href="#2">2 可预测性，到底是「风险」还是「错」</a></li>
+        <li><a href="#3">3 一个把可预测性「拆成两半」的框架</a></li>
+        <li><a href="#4">4 把「信几分」写成一个先验</a></li>
+        <li><a href="#5">5 收缩：藏在两个极端之间的甜点</a></li>
+        <li><a href="#6">6 于是反转出现</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#9">9 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

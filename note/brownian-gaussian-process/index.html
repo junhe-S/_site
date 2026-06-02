@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2. Brownian Motion as a Gaussian Process – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>2. Brownian Motion as a Gaussian Process</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">多元正态</span><span class="lang en">Multivariate Normal</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">高斯过程</span><span class="lang en">Gaussian Process</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">卷积</span><span class="lang en">Convolution</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">协方差</span><span class="lang en">Covariance</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>2. Brownian Motion as a Gaussian Process</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+本章把布朗运动刻画为<strong>高斯过程</strong>。§2.1 <strong>多元正态分布</strong>：2.1.1 定义（标准正态随机向量 Def 2.1；多元正态的两个等价定义 Def 2.2——定义 1：\(\mathbf X=A\mathbf Z+\mu\)；定义 2：任意线性组合为一元正态）；2.1.2 两定义的等价性（卷积 Def 2.4、引理 2.1：独立正态的线性组合仍正态 [Ch 1 构造中用到]）；2.1.3 多元正态的密度。§2.2 <strong>高斯过程</strong>（Def 2.5；命题 2.1：标准 BM 是高斯过程，均值 \(0\)、协方差 \(\Gamma_{st}=s\wedge t\)；注 2.2：可据此把 BM 等价重定义为零均值、协方差 \(s\wedge t\)、路径以概率 1 连续的高斯过程）。无图。</p></div>
+</div>
+<div class="lang en">
+<h1>2. Brownian Motion as a Gaussian Process</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+This chapter characterizes Brownian motion as a <strong>Gaussian process</strong>. §2.1 <strong>multivariate normal distribution</strong>: 2.1.1 definition (the standard normal random vector Def 2.1; two equivalent definitions of multivariate normal Def 2.2 — Definition 1: \(\mathbf X=A\mathbf Z+\mu\); Definition 2: any linear combination is univariate normal); 2.1.2 equivalence of the two definitions (convolution Def 2.4, Lemma 2.1: a linear combination of independent normals is still normal [used in the Ch 1 construction]); 2.1.3 the density of the multivariate normal. §2.2 <strong>Gaussian process</strong> (Def 2.5; Proposition 2.1: standard BM is a Gaussian process with mean \(0\) and covariance \(\Gamma_{st}=s\wedge t\); Remark 2.2: BM can therefore be equivalently redefined as a centered Gaussian process with covariance \(s\wedge t\) and paths continuous with probability one). No figures.</p></div>
+</div>
+<div class="lang zh">
+<h2 id="2-1-multivariate-normal-distribution">2.1 多元正态分布 / Multivariate Normal Distribution</h2>
+<p>多元正态分布（联合正态分布）是一元正态向高维的推广。其关键特征之一是：多元正态分布所有分量的任意线性组合都是一元正态分布。这对多元统计推断至关重要。</p>
+<h3 id="2-1-1-definition">2.1.1 定义 / Definition</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 2.1、2.2（多元正态的两个等价定义）/ Definitions 2.1, 2.2
+<span class="lang zh"><strong>定义 2.1（标准正态随机向量）</strong>：实随机向量 \(\mathbf Z=(Z_1,Z_2,\dots,Z_l)'\) 称为<strong>标准正态随机向量</strong>，若其所有分量 \(Z_n\)（\(n=1,\dots,l\)）都是 i.i.d. 一元标准正态。<strong>定义 2.2（多元正态分布·定义 1）</strong>：实随机向量 \(\mathbf X=(X_1,\dots,X_k)'\) 称为<strong>正态随机向量</strong>、其分量<strong>多元正态分布</strong>，当且仅当存在标准正态随机向量 \(\mathbf Z_{l\times1}\) 与矩阵 \(A_{k\times l}\) 使得 \(\mathbf X=A\mathbf Z+\mu\)，其中 \(\mu\) 是 \(\mathbf X\) 的均值向量。换言之，多元正态向量的任一分量都可表为若干 i.i.d. 标准正态变量的线性组合加其均值，即 \(\forall i\)，\(X_i=\mu_i+a_1 Z_1+a_2 Z_2+\dots+a_l Z_l\)（某 \(a_1,\dots,a_l\in\mathbb R\)）。<strong>定义 2.2（多元正态分布·定义 2）</strong>：\(\mathbf X=(X_1,\dots,X_k)'\) 称为正态随机向量、分量多元正态分布，当且仅当其分量的<strong>任意线性组合都是一元正态</strong>，即 \(\forall\mathbf b=(b_1,\dots,b_k)'\in\mathbb R^k\)，\(Y=\mathbf b'\mathbf X=b_1 X_1+\dots+b_k X_k\sim\mathcal N(\mu_Y,\sigma_Y^2)\)。</span><span class="lang en"><strong>Definition 2.1 (Standard normal random vector)</strong>: a real random vector \(\mathbf Z=(Z_1,Z_2,\dots,Z_l)'\) is called a <strong>standard normal random vector</strong> if all of its components \(Z_n\) (\(n=1,\dots,l\)) are i.i.d. univariate standard normal. <strong>Definition 2.2 (Multivariate normal distribution-1)</strong>: a real random vector \(\mathbf X=(X_1,\dots,X_k)'\) is called a <strong>normal random vector</strong> and its components are <strong>multivariate normally distributed</strong> if and only if there exist a standard normal random vector \(\mathbf Z_{l\times1}\) and a matrix \(A_{k\times l}\) such that \(\mathbf X=A\mathbf Z+\mu\), where \(\mu\) is the mean vector of \(\mathbf X\). In other words, any component of a multivariate normally distributed random vector can be represented by a linear combination of some i.i.d. standard normal variables plus its mean, i.e. for all \(i\), \(X_i=\mu_i+a_1 Z_1+a_2 Z_2+\dots+a_l Z_l\) for some \(a_1,\dots,a_l\in\mathbb R\). <strong>Definition 2.2 (Multivariate normal distribution-2)</strong>: \(\mathbf X=(X_1,\dots,X_k)'\) is called a normal random vector with multivariate normally distributed components if and only if <strong>any linear combination of its components is (univariate) normally distributed</strong>, i.e. for all \(\mathbf b=(b_1,\dots,b_k)'\in\mathbb R^k\), \(Y=\mathbf b'\mathbf X=b_1 X_1+\dots+b_k X_k\sim\mathcal N(\mu_Y,\sigma_Y^2)\).</span></p></div>
+<h3 id="2-1-2-equivalence-of-two-definitions">2.1.2 两定义的等价性 / Equivalence of two definitions</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 2.4 与引理 2.1 / Definition 2.4 and Lemma 2.1
+<span class="lang zh"><strong>定义 2.4（卷积）</strong>：卷积是定义在 \(\mathbb R\) 上两函数 \(f,g\) 的算子 $<em>$：\((f*g)(x)\equiv\int_{-\infty}^\infty f(t)g(x-t)\,dt\)。</em><em>引理 2.1</em><em>：一组独立正态分布随机变量 \((X_1,X_2,\dots,X_s)\) 的任意线性组合都是正态分布。</em><em>注 2.1</em><em>：卷积的直觉是——\(Y=y\) 的概率密度应等于 \(X_i,X_j\) 取值的所有可能组合之"和"。</span><span class="lang en"></em><em>Definition 2.4 (Convolution)</em><em>: a convolution is the operator $</em>$ for two functions \(f,g\) on \(\mathbb R\): \((f*g)(x)\equiv\int_{-\infty}^\infty f(t)g(x-t)\,dt\). <strong>Lemma 2.1</strong>: any linear combination of a set of independent normally distributed random variables \((X_1,X_2,\dots,X_s)\) is normally distributed. <strong>Remark 2.1</strong>: the intuition for the convolution is that the probability density of \(Y=y\) should be the sum of the possibilities of all combinations of values of \(X_i,X_j\).</span></p>
+<p>[!note]- 引理 2.1 与两定义等价性的证明 / Proof of Lemma 2.1 and the equivalence
+<span class="lang zh"><strong>引理 2.1（归纳）</strong>：先看两个独立正态 \(X_i\sim\mathcal N(\mu_i,\sigma_i^2)\)、\(X_j\sim\mathcal N(\mu_j,\sigma_j^2)\) 的简单和 \(Y=X_i+X_j\)。其密度为卷积 \(g(y)=(f_i*f_j)(y)=\int_{-\infty}^\infty f_i(t)f_j(y-t)\,dt\)，经配方（Gaussian 卷积的标准计算）化简后正是 \(\mathcal N(\mu_i+\mu_j,\sigma_i^2+\sigma_j^2)\) 的密度。再看任意线性组合 \(V=aX_i+bX_j\)：记 \(W_i=aX_i\sim\mathcal N(a\mu_i,a^2\sigma_i^2)\)、\(W_j=bX_j\sim\mathcal N(b\mu_j,b^2\sigma_j^2)\)，二者独立，故 \(V=W_i+W_j\) 一元正态。最后对 \(V\) 与另一 \(cX_k\)（\(c\in\mathbb R\)）重复此过程，即证任意线性组合一元正态。\(\blacksquare\) <strong>两定义等价</strong>：由定义 2（定义 2.2-2）每个 \(\mathbf X\) 元素是 \(\mathbf Z\) 元素的线性组合，故 \(\mathbf X\) 元素的任意线性组合仍是 \(\mathbf Z\) 元素的线性组合，由引理 2.1 一元正态，给出定义 2.2-2。反向：引理 2.1 的证明重度依赖 \(X_i,X_j\) 的独立性与正态性，故要使定义 2 的性质成立，需每个 \(\mathbf X\) 元素是若干独立正态变量的线性组合——它可化为 i.i.d. 标准正态变量的线性组合，给出定义 2.2-1。\(\blacksquare\)</span><span class="lang en"><strong>Lemma 2.1 (by induction)</strong>: first consider the simple sum \(Y=X_i+X_j\) of two independent normals \(X_i\sim\mathcal N(\mu_i,\sigma_i^2)\), \(X_j\sim\mathcal N(\mu_j,\sigma_j^2)\). Its density is the convolution \(g(y)=(f_i*f_j)(y)=\int_{-\infty}^\infty f_i(t)f_j(y-t)\,dt\), which after completing the square (the standard Gaussian-convolution computation) is exactly the density of \(\mathcal N(\mu_i+\mu_j,\sigma_i^2+\sigma_j^2)\). Then for an arbitrary linear combination \(V=aX_i+bX_j\): denote \(W_i=aX_i\sim\mathcal N(a\mu_i,a^2\sigma_i^2)\), \(W_j=bX_j\sim\mathcal N(b\mu_j,b^2\sigma_j^2)\), which are independent, so \(V=W_i+W_j\) is univariate normal. Finally, repeating with \(V\) and another \(cX_k\) (\(c\in\mathbb R\)) proves any linear combination is univariate normal. \(\blacksquare\) <strong>Equivalence</strong>: by Definition 2 (Definition 2.2-2) each element of \(\mathbf X\) is a linear combination of elements in \(\mathbf Z\), so any linear combination of elements in \(\mathbf X\) is again a linear combination of elements in \(\mathbf Z\), which is univariate normal by Lemma 2.1, giving Definition 2.2-2. Conversely, the proof of Lemma 2.1 heavily depends on the independence and normality of \(X_i,X_j\), so for the property in Definition 2 to hold we need each element in \(\mathbf X\) to be a linear combination of some independent normal random variables — which can be transformed to a linear combination of i.i.d. standard normal random variables, giving Definition 2.2-1. \(\blacksquare\)</span></p></div>
+<h3 id="2-1-3-density-of-multivariate-normal-distribution">2.1.3 多元正态分布的密度 / Density of multivariate normal distribution</h3>
+<div class="callout"><div class="callout-title">Important</div><p>多元正态密度 / Density of the multivariate normal
+<span class="lang zh">多元正态向量 \(\mathbf X=(X_1,\dots,X_k)'\sim\mathcal N(\mu,\Omega)\) 的联合密度为</span><span class="lang en">The joint density of a multivariate normally distributed vector \(\mathbf X=(X_1,\dots,X_k)'\sim\mathcal N(\mu,\Omega)\) is</span></p>
+<p>$$f_{\mathbf X}(x_1,x_2,\dots,x_k)=\frac1{\sqrt{(2\pi)^k|\Omega|}}\,e^{-\frac12(\mathbf x-\mu)'\Omega^{-1}(\mathbf x-\mu)}$$</p>
+<p><span class="lang zh">这很直观，因为 \((\mathbf x-\mu)'\Omega^{-1}(\mathbf x-\mu)\sim\chi_k^2=z_1^2+z_2^2+\dots+z_k^2\)，其中 \(z_i\) 是独立标准正态。</span><span class="lang en">which is very intuitive since \((\mathbf x-\mu)'\Omega^{-1}(\mathbf x-\mu)\sim\chi_k^2=z_1^2+z_2^2+\dots+z_k^2\), where the \(z_i\) are independent standard normal.</span></p></div>
+<h2 id="2-2-gaussian-process">2.2 高斯过程 / Gaussian Process</h2>
+</div>
+<div class="lang en">
+<h2 id="2-2-gaussian-process">2.2 Gaussian Process</h2>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 2.5 与命题 2.1 / Definition 2.5 and Proposition 2.1
+<span class="lang zh"><strong>定义 2.5（高斯过程）</strong>：过程 \(\{X_t\}\) 是<strong>高斯过程</strong>，若其任意有限子集 \(\{X_{t_1},\dots,X_{t_n}\}\) 都服从联合正态分布。高斯过程由均值 \(m_t=\mathbb E[X_t]\) 与协方差 \(\Gamma_{st}=\mathrm{Cov}(X_s,X_t)\) 刻画。<strong>命题 2.1</strong>：标准布朗运动 \(\{B_t\}\) 是高斯过程。其均值 \(m_t=\mathbb E[B_t]=0\)，协方差（设 \(s<t\)）\(\Gamma_{st}=\mathrm{Cov}(B_s,B_t)=\mathbb E[B_sB_t]=\mathbb E[B_s(B_s+B_t-B_s)]=\mathbb E[B_s^2]+\mathbb E[B_s(B_t-B_s)]=\mathrm{Var}(B_s)=s\)。</span><span class="lang en"><strong>Definition 2.5 (Gaussian Process)</strong>: a process \(\{X_t\}\) is a <strong>Gaussian process</strong> if any of its finite subcollections \(\{X_{t_1},\dots,X_{t_n}\}\) has a joint normal distribution. A Gaussian process is characterized by its mean \(m_t=\mathbb E[X_t]\) and covariance \(\Gamma_{st}=\mathrm{Cov}(X_s,X_t)\). <strong>Proposition 2.1</strong>: a standard Brownian motion \(\{B_t\}\) is a Gaussian process. Its mean is \(m_t=\mathbb E[B_t]=0\), and its covariance (for \(s<t\)) is \(\Gamma_{st}=\mathrm{Cov}(B_s,B_t)=\mathbb E[B_sB_t]=\mathbb E[B_s(B_s+B_t-B_s)]=\mathbb E[B_s^2]+\mathbb E[B_s(B_t-B_s)]=\mathrm{Var}(B_s)=s\).</span></p>
+<p>[!note]- 命题 2.1 证明 / Proof of Proposition 2.1
+<span class="lang zh">任取子集 \(\{B_{t_1},\dots,B_{t_n}\}\)，只需证其联合正态。定义 \(Z_i=\frac{B_{t_i}-B_{t_{i-1}}}{\sqrt{t_i-t_{i-1}}}\)，由标准 BM 性质 \(Z_i\) 独立标准正态；而每个 \(B_{t_j}\) 都是 \(\{Z_1,\dots,Z_n\}\) 的线性组合，故由定义 2.2，\(\{B_{t_1},\dots,B_{t_n}\}\) 联合正态。\(\blacksquare\)</span><span class="lang en">Take any subcollection \(\{B_{t_1},\dots,B_{t_n}\}\); we only need to show it has a joint normal distribution. Define \(Z_i=\frac{B_{t_i}-B_{t_{i-1}}}{\sqrt{t_i-t_{i-1}}}\); by the standard-BM property the \(Z_i\) are independent standard normal, and each \(B_{t_j}\) is a linear combination of \(\{Z_1,\dots,Z_n\}\), so by Definition 2.2, \(\{B_{t_1},\dots,B_{t_n}\}\) is jointly normal. \(\blacksquare\)</span></p>
+<p>[!tip] 注 2.2（BM 的等价重定义 / Remark 2.2）
+<span class="lang zh">由命题 2.1，可把布朗运动等价地重定义为一个<strong>零均值（中心化）高斯过程</strong>，其协方差 \(\Gamma_{st}=s\wedge t\)（即 \(s\) 与 \(t\) 中较小者），且路径以概率 1 连续。</span><span class="lang en">By Proposition 2.1, Brownian motion can be equivalently redefined as a <strong>centered (mean-zero) Gaussian process</strong> with covariance \(\Gamma_{st}=s\wedge t\) (the smaller of \(s\) and \(t\)) and paths continuous with probability one.</span></p></div>
+</div>
+<div class="lang en"></div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#2-1-multivariate-normal-distribution">2.1 多元正态分布 / Multivariate Normal Distribution</a></li>
+          <li><a href="#2-1-1-definition">2.1.1 定义 / Definition</a></li>
+          <li><a href="#2-1-2-equivalence-of-two-definitions">2.1.2 两定义的等价性 / Equivalence of two definitions</a></li>
+          <li><a href="#2-1-3-density-of-multivariate-normal-distribution">2.1.3 多元正态分布的密度 / Density of multivariate normal distribution</a></li>
+        <li><a href="#2-2-gaussian-process">2.2 高斯过程 / Gaussian Process</a></li>
+        <li><a href="#2-2-gaussian-process">2.2 Gaussian Process</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

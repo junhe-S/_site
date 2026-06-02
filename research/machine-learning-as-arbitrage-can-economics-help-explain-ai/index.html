@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>机器学习是不是在「重新发明」套利？——给神经网络的超额收益找一个经济学基准 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>机器学习是不是在「重新发明」套利？——给神经网络的超额收益找一个经济学基准</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2025 SSRN]</span> Machine Learning as Arbitrage: Can Economics Help Explain AI?</div>
+        <div class="paper-source-authors"><a href="/research/author/huahao-lu/">Huahao Lu</a>, <a href="/research/author/matthew-spiegel/">Matthew Spiegel</a>, <a href="/research/author/hong-zhang/">Hong Zhang</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">机器学习</span>
+        
+        
+        
+        
+        <span class="tag">异象</span>
+        
+        
+        
+        
+        <span class="tag">套利</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Lu, Spiegel &amp; Zhang (2025, SSRN)</strong>：神经网络用一堆异象做出的「惊人」收益，并不神秘——只要给它一个恰当的经济学基准，即一套把权重按条件 alpha 摆放、再用回测剔除假信号的「动态套利组合」(Dynamic Arbitrage Portfolio, DAP)，就能解释掉它绝大部分的超额表现。剔除微盘股、只允许使用「已发表」异象之后，一个透明的经济模型几乎吃光了神经网络的 alpha。更有意思的是：同一套经济学，反过来还能把神经网络的业绩翻倍。</p></div>
+<h2 id="1">1 引言：一个「太好了，反而可疑」的黑箱</h2>
+<p>先说一件让人不太舒服的事。</p>
+<p>过去十年，机器学习在预测股票收益上交出了一份近乎奢侈的成绩单。Gu, Kelly, and Xiu (2020) 之后，一篇又一篇论文告诉我们：把上百个异象 (anomaly) 喂给一个前馈神经网络 (Feedforward Neural Network, NN)，它就能搭出年化夏普比率高得惊人的多空组合。问题是——这些收益从哪儿来？神经网络是个「黑箱」(black box)，它只会告诉你买什么、不告诉你为什么。于是一个很自然、却始终没人答好的问题摆在那里：如果机器学习真有这么神，为什么手握同样工具、还能随便用任何手段的真实基金经理，做出来的收益却平庸得多？是现有的经济学理论漏掉了资产收益里的某种根本机制，还是说——这台机器其实在做一件我们早就懂的事，只是我们一直没用对的尺子去量它？</p>
+<p>Anthropic 的 CEO Dario Amodei 在 2025 年 4 月说过一句话，被作者放在了论文最前面：我们最好能赶在模型变得「压倒性强大」之前，先搞懂它内部到底在干什么——也就是「可解释性」(interpretability)。这篇论文做的，正是金融版的可解释性：它想在经济学原理和金融 AI 之间，修一条「双向」的路。一个方向是用经济学去解释 AI；另一个方向，是用经济学去改进 AI。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>把黑箱拆成玻璃箱，这股潮流不止这一篇。关于在公司债市场上做同样事情的努力，可参见<a href="/research/glass-box-machine-learning-and-corporate-bond-returns/">《把机器学习的黑箱拆成玻璃箱：公司债收益率能被「看懂」地预测吗？》</a>。</p></div>
+<p>本文要反复讲透的，其实只有一句话：<strong>神经网络的「超额」收益，很大程度上是因为我们从来没有给它一个合适的经济学基准。</strong> 而这篇论文造出来的那个基准，简单到几乎让人意外。</p>
+<h2 id="2-dap">2 一个三异象的世界：DAP 的全部直觉</h2>
+<p>要理解作者的基准，不必先碰任何公式。论文自己先讲了一个玩具世界，我们就从这里进。</p>
+<p>设想世上只有三个异象，叫 A、B、C；只有两种「状态」(state)，叫 X 和 Y。异象 A 在两种状态下都稳定地产生每年 3% 的 alpha；异象 B 在状态 X 下产生 6%、在 Y 下产生 0%；异象 C 正好反过来，在 Y 下 6%、在 X 下 0%。状态本身是一个马尔可夫过程，平均而言下一期与本期相同，但长期看 X 和 Y 各占一半。</p>
+<p>传统的做法是什么？是持有一个「分散化」的异象组合——等权或市值加权地同时押 A、B、C。在这个例子里，它的期望收益是 3%。但请注意：如果我们有理由相信投资期处在状态 X，还把钱平摊给 C，岂不是把三分之一的资金扔进了一个当期注定零回报的口袋？</p>
+<p>于是直觉就来了：投资权重应该正比于「在预期状态下能产生的 alpha」。在状态 X 下，A 贡献 3%、B 贡献 6%、C 贡献 0%，按比例就是把 <code>1/3</code> 投给 A、<code>2/3</code> 投给 B、C 一分不给——期望收益一下子从 3% 跳到 5%。</p>
+<p>这就是动态套利组合 (Dynamic Arbitrage Portfolio, DAP) 的全部直觉：<strong>不要平均地对待异象，把更多的钱押在历史表现更好的那个上。</strong> 它还能自然地推广到动态情形——用上一期的状态和马尔可夫转移概率，去推断本期该押谁。</p>
+<p>但这个故事里藏着一个要命的细节，它后面会变成全文的枢纽：如果状态已经悄悄从 X 切到了 Y，你却还死押着 B，那就要血亏。<strong>一个动态策略的成败，几乎全系于它能不能尽快识别出「刚刚失灵」的异象。</strong></p>
+<h2 id="3-dap-alpha">3 DAP 框架：把「按 alpha 下注」写成公式</h2>
+<p>接着，一个自然的问题是：上面这个直觉，能不能落到一个严谨、可估计、且有理论根基的公式上？能。</p>
+<p>作者把异象看成一批能持续产生「异质条件 alpha」的资产。设第 <code>k</code> 个异象策略（即第 <code>k</code> 个公司特征做出的高减低多空组合，<code>k ∈ [1,K]</code>）在第 <code>t</code> 期的收益服从一个条件 CAPM：</p>
+<p>$$
+y_{kt} = \alpha_{kt} + \beta_{kt} \times X_t + \epsilon_{kt}, \qquad \epsilon_{kt} \sim N(0, \sigma_k^2)
+$$</p>
+<p>这里 <code>y_{kt}</code> 是异象 <code>k</code> 的（超额）收益，<code>α_{kt}</code> 是它的条件 alpha，<code>X_t</code> 是一个影响所有资产的共同因子（比如市场收益），<code>β_{kt}</code> 是市场暴露，<code>ε_{kt}</code> 是 i.i.d. 噪声。一个异象的信息量，全在它那个「随时间持续、却会被经济变化冲击」的条件风险溢价里。</p>
+<p>基于 Admati (1985)、Ingersoll (1984) 与 Da, Nagel, and Xiu (2024) 的多资产套利框架，理性投资者的最优交易规则，是把资金按每个异象的预期条件 alpha 成比例地投出去。于是异象 <code>k</code> 的投资权重可以写成 <code>c_t α_{k,t-1}</code>——其中 <code>α_{k,t-1}</code> 是建仓日 <code>t-1</code> 能观测到的 alpha，<code>c_t</code> 是让权重加总为 1 的归一化常数。把异象层面的收益一路拆回到个股层面，就得到了 DAP 组合在第 <code>t</code> 期的收益，也就是论文的方程 (1)：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+y_{Pt} = \sum_k \cssId{a1}{c_t\,\alpha_{k,t-1}}\; \cssId{a2}{y_{kt}} = \sum_i \Big( \cssId{a3}{c_t \sum_k \alpha_{k,t-1}\, w_{i\in k,t}} \Big) r_{it}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>异象 k 的投资权重：正比于其条件 alpha，c_t 为归一化常数</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>异象 k 当期的多空组合收益（由其成分股收益加总而成）</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>折算到个股 i 的 DAP 权重：各异象 alpha 加权后的「特征暴露」</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>最右边那一步是关键的「翻译」：它把一个「在异象层面下注」的组合，重写成了一个「在个股层面下注」的组合，而每只股票 <code>i</code> 的权重，恰好是它在各个异象里的暴露 <code>w_{i∈k,t}</code> 按条件 alpha 加权的平均。经济上，你可以把它读成一只股票的「alpha 加权特征暴露」。</p>
+<p>这一步之所以重要，是因为它让 DAP 和神经网络变得「可比」——两者最终都是在给个股分配权重，那我们就能把它们的个股权重、乃至异象排序，并排放在一起较劲了。</p>
+<h2 id="4-relu">4 回测即 ReLU：非线性与「快速止损」从哪里来</h2>
+<p>然后，真正关键的一步出现了。</p>
+<p>回到方程 (1)：如果某个异象的条件 alpha 持续为正，<code>y_{kt}</code> 就是 <code>α_{k,t-1}</code> 的线性函数，而组合收益 <code>y_{Pt} = Σ_k c_t α_{k,t-1} y_{kt}</code> 就成了 alpha 的<strong>二次型 (quadratic)</strong>。平方意味着什么？意味着小 alpha 几乎无足轻重，而大 alpha 的影响被极度放大。好处是收益弹性十足，坏处是——一旦某个被高估的、其实根本不该为正的 alpha 混进了尾部，它会以平方的力度反噬你的组合。这正是第 2 节那个「死押失灵异象」噩梦的数学版本。</p>
+<p>那么怎么快速把这些假阳性 (false positive) 信号踢出去？作者采用了 Mamaysky, Spiegel, and Zhang (2007, 2008) 的回测 (backtesting) 规则，它简单得近乎粗暴：<strong>如果一个异象的 alpha 预测值，与它最近一期的实际收益符号相反，就把它的权重直接设为零。</strong> 直觉是，预测说该涨、现实却在跌，那这个信号八成已经失灵，先停掉再说。这本质上是在用「因子动量」(factor momentum, 见 Lewellen 2002; Ehsani and Linnainmaa 2022; Arnott et al. 2022) 来过滤掉假阳性 alpha。别小看它——在共同基金文献里，这类过滤规则是预测组合未来表现最稳健的指标之一 (Jones and Mo, 2021)。</p>
+<p>而最妙的是它的数学身份：<strong>「符号一致才保留、否则归零」，在数学上恰恰就是机器学习里无处不在的 ReLU 激活函数。</strong> 一个经济学家出于「快速止损」直觉设计的规则，和深度学习里最常用的非线性单元，居然是同一个东西。论文由此构造了四个 DAP：Base DAP 与 Backtested DAP（用不用回测），以及把 alpha 再除以收益标准差（即用「信息比率」当信号）的 DAP_N 与 Backtested DAP_N。后面的主角，是那个<strong>回测 + 信息比率</strong>的 Backtested DAP_N。</p>
+<h2 id="5">5 数据与识别：怎样才算「公平地」考神经网络</h2>
+<p>接着是数据。作者把 DAP 和 NN 喂给<strong>同一套</strong> <code>153</code> 个美股异象（公司特征），样本期为 <code>1987</code> 年 1 月到 <code>2022</code> 年 12 月，采用 <code>240</code> 个月的滚动窗口估计、每月按预测排成十分位 (decile)。</p>
+<p>这里有两个看似技术、实则致命的取舍，构成了本文真正的「识别策略」。</p>
+<p><strong>第一，微盘股 (microcap)。</strong> 主样本剔除了市值最小的 20% 股票。原因在已有文献里很硬：这些股票会给机器学习算法带来已知的偏误 (Avramov, Cheng, and Metzker 2023; Cong et al. 2021)——交易成本高、流动性差，纸面上的高收益现实中根本拿不到。论文也专门跑了「含微盘」的版本作对照，目的就是把机器学习收益的来源「显影」出来。</p>
+<p><strong>第二，也是更微妙的一点——异象的「时机」(anomaly timing)：一个模型，到底从什么时候起才被允许使用某个异象？</strong> 现有的 NN 测试通常剔除微盘，却允许模型在某个异象<strong>被学术界发表之前</strong>就拿来选股。这在现实中几乎不可能做到：要在一个异象发表前就用它，你得自己独立发现它——对一两个异象或许还行，对 153 个异象则纯属幻想。所以一个更现实的考法，是<strong>只允许模型使用已经发表的异象</strong>。这个约束同时堵死了「前视偏误」(look-ahead bias)，而且无论异象发表后收益下降是因为学术数据挖掘 (data mining) 还是因为市场把它交易掉了，都成立。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>把这两点连起来看，本文的「识别」其实是一句反问：当我们禁止神经网络去碰它现实中根本碰不到的东西（微盘股 + 未发表异象）之后，它还剩下多少「超额」？答案，是本文的核心。</p></div>
+<h2 id="6">6 主要结果：黑箱被一步步拧开</h2>
+<p>于是反转开始。</p>
+<p><strong>第一步，诊断。</strong> 不含微盘时，在七因子 (FF7) 之上再加进 Backtested DAP_N 这一个因子，单隐层神经网络 NN1 的 alpha 就从 <code>1.930</code> 掉到 <code>1.164</code>——近 40% 的降幅。而一旦放微盘股进来，降幅只剩 26%。这个落差本身就说明：NN1 一旦被允许选微盘，就会重度依赖它们；而 Backtested DAP_N 虽然也用微盘，用得却克制得多。</p>
+<div class="article-image"><img alt="Table 1: Out-of-sample Performance Delivered by DAP Portfolios (with 240-month Rolling Windows)" src="assets/table-1.png" /></div>
+<p><em>Table 1: Out-of-sample Performance Delivered by DAP Portfolios (with 240-month Rolling Windows)</em></p>
+<p><strong>第二步，未发表异象。</strong> 作者用了两条互补的路。其一，把「未发表/已发表异象之比」当成一个额外的解释因子加进去：当 NN1 在全部异象里挑选（剔除微盘）时，单单这个「未发表比率」就把 alpha 砍掉了 59%；再加上 Backtested DAP_N，又砍掉 62%，alpha 至此在统计上不再显著。其二，更直接——干脆把 NN1 限制成只能用「已发表」异象。在这个约束下（剔除微盘），七因子 alpha 从 <code>1.930</code> 暴跌到 <code>0.514</code>，降幅 73%；再加进 Backtested DAP_N，进一步降到 <code>0.241</code>（又降 53%），与零已无法区分。而且，哪怕把训练窗口在 60 到 240 个月之间反复变换，Backtested DAP_N 也始终能吸收掉 NN1 alpha 的显著性。</p>
+<div class="article-image"><img alt="Table 4: Out-of-sample Performance Delivered by DAP Portfolios (with 240-month Rolling Windows Only Published Anomalies)" src="assets/table-4.png" /></div>
+<p><em>Table 4: Out-of-sample Performance Delivered by DAP Portfolios (with 240-month Rolling Windows Only Published Anomalies)</em></p>
+<p>到这一步，黑箱基本被拧开了：<strong>NN1 的收益，主要来自两处——微盘股，和未发表异象；它通过其他途径赚到的那部分，则呈现出与 Backtested DAP_N 高度相似的组合性质。</strong> 换句话说，扣掉那些现实中拿不到的东西之后，神经网络剩下的「本事」，一个透明的经济模型几乎全能复制。</p>
+<h2 id="7">7 横截面：连「该重视谁」都想到一块去了</h2>
+<p>但时间序列上的「解释力」可能只是巧合——两个收益相近的组合，未必真在做同一件事。所以作者又补了一刀，从横截面 (cross section) 验证：两个模型，是不是连「该重视哪些异象」都排得一样？</p>
+<p>在神经网络里，某个异象的「平均梯度」(average gradient) 衡量了它在模型中的重要性 (Sadhwani et al. 2020; Horel and Giesecke 2020)；在 DAP 里，对应的就是平均投资权重。把 NN1 估计出的梯度（梯度排名）对 Backtested DAP_N 的权重排名做回归，系数高达 <code>1.12</code>（用排名时为 <code>0.837</code>），单变量 <code>R²</code> 达到 <code>0.729</code>（<code>0.701</code>）。两个出身完全不同的模型，对「哪些已发表异象更重要」的判断，竟然如此一致。而且这种一致不止停在异象层面——既然两者都靠异象给个股分配权重，它们落到个股上的平均权重也高度对齐。</p>
+<div class="article-image"><img alt="Table 6: Explaining the Importance of Published Anomalies in Neural Networks" src="assets/table-6.png" /></div>
+<p><em>Table 6: Explaining the Importance of Published Anomalies in Neural Networks</em></p>
+<p>到这里，三条经济机制就立住了：<strong>其一</strong>，神经网络是通过一个与 DAP 相似的非线性策略来赚 alpha 的；<strong>其二</strong>，它相当一部分业绩来自未发表异象——这就逼出一个很实际的拷问：当我们检验一个机器学习模型时，到底该不该让它使用那些现实中根本无从知晓的异象？<strong>其三</strong>，把微盘放进来时，神经网络极易被微盘的虚假收益带偏。后一条与已有研究一致；前两条则是新贡献。它们合起来指向一个略带反讽的结论：<strong>机器学习之所以显得「超凡」，很可能只是因为我们一直缺一个合适的经济学基准。</strong> 神经网络无非是为了把交易收益最大化，自己「重新发现」了一套 DAP 式的最优策略，并用上了它的核心原则——给历史表现更好的信号更大的权重。</p>
+<div class="callout"><div class="callout-title">Note</div><p>把更多权重押在历史更优的信号上、再压缩掉噪声维度，这股思路与<a href="/research/shrinking-the-cross-section/">《压缩横截面：因子动物园的尽头，不是更少的因子，而是更聪明的收缩》</a>，以及<a href="/research/growing-the-efficient-frontier-on-panel-trees/">《把「排序」种成一棵树：P-Tree 如何长出有效前沿》</a>，是同一条河里的水。</p></div>
+<h2 id="8-ai-ai">8 反过来：经济学不止能解释 AI，还能改进 AI</h2>
+<p>如果故事到此为止，那它只是一篇优雅的「可解释性」论文。但作者多走了一步，把那条「双向路」的另一头也走通了。</p>
+<p>机器学习严重依赖历史数据，因而格外怕「数据分布漂移」(data distributional shift)——未来与历史的分布不一致 (Cohen, Snow, and Szpruch 2023)。而第 4 节那个「回测」规则，天生就是来对付失灵信号的。那能不能直接把它焊到机器学习的输入端上？</p>
+<p>作者就这么干了：保持神经网络的结构和超参数完全不变，只是在喂数据前，把那些被回测判为假阳性的异象取值<strong>直接设为零</strong>。结果——用已发表异象、剔除微盘的设定下，回测增强后的 NN1 拿到了 <code>1.206%</code> 的月度 alpha，而原始模型只有 <code>0.514%</code>。<strong>业绩翻了一倍还多。</strong> 不止如此，Online Appendix 里还显示 Backtested DAP_N 的信息比率 (information ratio) 达到 <code>1.368</code>，几乎是 NN1（<code>0.705</code>）的两倍；最大回撤 (maximum drawdown) 也从 NN1 的 <code>-57.3%</code> 收窄到 <code>-35.3%</code>。</p>
+<div class="article-image"><img alt="Table 8: Backtest-enhanced Neural Network Performance (published anomalies)" src="assets/table-8.png" /></div>
+<p><em>Table 8: Backtest-enhanced Neural Network Performance (published anomalies)</em></p>
+<p>一个源自基金经理「快速止损」直觉、又恰好等价于 ReLU 的简单规则，就这样既解释了机器学习、又改进了机器学习。这大概是全文最漂亮的闭环。</p>
+<h2 id="9">9 文献脉络</h2>
+<p>把这条线索捋一捋，会发现本文其实站在三股潮流的交汇处。</p>
+<p>最上游，是套利定价理论 (Arbitrage Pricing Theory, APT)：Ross (1976) 奠基，Huberman (1982)、Chamberlain and Rothschild (1983)、Ingersoll (1984) 接力，给出了「按 alpha 成比例下注」这个最优规则的雏形；Admati (1985) 与 Kyle (1985) 则从信息交易的角度，把这套权重摆放的逻辑讲透。本文的 DAP，正是这条线的当代化身。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>中游，是异象与发表偏误 (publication bias) 这一支：McLean and Pontiff (2016)、Harvey, Liu, and Zhu (2016)、Hou, Xue, and Zhang (2020)、Jensen, Kelly, and Pedersen (2023) 反复追问——异象到底是错误定价、数据挖掘，还是真实风险补偿？Cochrane (2011) 那句著名的「多维挑战」就是这条线的注脚。本文借异象当试验台，顺手照亮了这些老问题：发表显著影响了机器学习的收益，这与「事后被交易掉 + 错误定价 + 数据挖掘」的某种组合相吻合。</p>
+<p>下游，是机器学习资产定价：Gu, Kelly, and Xiu (2020) 把神经网络推上舞台，随后一批人开始拆它的黑箱——Didisheim, Ke, Kelly, and Malamud (2023)、Kelly, Malamud, and Zhou (2024) 研究「超参数化」的好处，Shen and Xiu (2025) 研究处理弱信号的能力，Li, Rossi, Yan, and Zheng (2025) 则发现把因子随机排列后机器学习的表现大幅减弱，从根上质疑了它「理解复杂信号结构」的能力。与本文最近的，是 Da, Nagel, and Xiu (2024)：他们研究面对一堆<strong>弱</strong>信号时套利者的极限，证明机器学习能逼近最优夏普。本文恰恰把问题倒过来——研究一堆<strong>强</strong>信号的情形，从而能更干净地回答「黑箱在多大程度上只是在模仿一个经济直觉模型」。</p>
+<h2>10 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：DAP 和神经网络到底是不是一回事？区别在哪？</strong></p>
+<blockquote>
+<p>不是同一个东西，但「家族相似」。DAP 是一个白盒：权重 = 条件 alpha（或信息比率）× 回测开关，每一步都有经济含义。神经网络是黑盒，结构上能拟合任意非线性。本文的论点不是「它们相等」，而是「神经网络扣掉微盘和未发表异象后剩下的可实现 alpha，性质上与 DAP 几乎重合」——时间序列上被吸收、横截面上排序一致（<code>R² = 0.729</code>）。</p>
+</blockquote>
+<p><strong>Q：「只允许用已发表异象」这个约束，是不是人为压低了神经网络？</strong></p>
+<blockquote>
+<p>这正是本文最该被质疑、也最值得辩护的地方。作者的理由是「可实现性」：一个真实基金没法在异象发表前就系统性地用上 153 个里的大多数。所以这不是在「削弱」NN，而是把它放回一个现实可执行的基准里考。当然，反对者可以说，发表后收益下降未必等于「之前不可用」，而可能是市场把它交易掉了——但无论哪种解释，禁止前视都更稳妥。</p>
+</blockquote>
+<p><strong>Q：剔除最小的 20%，会不会太随意？</strong></p>
+<blockquote>
+<p>阈值确实是个判断。但方向是稳健的：放微盘进来，DAP 对 NN 的解释力从 40% 掉到 26%，说明 NN 的「额外」收益里很大一块来自微盘；而微盘收益在现实中因交易成本难以兑现，这与 Avramov, Cheng, and Metzker (2023)、Cong et al. (2021) 一致。真正的检验是结论对阈值的敏感性，而非阈值本身。</p>
+</blockquote>
+<p><strong>Q：回测凭什么等于 ReLU？这个类比会不会是过度包装？</strong></p>
+<blockquote>
+<p>不是包装，是恒等。回测规则「符号一致则保留 alpha、否则置零」，写出来就是 <code>max(0, ·)</code> 形式的门控，这正是 ReLU。重点不在名字好听，而在于：它给了「机器学习为什么需要非线性」一个经济解释——非线性的作用之一，就是快速剔除失灵（假阳性）的信号。</p>
+</blockquote>
+<p><strong>Q：既然 DAP 这么好，还要神经网络做什么？</strong></p>
+<blockquote>
+<p>两个理由。其一，DAP 是基准，不是替代品——它的价值在于「解释」，让我们知道 NN 的收益有多少是经济原理、多少是微盘和前视。其二，第 8 节恰恰说明二者互补：把回测焊进 NN 的输入端，月度 alpha 从 <code>0.514%</code> 翻到 <code>1.206%</code>。经济学和机器学习不是零和。</p>
+</blockquote>
+<p><strong>Q：这是不是在说机器学习在资产定价里「没用」？</strong></p>
+<blockquote>
+<p>恰恰相反。本文没有否定机器学习，而是给了它一把合适的尺子。结论是「机器学习的收益可被经济原理解释，而经济原理又能改进机器学习」——这让 AI 更可信、更可用，而不是更廉价。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把 DAP + 回测搬到公司债市场。</strong>
+【经济故事】公司债的「异象」（动量、carry、流动性、违约距离等）数量远少于股票，但分布漂移可能更剧烈——信用周期一转，半数信号瞬间失灵，正是回测最该发威的场景。能否用 DAP 复制信用市场里机器学习的收益？
+【可行性】中。数据可用（TRACE + 债券特征），识别上把本文框架平移即可；难点是公司债流动性差、月度收益噪声大，alpha 估计误差会被平方放大。</p>
+<p><strong>2. 把「外资持有比例」当作 regime 变量，去做异象时机。</strong>
+【经济故事】本文的状态 X/Y 是抽象的。一个具体的候选状态，是外资持有人 (foreign ownership) 的进退——外资大举流入/流出，往往伴随某些异象（价值、流动性）溢价的切换。能否用外资持仓的变化来预测哪些异象「即将失灵」？
+【可行性】中。需要持仓层面数据（如 FactSet/13F 的外资标识）。识别可用外资被动流（指数再平衡导致的机械买卖）作为外生冲击，规避内生性。</p>
+<p><strong>3. 流动性作为「快速止损」的触发器。</strong>
+【经济故事】回测用「最近一期符号相反」当失灵信号，略显粗糙。一个更有经济含义的触发器，是异象多空组合的流动性骤变——流动性枯竭时，套利失灵的概率上升（这与<a href="/research/liquidity-characteristics-of-market-anomalies-and/">《流动性的方向感：异象多空组合，其实并不「流动性中性」》</a>的发现相通）。把流动性指标并入门控函数，能否提升 DAP/NN？
+【可行性】高。所需的流动性度量（Amihud、买卖价差）现成，改造门控规则技术上简单，可直接在本文框架内做增量检验。</p>
+<p><strong>4. 「已发表 vs 未发表」的拆解搬到信用市场。</strong>
+【经济故事】信用异象的发表史与股票不同，发表后被交易掉的速度也可能不同。在债券里重做「未发表比率」分解，能检验本文机制是不是股票市场特有，还是更普适。
+【可行性】中。需要给每个信用异象标注准确的发表年份；样本期内信用异象数量有限，统计功效是隐忧。</p>
+<h2 id="">评论：我的判断</h2>
+<p>这篇论文最大的贡献，不是又造了一个收益更高的策略，而是给资产定价里的机器学习提供了一个<strong>正确的零假设</strong>。在它之前，神经网络的高 alpha 往往是在一个「太宽松」的基准（含微盘、允许前视）上度量的；本文把基准收紧到「现实可实现」，再用一个透明的经济模型去对冲，发现所谓的「黑箱魔法」大半烟消云散。「回测即 ReLU」这个恒等式，以及「经济学反过来改进 AI」（alpha 从 <code>0.514%</code> 到 <code>1.206%</code>）的闭环，是全文最有说服力的两块。</p>
+<p>但我也有保留。其一，识别上最关键的两个开关——剔除 20% 微盘、只用已发表异象——本质是建模选择，结论对它们的依赖应当被更系统地展示（含微盘时解释力从 40% 滑到 26% 已是警示）。其二，条件 CAPM 假设异象间的相关结构能被单个共同因子吸收，这在尾部（恰恰是平方权重最敏感的地方）未必成立；一旦异象间存在残余共动，DAP 的「最优性」就要打折。其三，「神经网络在重新发明 DAP」是一个很美的叙事，但梯度重要性本身也是一种近似度量，<code>R² = 0.729</code> 说明对齐很强、却仍非全部，那剩下的 27% 是噪声，还是 NN 抓到了 DAP 没有的东西？我更想看到的，是把这套框架原样搬到<strong>公司债</strong>与<strong>外资持仓</strong>这两个流动性更差、分布漂移更猛的场景里——如果回测在那里依然能吸收掉机器学习的显著性，这篇论文的普适性才算真正坐实。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Admati, A. R. (1985). A Noisy Rational Expectations Equilibrium for Multi-Asset Securities Markets. <em>Econometrica</em> 53(3), 629–657.</li>
+<li>Avramov, D., Cheng, S., &amp; Metzker, L. (2023). Machine Learning vs. Economic Restrictions: Evidence from Stock Return Predictability. <em>Management Science</em> 69(5), 2587–2619.</li>
+<li>Cochrane, J. H. (2011). Presidential Address: Discount Rates. <em>Journal of Finance</em> 66(4), 1047–1108.</li>
+<li>Cong, L. W., et al. (2021). Deep Sequence Modeling: Development and Applications in Asset Pricing. <em>Journal of Financial Data Science</em>.</li>
+<li>Da, R., Nagel, S., &amp; Xiu, D. (2024). The Statistical Limit of Arbitrage. Working Paper.</li>
+<li>Ehsani, S., &amp; Linnainmaa, J. T. (2022). Factor Momentum and the Momentum Factor. <em>Journal of Finance</em> 77(3), 1877–1919.</li>
+<li>Gu, S., Kelly, B., &amp; Xiu, D. (2020). Empirical Asset Pricing via Machine Learning. <em>Review of Financial Studies</em> 33(5), 2223–2273.</li>
+<li>Harvey, C. R., Liu, Y., &amp; Zhu, H. (2016). … and the Cross-Section of Expected Returns. <em>Review of Financial Studies</em> 29(1), 5–68.</li>
+<li>Horel, E., &amp; Giesecke, K. (2020). Significance Tests for Neural Networks. <em>Journal of Machine Learning Research</em> 21, 1–29.</li>
+<li>Hou, K., Xue, C., &amp; Zhang, L. (2020). Replicating Anomalies. <em>Review of Financial Studies</em> 33(5), 2019–2133.</li>
+<li>Ingersoll, J. E. (1984). Some Results in the Theory of Arbitrage Pricing. <em>Journal of Finance</em> 39(4), 1021–1039.</li>
+<li>Jones, C. S., &amp; Mo, H. (2021). Out-of-Sample Performance of Mutual Fund Predictors. <em>Review of Financial Studies</em> 34(1), 149–193.</li>
+<li>Kyle, A. S. (1985). Continuous Auctions and Insider Trading. <em>Econometrica</em> 53(6), 1315–1335.</li>
+<li>Li, R., Rossi, A. G., Yan, X., &amp; Zheng, L. (2025). Permutation-Based Tests of Machine Learning in Asset Pricing. Working Paper.</li>
+<li>Mamaysky, H., Spiegel, M., &amp; Zhang, H. (2007). Improved Forecasting of Mutual Fund Alphas and Betas. <em>Review of Finance</em> 11(3), 359–400.</li>
+<li>Mamaysky, H., Spiegel, M., &amp; Zhang, H. (2008). Estimating the Dynamics of Mutual Fund Alphas and Betas. <em>Review of Financial Studies</em> 21(1), 233–264.</li>
+<li>McLean, R. D., &amp; Pontiff, J. (2016). Does Academic Research Destroy Stock Return Predictability? <em>Journal of Finance</em> 71(1), 5–32.</li>
+<li>Ross, S. A. (1976). The Arbitrage Theory of Capital Asset Pricing. <em>Journal of Economic Theory</em> 13(3), 341–360.</li>
+<li>Sadhwani, A., Giesecke, K., &amp; Sirignano, J. (2020). Deep Learning for Mortgage Risk. <em>Journal of Financial Econometrics</em> 19(2), 313–368.</li>
+<li>Smith, S. C., &amp; Timmermann, A. (2021). Break Risk. <em>Review of Financial Studies</em> 34(4), 2045–2100.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 引言：一个「太好了，反而可疑」的黑箱</a></li>
+        <li><a href="#2-dap">2 一个三异象的世界：DAP 的全部直觉</a></li>
+        <li><a href="#3-dap-alpha">3 DAP 框架：把「按 alpha 下注」写成公式</a></li>
+        <li><a href="#4-relu">4 回测即 ReLU：非线性与「快速止损」从哪里来</a></li>
+        <li><a href="#5">5 数据与识别：怎样才算「公平地」考神经网络</a></li>
+        <li><a href="#6">6 主要结果：黑箱被一步步拧开</a></li>
+        <li><a href="#7">7 横截面：连「该重视谁」都想到一块去了</a></li>
+        <li><a href="#8-ai-ai">8 反过来：经济学不止能解释 AI，还能改进 AI</a></li>
+        <li><a href="#9">9 文献脉络</a></li>
+        <li><a href="#10-q-a">10 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#">评论：我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>把「这一次会议」的恐惧，从期权价格里解出来 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>把「这一次会议」的恐惧，从期权价格里解出来</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2022 JFE]</span> Recovering the FOMC Risk Premium</div>
+        <div class="paper-source-authors"><a href="/research/author/hong-liu/">Hong Liu</a>, <a href="/research/author/xiaoxiao-tang/">Xiaoxiao Tang</a>, <a href="/research/author/guofu-zhou/">Guofu Zhou</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">期权</span>
+        
+        
+        
+        
+        <span class="tag">货币政策</span>
+        
+        
+        
+        
+        <span class="tag">风险溢价</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Liu, Tang &amp; Zhou (2022, <em>Journal of Financial Economics</em>)</strong>：作者提出一种用「到期日紧贴会议之后」的标普 500 指数期权来<strong>逐次会议</strong>反推 FOMC 风险溢价的方法。1996–2019 年的 192 次会议里，这个溢价在 <code>1</code> 到 <code>326</code> 个基点之间剧烈摆动，均值约 <code>45</code> bps；用它做样本外预测，会议前后市场收益的 <code>R²</code> 高达 <code>7.51%</code>；预测出的平均上行漂移 <code>101</code> bps、下行漂移 <code>129</code> bps，都与事后真实的漂移对得上。</p></div>
+<h2 id="1">1 引言：一个被「平均」掉的问题</h2>
+<p>先说一件几乎人尽皆知的事。美联储公开市场委员会（Federal Open Market Committee, FOMC）开会的那几天，是全年最重要的经济事件之一。更有意思的是，钱并不是在公布利率的<strong>那一刻</strong>才被赚到的——Savor and Wilson (2013) 与 Lucca and Moench (2015) 发现，真正的超额收益集中在会议公布<strong>之前</strong>的 24 到 48 小时里，这段「事前漂移 (pre-FOMC drift)」竟然占了市场全年收益的 <code>60%</code> 到 <code>80%</code>。投资者像是早早地、提前地把一笔风险补偿支付了出去。</p>
+<p>到这里，故事似乎已经讲完了：市场在 FOMC 之前要风险溢价，平均值算出来就好。</p>
+<p>但接着，一个自然的问题是：<strong>这个溢价，每次会议都一样吗？</strong></p>
+<p>直觉上当然不一样。2008 年 10 月那次会议前的提心吊胆，和 2015 年某个「板上钉钉不动」的会议前的风平浪静，怎么可能要同样的风险补偿？可问题在于，过去文献能算的，几乎都是<strong>已实现的平均事前收益</strong>——它是一个好的「无条件 (unconditional)」估计，却天然抹掉了会议之间的差异。原因很朴素：已实现收益只告诉你「这一次最终往上还是往下」，它永远只采样到一条路径。当真实结果是上涨时，你根本无从知道「如果当时是下跌会跌多少」；反过来也一样。于是平均出来的，只能是一个被时间和状态同时「平均」掉的数字。</p>
+<div class="callout"><div class="callout-title">Note</div><p>这正是本文的核心张力：风险溢价像许多别的溢价一样会随经济状态起伏，可我们手里却只有一把「无条件」的尺子。要回答「<strong>这一次</strong>会议的恐惧值多少」，必须找到一个能在会议<strong>逼近时、事前</strong>就读出<strong>条件</strong>溢价的工具。</p></div>
+<p>然后，作者把目光投向了一个被忽略的角落：期权。</p>
+<h2 id="2">2 核心思路：让「快到期的期权」替你说话</h2>
+<p>用期权价格去反推风险溢价或概率分布，本身并不新鲜——这是一整条「恢复 (recovery)」文献做的事（关于从期权价格里读出未来概率分布，可参见<a href="/research/arbitrage-based-recovery/">《把未来的概率从期权价格里「读」出来》</a>）。本文真正新颖的一步，是把镜头对准一类很特殊的期权：<strong>到期日恰好落在 FOMC 会议公布之后不久</strong>的标普 500 指数期权，并且只用<strong>会议公布前最后一刻</strong>的报价。</p>
+<p>为什么这个限定如此关键？作者的论证干净得近乎苛刻：</p>
+<div class="callout"><div class="callout-title">Tip</div><p>在会议逼近的那一刻，一份「会议后马上到期」的期权，它的价格几乎<strong>只</strong>反映一件事——这次会议的决定。因为此时投资者唯一在意的重大信息就是会议本身，而「另一条重要宏观消息恰好与 FOMC 公布同时落地」的概率近乎为零。于是从这些期权价格里反推出来的风险溢价，就<strong>几乎没有被其它风险因子污染</strong>，可以干净地归因于这一次会议。</p></div>
+<p>这是一种非常漂亮的「事件隔离」思想。它和现有恢复文献的差别也正在这里：Ross (2015) 们做恢复，需要大量、不同行权价、且<strong>长期限</strong>的可靠期权价格；而越是长期限的期权，越会把会议之外的种种风险一并卷进来，反推出的「溢价」也就越不像是「某一个事件」的溢价。本文反其道而行——<strong>用短到不能再短的期权，把一个事件单独框出来</strong>。</p>
+<p>接着，一个工程上的难题是：24 到 48 小时窗口、又是短期限期权，流动性很差，能用的合约数量很少。怎么办？作者干脆退到一个最朴素的两状态模型：会议之后，市场要么向上漂一个幅度，要么向下漂一个幅度。一上一下，仅此而已。</p>
+<h2 id="3">3 模型：从期权价格到状态价格，再到物理概率</h2>
+<p>这篇论文有一个紧凑而完整的均衡定价模型，值得一步步拆开看。</p>
+<h3 id="3-1">3.1 设定</h3>
+<p>时间离散，<code>t = 0, 1</code>。一个事件发生在 <code>t = 0−</code> 与 <code>t = 0+</code> 之间，资产价格在 <code>0+</code> 跳跃。存在一个代表性厂商，生产单一消费品；代表性代理人持有厂商发行的一股股票。沿用 Ai and Bansal (2018) 的关键假设：事件到来时，<strong>厂商的分红与代理人的消费都不跳</strong>，跳的只是<strong>投资头寸</strong>——也就是说，事件冲击全部体现在资产价格上，而非当期消费上。这正是「事前漂移」能够干净出现在价格里的微观基础。</p>
+<p>一般地设有 <code>N</code> 个正收益状态、<code>N</code> 个负收益状态：</p>
+<p>$$r_1^+ > r_2^+ > \cdots > r_N^+ > 0, \qquad r_1^- < r_2^- < \cdots < r_N^- < 0.$$</p>
+<p>主分析聚焦最简单的两状态情形（<code>N = 1</code>）：一个上行漂移、一个下行漂移。</p>
+<h3 id="3-2">3.2 第一步：用期权价格反推「跳跃幅度」与「状态价格」</h3>
+<p>这是全文的脊梁。作者用价外 (out-of-the-money, OTM) 看涨期权去识别正向跳跃，用价外看跌期权去识别负向跳跃。令 <code>C_j</code> 为第 <code>j</code> 个看涨期权的价格、<code>K_j^C</code> 为其行权价，定价恒等式为：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+C_j = \sum_{i=1}^{N} \cssId{a1}{\pi_i}\,\big[\,\cssId{a2}{(1+r_i^+)S_0}\;-\;\cssId{a3}{K_j^C}\,\big]_+
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>π_i：第 i 个上行状态的「状态价格」——今天为「只在该状态支付 1 美元」所付的价钱</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>(1+r_i^+)S_0：若实现第 i 个上行状态，标的资产在事件后的价格</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>K_j^C：第 j 个看涨期权的行权价；外层 [·]_+ 是期权到期收益（取正部）</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>看跌一侧完全对称：</p>
+<p>$$P_j = \sum_{i=1}^{N} \pi_{N+i}\,\big[\,K_j^P - (1+r_i^-)S_0\,\big]_+ .$$</p>
+<p>它的含义很直白：<strong>期权价格 = 各状态收益按状态价格加权求和</strong>。反过来，只要有足够多不同行权价的期权报价，这组方程就能把状态价格 <code>π_i</code> 和跳跃幅度 <code>r_i</code> 一起解出来。Proposition 1 给出了解存在且唯一的充要条件，以及解析解。</p>
+<p>在两状态特例下，结果可以写成漂亮的闭式。上行跳跃幅度 <code>u</code>、上行状态价格 <code>π_u</code>：</p>
+<p>$$u = \frac{C_1 K_2^C - C_2 K_1^C}{S_0 - (C_1 - C_2)} - 1, \qquad \pi_u = \frac{C_1 - C_2}{K_2^C - K_1^C};$$</p>
+<p>下行跳跃幅度 <code>d</code>、下行状态价格 <code>π_d</code>：</p>
+<p>$$d = 1 - \frac{P_2 K_1^P - P_1 K_2^P}{S_0 - (P_2 - P_1)}, \qquad \pi_d = \frac{P_1 - P_2}{K_1^P - K_2^P}.$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>这里有一个实操上的小心思：作者偏好用<strong>接近平价 (close-to-the-money, CTM)</strong> 的期权来反推，因为 CTM 期权流动性更好、价格更少被流动性扭曲。文中还顺手验证了「把标的资产本身看作行权价为零的期权」得到的估计与上式差别小于 <code>0.1%</code>，间接说明市场相当有效。</p></div>
+<h3 id="3-3">3.3 第二步：从风险中性到物理概率，再到风险溢价</h3>
+<p>到这一步，我们手里有了状态价格 <code>π_i</code> 和各状态收益 <code>r_i</code>。但状态价格混着两样东西：<strong>真实发生概率</strong>和<strong>风险定价</strong>。要把风险溢价拆出来，必须引入偏好。</p>
+<p>作者采用 Ai and Bansal (2018) 的 Epstein–Zin 递归效用，瞬时效用为 <code>u(c) = c^{1-1/ψ}/(1-1/ψ)</code>，其中 <code>ψ</code> 是跨期替代弹性 (intertemporal elasticity of substitution, IES)、<code>γ</code> 是相对风险厌恶系数。由此可写出随机贴现因子 (stochastic discount factor, SDF) <code>m_i^*</code>。剩下的逻辑是三个环环相扣的等式——</p>
+<p>把状态价格归一化，得到风险中性概率 (risk-neutral probability) <code>q_i</code>：</p>
+<p>$$q_i = \frac{\pi_i}{\sum_{j=1}^{2N}\pi_j}.$$</p>
+<p>而按定义，风险中性概率等于物理概率乘以 SDF：</p>
+<p>$$q_i = p_i\, m_i^*.$$</p>
+<p>于是，<strong>给定偏好参数</strong>，就能从可观测的 <code>q_i</code>、<code>r_i</code> 反解出物理概率 <code>p_i</code>。最后，风险溢价就是物理测度下的期望超额收益：</p>
+<p>$$E(r) = \sum_{j=1}^{2N} p_j\, r_j.$$</p>
+<p>直觉上：期权价格给了我们「市场用钱投票」的风险中性概率；偏好参数告诉我们「投资者对坏状态有多厌恶」；两者一相除，把风险厌恶剥掉，剩下的就是<strong>真实概率</strong>；再用真实概率给各状态收益加权，得到的，就是这一次会议的<strong>事前风险溢价</strong>。整套流程<strong>只用会议前一刻的期权价格</strong>，因此是<strong>前瞻的 (forward-looking)</strong>——这恰恰是已实现收益做不到的。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>必须承认，这套恢复依赖一组<strong>事先设定</strong>的偏好参数。基准取 <code>IES = 1.5</code>、<code>γ = 10</code>，作者也报告了 <code>γ = 7.5</code> 的结果。换句话说，得到的「溢价数值」是<strong>条件在某个效用模型上</strong>的——后文我会把它列为对识别的主要担忧之一。</p></div>
+<h2 id="4">4 主要结果：原来恐惧真的会「变脸」</h2>
+<p>现在回到那个核心问题：FOMC 风险溢价每次都一样吗？</p>
+<p>答案是响亮的「不」。在 1996–2019 的 192 次会议中，恢复出的 FOMC 风险溢价从最低 <code>1</code> 个基点一路跨到最高 <code>326</code> 个基点，长期均值约 <code>45</code> bps。值得强调的是，这个 <code>45</code> bps 的<strong>均值</strong>，和文献里已实现事前收益的平均值、以及事前漂移的平均量级<strong>对得很好</strong>——这说明本文方法在「平均」意义上是自洽的，但它额外给出了被旧方法抹掉的那层<strong>横截面波动</strong>。</p>
+<p>第二个结果关于漂移的<strong>幅度</strong>。两状态模型直接产出上行漂移和下行漂移的预测：平均预测上行 <code>101</code> bps、平均预测下行 <code>129</code> bps，二者都与各自<strong>事后已实现</strong>的上、下行漂移紧密吻合。这是一记漂亮的「数量对账」——模型不是在拟合一个均值，而是同时把「往上能涨多少、往下能跌多少」两条腿都预测对了。</p>
+<p>但真正关键的一步在于<strong>预测能力</strong>。作者把恢复出的条件溢价拿去做样本外预测，预测会议前后的市场收益，得到样本外 <code>R²</code> 等于 <code>7.51%</code>。放在收益可预测性这条以「能跑赢历史均值一点点就算成功」著称的文献里（Campbell and Thompson, 2008; Welch and Goyal, 2008），<code>7.51%</code> 是一个相当高、且经济意义显著的数字。</p>
+<p>于是反转出现了：那个一直被当作「常数」来处理的 FOMC 溢价，其实是一头会随经济状态呼吸的活物。作者进一步检验它和宏观环境的关系，发现一组高度符合直觉的模式——<strong>当消费增长、GDP 增长或通胀偏低时，当 VIX 偏高时，当市场更悲观时，FOMC 风险溢价更高</strong>。坏天气里，投资者索要更高的风险补偿，这正是风险溢价该有的样子。</p>
+<p>在稳健性部分，作者还回头审视了一个容易被忽略的细节：事前漂移到底发生在<strong>哪一段时间窗口</strong>？他们估计了真实的事前时段，并与人为设定的「伪 (pseudo)」事前时段做对比，逐年画出时间序列，确认所用窗口确实捕捉到了漂移集中出现的那一段。</p>
+<div class="article-image"><img alt="Figure 6: presents time-series plots of the estimated FOMC pre-announcement period, that is, unlike the “pseudo”pre-" src="assets/figure-6.png" /></div>
+<p><em>Figure 6: presents time-series plots of the estimated FOMC pre-announcement period, that is, unlike the “pseudo”pre-</em></p>
+<div class="callout"><div class="callout-title">Note</div><p>此外，作者把方法外推到别的宏观公告上，发现<strong>通胀率</strong>和<strong>失业率</strong>的公布同样存在可观的事前风险溢价。这一点有意思之处在于：它正面回应了 Ernst et al. (2019) 对「宏观公告溢价可能源于样本选择偏误」的担忧——如果这些事件<strong>在事前</strong>就被期权市场定价，那它们就不只是「事后碰巧重要」，而是<strong>事前被投资者真正认为重要</strong>。</p></div>
+<h2 id="5">5 文献脉络</h2>
+<p>把这篇论文放回它的来路，会看得更清楚。</p>
+<p>最早，人们关心的是货币政策<strong>意外</strong>本身对市场的冲击（Bernanke and Kuttner, 2005）。接着，研究的重心从「公布那一刻」前移到了「公布之前」：Savor and Wilson (2013) 用一批预定的经济公告，发现投资者在公告前要求显著更高的风险补偿；Lucca and Moench (2015) 把这一现象在 FOMC 上刻画得淋漓尽致，正式命名了「事前漂移」。</p>
+<p>然后，理论开始追上来。Ai and Bansal (2018) 用一个递归效用模型，把这段高额事前收益解释为<strong>不确定性在公告时被解决</strong>所要求的补偿——这也正是本文借来反推溢价的偏好框架。Hu et al. (2021) 则提出双风险模型，用「不确定性升高」来解释这个溢价。与此同时，另一条平行的线索是「恢复」文献：Ross (2015) 开创性地主张可以从指数期权里恢复出整个物理分布，随后 Borovička et al. (2016) 指出其「转移独立」假设过强，Martin (2017) 转而给出一个不依赖该假设、但只是<strong>界</strong>而非点估计的市场溢价。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>本文恰好站在这两条线的交汇处：它继承了「事前漂移」这条实证脉络要回答的核心问题——<strong>溢价是否随会议变化</strong>；又用「恢复」这条方法论脉络的工具去回答它，但把恢复所需的期权期限<strong>压缩到了 24–48 小时</strong>，填上了现有恢复文献「最短只能做到一个月」的空白。作者据此成为<strong>第一篇恢复出条件 FOMC 风险溢价</strong>的论文。围绕 FOMC 与货币政策被市场如何解读，相关讨论也可参见<a href="/research/monetary-policy-expectation-errors/">《被错读的，不是风险，是美联储》</a>与<a href="/research/investor-learning-about-monetary-policy-transmission-and/">《加息到底有没有用？》</a>。</p>
+<h2>6 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：这和直接算「事前平均收益」到底差在哪？</strong></p>
+<blockquote>
+<p>差在「条件 vs 无条件」。已实现平均收益每次只采样到一条已实现路径，永远无法同时观察到「如果反向会怎样」，因此只能得到一个被状态平均掉的无条件溢价。本文用会议前一刻的期权价格，同时读出上行与下行两个状态的概率与幅度，从而给出<strong>逐次会议</strong>的条件溢价——<code>1</code> 到 <code>326</code> bps 的巨大跨度，正是无条件方法看不见的那层信息。</p>
+</blockquote>
+<p><strong>Q：把期权期限压到 24–48 小时，不就撞上了它最不擅长的流动性问题吗？</strong></p>
+<blockquote>
+<p>是的，这是方法的命门。作者的应对有二：一是退到只需少数几个行权价的两状态模型；二是偏好用流动性更好的 CTM 期权来反推。即便如此，83/192 次会议才有可用的近到期期权，其余靠机器学习补齐——这意味着结论对约 57% 的会议依赖外推。</p>
+</blockquote>
+<p><strong>Q：恢复出来的「溢价数值」可信吗？它不是依赖你假设的效用函数吗？</strong></p>
+<blockquote>
+<p>数值确实是条件在 <code>IES = 1.5</code>、<code>γ = 10</code> 的 Epstein–Zin 偏好之上的，换参数（如 <code>γ = 7.5</code>）数值会变。但要注意：<strong>横截面变化</strong>（哪次会议更恐惧）主要由期权价格驱动，对偏好参数没那么敏感；偏好参数更多影响的是溢价的<strong>绝对水平</strong>。均值 <code>45</code> bps 能与文献独立对上，是一个让人安心的外部校验。</p>
+</blockquote>
+<p><strong>Q：<code>7.51%</code> 的样本外 R² 是不是高得反常？</strong></p>
+<blockquote>
+<p>在收益可预测性文献里，能稳定为正、且高于历史均值基准就已不易。<code>7.51%</code> 确实偏高，但它预测的是<strong>会议前后的窄窗口收益</strong>，而非月度或年度市场收益——窗口越短、信号越集中于单一事件，可预测性自然更高。把它和长期限收益预测直接比并不完全公平。</p>
+</blockquote>
+<p><strong>Q：为什么用看涨期权识别上行、看跌识别下行，而不是混用？</strong></p>
+<blockquote>
+<p>作者引 An et al. (2014)：掌握利好信息的知情交易者更倾向买入看涨期权，因此看涨价格更能反映正向跳跃信息，看跌则更能反映负向跳跃。这是一种基于信息流的分工，目的是让每一侧的估计更干净。</p>
+</blockquote>
+<p><strong>Q：这套方法只能用在 FOMC 上吗？</strong></p>
+<blockquote>
+<p>不。只要是<strong>预先排定、经济上重要、且有到期日紧贴其后的流动期权</strong>的公告，都能套用。文中已外推到通胀与失业公告，并发现可观的事前溢价。对没有重要公告的日子，若市场足够流动，原则上也能估计——但那些日子的溢价很小，遇到流动性不足时估计会变得不可靠。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1）把这套「事件隔离恢复」搬到公司债 / 信用市场。</strong>
+【经济故事】单只公司或某行业也有预先排定的重大事件（财报、评级复审、重大监管裁决），其信用利差里同样应含一个「事件风险溢价」。若能用紧贴事件到期的信用衍生品（CDS 或债券期权）反推，就能逐次事件地度量「市场对违约消息的恐惧」。
+【可行性】中。单券 CDS 期权流动性远不及标普 500 指数期权，短期限合约稀少；可行的折中是聚焦少数极活跃的指数 CDS（如 CDX、iTraxx）在重大宏观事件前的报价，识别策略沿用本文的两状态恢复。</p>
+<p><strong>2）外资持有人结构是否放大了 FOMC 事前溢价的横截面波动？</strong>
+【经济故事】FOMC 决定通过汇率与全球资金流影响外资。若一只资产的边际定价者更多是外资，其事前溢价对美国货币政策的敏感度可能系统性更高。
+【可行性】中。可把本文逐次会议的条件溢价（指数层面）与跨资产、跨国的外资持有比例匹配，做横截面回归；难点在于把「指数层面溢价」下沉到能观测外资持仓的资产层面，需要 TIC 数据或基金持仓数据配合。</p>
+<p><strong>3）流动性冲击会不会污染「短期限期权恢复」？</strong>
+【经济故事】本文承认短期限期权流动性差，但把它当作噪声处理。一个更尖锐的问题是：当事前窗口恰逢市场流动性枯竭（如 2008、2020），恢复出的「高溢价」里有多少是真实风险厌恶、多少是流动性溢价？
+【可行性】高。把恢复溢价对会议前窗口的期权买卖价差、做市商库存等流动性代理变量回归，即可分解。数据（OptionMetrics + 高频报价）现成，识别清晰。</p>
+<p><strong>4）用恢复出的条件溢价构建一个「FOMC 择时」策略并扣成本检验。</strong>
+【经济故事】既然 <code>R² = 7.51%</code>，一个自然的问题是它能否转化为可交易、扣除交易成本后仍为正的策略。
+【可行性】高。在每次会议前按恢复溢价的高低调整指数敞口，用真实期权 / 期货价格与现实成本回测。难点不在数据而在诚实——短窗口、低流动的交易成本极易吞掉纸面收益。</p>
+<p><strong>5）把两状态扩到多状态后，「分布形状」本身可预测吗？</strong>
+【经济故事】作者也试过四状态、六状态模型。若状态更细，恢复出的不只是均值溢价，还有事前的<strong>偏度与峰度</strong>——市场是否在某些会议前尤其担心「尾部下行」？
+【可行性】中。多状态需要更多行权价的可靠报价，短期限下数据约束更紧；可只在期权链最丰富的少数会议上做，作为概念验证。</p>
+<h2 id="7">7 我的判断</h2>
+<p>这篇论文最让我欣赏的，是它把一个老问题（FOMC 溢价）和一个老工具（期权恢复）以一种<strong>真正干净</strong>的方式焊在了一起：用「会议后即到期、会议前一刻报价」的期权，把单一事件从一锅风险里隔离出来。<code>1</code> 到 <code>326</code> bps 的跨度本身就是对「常数溢价」假设的有力反驳，而上 / 下行漂移 <code>101</code> / <code>129</code> bps 与事后实现值的对账，比一个孤零零的 <code>R²</code> 更有说服力——它说明模型抓住的不是统计上的巧合，而是经济上的结构。</p>
+<p>对识别，我有两点保留。其一是<strong>偏好依赖</strong>：溢价的绝对水平条件在某个 Epstein–Zin 参数上，虽然均值能与文献对上，但读者应把数值理解为「在该效用模型下的」溢价，而非无模型的事实。其二是<strong>数据覆盖</strong>：192 次会议里只有 83 次有可用的近到期期权，其余近 57% 靠机器学习外推填补——这部分的可信度，本质上取决于隐含波动率曲面外推的可靠性，值得更细的稳健性披露。</p>
+<p>后续我最想看到的，是把流动性这一层正面拆开（提案 3）：在 2008、2020 这种事前窗口恰逢流动性枯竭的时点，恢复出的「高溢价」里究竟有多少是真风险厌恶、多少是被流动性溢价借住了。把这一刀切干净，这套方法才能从「漂亮的恢复」变成「可信的度量」。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Ai, H., Bansal, R. (2018). Risk preferences and the macroeconomic announcement premium. <em>Econometrica</em> 86(4), 1383–1430.</li>
+<li>Ai, H., Han, L.J., Pan, X.N., Xu, L. (2022). The cross-section of monetary policy announcement premium. <em>Journal of Financial Economics</em> 143, 247–276.</li>
+<li>Borovička, J., Hansen, L.P., Scheinkman, J.A. (2016). Misspecified recovery. <em>Journal of Finance</em> 71(6), 2493–2544.</li>
+<li>Campbell, J.Y., Thompson, S.B. (2008). Predicting excess stock returns out of sample: Can anything beat the historical average? <em>Review of Financial Studies</em> 21(4), 1509–1531.</li>
+<li>Lucca, D.O., Moench, E. (2015). The pre-FOMC announcement drift. <em>Journal of Finance</em> 70(1), 329–371.</li>
+<li>Martin, I. (2017). What is the expected return on the market? <em>Quarterly Journal of Economics</em> 132(1), 367–433.</li>
+<li>Ross, S. (2015). The recovery theorem. <em>Journal of Finance</em> 70(2), 615–648.</li>
+<li>Savor, P., Wilson, M. (2013). How much do investors care about macroeconomic risk? Evidence from scheduled economic announcements. <em>Journal of Financial and Quantitative Analysis</em> 48(2), 343–375.</li>
+<li>Vähämaa, S., Äijö, J. (2011). The Fed's policy decisions and implied volatility. <em>Journal of Futures Markets</em> 31(10), 995–1010.</li>
+<li>Welch, I., Goyal, A. (2008). A comprehensive look at the empirical performance of equity premium prediction. <em>Review of Financial Studies</em> 21(4), 1455–1508.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 引言：一个被「平均」掉的问题</a></li>
+        <li><a href="#2">2 核心思路：让「快到期的期权」替你说话</a></li>
+        <li><a href="#3">3 模型：从期权价格到状态价格，再到物理概率</a></li>
+          <li><a href="#3-1">3.1 设定</a></li>
+          <li><a href="#3-2">3.2 第一步：用期权价格反推「跳跃幅度」与「状态价格」</a></li>
+          <li><a href="#3-3">3.3 第二步：从风险中性到物理概率，再到风险溢价</a></li>
+        <li><a href="#4">4 主要结果：原来恐惧真的会「变脸」</a></li>
+        <li><a href="#5">5 文献脉络</a></li>
+        <li><a href="#6-q-a">6 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#7">7 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

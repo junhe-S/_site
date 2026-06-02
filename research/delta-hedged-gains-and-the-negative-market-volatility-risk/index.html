@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>「买了保险，注定亏钱」：从一份对冲组合里，读出波动率的负价格 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>「买了保险，注定亏钱」：从一份对冲组合里，读出波动率的负价格</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2003 RFS]</span> Delta-Hedged Gains and the Negative Market Volatility Risk Premium</div>
+        <div class="paper-source-authors"><a href="/research/author/gurdip-bakshi/">Gurdip Bakshi</a>, <a href="/research/author/nikunj-kapadia/">Nikunj Kapadia</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">期权定价</span>
+        
+        
+        
+        
+        <span class="tag">随机波动率</span>
+        
+        
+        
+        
+        <span class="tag">波动率风险溢价</span>
+        
+        
+        
+        
+        <span class="tag">衍生品</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Bakshi &amp; Kapadia (2003, <em>Review of Financial Studies</em>)</strong>：他们构造了一个「买入看涨期权、用股票对冲掉方向风险」的组合（delta-hedged portfolio），证明只要市场为波动率风险定了价，这个组合的平均损益符号就等于波动率风险溢价的符号；用 S&amp;P 500 指数期权一测，组合系统性地<strong>亏钱</strong>——于是市场波动率风险溢价是<strong>负的</strong>。</p></div>
+<h2 id="1">1 一个看似无害的问题</h2>
+<p>先抛一个问题：波动率（volatility）有没有价格？</p>
+<p>这话听起来像绕口令。我们都知道资产有价格，风险（比如市场风险）也有价格——这正是 CAPM 的全部内容。可「波动率本身」是个更隐蔽的东西。股票收益的波动率是随机的（stochastic volatility），这件事在金融经济学里早有公论。但波动率的「随机变动」这一层风险，到底有没有被市场补偿？如果有，补偿是正还是负？换句话说，<strong>当波动率突然飙升时，那是个让投资者更痛、还是更爽的状态？</strong></p>
+<p>这个问题不只是学术上的好奇。它关系到一个困扰了期权市场很多年的谜：为什么平价期权（at-the-money）的隐含波动率，会<strong>系统性地、持续地高于</strong>事后实现的波动率？[Jackwerth and Rubinstein (1996)] 把这个现象摆上了台面。一个自然的猜想是——期权「贵」了，因为买期权的人愿意为某种东西多付钱。多付的，可能正是一笔波动率风险的保费。</p>
+<p>但猜想归猜想。难点在于：你要怎么把这笔保费<strong>量出来</strong>、还要定出它的<strong>符号</strong>？</p>
+<h2 id="2">2 难在哪里</h2>
+<p>要给波动率风险定价，传统路径是先写下一个完整的随机波动率模型——比如 [Heston (1993)] 或 [Hull and White (1987)]——把波动率过程的漂移、扩散、相关系数统统参数化，再用期权数据去估计，最后从估出来的「风险中性漂移」和「真实漂移」之差里，把波动率风险溢价（volatility risk premium）抠出来。</p>
+<p>这条路能走，但代价不小。你得<strong>同时</strong>赌对两件事：定价核（pricing kernel）长什么样，和波动率过程长什么样。任何一处设定错了，估出来的溢价都不可信。更麻烦的是，波动率本身看不见、要靠模型反推，等于在沙地上盖楼。</p>
+<p>于是一个自然的问题是：<strong>有没有办法绕开这一切？</strong>能不能不假设定价核、不参数化波动率过程，就直接把波动率风险溢价的符号读出来？</p>
+<p>这正是 Bakshi 和 Kapadia 这篇论文最漂亮的一招。</p>
+<h2 id="3">3 核心那一招：把所有风险都对冲掉，只留波动率</h2>
+<p>他们的做法，说穿了非常朴素：构造一个 delta 对冲组合（delta-hedged portfolio）——<strong>买一份看涨期权，同时卖空一定数量的标的股票，使得这个组合对股价的瞬时方向风险为零；剩下的净现金，按无风险利率计息。</strong></p>
+<p>把这个组合的损益叫做「delta 对冲收益」（delta-hedged gains），记为 \(\Pi_{t,t+\tau}\)。它的定义是：</p>
+<p>$$\Pi_{t,t+\tau} \equiv C_{t+\tau} - C_t - \int_t^{t+\tau}\Delta_u\,dS_u - \int_t^{t+\tau} r\,(C_u - \Delta_u S_u)\,du$$</p>
+<p>这里 \(C_t\) 是看涨期权价格，\(\Delta_t \equiv \partial C_t/\partial S_t\) 是对冲比例，\(S_t\) 是标的股价，\(r\) 是无风险利率。</p>
+<p>直觉是这样的：第一项 \(C_{t+\tau}-C_t\) 是期权本身的价值变化；第二项 \(\int \Delta_u\,dS_u\) 是你的股票空头头寸贡献的损益；第三项是净现金按无风险利率应得的利息。三者相减，就是「对冲掉了股价方向、又扣掉了无风险收益」之后，<strong>净剩下来的那点东西</strong>。</p>
+<p>现在关键问题来了：这个 \(\Pi\) 的均值，应该是多少？</p>
+<h2 id="4">4 模型：三种世界，三种答案</h2>
+<h3 id="4-1">4.1 世界一：波动率是常数</h3>
+<p>先看最简单的情形。假设股价服从几何布朗运动（geometric Brownian motion），漂移 \(\mu\)、波动率 \(\sigma\) 都是常数：</p>
+<p>$$\frac{dS_t}{S_t} = \mu\,dt + \sigma\,dW_t^1$$</p>
+<p>由伊藤引理（Itô's lemma），看涨期权价格可以写成</p>
+<p>$$C_{t+\tau} = C_t + \int_t^{t+\tau}\Delta_u\,dS_u + \int_t^{t+\tau}\left(\frac{\partial C_u}{\partial u} + \frac{1}{2}\sigma^2 S_u^2\frac{\partial^2 C_u}{\partial S^2}\right)du$$</p>
+<p>而 Black–Scholes 定价方程告诉我们</p>
+<p>$$\frac{1}{2}\sigma^2 S^2\frac{\partial^2 C}{\partial S^2} + rS\frac{\partial C}{\partial S} + \frac{\partial C}{\partial t} - rC = 0$$</p>
+<p>把这两式一拼，立刻得到 \(\Pi_{t,t+\tau}=0\)。<strong>在连续交易下，对冲组合的损益恒为零。</strong> 这其实是 Black–Scholes 的另一种说法：期权可以被股票和债券完美复制，复制组合不多赚也不少赚。论文进一步指出，这个「均值为零」的性质，对<strong>所有</strong>一维马尔可夫扩散过程都成立。</p>
+<h3 id="4-2">4.2 世界二：波动率随机，但风险不被定价</h3>
+<p>接着放松假设。让波动率自己也变成一个随机过程：</p>
+<p>$$\frac{dS_t}{S_t} = \mu(S_t,\sigma_t)\,dt + \sigma_t\,dW_t^1$$
+$$d\sigma_t = \theta(\sigma_t)\,dt + \xi(\sigma_t)\,dW_t^2$$</p>
+<p>两个布朗运动 \(W^1, W^2\) 之间的相关系数为 \(\rho\)。这时期权价格是 \(S\) 和 \(\sigma\) 两个状态变量的函数，对应的定价方程也多了几项：</p>
+<p>$$\frac{1}{2}\sigma_t^2 S_t^2\frac{\partial^2 C}{\partial S^2} + \frac{1}{2}\xi^2\frac{\partial^2 C}{\partial \sigma^2} + \rho\,\xi\,\sigma_t S_t\frac{\partial^2 C}{\partial S\,\partial\sigma} + rS_t\frac{\partial C}{\partial S} + \big(\theta - \lambda(\sigma_t)\big)\frac{\partial C}{\partial\sigma} + \frac{\partial C}{\partial t} - rC = 0$$</p>
+<p>这里冒出来一个新角色 \(\lambda(\sigma_t)\)，它就是<strong>波动率风险的价格</strong>（price of volatility risk），定义为</p>
+<p>$$\lambda(\sigma_t) \equiv -\frac{\text{cov}(dm_t,\,d\sigma_t)}{m_t}$$</p>
+<p>其中 \(m_t\) 是定价核。这一项是整篇文章的命门：它衡量「波动率的变动」与「定价核的变动」之间的协方差。如果波动率上升恰好发生在投资者最需要钱（定价核高）的坏状态，那么 \(\lambda\) 就不为零。</p>
+<p><strong>但如果波动率风险根本不被定价呢？</strong> 也就是 \(\lambda(\sigma_t)\equiv 0\)。论文证明，此时即便允许离散对冲，delta 对冲收益的均值依然是零（连续交易下精确为零；离散 \(N\) 次对冲下，偏差只有 \(O(1/N)\) 的量级——[Bertsimas, Kogan, and Lo (2000)] 早已说明，这个偏差对称且很小，\(N\approx 10\) 就足够把它压住）。</p>
+<p>也就是说，<strong>只要波动率风险没价格，无论波动率本身怎么随机地上蹿下跳，对冲组合平均下来都不赚不赔。</strong></p>
+<h3 id="4-3">4.3 世界三：波动率风险被定价——反转出现</h3>
+<p>真正关键的一步在这里。如果 \(\lambda \neq 0\)，把定价方程代回期权价格的伊藤展开，经过一番整理（论文的命题 1），delta 对冲收益变成：</p>
+<p>$$\Pi_{t,t+\tau} = \int_t^{t+\tau}\lambda(\sigma_u)\frac{\partial C_u}{\partial\sigma_u}\,du + \int_t^{t+\tau}\xi(\sigma_u)\frac{\partial C_u}{\partial\sigma_u}\,dW_u^2$$</p>
+<p>第二项是一个伊藤积分，由布朗运动驱动，<strong>它的期望是零</strong>（鞅性质）。于是取期望之后，只剩下第一项：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+E_t[\Pi_{t,t+\tau}] = E_t\left[\int_t^{t+\tau} \cssId{a1}{\lambda(\sigma_u)}\;\cssId{a2}{\frac{\partial C_u}{\partial \sigma_u}}\,du\right]
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>波动率风险的价格 λ，符号未知——正是本文要确定的对象</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>期权的 vega（∂C/∂σ），对平价期权恒为正且最大</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这个式子简洁得近乎残忍。它说：<strong>delta 对冲收益的期望，等于「波动率风险的价格」乘以「期权的 vega」，再对时间积分。</strong></p>
+<p>而 vega（\(\partial C/\partial\sigma\)，期权价格对波动率的敏感度）我们知道是<strong>严格为正</strong>的——波动率越大，期权越值钱。于是符号被锁死了：</p>
+<p>$$\text{sign}\big(E_t[\Pi_{t,t+\tau}]\big) = \text{sign}\big(\lambda\big)$$</p>
+<p><strong>对冲组合是赚是赔，符号就等于波动率风险价格的符号。</strong> 你不需要知道定价核，不需要估波动率过程，甚至不需要知道 \(\lambda\) 的大小——只要看一眼对冲组合长期是赚还是亏，就能读出波动率风险溢价的正负。</p>
+<p>这就是把一个原本要靠结构模型硬估的量，化成了一道几乎只需「数零」的实证题。</p>
+<h2 id="5">5 为什么符号「应该」是负的</h2>
+<p>模型之外，还有一段经济学直觉值得讲透。</p>
+<p>考虑一个持有市场组合、相对风险厌恶系数为 \(\gamma\) 的 Lucas–Rubinstein 代表性投资者，其定价核 \(m_t = S_t^{-\gamma}\)。对它用一次伊藤引理，可以得到</p>
+<p>$$\lambda(\sigma_t) = \gamma\,\text{cov}\!\left(\frac{dS_t}{S_t},\,d\sigma_t\right)$$</p>
+<p>现在回想一个老掉牙的实证事实：<strong>波动率往往在市场下跌时飙升</strong>（[French, Schwert, and Stambaugh (1987)]、[Glosten, Jagannathan, and Runkle (1993)]）。这意味着股票收益与波动率<strong>负相关</strong>，于是 \(\lambda < 0\)。</p>
+<p>经济含义于是浮出水面：买期权，本质上是在<strong>给市场暴跌买保险</strong>——因为暴跌往往伴随波动率上升，而期权（vega 为正）在那时会变贵、替你兜底。既然是保险，投资者就愿意为它<strong>多付钱</strong>；多付的代价，就体现为持有这份「保险」的人长期亏损。delta 对冲组合的系统性亏钱，与负的波动率风险溢价，是<strong>同一枚硬币的两面</strong>。</p>
+<h2 id="6">6 数据与检验</h2>
+<p>模型给出了两个可检验的预言：</p>
+<ol>
+<li><strong>时间序列上</strong>：平价期权的 delta 对冲收益，应当与波动率风险溢价相关——波动率越高，亏损越大。</li>
+<li><strong>横截面上</strong>（沿行权价方向）：delta 对冲收益的绝对值由 vega 决定，而 vega 在平价处最大、向两端递减。所以<strong>最亏的应该是平价期权，越是远离平价（deep in/out of the money）越接近零</strong>。</li>
+</ol>
+<p>论文用 S&amp;P 500 指数期权来检验。主要发现：</p>
+<ul>
+<li><strong>delta 中性、正 vega 的策略（买看涨、用股票对冲）显著跑输零</strong>。在所有行权价与到期日的组合上平均，策略损失约为市场指数的 <code>0.05%</code>；对平价看涨期权，损失约 <code>0.13%</code>。这个量级在经济上不小——对平价期权而言，<code>0.13%</code> 相当于<strong>期权价值的 8%</strong>。</li>
+<li><strong>横截面回归</strong>表明，控制了波动率和到期日之后，delta 对冲收益与 vega <strong>负相关</strong>，亏损在平价处最大，与预言完全吻合。把对冲期限拉长，亏损更深。结果对时间、对加入看跌期权都稳健。</li>
+<li><strong>波动率越高的时候，亏损越深</strong>。这条损失贯穿整个样本期，无法用「市场波动率长期下行」来搪塞。</li>
+</ul>
+<div class="article-image"><img alt="Table 4: supports the central implication that the volatility risk premium is" src="assets/table-4.png" /></div>
+<p><em>Table 4: supports the central implication that the volatility risk premium is</em></p>
+<p>那么，会不会是<strong>跳跃风险</strong>（jump risk）而非波动率风险在作祟？毕竟「怕暴跌」也可以表现为对跳跃的恐惧。论文从三个角度排查：用风险中性分布的偏度、峰度（跳跃恐惧的代理）去解释对冲损失，发现风险中性偏度只能解释<strong>短期</strong>期权的一部分损失，而波动率风险溢价在<strong>所有到期日</strong>上都是主导因素；在「崩盘前」子样本里，对冲组合对看涨、看跌依然平均亏损；尾部事件之后买入的期权，正负收益之间也没有显著差别。结论是：跳跃恐惧虽然合理，却<strong>不能单独</strong>解释这些系统性损失。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>这篇论文与后来一条「特质波动率—期权收益」的研究血脉相承——同样是用 delta 对冲收益当探针。关于这一点，可参见<a href="/research/cross-section-of-option-returns-and-idiosyncratic-stock/">《波动越「自己的」，期权越不值钱——一条藏在 delta 对冲收益里的暗线》</a>。</p></div>
+<h2 id="7">7 文献脉络</h2>
+<p>把这条线索捋一捋。</p>
+<p>最早的源头，是两类看似无关的实证事实：一是「波动率随机」的共识，以及 [French, Schwert, and Stambaugh (1987)]、[Glosten, Jagannathan, and Runkle (1993)] 发现的「跌时波动率升」这一<strong>杠杆/反馈效应</strong>；二是 [Hull and White (1987)]、[Heston (1993)] 在理论上把随机波动率写进期权定价，引入了「波动率风险的价格」这个概念，但符号和大小始终悬而未决。</p>
+<p>接着，[Jackwerth and Rubinstein (1996)] 把「隐含波动率系统性高于实现波动率」这个谜摆上桌面，给「期权贵在哪」提供了一个亟待解释的实证锚点。</p>
+<p>然后，[Bertsimas, Kogan, and Lo (2000)] 在方法上备好了弹药——他们刻画了离散对冲下复制误差的渐近分布，证明它对称且均值为零，这恰好成了本文「\(\lambda=0\) 时对冲收益均值为零」的基石。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>真正关键的一步，是本文（2003）把这些碎片拼成了一个<strong>无需参数化</strong>的检验：用 delta 对冲收益的符号直接识别 \(\lambda\) 的符号。几乎与此同时，[Coval and Shumway (2001)] 从期权收益、[Buraschi and Jackwerth (2001)] 从「期权是不是冗余证券」的角度，给出了波动率风险溢价非零的旁证——本文与它们互为印证，但路径独立、识别更干净。这条线之后又汇入 [Pan (2002)] 等对跳跃与波动率联合定价的研究，最终长成今天 VIX 衍生品、方差互换（variance swap）定价的庞大文献。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：delta 对冲收益和直接算「期权收益」有什么区别？</strong></p>
+<blockquote>
+<p>直接持有期权的收益里，混着标的方向风险（delta）、时间价值、波动率风险好几样东西，符号被搅成一团。delta 对冲把方向风险减掉、再扣掉无风险收益，于是命题 1 保证：剩下的均值<strong>只</strong>反映波动率风险溢价（和被单独排查的跳跃）。这是它比裸期权收益更干净的地方。</p>
+</blockquote>
+<p><strong>Q：识别可信吗？会不会只是离散对冲带来的偏差？</strong></p>
+<blockquote>
+<p>这正是论文最在意的反驳。命题 1 第 2 部分证明：即使离散对冲，\(\lambda=0\) 时均值偏差只有 \(O(1/N)\)；[Bertsimas, Kogan, and Lo (2000)] 的模拟也显示 \(N\approx10\) 就够。而实证里观察到的损失（平价期权占期权价值的 8%）远大于这个偏差量级，所以不太可能是离散化的产物。</p>
+</blockquote>
+<p><strong>Q：vega 真的恒为正吗？万一不是，符号论证就垮了。</strong></p>
+<blockquote>
+<p>对标准期权，vega 严格为正是教科书结论；论文还专门用数据<strong>估计了 vega 并验证其为正</strong>，把这块地基夯实了。需要提醒的是，深度实值/虚值期权的 vega 趋近于零，对识别波动率风险溢价几乎没有信息量——这也是为什么检验聚焦在平价附近。</p>
+</blockquote>
+<p><strong>Q：负的波动率风险溢价，和「负的方差风险溢价」是一回事吗？</strong></p>
+<blockquote>
+<p>高度相关但不完全等同。本文识别的是连续波动率过程那一层的风险价格 \(\lambda\)，符号为负；后续 variance swap 文献度量的方差风险溢价，往往把跳跃成分也卷了进来。本文的贡献恰恰在于<strong>把波动率风险与跳跃恐惧分开</strong>，证明前者是主导。</p>
+</blockquote>
+<p><strong>Q：这对「隐含波动率为何高于实现波动率」之谜给了什么答案？</strong></p>
+<blockquote>
+<p>给了一个内部自洽的解释：负的 \(\lambda\) 抬高了波动率过程的风险中性漂移，从而抬高期权价格、抬高隐含波动率。换句话说，那个长期为正的「隐含—实现」缺口，正是投资者为下行保险付的保费的镜像。</p>
+</blockquote>
+<p><strong>Q：为什么用指数期权，而不是个股期权？</strong></p>
+<blockquote>
+<p>因为「跌时波动率升」这个负相关，在<strong>市场层面</strong>最强、最稳定，对应的市场波动率风险溢价也最干净。个股的特质波动率风险溢价是另一个故事（且符号可能相反），需要单独处理。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 信用市场里的「波动率保险」溢价</strong></p>
+<blockquote>
+<p>【经济故事】公司债利差里含着一份对资产波动率的空头敞口——资产波动率上升，违约期权变贵，债主受损。能否照搬 delta 对冲的思路，构造一个「买公司债、用股票/CDS 对冲掉方向与违约风险」的组合，从其系统性损益里读出<strong>信用市场的波动率风险溢价</strong>符号？
+【可行性】中。需要 TRACE 的公司债成交、对应股票与 CDS 数据；识别上的难点是公司债的离散交易和流动性噪声会污染「对冲收益」，需要更稳健的对冲比例估计。doable，但比指数期权脏得多。</p>
+</blockquote>
+<p><strong>2. 外资持有人与波动率风险溢价的横截面</strong></p>
+<blockquote>
+<p>【经济故事】不同投资者群体对「下行保险」的需求强度不同。若某些市场/个股的外资持有比例更高，而外资更厌恶尾部与波动，那么这些标的的期权 delta 对冲损失（即更负的 \(\lambda\)）应当更深。
+【可行性】中。需要个股期权数据 + 外资持股（如各国 FactSet/EPFR 或本地登记数据）。识别可用「可投资度」放开作为外生冲击；难点是个股期权流动性与 vega 估计的噪声。</p>
+</blockquote>
+<p><strong>3. 流动性枯竭时刻的 \(\lambda\) 动态</strong></p>
+<blockquote>
+<p>【经济故事】本文发现「波动率越高、亏损越深」。一个自然延伸是：在流动性危机（如 2008、2020 三月）中，做市商的对冲能力本身受限，波动率风险的价格会不会<strong>跳变</strong>？把 \(\lambda\) 的时变与中介资产负债表约束挂钩，是一条诱人的暗线。
+【可行性】高。指数期权数据齐全，事件窗口清晰，可与中介杠杆因子（如一级交易商杠杆）做时序回归。识别相对干净，doable。</p>
+</blockquote>
+<h2 id="9">9 我的判断</h2>
+<p>这篇论文的贡献，在于一种<strong>「少假设、强识别」的优雅</strong>。它没有去拟合任何一个随机波动率模型，却用一个对冲组合的损益符号，干净利落地把波动率风险溢价的正负钉死了。命题 1 那个 \(E[\Pi]=E[\int\lambda\cdot\text{vega}\,du]\) 的等式，是那种「一旦看懂就觉得本该如此」的结果——而真正难的，是想到去构造这个组合。它把一个结构计量的难题，翻译成了一道几乎只靠符号就能裁决的实证题，这是方法论上的漂亮之处。</p>
+<p>对识别的担忧，我有两点。其一，<strong>离散对冲偏差</strong>虽被论证为 \(O(1/N)\)，但实际数据里对冲频率、交易成本、bid-ask 价差都会侵蚀「对冲收益」的测量，8% 这个量级里有多少是真溢价、多少是摩擦，值得用更细的日内数据再核一遍。其二，<strong>跳跃与波动率的纠缠</strong>虽被三种方法排查，但用风险中性偏度当跳跃代理终究是间接的；在更现代的框架里（同时估计跳跃强度与波动率），这条结论是否依然稳健，是我想看到的后续。</p>
+<p>接下来最想看的，是把这套「对冲收益符号识别」搬到<strong>信用与外资</strong>两个场景：公司债的波动率保险溢价、以及不同持有人结构下 \(\lambda\) 的横截面差异。如果那里也能读出一个稳定的负号，这篇论文的思想就不只属于指数期权，而属于一切「带着隐含期权的资产」。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Bakshi, G., and N. Kapadia (2003). Delta-Hedged Gains and the Negative Market Volatility Risk Premium. <em>Review of Financial Studies</em> 16(2), 527–566.</li>
+<li>Bertsimas, D., L. Kogan, and A. Lo (2000). When is Time Continuous? <em>Journal of Financial Economics</em> 55, 173–204.</li>
+<li>Buraschi, A., and J. Jackwerth (2001). The Price of a Smile: Hedging and Spanning in Option Markets. <em>Review of Financial Studies</em> 14, 495–527.</li>
+<li>Coval, J., and T. Shumway (2001). Expected Option Returns. <em>Journal of Finance</em> 56, 983–1009.</li>
+<li>French, K., W. Schwert, and R. Stambaugh (1987). Expected Stock Returns and Volatility. <em>Journal of Financial Economics</em> 19, 3–29.</li>
+<li>Glosten, L., R. Jagannathan, and D. Runkle (1993). On the Relation Between the Expected Value and the Volatility of the Nominal Excess Returns on Stocks. <em>Journal of Finance</em> 48, 1779–1801.</li>
+<li>Heston, S. (1993). A Closed-Form Solution for Options with Stochastic Volatility with Applications to Bond and Currency Options. <em>Review of Financial Studies</em> 6, 327–343.</li>
+<li>Hull, J., and A. White (1987). The Pricing of Options with Stochastic Volatilities. <em>Journal of Finance</em> 42, 281–300.</li>
+<li>Jackwerth, J., and M. Rubinstein (1996). Recovering Probability Distributions from Option Prices. <em>Journal of Finance</em> 51, 1611–1631.</li>
+<li>Pan, J. (2002). The Jump-Risk Premia Implicit in Options: Evidence from an Integrated Time-Series Study. <em>Journal of Financial Economics</em> 63, 3–50.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个看似无害的问题</a></li>
+        <li><a href="#2">2 难在哪里</a></li>
+        <li><a href="#3">3 核心那一招：把所有风险都对冲掉，只留波动率</a></li>
+        <li><a href="#4">4 模型：三种世界，三种答案</a></li>
+          <li><a href="#4-1">4.1 世界一：波动率是常数</a></li>
+          <li><a href="#4-2">4.2 世界二：波动率随机，但风险不被定价</a></li>
+          <li><a href="#4-3">4.3 世界三：波动率风险被定价——反转出现</a></li>
+        <li><a href="#5">5 为什么符号「应该」是负的</a></li>
+        <li><a href="#6">6 数据与检验</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#9">9 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

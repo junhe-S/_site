@@ -988,8 +988,16 @@ def build_all(no_exec=False, single_post=None):
                 "date": date,
                 "date_short": date.strftime("%b %Y"),
                 "section": section,
+                "hidden": str(meta.get("hidden", "")).strip().lower() in ("true", "yes", "1"),
                 **parse_venue(meta.get("venue", "")),
             })
+        # Posts flagged `hidden: true` are dropped from every listing (the post
+        # page itself is still built and reachable by URL). On the research
+        # listing we also drop the catch-all "Other" journal group (posts whose
+        # venue carries no recognized journal).
+        all_meta = [m for m in all_meta if not m["hidden"]]
+        if section == "research":
+            all_meta = [m for m in all_meta if m.get("journal") != "Other"]
         build_listing(all_meta, section=section)
         if all_meta:
             print(f"  Built {section} listing ({len(all_meta)} pages)")

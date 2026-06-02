@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13. Stochastic Integration – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>13. Stochastic Integration</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">随机积分</span><span class="lang en">Stochastic Integral</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">随机微分方程</span><span class="lang en">SDE</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">简单过程</span><span class="lang en">Simple Process</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">鞅</span><span class="lang en">Martingale</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">L²收敛</span><span class="lang en">L² Convergence</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>13. Stochastic Integration</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+Part II 开篇，构造关于布朗运动的<strong>随机积分</strong>。§13.1 随机微分方程与随机积分（Def 13.1 SDE \(dX_t=R_t dt+A_t dB_t\) (13.1)，理解为 \(X_t\) 在每一时刻以漂移 \(R_t\)、方差 \(A_t^2\) 演化；Rmk 13.1 \(A_t\)=下注、\(dB_t\)=赌局回报，故 \(dB_t\) 须在 \(A_t\) 之后；导数难定义故先定义积分 \(X_t=X_0+\int R_s ds+\int A_s dB_s\) (13.2)，只需处理随机部分 \(\int A_s dB_s\)）。§13.2 随机积分：13.2.1 <strong>简单过程</strong>（Def 13.2 简单过程、Def 13.3 其随机积分 (13.3)/(13.4)、Prop 13.1 四性质：线性、鞅、方差 \(\mathrm{Var}(Z_t)=\int_0^t\mathbb E[A_s^2]ds\)、连续；Rmk 13.5 只需 \(\mathrm{Var}(Z_t)<\infty\)）；13.2.2 <strong>连续过程</strong>（Lemma 13.1 用简单过程逼近 (13.8)、有界收敛定理 Thm 13.1；\(\{Z_t^{(n)}\}\) 是 \(\mathcal L^2\) Cauchy 列，取极限定义 \(Z_t\)；Prop 13.2 三性质保留但<strong>鞅性不再保证</strong>；Rmk 13.6 用"赌徒"反例说明）。无图。</p></div>
+</div>
+<div class="lang en">
+<h1>13. Stochastic Integration</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+The opening chapter of Part II constructs the <strong>stochastic integral</strong> with respect to Brownian motion. §13.1 stochastic differential equation and stochastic integral (Def 13.1 SDE \(dX_t=R_t dt+A_t dB_t\) (13.1), understood as \(X_t\) evolving with drift \(R_t\) and variance \(A_t^2\) at each instant; Rmk 13.1 \(A_t\) = bet, \(dB_t\) = the gamble's return, so \(dB_t\) must lie in the future of \(A_t\); since the derivative is hard to define, define the integral \(X_t=X_0+\int R_s ds+\int A_s dB_s\) (13.2), needing only the stochastic part \(\int A_s dB_s\)). §13.2 stochastic integral: 13.2.1 <strong>simple process</strong> (Def 13.2 simple process, Def 13.3 its stochastic integral (13.3)/(13.4), Prop 13.1 four properties: linearity, martingale, variance \(\mathrm{Var}(Z_t)=\int_0^t\mathbb E[A_s^2]ds\), continuity; Rmk 13.5 only \(\mathrm{Var}(Z_t)<\infty\) needed); 13.2.2 <strong>continuous process</strong> (Lemma 13.1 approximation by simple processes (13.8), bounded convergence theorem Thm 13.1; \(\{Z_t^{(n)}\}\) is an \(\mathcal L^2\) Cauchy sequence whose limit defines \(Z_t\); Prop 13.2 three properties survive but the <strong>martingale property is no longer guaranteed</strong>; Rmk 13.6 the "gambler" counterexample). No figures.</p></div>
+</div>
+<div class="lang zh">
+<h2 id="13-1-stochastic-differential-equation-and-stochastic-integral">13.1 随机微分方程与随机积分 / Stochastic Differential Equation and Stochastic Integral</h2>
+</div>
+<div class="lang en">
+<h2 id="13-1-stochastic-differential-equation-and-stochastic-integral">13.1 Stochastic Differential Equation and Stochastic Integral</h2>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 13.1（随机微分方程）与 (13.1)、(13.2) / Definition 13.1 (SDE) and (13.1), (13.2)
+<span class="lang zh"><strong>定义 13.1（随机微分方程）</strong>：设 \(\{S_t\}\) 是随机过程。称 \(dX_t=R_t dt+A_t dS_t\) 为<strong>随机微分方程 (SDE)</strong>，它与常微分方程相似，只是随机性通过 \(dS_t\) 嵌入。我们关心带布朗运动的 SDE：设 \(\{B_t\}\) 是标准一维布朗运动，则</span><span class="lang en"><strong>Definition 13.1 (Stochastic differential equation)</strong>: let \(\{S_t\}\) be a stochastic process. The equation \(dX_t=R_t dt+A_t dS_t\) is a <strong>stochastic differential equation (SDE)</strong>, similar to an ODE except that randomness is embedded through \(dS_t\). We are interested in the SDE with Brownian motion: let \(\{B_t\}\) be a standard one-dimensional Brownian motion, then</span></p>
+<p>$$dX_t=R_t dt+A_t dB_t.\tag{13.1}$$</p>
+<p><span class="lang zh">理解 (13.1)：\(\{X_t\}\) 是随机过程；在任意时刻 \(t\)，\(X_t\) 以漂移 \(R_t\)、方差 \(A_t^2\) 像布朗运动那样演化。由于 \(X_t\) 的导数难以定义，先定义随机积分 \(X_t=X_0+\int_0^t R_s ds+\int_0^t A_s dB_s\) (13.2)，并称 \(X_t\) 是 SDE (13.1) 的解当且仅当它满足 (13.2)。\(\int_0^t R_s ds\) 是普通积分，故只需理解随机部分 \(\int_0^t A_s dB_s\)。</span><span class="lang en">Understanding (13.1): \(\{X_t\}\) is a stochastic process; at any time \(t\), \(X_t\) evolves like a Brownian motion with drift \(R_t\) and variance \(A_t^2\). Since the derivative of \(X_t\) is hard to define, we first define the stochastic integral \(X_t=X_0+\int_0^t R_s ds+\int_0^t A_s dB_s\) (13.2), and say \(X_t\) solves the SDE (13.1) iff it satisfies (13.2). As \(\int_0^t R_s ds\) is an ordinary integral, we only need to make sense of the stochastic part \(\int_0^t A_s dB_s\).</span></p>
+<p>[!tip] 注 13.1、注 13.2 / Remarks 13.1, 13.2
+<span class="lang zh"><strong>注 13.1</strong>：在 (13.1) 中，\(A_t\) 可理解为<strong>下注</strong>（投资额），\(dB_t\) 是 \(A_t\) 的<strong>赌局回报</strong>（投资收益）。故关键是让 \(dB_t\) 处于 \(A_t\) 的"未来"（后文随机积分讨论中将强调）。<strong>注 13.2</strong>：一般地，(13.1)、(13.2) 中的 \(\{X_t\},\{R_t\},\{A_t\},\{B_t\}\) 都是随机过程。</span><span class="lang en"><strong>Remark 13.1</strong>: in (13.1), \(A_t\) can be interpreted as the <strong>bet</strong> (amount invested), and \(dB_t\) is the <strong>gamble</strong> (investment return) for \(A_t\). So it is important to make \(dB_t\) lie in the future of \(A_t\) (emphasized later in the stochastic-integral discussion). <strong>Remark 13.2</strong>: in general, \(\{X_t\},\{R_t\},\{A_t\},\{B_t\}\) in (13.1) and (13.2) are all stochastic processes.</span></p></div>
+<h2 id="13-2-stochastic-integral">13.2 随机积分 / Stochastic Integral</h2>
+<div class="callout"><div class="callout-title">Tip</div><p>构造思路 / Construction strategy
+<span class="lang zh">要严格定义与 (13.2) 相关的过程 \(\{Z_t\}\)，其中 \(Z_t=\int_0^t A_s dB_s\)。设 \((\Omega,\mathcal F,\mathbb P)\) 是大概率空间，\(\{B_t\}\) 是其上的标准一维布朗运动且适应于滤波 \(\{\mathcal F_t\}\)。先对<strong>简单过程</strong> \(\{A_t\}\) 定义 \(\{Z_t\}\)，再用此结果<strong>逼近连续过程</strong> \(\{A_t\}\) 的 \(\{Z_t\}\)。</span><span class="lang en">To properly define the process \(\{Z_t\}\) related to (13.2), where \(Z_t=\int_0^t A_s dB_s\). Let \((\Omega,\mathcal F,\mathbb P)\) be a large probability space, \(\{B_t\}\) a standard one-dimensional Brownian motion on it adapted to a filtration \(\{\mathcal F_t\}\). We first define \(\{Z_t\}\) for a <strong>simple process</strong> \(\{A_t\}\), then use the result to <strong>approximate</strong> \(\{Z_t\}\) for a continuous process \(\{A_t\}\).</span></p></div>
+<h3 id="13-2-1-stochastic-integral-for-simple-process">13.2.1 简单过程的随机积分 / Stochastic Integral for Simple Process</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 13.2（简单过程）与注 13.3 / Definition 13.2 (Simple process) and Remark 13.3
+<span class="lang zh"><strong>定义 13.2（简单过程）</strong>：\(\{A_t\}\) 称为<strong>有界（或 \(\mathcal L^2\)）简单过程</strong>，若存在有限时刻集 \(0=t_0<t_1<\dots<t_n<\infty\) 与有限个有界（或 \(\mathcal L^2\)）随机变量 \(Y_0,Y_1,\dots,Y_n\)（\(Y_j\) 关于 \(\mathcal F_{t_j}\) 可测），使得对 \(j=0,1,\dots,n-1\)，\(A_t=Y_j\)（\(t_j\le t<t_{j+1}\)），且 \(A_t=Y_n\)（\(t\ge t_n\)）（脚注 13.1：\(\mathcal L^2\) 空间 \(\mathcal L^2=\{x\in\mathbb R:\mathbb E[|x|^2]<\infty\}\)，即二阶矩有界的随机变量空间）。<strong>注 13.3</strong>：简单过程只在有限个时刻改变取值，两次改变之间保持常数。</span><span class="lang en"><strong>Definition 13.2 (Simple process)</strong>: \(\{A_t\}\) is a <strong>bounded (or \(\mathcal L^2\)) simple process</strong> if there exist a finite collection of times \(0=t_0<t_1<\dots<t_n<\infty\) and finitely many bounded (or \(\mathcal L^2\)) random variables \(Y_0,Y_1,\dots,Y_n\) (\(Y_j\) being \(\mathcal F_{t_j}\)-measurable) such that for \(j=0,1,\dots,n-1\), \(A_t=Y_j\) (\(t_j\le t<t_{j+1}\)), and \(A_t=Y_n\) (\(t\ge t_n\)) (footnote 13.1: the \(\mathcal L^2\) space \(\mathcal L^2=\{x\in\mathbb R:\mathbb E[|x|^2]<\infty\}\), the space of random variables with bounded second moment). <strong>Remark 13.3</strong>: a simple process changes value only finitely often, staying constant between any two changes.</span></p>
+<p>[!important] 定义 13.3（简单过程的随机积分）与注 13.4 / Definition 13.3 and Remark 13.4
+<span class="lang zh"><strong>定义 13.3（简单过程的随机积分）</strong>：设 \(\{A_t\}\) 是有界简单过程。定义其随机积分过程 \(\{Z_t\}\) 使 \(Z_t=\int_0^t A_s dB_s\) (13.3)。由定义 13.2 可改写为</span><span class="lang en"><strong>Definition 13.3 (Stochastic integral for a simple process)</strong>: let \(\{A_t\}\) be a bounded simple process. Define its stochastic integral process \(\{Z_t\}\) by \(Z_t=\int_0^t A_s dB_s\) (13.3). By Definition 13.2 this rewrites as</span></p>
+<p>$$Z_t=\left[\sum_{i=1}^j Y_{i-1}(B_{t_i}-B_{t_{i-1}})\right]+Y_j(B_t-B_{t_j})\quad\text{for }t_j\le t<t_{j+1}.\tag{13.4}$$</p>
+<p><span class="lang zh"><strong>注 13.4</strong>：(13.4) 中 \(dB_t=B_{t_i}-B_{t_{i-1}}\) 被定义为处在 \(A_t=Y_{i-1}\) 的"未来"（对每个 \(t=t_i\)）。</span><span class="lang en"><strong>Remark 13.4</strong>: in (13.4), \(dB_t=B_{t_i}-B_{t_{i-1}}\) is defined to be in the future of \(A_t=Y_{i-1}\) for every \(t=t_i\).</span></p>
+<p>[!important] 命题 13.1（简单过程随机积分的性质）/ Proposition 13.1
+<span class="lang zh">\(\{Z_t\}\)（由 (13.3)/(13.4) 定义）满足：1. <strong>线性</strong>：若 \(\{A_t\},\{C_t\}\) 是两个有界简单过程，\(\forall a,b\in\mathbb R\)，\(\int_0^t(aA_s+bC_s)dB_s=a\int_0^t A_s dB_s+b\int_0^t C_s dB_s\) (13.5)；2. <strong>鞅</strong>：\(\{Z_t\}\) 是关于 \(\{\mathcal F_t\}\) 的鞅；3. <strong>方差</strong>：\(\mathrm{Var}(Z_t)=\int_0^t\mathbb E[A_s^2]\,ds\)；4. <strong>连续</strong>：以概率 1，\(t\mapsto Z_t\) 连续。</span><span class="lang en">\(\{Z_t\}\) (defined by (13.3)/(13.4)) satisfies: 1. <strong>Linearity</strong>: if \(\{A_t\},\{C_t\}\) are two bounded simple processes, then for all \(a,b\in\mathbb R\), \(\int_0^t(aA_s+bC_s)dB_s=a\int_0^t A_s dB_s+b\int_0^t C_s dB_s\) (13.5); 2. <strong>Martingale</strong>: \(\{Z_t\}\) is a martingale w.r.t. \(\{\mathcal F_t\}\); 3. <strong>Variance</strong>: \(\mathrm{Var}(Z_t)=\int_0^t\mathbb E[A_s^2]\,ds\); 4. <strong>Continuity</strong>: with probability 1, \(t\mapsto Z_t\) is continuous.</span></p>
+<p>[!note]- 命题 13.1 证明 / Proof of Proposition 13.1
+<span class="lang zh"><strong>线性</strong>：取同时包含 \(\{A_t\},\{C_t\}\) 所有变点的更细网格 \(\{t_0,t_1^{A,C},\dots\}\)，在共同网格上 (13.4) 的求和逐项线性叠加即得 (13.5)。<strong>鞅</strong>：\(Z_t\) 关于 \(\mathcal F_t\) 可测、\(\mathbb E[|Z_t|]<\infty\)（\(\{A_t\}\) 有界）。对 \(s<t\)（设 \(s=t_j,t=t_k,j<k\)）：\(\mathbb E[Z_t\mid\mathcal F_s]=Z_s+\sum_{i=j+1}^k\mathbb E[Y_{i-1}(B_{t_i}-B_{t_{i-1}})\mid\mathcal F_s]=Z_s+\sum_{i=j+1}^k\mathbb E[Y_{i-1}\underbrace{\mathbb E[B_{t_i}-B_{t_{i-1}}\mid\mathcal F_{t_{i-1}}]}_{=\,0}\mid\mathcal F_s]=Z_s\)（用塔性质与增量独立性）。<strong>方差</strong>：\(\mathbb E[Z_t]=0\)（鞅），故 \(\mathrm{Var}(Z_t)=\mathbb E[Z_t^2]\)。展开 \(Z_t^2\)（13.6），交叉项 \(\mathbb E[Y_{i-1}(B_{t_i}-B_{t_{i-1}})Y_{k-1}(B_{t_k}-B_{t_{k-1}})]=0\)（\(i<k\)，增量独立 \(\mathbb E[B_{t_k}-B_{t_{k-1}}\mid\mathcal F_{t_{k-1}}]=0\)），平方项 \(\mathbb E[Y_{i-1}^2(B_{t_i}-B_{t_{i-1}})^2]=\mathbb E[Y_{i-1}^2]\,(t_i-t_{i-1})\)，故 \(\mathbb E[Z_t^2]=\sum_i\mathbb E[Y_{i-1}^2](t_i-t_{i-1})=\int_0^t\mathbb E[A_s^2]\,ds\)。<strong>连续</strong>：\(dZ_t=A_t dB_t\)，\(A_t\) 有界，故 \(B_t\) 的连续性（概率 1）蕴含 \(Z_t\) 连续。\(\blacksquare\)</span><span class="lang en"><strong>Linearity</strong>: take a finer grid \(\{t_0,t_1^{A,C},\dots\}\) containing all change points of both \(\{A_t\},\{C_t\}\); on the common grid the sum in (13.4) superposes term-by-term linearly, giving (13.5). <strong>Martingale</strong>: \(Z_t\) is \(\mathcal F_t\)-measurable with \(\mathbb E[|Z_t|]<\infty\) (\(\{A_t\}\) bounded). For \(s<t\) (say \(s=t_j,t=t_k,j<k\)): \(\mathbb E[Z_t\mid\mathcal F_s]=Z_s+\sum_{i=j+1}^k\mathbb E[Y_{i-1}(B_{t_i}-B_{t_{i-1}})\mid\mathcal F_s]=Z_s+\sum_{i=j+1}^k\mathbb E[Y_{i-1}\underbrace{\mathbb E[B_{t_i}-B_{t_{i-1}}\mid\mathcal F_{t_{i-1}}]}_{=\,0}\mid\mathcal F_s]=Z_s\) (using the tower property and increment independence). <strong>Variance</strong>: \(\mathbb E[Z_t]=0\) (martingale), so \(\mathrm{Var}(Z_t)=\mathbb E[Z_t^2]\). Expanding \(Z_t^2\) (13.6), the cross terms \(\mathbb E[Y_{i-1}(B_{t_i}-B_{t_{i-1}})Y_{k-1}(B_{t_k}-B_{t_{k-1}})]=0\) (\(i<k\), by increment independence \(\mathbb E[B_{t_k}-B_{t_{k-1}}\mid\mathcal F_{t_{k-1}}]=0\)), and the square terms \(\mathbb E[Y_{i-1}^2(B_{t_i}-B_{t_{i-1}})^2]=\mathbb E[Y_{i-1}^2]\,(t_i-t_{i-1})\), so \(\mathbb E[Z_t^2]=\sum_i\mathbb E[Y_{i-1}^2](t_i-t_{i-1})=\int_0^t\mathbb E[A_s^2]\,ds\). <strong>Continuity</strong>: \(dZ_t=A_t dB_t\), \(A_t\) bounded, so the continuity of \(B_t\) (with probability 1) implies \(Z_t\) is continuous. \(\blacksquare\)</span></p>
+<p>[!tip] 注 13.5 / Remark 13.5
+<span class="lang zh">\(\{A_t\}\) 不必有界，只需满足 \(\mathrm{Var}(Z_t)=\mathbb E[Z_t^2]=\int_0^t\mathbb E[A_s^2]\,ds<\infty\)，即足以保证 \(\mathbb E[|Z_t|]<\infty\)（二阶矩存在蕴含低阶矩存在），从而保证 \(\{Z_t\}\) 的鞅性。</span><span class="lang en">\(\{A_t\}\) need not be bounded; we only need \(\mathrm{Var}(Z_t)=\mathbb E[Z_t^2]=\int_0^t\mathbb E[A_s^2]\,ds<\infty\), which is enough to guarantee \(\mathbb E[|Z_t|]<\infty\) (the existence of a higher moment implies that of lower moments) and thus the martingale property of \(\{Z_t\}\).</span></p></div>
+<h3 id="13-2-2-stochastic-integral-for-continuous-process">13.2.2 连续过程的随机积分 / Stochastic Integral for Continuous Process</h3>
+<div class="callout"><div class="callout-title">Important</div><p>引理 13.1（用简单过程逼近）/ Lemma 13.1 (Approximation by simple processes)
+<span class="lang zh">基于上文简单过程 \(\{A_t\}\) 的讨论，现考虑连续过程 \(\{A_t\}\)（路径以概率 1 连续、适应于 \(\{\mathcal F_t\}\)，脚注 13.4：这蕴含 \(A_t\) 对 \(\forall t\) 是 \(\mathcal F_t\) 可测）的随机积分 \(Z_t=\int_0^t A_s dB_s\) (13.7)。<strong>引理 13.1</strong>：若 \(\{A_t\}\) 路径以概率 1 连续、有界、适应于 \(\{\mathcal F_t\}\)，则存在一列同界的简单过程 \(\left\{\{A_t^{(n)}\}_{t\ge0}\right\}_{n\in\mathbb N}\)，使得对每个 \(t\)，\(\lim_{n\to\infty}\int_0^t\mathbb E\!\left[(A_s^{(n)}-A_s)^2\right]ds=0\) (13.8)。</span><span class="lang en">Based on the discussion of the simple process \(\{A_t\}\) above, now consider the stochastic integral \(Z_t=\int_0^t A_s dB_s\) (13.7) for a continuous process \(\{A_t\}\) (continuous path with probability 1, adapted to \(\{\mathcal F_t\}\), footnote 13.4: this implies \(A_t\) is \(\mathcal F_t\)-measurable for all \(t\)). <strong>Lemma 13.1</strong>: if \(\{A_t\}\) has a continuous path with probability 1, is bounded, and is adapted to \(\{\mathcal F_t\}\), then there exists a sequence of simple processes \(\left\{\{A_t^{(n)}\}_{t\ge0}\right\}_{n\in\mathbb N}\) with the same bound such that for every \(t\), \(\lim_{n\to\infty}\int_0^t\mathbb E\!\left[(A_s^{(n)}-A_s)^2\right]ds=0\) (13.8).</span></p>
+<p>[!note]- 引理 13.1 证明（含有界收敛定理 Thm 13.1）/ Proof of Lemma 13.1 (with the Bounded Convergence Theorem 13.1)
+<span class="lang zh">给定 \(n\)，定义 \(A_s^{(n)}=\dfrac{\int_{(k-1)/n}^{k/n}A_r\,dr}{1/n}=n\int_{(k-1)/n}^{k/n}A_r\,dr\)（\(s\in[\tfrac kn,\tfrac{k+1}n)\)）。即 \(A_s^{(n)}\) 在每个小区间 \([\tfrac kn,\tfrac{k+1}n)\) 取 \(A_t\) 在前一小区间 \([\tfrac{k-1}n,\tfrac kn]\) 上的平均值，故 \(\{A_t^{(n)}\}\) 是简单过程。因 \(A_s^{(n)}\) 是小邻域上的平均且 \(t\mapsto A_t\) 以概率 1 连续，故 \(\lim_{n\to\infty}A_s^{(n)}=A_s\)。令 \(f_n(s)=(A_s^{(n)}-A_s)^2\)，则 \(f_n(s)\) 逐点收敛到 \(0\)。\(\{f_n(s)\}\) 一致有界（\(\{A_s\}\) 有界），由<strong>有界收敛定理</strong>（Thm 13.1：若 \(\{f_n\}\) 是有界测度空间 \((X,\Sigma,\mu)\) 上一致有界的可测函数列、逐点收敛到 \(f\)，则 \(\lim_{n\to\infty}\int_X f_n\,d\mu=\int_X f\,d\mu\)）在 Lebesgue 测度下 \(\lim_{n\to\infty}\int_0^t f_n(s)\,ds=\int_0^t f(s)\,ds=0\) (13.9)。再令 \(g_n(t)=\int_0^t(A_s^{(n)}-A_s)^2\,ds\)，由 (13.9) \(g_n(t)\to0\) 逐点收敛，且 \(\{g_n(t)\}\) 一致有界，再用有界收敛定理得 \(\lim_{n\to\infty}\mathbb E[g_n(t)]=0\)，即 \(\lim_{n\to\infty}\int_0^t\mathbb E\!\left[(A_s^{(n)}-A_s)^2\right]ds=0\)。\(\blacksquare\)</span><span class="lang en">Given \(n\), define \(A_s^{(n)}=\dfrac{\int_{(k-1)/n}^{k/n}A_r\,dr}{1/n}=n\int_{(k-1)/n}^{k/n}A_r\,dr\) (for \(s\in[\tfrac kn,\tfrac{k+1}n)\)). So \(A_s^{(n)}\) takes, on each little interval \([\tfrac kn,\tfrac{k+1}n)\), the average of \(A_t\) on the previous interval \([\tfrac{k-1}n,\tfrac kn]\), hence \(\{A_t^{(n)}\}\) is a simple process. Since \(A_s^{(n)}\) is an average over a small neighborhood and \(t\mapsto A_t\) is continuous with probability 1, \(\lim_{n\to\infty}A_s^{(n)}=A_s\). Let \(f_n(s)=(A_s^{(n)}-A_s)^2\); then \(f_n(s)\to0\) pointwise. \(\{f_n(s)\}\) is uniformly bounded (\(\{A_s\}\) bounded), so by the <strong>Bounded Convergence Theorem</strong> (Thm 13.1: if \(\{f_n\}\) is a uniformly bounded sequence of measurable functions on a bounded measure space \((X,\Sigma,\mu)\) converging pointwise to \(f\), then \(\lim_{n\to\infty}\int_X f_n\,d\mu=\int_X f\,d\mu\)), under Lebesgue measure \(\lim_{n\to\infty}\int_0^t f_n(s)\,ds=\int_0^t f(s)\,ds=0\) (13.9). Then let \(g_n(t)=\int_0^t(A_s^{(n)}-A_s)^2\,ds\); by (13.9) \(g_n(t)\to0\) pointwise, and \(\{g_n(t)\}\) is uniformly bounded, so by the Bounded Convergence Theorem again \(\lim_{n\to\infty}\mathbb E[g_n(t)]=0\), i.e. \(\lim_{n\to\infty}\int_0^t\mathbb E\!\left[(A_s^{(n)}-A_s)^2\right]ds=0\). \(\blacksquare\)</span></p>
+<p>[!important] 借 Cauchy 列定义连续过程的随机积分 / Defining the integral via a Cauchy sequence
+<span class="lang zh">由引理 13.1，对连续、有界、适应的 \(\{A_t\}\)，可这样定义 \(\{Z_t\}=\int_0^t A_s dB_s\)：找满足 (13.8) 的 \(\{A_t^{(n)}\}\)，定义 \(Z_t^{(n)}=\int_0^t A_s^{(n)}dB_s\)（由简单过程积分良定义）。考虑 \(Z_t^{(n)}-Z_t^{(m)}=\int_0^t(A_s^{(n)}-A_s^{(m)})dB_s\)，则 \(\lim_{n,m\to\infty}\mathbb E[(Z_t^{(n)}-Z_t^{(m)})^2]=\lim_{n,m\to\infty}\int_0^t\mathbb E[(A_s^{(n)}-A_s^{(m)})^2]\,ds=0\)（由方差公式与 (13.8)）。故 \(\left\{\{Z_t^{(n)}\}_{t\ge0}\right\}_{n\in\mathbb N}\) 是 \(\mathcal L^2\) 中的 Cauchy 列，蕴含 \(\mathcal L^2\) 极限 \(Z_t=\lim_{n\to\infty}Z_t^{(n)}\) 存在。记 \(\int_0^t A_s dB_s=Z_t\)，至此成功定义。</span><span class="lang en">By Lemma 13.1, for continuous, bounded, adapted \(\{A_t\}\), define \(\{Z_t\}=\int_0^t A_s dB_s\) as follows: find \(\{A_t^{(n)}\}\) satisfying (13.8) and set \(Z_t^{(n)}=\int_0^t A_s^{(n)}dB_s\) (well-defined via the simple-process integral). Consider \(Z_t^{(n)}-Z_t^{(m)}=\int_0^t(A_s^{(n)}-A_s^{(m)})dB_s\); then \(\lim_{n,m\to\infty}\mathbb E[(Z_t^{(n)}-Z_t^{(m)})^2]=\lim_{n,m\to\infty}\int_0^t\mathbb E[(A_s^{(n)}-A_s^{(m)})^2]\,ds=0\) (by the variance formula and (13.8)). So \(\left\{\{Z_t^{(n)}\}_{t\ge0}\right\}_{n\in\mathbb N}\) is a Cauchy sequence in \(\mathcal L^2\), implying the existence of the \(\mathcal L^2\) limit \(Z_t=\lim_{n\to\infty}Z_t^{(n)}\). Denote \(\int_0^t A_s dB_s=Z_t\); the integral is now defined.</span></p>
+<p>[!important] 命题 13.2（连续过程随机积分的性质）与注 13.6 / Proposition 13.2 and Remark 13.6
+<span class="lang zh">\(\{Z_t\}\)（由 (13.7) 定义）满足：1. <strong>线性</strong>：\(\int_0^t(aA_s+bC_s)dB_s=a\int_0^t A_s dB_s+b\int_0^t C_s dB_s\) (13.10)；2. <strong>方差</strong>：\(\mathrm{Var}(Z_t)=\int_0^t\mathbb E[A_s^2]\,ds\)；3. <strong>连续</strong>：以概率 1，\(t\mapsto Z_t\) 连续。证明：三条性质都由简单过程 \(\{Z_t^{(n)}\}\) 的相同性质与收敛 \(Z_t^{(n)}\to Z_t\) 得到。但对连续 \(\{A_t\}\)，<strong>不再保证鞅性</strong>。<strong>注 13.6</strong>：要看为何 \(\{Z_t\}\) 可能不是鞅，把 \(Z_t=\int_0^t A_s dB_s\) 看作赌局——\(A_s\) 可被适当选取（在某点任意大），使得（概率 1）\(Z_1\ge1\)，则 \(\mathbb E[Z_t]\ge1\neq0\)，故 \(\{Z_t\}\) 不可能是鞅。（脚注：设目标 \(Z_1=1\)；若某 \(t\in(0,1)\) 已 \(Z_t>1\) 则保持微调；若 \(Z_t<1\) 则在 \(B_{t+\Delta}-B_t>0\) 时大幅加仓 \(A_t\) 使 \(Z_{t+\Delta t}>1\)；若运气不好继续向下，则进一步加大 \(A_{t+\Delta t}\) 重复赌局；最终以概率 1，\(Z_1>1\) 成立。）</span><span class="lang en">\(\{Z_t\}\) (defined by (13.7)) satisfies: 1. <strong>Linearity</strong>: \(\int_0^t(aA_s+bC_s)dB_s=a\int_0^t A_s dB_s+b\int_0^t C_s dB_s\) (13.10); 2. <strong>Variance</strong>: \(\mathrm{Var}(Z_t)=\int_0^t\mathbb E[A_s^2]\,ds\); 3. <strong>Continuity</strong>: with probability 1, \(t\mapsto Z_t\) is continuous. Proof: the three properties follow from the same properties of the simple-process \(\{Z_t^{(n)}\}\) and the convergence \(Z_t^{(n)}\to Z_t\). However, for continuous \(\{A_t\}\), we <strong>no longer have the martingale property for sure</strong>. <strong>Remark 13.6</strong>: to see why \(\{Z_t\}\) could fail to be a martingale, view \(Z_t=\int_0^t A_s dB_s\) as a gamble — \(A_s\) can be properly chosen (arbitrarily large at some point) so that (with probability 1) \(Z_1\ge1\), hence \(\mathbb E[Z_t]\ge1\neq0\), so \(\{Z_t\}\) cannot be a martingale. (Footnote: suppose the target is \(Z_1=1\); if at some \(t\in(0,1)\) already \(Z_t>1\), keep fine-tuning; if \(Z_t<1\), load \(A_t\) heavily so that \(Z_{t+\Delta t}>1\) when \(B_{t+\Delta}-B_t>0\); if bad luck pushes it further down, increase \(A_{t+\Delta t}\) even more to repeat the gamble; finally, with probability one, \(Z_1>1\).)</span></p></div>
+</div>
+<div class="lang en"></div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#13-1-stochastic-differential-equation-and-stochastic-integral">13.1 随机微分方程与随机积分 / Stochastic Differential Equation and Stochastic Integral</a></li>
+        <li><a href="#13-1-stochastic-differential-equation-and-stochastic-integral">13.1 Stochastic Differential Equation and Stochastic Integral</a></li>
+        <li><a href="#13-2-stochastic-integral">13.2 随机积分 / Stochastic Integral</a></li>
+          <li><a href="#13-2-1-stochastic-integral-for-simple-process">13.2.1 简单过程的随机积分 / Stochastic Integral for Simple Process</a></li>
+          <li><a href="#13-2-2-stochastic-integral-for-continuous-process">13.2.2 连续过程的随机积分 / Stochastic Integral for Continuous Process</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分析师到底该信「自己」几分？——一道把「私心」和「自负」分开的算术 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>分析师到底该信「自己」几分？——一道把「私心」和「自负」分开的算术</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2006 RFS]</span> Analysts’ Weighting of Private and Public Information</div>
+        <div class="paper-source-authors"><a href="/research/author/qi-chen/">Qi Chen</a>, <a href="/research/author/wei-jiang/">Wei Jiang</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">分析师预测</span>
+        
+        
+        
+        
+        <span class="tag">信息加权</span>
+        
+        
+        
+        
+        <span class="tag">行为金融</span>
+        
+        
+        
+        
+        <span class="tag">代理问题</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Chen &amp; Jiang (2006, <em>Review of Financial Studies</em>)</strong>：用一个回归法和一个概率法去量分析师在预测公司盈余时，到底给「自己的私有信息」压了多大的权重。结论是——平均而言他们<strong>过度加权</strong>了私有信息；而且当预测比市场共识更乐观时加权更狠，更悲观时反而压低甚至低估。最关键的一步，是作者构造了一个<strong>只依赖信息精度、与加权策略无关</strong>的能力度量，用它把「为私利而夸大」和「因自负而夸大」这两种解释干净地分开。答案是：私心的成分，比自负更大。</p></div>
+<h2 id="1">1 引言：一个被「混在一起」的老问题</h2>
+<p>卖方分析师（sell-side analyst）的预测「不靠谱」，几乎是金融学里被研究得最多的事实之一。他们的盈余预测系统性地偏乐观，准确度也时常不如一个简单的时间序列模型。于是文献热闹了几十年：有人说这是<strong>行为偏差</strong>——分析师过度自信、对自己覆盖的公司抱有乐观先验；也有人说这是<strong>激励使然</strong>——为了讨好管理层、为了拉到投行业务、为了显得「有本事」从而带来交易佣金。</p>
+<p>但这里有一个一直没被解开的死结。</p>
+<p>我们能观察到的，是预测的「性质」（properties）：它有多偏、有多准。可问题在于——<strong>预测的性质，是信息精度和分析师行为两件事共同决定的</strong>。一个用了完美贝叶斯权重的分析师，如果他的信息本来就糙，预测照样可以很不准；而一个胡乱加权的分析师，只要私有信息足够精，预测反而可能更准。换句话说，光看「偏」和「准」，你根本说不清这个人到底是<strong>信息差</strong>还是<strong>行为差</strong>，更别说去区分「他是故意的，还是不自觉的」。</p>
+<p>所以 Chen 和 Jiang 决定换一个角度：不去看预测的性质，而去直接量分析师的<strong>加权行为</strong>（weighting behavior）——他在「自己的私有信息」和「市场已知的公共信息」之间，到底是怎么分配信任的。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>这篇文章在我看来真正的漂亮之处，不是它发现了「过度加权」（那并不新鲜），而是它造出了一把<strong>与加权策略正交的能力尺子</strong>，从而第一次能在大样本里把「激励」和「认知偏差」掰开。这才是全文的「核心」，下面我们会反复回到它。</p></div>
+<h2 id="2">2 一个最小的贝叶斯模型</h2>
+<p>要谈「过度加权」，得先有「正确加权」是什么的基准。作者搭了一个极简的模型。</p>
+<p>令公司的真实盈余为 \(z\)，不失一般性地假设它服从一个零均值的弥散正态分布。分析师手里有两类信息：一类是大家都看得见的<strong>公共信息</strong>（public information），用一个充分统计量 \(c\) 概括，称作<strong>市场共识</strong>（consensus）；另一类是只有他自己有的<strong>私有信息</strong>（private information），记作 \(y\)。两者都是对 \(z\) 的带噪观测：</p>
+<p>$$c = z + \varepsilon_c, \qquad \varepsilon_c \sim N\!\left(0, \tfrac{1}{p_c}\right)$$</p>
+<p>$$y = z + \varepsilon_y, \qquad \varepsilon_y \sim N\!\left(0, \tfrac{1}{p_y}\right)$$</p>
+<p>这里 \(p_c\)、\(p_y\) 分别是公共信息和私有信号的<strong>精度</strong>（precision，方差的倒数）。由贝叶斯法则，分析师对 \(z\) 的最优估计是两者的加权平均：</p>
+<p>$$E[z \mid y, c] = h\,y + (1-h)\,c, \qquad h \equiv \frac{p_y}{p_c + p_y} \in [0,1]$$</p>
+<p>这个 \(h\) 就是<strong>有效权重</strong>（efficient/Bayesian weight）。它有一个非常干净的含义：<strong>\(h\) 完全由私有信号相对公共信息的精度决定</strong>。一个能力强（私有信息更精）的分析师，\(h\) 天生就更大。</p>
+<p>可现实里分析师未必用 \(h\)。设他实际采用的预测策略是</p>
+<p>$$f = k\,y + (1-k)\,c$$</p>
+<p>其中 \(k\) 是他真正压在私有信号上的权重。于是作者给出了核心定义：若 \(k > h\)，称该分析师<strong>过度加权</strong>（overweight）私有信息；若 \(k < h\)，则<strong>加权不足</strong>（underweight）。注意度量是 \(k/h\)（实际权重除以有效权重），而不是 \(k-h\)——这一点后面会变得很重要。</p>
+<h2 id="3-y-k-h">3 识别策略：怎么在「看不见 y」的情况下测出 k 和 h 的关系</h2>
+<p>难点来了。研究者能看到分析师的预测 \(f\)、能算出共识 \(c\)，但<strong>看不见他的私有信号 \(y\)、看不见精度 \(h\)、更看不见他压的权重 \(k\)</strong>。怎么办？</p>
+<p>作者的洞见是：<strong>预测误差和「预测偏离共识的幅度」之间的关系，会泄露加权信息</strong>。</p>
+<p>首先，定义预测误差 \(FE = f - z\)，以及预测对共识的偏离 \(Dev = f - c\)。如果分析师高效加权（\(k=h\)），那么他的预测误差<strong>不应该</strong>能被 \(Dev\) 预测——因为 \(Dev\) 里的信息他已经最优地用掉了。但如果他过度加权，\(Dev\) 就会系统性地预示 \(FE\)。把这层关系写出来：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+E(FE \mid y, c) = \cssId{a1}{\frac{k-h}{k}} \cdot \cssId{a2}{(f-c)} \equiv \cssId{a3}{\beta_0} \cdot Dev
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>实际权重 k 与有效权重 h 之间的「楔子」；当且仅当 k=h 时为零</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>预测对共识的偏离 Dev，这是可观测的</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>回归斜率 β₀ = 1 − h/k；β₀ &gt; 0 即过度加权，β₀ &lt; 0 即加权不足</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>于是第一个方法——<strong>回归法</strong>（regression-based method）——就有了。直接跑</p>
+<p>$$FE = \delta + \beta_0 \cdot Dev + \varepsilon$$</p>
+<p>估计出的 \(\hat\beta_0\) 依概率收敛到 \(1 - h/k\)。<strong>\(\hat\beta_0 > 0\) 说明平均而言过度加权，\(\hat\beta_0 < 0\) 说明加权不足</strong>。简洁得近乎优雅。</p>
+<p>接着，一个自然的问题是：回归法对异常值和测量误差很敏感，而分析师数据恰恰以「脏」著称。于是作者引入了第二个、也是文献里<strong>第一次出现</strong>的方法——<strong>概率法</strong>（probability-based method）。它的思路更朴素：如果分析师高效加权，那么他的预测「冲过头」（与 \(Dev\) 同号地错）和「没够着」应该各占一半。于是定义</p>
+<p>$$\pi = \Pr\big(\mathrm{sign}(FE) = \mathrm{sign}(Dev)\big)$$</p>
+<p>在高效加权的原假设下 \(\pi = 0.5\)；\(\pi > 0.5\) 意味着过度加权。这个统计量的好处是<strong>每一对 \(\{FE, Dev\}\) 的贡献相等，与幅度无关</strong>，因此对离群值极其稳健。</p>
+<p>这两个方法分别捕捉了误加权的<strong>平均幅度</strong>（\(\beta_0\)）和<strong>中位倾向</strong>（\(\pi\)），而两者给出一致的结论，正是作者信心的来源。作者用命题 1 严格证明了二者与高效加权的等价关系。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>这里有个容易被忽略的陷阱，也是本文的另一处刀锋。以往文献喜欢用「预测离共识有多远」（forecast distance）来代理分析师的<strong>大胆</strong>或<strong>羊群</strong>倾向。但作者推导出
+$$E(f-c)^2 = k^2\,E(y-c)^2 = k^2\!\left(\tfrac{1}{p_y}+\tfrac{1}{p_c}\right) = \left(\tfrac{k}{h}\right)^2 \tfrac{h}{p_c}$$
+——离共识的距离同时取决于<strong>能力</strong>（藏在 \(h\) 里）和<strong>策略</strong>（藏在 \(k/h\) 里）。所以一个高能力却保守加权的人，可能比一个低能力却激进加权的人离共识更近。<strong>用「距离」来度量羊群，是把两件事搅在了一起。</strong></p></div>
+<h2 id="4">4 真正关键的一步：一把与策略无关的能力尺子</h2>
+<p>到这里我们能测出「平均过度加权」了。但这还不够——作者真正想回答的是<strong>为什么</strong>。</p>
+<p>有两个竞争假说。<strong>激励假说</strong>（incentive hypothesis）说：分析师其实知道自己几斤几两，他<strong>故意</strong>夸大私有信息的新闻含量，要么是为了向市场发出「我有本事」的信号，要么是为了制造交易、赚取佣金 [Prendergast &amp; Stole (1996)、Ehrbeck &amp; Waldmann (1996)]。<strong>过度自信假说</strong>（overconfidence hypothesis）则说：分析师并不清楚自己的真实能力，在一连串好运之后因为归因偏差而高估了自己 [Griffin &amp; Tversky (1992)、Gervais &amp; Odean (2001)]。</p>
+<p>问题是，这两个假说都预测「过度加权」。怎么分？</p>
+<p>作者给出的识别钥匙，是一个<strong>只依赖信息精度、与加权策略无关</strong>的能力度量。具体地，他们把分析师的能力定义为：他的预测<strong>若被加进共识、能把共识推向真实盈余的方向</strong>的频率（即正文里的 <code>Ability(Dir)</code> 与 <code>Ability(Beat)</code>）。论文证明了一个关键性质——<strong>这个度量只取决于私有信号的相对精度 \(h\)，而不取决于他条件于能力之上选择的加权策略 \(k\)</strong>。</p>
+<p>这一点为什么要命？因为标准的能力度量（绝对或相对预测准确度）<strong>做不到</strong>这一点——它们被策略「污染」了。而有了这把干净的尺子，两个假说就给出了<strong>可区分</strong>的预言：</p>
+<ul>
+<li>激励假说：过度加权的代价与收益随能力变化，因此<strong>过度加权应与能力相关</strong>（高能力者发信号的边际收益不同）；</li>
+<li>过度自信假说：误加权来自学习中的归因偏差，因此<strong>过度加权应与过往业绩（track record, TR）正相关</strong>，而在控制了 TR 之后<strong>与能力无关</strong>。</li>
+</ul>
+<h2 id="5">5 数据与主要结果</h2>
+<p>样本来自 Zacks 的分析师季度盈余预测，并配以 <code>COMPUSTAT</code>、<code>CRSP</code>、<code>SDC</code>（承销关系）以及手工整理的《机构投资者》All-American 评级。样本期 <code>1985–2001</code>（最后一笔预测在 2001 年 3 月，恰在 Reg FD 生效之前），并按惯例剔除均价低于 <code>$5</code>、市值低于 <code>$100 million</code> 的公司。最终共 <code>1,367,599</code> 条预测，覆盖 <code>3195</code> 家公司、<code>5306</code> 位分析师、<code>51,200</code> 个「分析师—公司」配对。</p>
+<p>先看一张不带任何结构假设的图。图 1 用核回归画出 \(FE = f(Dev)\)，结果是一个清晰的 <strong>「V」形</strong>：\(Dev\) 为正时 \(FE\) 随之上升，\(Dev\) 为负时 \(FE\) 随之下降。Ellison &amp; Ellison (2000) 的设定检验在 5% 水平上不拒绝每一段的线性，却在 1% 水平上<strong>拒绝整体的线性</strong>（即存在拐点）。这个 V 形本身就在讲故事——分析师在共识两侧的加权行为是<strong>不对称</strong>的。</p>
+<p>而把不对称量化出来，就是本文最有味道的发现：</p>
+<ul>
+<li><strong>平均过度加权</strong>：\(\hat\beta_0 > 0\)、\(\hat\pi > 0.5\)，两种方法一致。分析师平均而言高估了自己私有信息的分量。</li>
+<li><strong>乐观加权（optimistic weighting）</strong>：当预测<strong>比共识更乐观</strong>时，分析师过度加权；当预测<strong>比共识更悲观</strong>时，他们加权不足、甚至低估私有信息。换句话说，他们总倾向于给「好消息」那一侧压更大的权重。</li>
+<li><strong>能力与过度加权负相关</strong>：用那把干净的能力尺子，过度加权随能力上升而<strong>下降</strong>；在控制能力之后才与 TR 正相关。</li>
+<li><strong>收益高、成本低时误加权更甚</strong>：覆盖<strong>重仓交易股票</strong>（潜在佣金高）时过度加权更多；<strong>投行关联</strong>（IB，雇主未来会替该公司承销）时乐观加权更强；而在<strong>职业生涯早期</strong>、以及<strong>临近盈余发布日</strong>（出错代价更高）时，误加权更少。</li>
+</ul>
+<p>如表 2 所示，横截面回归里能力与过度加权之间那个交互项系数显著为负（在 1% 水平上），这正是「低能力者反而更激进地过度加权」的直接证据。</p>
+<div class="article-image"><img alt="Table 2: shows that (cid:5)^(cid:4) is negative and significant at the 1% level in" src="assets/table-2.png" /></div>
+<p><em>Table 2: shows that (cid:5)^(cid:4) is negative and significant at the 1% level in</em></p>
+<p>把这些拼起来，箭头都指向同一个方向：<strong>误加权的程度随其收益升高、随其成本降低而系统性变化</strong>。而过度自信假说预言的是「分析师意识不到自己在误加权，因而误加权与成本收益无关」——数据并不支持它。于是反转出现了：长期以来被归咎于「行为偏差」的分析师乐观，<strong>至少有相当一部分是算计出来的</strong>。</p>
+<p>这与本博客此前评述过的两篇 IPO 分析师文章遥相呼应——承销关系如何把分析师的「彩虹屁」变成一笔暗账（可参见<a href="/research/analyst-hype-in-ipos-explaining-the-popularity-of/">《为什么「贵」的承销方式反而赢了？》</a>与<a href="/research/analyst-behavior-following-ipos-the-bubble-period-evidence/">《上市之后，分析师的「彩虹屁」到底值不值钱？》</a>）。本文则把这条「IB 激励」的逻辑，从 IPO 场景推广到了日常盈余预测的加权行为上。</p>
+<h2 id="6">6 文献脉络</h2>
+<p>这条研究线，是「分析师预测为什么不理性」这个大问题里的一支。</p>
+<p>最早的源头分两支。<strong>行为一支</strong>由 Griffin &amp; Tversky (1992) 关于过度自信的认知心理学奠基，后被 Gervais &amp; Odean (2001) 用「学习中产生过度自信」的模型形式化；<strong>激励一支</strong>则来自 Prendergast &amp; Stole (1996) 的声誉博弈——年轻人鲁莽、老手保守——以及 Ehrbeck &amp; Waldmann (1996) 对「代理 vs 行为」的直接对照。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>与此并行的，是关于乐观来源的争论：McNichols &amp; O'Brien (1997) 用自选择和乐观先验解释覆盖偏差，而 Francis &amp; Philbrick (1993)、Lim (2001) 则强调「讨好管理层」的激励。再往后，Zitzewitz (2001a) 第一次在大样本里测出了「夸大」，但他<strong>没有进一步区分</strong>这种夸大究竟来自策略还是自负——这恰恰是本文站立的位置。本文还顺手把乐观加权与几个看似无关的结论缝合了起来：它为「共识对过往信息究竟是过度还是反应不足」的矛盾提供了调和（早期 DeBondt &amp; Thaler 1990 与 Abarbanell &amp; Bernard 1992 各执一词），也呼应了 Hong &amp; Stein (1999)「坏消息传得慢」的判断，还与 Welch (2000) 关于分析师在推荐上羊群的发现互补。</p>
+<h2>7 评论与延伸（Q&amp;A + 研究方向）</h2>
+<p><strong>Q：「过度加权私有信息」和「预测偏乐观」是一回事吗？</strong></p>
+<blockquote>
+<p>不是，这恰是本文要分清的。乐观偏差是关于预测<strong>水平</strong>（level）偏高；而过度加权是关于分析师对私有信号压了多大<strong>权重</strong>。乐观加权是二者的结合：在好消息那一侧过度加权、坏消息那一侧加权不足。作者明确论证了乐观加权「可与单纯的乐观偏差相区分」。</p>
+</blockquote>
+<p><strong>Q：能力为什么是「与策略正交」的，这个性质可信吗？</strong></p>
+<blockquote>
+<p>这是全文识别的命门。作者证明，用「预测若加进共识能否把共识推向真值」来度量能力，其期望只依赖私有信号的相对精度 \(h\)，而不依赖分析师在给定能力之上选择的 \(k\)。直觉是：能否把共识往真值方向拉，取决于你的信号含多少真信息（精度），而不取决于你事后怎么吆喝它（权重）。相比之下，绝对/相对准确度都被策略污染，所以不满足这个要求。</p>
+</blockquote>
+<p><strong>Q：发现「低能力者反而更过度加权」，不是和直觉反着来吗？</strong></p>
+<blockquote>
+<p>表面反直觉，实则是激励假说的自然推论，也是对既有文献的一记重拳。以往用「离共识的距离」度量羊群，得出「低能力、缺经验者爱抱团」。但本文的能力尺子显示：<strong>低能力者其实在反羊群（过度加权私有信息），高能力者反而加权不足</strong>。原因正是第 3 节那条 \(E(f-c)^2\) 公式——距离同时被能力和策略决定，用它度量羊群是错的。</p>
+</blockquote>
+<p><strong>Q：投行关联（IB）会不会只是「关联分析师本来就乐观」，而非「为承销而乐观」？</strong></p>
+<blockquote>
+<p>作者用的是<strong>未来</strong>承销关系（雇主在预测日前后五年内成为该公司主承销或联席承销）作为收益的代理。配合成本侧的代理（职业早期、临近发布日），多个维度一致指向「收益高/成本低时误加权更甚」，这比单看 IB 的横截面相关更难用「天生乐观」来解释。当然，IB 关系本身可能与公司特征相关，这是残留的担忧。</p>
+</blockquote>
+<p><strong>Q：样本止于 Reg FD 之前，结论还适用今天吗？</strong></p>
+<blockquote>
+<p>这是个真实的外部效度问题。Reg FD（2000 年生效）限制了选择性信息披露，理论上会压缩分析师私有信息的精度 \(h\)，从而改变加权的成本收益。本文样本恰好基本落在 Reg FD 之前，所以它刻画的是一个「私有信息更值钱」的旧世界。Reg FD 之后是否依旧过度加权，是个值得重做的问题。</p>
+</blockquote>
+<p><strong>Q：概率法真的比回归法「更好」吗，还是只是稳健？</strong></p>
+<blockquote>
+<p>它不是更优，而是<strong>互补</strong>。回归法度量平均幅度、概率法度量中位倾向；后者对离群值和测量误差稳健，前者能直接给出 \(1-h/k\) 的结构含义。作者反复强调，正是两法结论一致，才让人相信结果不是数据不规则造成的伪相关。</p>
+</blockquote>
+<hr />
+<p><strong>(b) 几个可能的研究问题与提案</strong></p>
+<ol>
+<li><strong>Reg FD 前后的加权行为断点</strong></li>
+<li>【经济故事】Reg FD 削弱了选择性披露，等价于压低私有信号精度 \(h\)。若加权是激励驱动的，成本收益结构变了，过度加权的程度也该随之移动；若纯是自负，则不该有系统变化。这是对本文核心论断的一次「外生冲击」检验。</li>
+<li>
+<p>【可行性】<strong>高</strong>。I/B/E/S 或 Zacks 预测数据跨越 2000 年，可直接套用本文的 \(\beta_0\) 与 \(\pi\) 估计，做事件窗口的前后对比，甚至用受 FD 影响程度不同的公司做双重差分 (difference-in-differences, DiD)。</p>
+</li>
+<li>
+<p><strong>把加权框架搬到公司债分析师 / 评级机构</strong></p>
+</li>
+<li>【经济故事】信用分析师和评级机构同样在「私有尽调」和「市场价格（CDS、债券利差）」之间加权。其激励结构（发行人付费）与股票分析师不同，乐观加权的方向与强度可能截然不同。</li>
+<li>
+<p>【可行性】<strong>中</strong>。需要债券分析师的预测面板（较稀疏）或评级行动数据，以利差/CDS 隐含的违约预期作为「共识」。识别上可借本文的能力尺子，但债券事件较少、噪声更大，样本量是瓶颈。</p>
+</li>
+<li>
+<p><strong>外资持有人结构与分析师加权</strong></p>
+</li>
+<li>【经济故事】当一家公司的边际投资者是信息劣势的外资时，分析师「夸大私有信息以发信号/拉佣金」的收益可能更高。可检验外资持股比例与该公司分析师过度加权程度的关系。</li>
+<li>
+<p>【可行性】<strong>中</strong>。需要分国别的机构持股数据（如 FactSet/13F 之外的跨境持股）匹配分析师预测。识别担忧是外资持股的内生性，需用指数纳入等外生变动做工具。</p>
+</li>
+<li>
+<p><strong>「乐观加权」与高分歧—低收益异象的微观对接</strong></p>
+</li>
+<li>【经济故事】本文指出，分析师在有利消息时更偏离共识，因此高预测分歧可能对应被夸大的好消息、从而对应过高的当前价格——这正是 Diether, Malloy &amp; Scherbina (2001) 高分歧低收益之谜的一个机制候选。</li>
+<li>【可行性】<strong>高</strong>。可在分歧度排序的组合里，进一步用本文的 \(\pi\) 统计量度量「分歧中有多少来自乐观加权」，看它是否解释了未来低收益的横截面。数据与方法都现成。</li>
+</ol>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Abarbanell, J. S., &amp; Bernard, V. (1992). Analysts' Overreaction/Underreaction to Earnings Information as an Explanation for Anomalous Stock Price Behavior. <em>Journal of Finance</em> 47, 1181–1207.</li>
+<li>Chen, Q., &amp; Jiang, W. (2006). Analysts' Weighting of Private and Public Information. <em>Review of Financial Studies</em> 19(1), 319–355.</li>
+<li>DeBondt, W. F. M., &amp; Thaler, R. H. (1990). Do Security Analysts Overreact? <em>American Economic Review</em> 80, 52–57.</li>
+<li>Diether, K., Malloy, C., &amp; Scherbina, A. (2001). Differences of Opinion and the Cross-Section of Stock Returns. <em>Journal of Finance</em> 57, 2113–2141.</li>
+<li>Ehrbeck, T., &amp; Waldmann, R. (1996). Why are Professional Forecasters Biased? Agency versus Behavioral Explanations. <em>Quarterly Journal of Economics</em> 111, 21–41.</li>
+<li>Ellison, G., &amp; Ellison, S. (2000). A Simple Framework for Nonparametric Specification Testing. <em>Journal of Econometrics</em> 96, 1–23.</li>
+<li>Francis, J., &amp; Philbrick, D. (1993). Analysts' Decisions as Products of a Multi-Task Environment. <em>Journal of Accounting Research</em> 31, 216–230.</li>
+<li>Gervais, S., &amp; Odean, T. (2001). Learning to be Overconfident. <em>Review of Financial Studies</em> 14, 1–27.</li>
+<li>Griffin, D., &amp; Tversky, A. (1992). The Weighing of Evidence and the Determinants of Overconfidence. <em>Cognitive Psychology</em> 24, 411–435.</li>
+<li>Holmstrom, B. (1999). Managerial Incentive Problems: A Dynamic Perspective. <em>Review of Economic Studies</em> 66, 169–182.</li>
+<li>Hong, H., &amp; Stein, J. (1999). A Unified Theory of Underreaction, Momentum Trading and Overreaction in Asset Markets. <em>Journal of Finance</em> 54, 2143–2184.</li>
+<li>Lim, T. (2001). Rationality and Analysts' Forecast Bias. <em>Journal of Finance</em> 56, 369–385.</li>
+<li>McNichols, M., &amp; O'Brien, P. C. (1997). Self-Selection and Analyst Coverage. <em>Journal of Accounting Research</em> Supplement 35, 167–199.</li>
+<li>Prendergast, C., &amp; Stole, L. (1996). Impetuous Youngsters and Jaded Old-Timers: Acquiring a Reputation for Learning. <em>Journal of Political Economy</em> 104, 1105–1134.</li>
+<li>Welch, I. (2000). Herding among Security Analysts. <em>Journal of Financial Economics</em> 58, 369–396.</li>
+<li>Zitzewitz, E. (2001a). Measuring Herding and Exaggeration by Equity Analysts and Other Opinion Sellers. <em>Stanford University GSB Working Paper</em>.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 引言：一个被「混在一起」的老问题</a></li>
+        <li><a href="#2">2 一个最小的贝叶斯模型</a></li>
+        <li><a href="#3-y-k-h">3 识别策略：怎么在「看不见 y」的情况下测出 k 和 h 的关系</a></li>
+        <li><a href="#4">4 真正关键的一步：一把与策略无关的能力尺子</a></li>
+        <li><a href="#5">5 数据与主要结果</a></li>
+        <li><a href="#6">6 文献脉络</a></li>
+        <li><a href="#7-q-a">7 评论与延伸（Q&A + 研究方向）</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

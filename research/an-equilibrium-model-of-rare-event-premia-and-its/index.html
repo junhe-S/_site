@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>罕见，所以可怕：把「算不准的概率」写进期权的微笑里 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>罕见，所以可怕：把「算不准的概率」写进期权的微笑里</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2005 RFS]</span> An Equilibrium Model of Rare-Event Premia and Its Implication for Option Smirks</div>
+        <div class="paper-source-authors"><a href="/research/author/jun-liu/">Jun Liu</a>, <a href="/research/author/jun-pan/">Jun Pan</a>, <a href="/research/author/tan-wang/">Tan Wang</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">奈特不确定性</span>
+        
+        
+        
+        
+        <span class="tag">期权定价</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Liu, Pan &amp; Wang (2005, <em>Review of Financial Studies</em>)</strong>：把「罕见事件」建模成总产出里的跳跃，并让代表性投资者不仅厌恶风险、还厌恶<strong>对罕见事件那套概率本身的不确定</strong>。在均衡里，股权溢价被拆成三块——扩散风险、跳跃风险，以及一块<strong>只由「不确定性厌恶」驱动的罕见事件溢价</strong>。单看股票分不出这三块，但把不同行权价的期权拉进来，这块溢价就现形了：它正好能解释指数期权那条标准模型怎么也压不平、也吹不出来的「微笑/狞笑」(smirk)。</p></div>
+<h2 id="1">1 引言：一只从没真正跳过的「黑天鹅」</h2>
+<p>先讲一个老掉牙、却始终绕不开的故事。</p>
+<p>1954 年起，墨西哥比索对美元一直钉死在固定汇率上。可奇怪的是，墨西哥银行存款的利率，常年高于同期限的美国存款。按教科书，固定汇率下两国利差就是个无风险套利——你借美元、换比索、吃利差、再换回美元，稳赚。可这笔「免费的钱」十几年没人能真正捡走。直到 1976 年 8 月，比索被允许浮动，一夜之间贬值 <code>46%</code>。那笔利差，原来一直是市场替「比索会崩」这件<strong>还没发生、却随时可能发生</strong>的事在掏的保费。这就是著名的「比索问题」(peso problem)。</p>
+<div class="callout"><div class="callout-title">Note</div><p>比索问题的精髓不在「崩了」，而在「崩之前」：一个概率极低、却后果极重的事件，哪怕从未在样本里出现过，也能持续地、实打实地压在价格上。</p></div>
+<p>金融市场里到处是这种东西。日内的小涨小跌，我们见得太多，对它的统计规律也算得相当有把握；可像 1987 年那种单日跌掉两成的崩盘，几十年才碰上一两回——<strong>样本太少，少到你根本没法把那套概率模型估准</strong>。</p>
+<p>于是本文抛出一个看似天真、其实很要命的问题：</p>
+<blockquote>
+<p>投资者对待「罕见事件」，会不会和对待「常见事件」根本就不是一回事？</p>
+</blockquote>
+<p>这正是全文反复要讲透的<strong>那一个核心</strong>。传统做法（比如给模型加一个跳跃项）默认：罕见事件改变了你持有的风险组合，却不改变你的<strong>决策方式</strong>——你照旧拿着那套估出来的概率，去做风险与收益的权衡。可问题在于，有些事我们一辈子只遇上一两回，根本没机会从经验里学乖；既然连模型本身都信不过，凭什么要求投资者对这套模型「全心全意」？</p>
+<p>如果投资者对罕见事件的那套概率心里发虚——也就是 Knight (1921) 和 Ellsberg (1961) 意义上的<strong>不确定性厌恶</strong> (uncertainty aversion / ambiguity aversion)——那么这份「算不准」迟早会折进价格，变成一笔溢价。本文要做的，就是把这笔溢价<strong>显式地、在闭式解里</strong>算出来，再用期权把它从普通的风险溢价里<strong>剥</strong>出来。</p>
+<p>（关于「算不准概率本身」如何改变投资者行为，可参见<a href="/research/ambiguity-about-volatility-and-investor-behavior/">《算不准「风险有多大」的那些天，散户在做什么？》</a>与<a href="/research/model-uncertainty-limited-market-participation-and-asset/">《算不准均值的那群人，悄悄退出了股市——一个把「有限参与」内生出来的模型》</a>。）</p>
+<h2 id="2">2 风险，还是不确定性？</h2>
+<p>这里得先把两个常被混为一谈的词分开。</p>
+<p><strong>风险</strong> (risk)：你知道概率分布，只是结果随机。掷一枚公平硬币，正反各 50%——你不知道下次是哪面，但你笃信那个「50%」。
+<strong>不确定性</strong> (uncertainty / ambiguity)：你连概率分布本身都不敢确定。一只来路不明的袋子，里头红球黑球比例未知——你愿意为「赌红」下多少注？Ellsberg 的实验说明，大多数人会<strong>回避</strong>这种说不清的赌局，哪怕期望收益更高。</p>
+<p>本文的关键判断是：<strong>这两种态度，应该用在不同的风险上</strong>。对日常的扩散性波动，投资者大体上信得过经济学家建的模型，按风险来处理就行；可对罕见事件，谁也没底，自然就要按不确定性来处理。</p>
+<p>这一「区别对待」，恰恰是本文方法论上与 Anderson, Hansen &amp; Sargent (2000)（下称 AHS）最重要的分野。AHS 的稳健控制 (robust control) 框架里，投资者对<strong>整个</strong>模型都心存疑虑；而本文的投资者只对<strong>跳跃那一块</strong>疑神疑鬼，对扩散那一块相当淡定。听上去只是个小限制，可一旦把模型拿去定价期权，这个区别就生死攸关——因为期权对扩散冲击和跳跃冲击的敏感度，天差地别。</p>
+<p>（让投资者「随行情切换对模型的信任尺度」这一思路，另见<a href="/research/robustness-and-dynamic-sentiment/">《悲观与乐观的浪潮：当「稳健」的投资者学会了随行情换尺子》</a>。）</p>
+<h2 id="3">3 模型：把「罕见」写成一次跳跃</h2>
+<p>接着，一个自然的问题是：怎么把上面这套直觉，落成一个能解的均衡模型？</p>
+<h3 id="3-1">3.1 经济与禀赋</h3>
+<p>设定是最经典的 Lucas (1978) 纯交换经济：一个代表性投资者，一种易腐消费品。股票是对总禀赋 \(Y_t\) 的索取权。禀赋服从一个<strong>跳跃-扩散</strong> (jump-diffusion) 过程：</p>
+<p>$$dY_t = \mu\,Y_t\,dt + \sigma\,Y_t\,dB_t + \left(e^{Z_t}-1\right)Y_{t-}\,dN_t$$</p>
+<p>逐项拆开看：</p>
+<ul>
+<li>\(\mu\,Y_t\,dt\) 是常数增长率的漂移；</li>
+<li>\(\sigma\,Y_t\,dB_t\) 是标准的扩散项，\(B_t\) 是布朗运动——这是「日常波动」；</li>
+<li>\(\left(e^{Z_t}-1\right)Y_{t-}\,dN_t\) 是<strong>纯跳跃</strong>项：\(N_t\) 是强度为 \(\lambda\) 的泊松过程，负责「什么时候跳」；一旦跳，幅度由 \(Z_t\) 决定，\(Z_t\sim\mathcal{N}(m_J,\,s_J^2)\)，负责「跳多大」。</li>
+</ul>
+<p>跳跃的平均百分比幅度是</p>
+<p>$$k = e^{\,m_J + s_J^2/2} - 1.$$</p>
+<p>本文只关心「坏」的罕见事件，所以限定 \(k\le 0\)（向下跳）。这套设定直接承袭 Naik &amp; Lee (1990)，是同时容纳「常见」与「罕见」两类冲击的最省俭写法。这里的要害是：\(\lambda\)、\(m_J\)、\(s_J\) 这几个<strong>跳跃参数</strong>，由于样本里跳得太少，统计上估得极不精确——这正是「不确定性」要落脚的地方。</p>
+<h3 id="3-2">3.2 用一族「替代模型」来表达疑虑</h3>
+<p>然后，<strong>真正关键的一步</strong>来了：怎么让投资者表达「我对跳跃那套概率信不过」？</p>
+<p>本文的做法是稳健控制的经典套路——给投资者一<strong>族</strong>替代模型，让他在最坏情形下做决策。把基准模型（上面那条 SDE）的概率测度记作 \(P\)；任一替代测度 \(P(\xi)\) 由它相对 \(P\) 的 Radon–Nikodym 导数 \(\xi_t = dP(\xi)/dP\) 刻画：</p>
+<p>$$d\xi_t = \left(e^{\,a + b Z_t - b m_J - \frac{1}{2}b^2 s_J^2} - 1\right)\xi_{t-}\,dN_t - \left(e^{a}-1\right)\lambda\,\xi_t\,dt$$</p>
+<p>其中 \(a\)、\(b\) 是两个可预测过程。妙处在于：这个 \(\xi\) <strong>只动跳跃、不碰扩散</strong>。在替代测度 \(P(\xi)\) 下，跳跃强度和跳跃幅度相对基准发生如下平移：</p>
+<p>$$\lambda^\xi = \lambda\,e^{a}, \qquad 1 + k^\xi = (1+k)\,e^{\,b\,s_J^2}.$$</p>
+<p>这两条式子，是整篇文章的「机械心脏」，值得多看两眼：</p>
+<ul>
+<li>\(a\) 是<strong>时点</strong>疑虑：\(a>0\) 把跳跃来得更频繁（\(\lambda^\xi>\lambda\)）；</li>
+<li>\(b\) 是<strong>幅度</strong>疑虑：\(b<0\) 把向下跳跳得更狠（\(k^\xi\) 更负）。</li>
+</ul>
+<p>更进一步，作者还能把疑虑「定向」：令 \(b=0\) 得到子集 \(\mathcal{P}^a\)——只怀疑「跳得多频繁」，对幅度心里有数；令 \(a=0\) 得到 \(\mathcal{P}^b\)——只怀疑「跳得多狠」，对频率有数；令 \(a=b=0\)，集合退化成单点（只剩基准模型），那就回到了标准的、只厌恶风险的投资者。一个旋钮，把「对罕见事件的哪一面发虚」拆得清清楚楚。</p>
+<h3 id="3-3">3.3 偏好：在「最坏情形」与「离基准多远」之间权衡</h3>
+<p>投资者怎么用这族模型？本文在离散时间里把时点 \(t\) 的效用递归地定义为下式（连续时间极限留到本节末）。这是全文的核心方程，把它逐块拆开：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+U_t = \cssId{a1}{\frac{c_t^{1-\gamma}}{1-\gamma}\Delta} + e^{-\rho\Delta}\,\cssId{a2}{\inf_{P(\xi)\in\mathcal{P}}}\left\{\, \cssId{a3}{c\!\left(E_t^\xi(U_{t+\Delta})\right)\,E_t^\xi\!\left[\tfrac{1}{\phi}\,h\!\left(\ln\tfrac{\xi_{t+\Delta}}{\xi_t}\right)\right]} \;+\; \cssId{a4}{E_t^\xi(U_{t+\Delta})}\,\right\}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>当期消费的 CRRA 效用流，γ 为风险厌恶系数</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>在所有替代跳跃模型中取「最坏情形」——这一步正是不确定性厌恶</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>偏离基准模型的惩罚项：h 衡量替代模型离基准有多远，1/φ 控制权衡，c(·) 是为解析可处理而引入的归一化因子</div><div class="mathanno-card" data-target="a4"><span class="mathanno-num">4</span>替代测度 P(ξ) 下的延续价值（贝尔曼方程的递归项）</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>直觉是这样：一方面，为了防身，投资者把未来效用 \(E_t^\xi(U_{t+\Delta})\) 放在<strong>比基准更糟的</strong>跳跃模型下评估——所以是 \(\inf\)（取下确界，挑最坏的那个 \(P(\xi)\)）；另一方面，他也知道基准 \(P\) 才是数据的最佳统计刻画，于是按替代模型「离基准多远」来罚自己，距离由</p>
+<p>$$h(x) = x + b\,(e^{x}-1)$$</p>
+<p>度量（此处的 \(b>0\) 是距离函数的曲率参数，与 §3.2 里那个跳跃幅度的 \(b\) 不是一回事，论文复用了同一字母）。\(\phi\) 越大，投资者越不在乎「离基准多远」、越在意「最坏情形有多糟」——也就是不确定性厌恶越强。\(\phi=0\)（等价地 \(\mathcal{P}\) 退化成单点）时，这一切坍缩回标准的幂效用投资者。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>这里有一处技术上的巧思，值得点一句。本文把 AHS 的「相对熵」(relative entropy) 距离推广成上面这个 \(h(x)=x+b(e^x-1)\) 的「扩展熵」形式。原因很实在：在纯「相对熵」下，针对<strong>跳跃幅度</strong>的稳健控制问题压根没有内点全局最小值——直白说，一个 \(\gamma>1\) 的投资者会被「跳跃可能更狠」这件事吓到「宁可全盘皆输」的极端去。多出来的曲率项 \(b(e^x-1)\)，正是把这个发散的问题重新「拽」回良定义。对纯扩散模型，这个扩展距离又退回普通的相对熵——可见它是为「跳跃」量身定做的。</p></div>
+<p>连续时间极限下，投资者的目标变为在 \(\{a,b\}\) 上取下确界的一个积分泛函，其中惩罚部分浓缩成一项 \(c(U_s)\,H(a_s,b_s)\)；\(H\) 由距离度量显式算出（见原文命题 1 的证明）。求解 HJB 方程即可得到闭式的均衡。</p>
+<h2 id="4">4 均衡：被拆成三块的股权溢价</h2>
+<p>求出均衡后，本文最漂亮的结果是：总股权溢价干净地分成<strong>三块</strong>。</p>
+<ul>
+<li><strong>扩散风险溢价</strong>：来自布朗冲击，量级是标准的 \(\gamma\sigma^2\)，由风险厌恶驱动；</li>
+<li><strong>跳跃风险溢价</strong>：来自泊松跳跃本身的风险，同样由风险厌恶驱动；</li>
+<li><strong>罕见事件溢价</strong> (rare-event premium)：来自投资者在最坏情形下挑出的那个 \(a,b\neq 0\)——<strong>完全由不确定性厌恶驱动</strong>，与风险厌恶无关。</li>
+</ul>
+<p>机制上，不确定性厌恶让投资者在定价时<strong>仿佛</strong>面对一个跳得更频（\(a>0\)）、跌得更狠（\(b<0\)）的世界，于是他要求一笔额外补偿。这笔补偿在 \(\phi=0\) 时消失。</p>
+<p>但这里立刻撞上一堵墙：<strong>光看股票，你分不出这三块</strong>。原因很简单——你总能调一调风险厌恶 \(\gamma\) 去凑出任何一个观测到的总股权溢价，于是「到底是风险厌恶高，还是不确定性厌恶在作祟」就成了一笔糊涂账。要破局，必须请进一类对「罕见」和「日常」反应截然不同的资产。</p>
+<h2 id="5">5 反转：期权的「微笑」出卖了它</h2>
+<p>于是反转出现：把<strong>期权</strong>拉进来。</p>
+<p>期权的妙处在于，不同行权价 (moneyness) 的期权，对罕见事件的敏感度天差地别。一份深度价外看跌期权 (deep-OTM put)，几乎就是一张「崩盘保险」——它对市场暴跌极度敏感，对日常波动则相对迟钝。所以，沿着行权价排开的一排期权，等于给我们提供了一把<strong>连续变化的「罕见事件敏感度」标尺</strong>。</p>
+<p>指数期权市场有两个被反复证实的事实：</p>
+<ol>
+<li>期权——<strong>包括平价期权 (ATM)</strong>——通常带溢价 [Jackwerth &amp; Rubinstein (1996)]；</li>
+<li>这个溢价对价外看跌 (OTM put) 比对 ATM 更夸张，于是把隐含波动率 (implied volatility) 对行权价画出来，得到一条向左上翘的曲线——著名的「微笑/狞笑」(smile / smirk) [Rubinstein (1994)]。</li>
+</ol>
+<p>本文先拿<strong>没有不确定性厌恶</strong>的标准模型当基准：用股票收益数据校准它，再看它对期权说什么。结果是双重的失败——</p>
+<ul>
+<li>它<strong>产生不出</strong>文献记录的那种 ATM 期权溢价的<strong>水平</strong>；</li>
+<li>它生成的隐含波动率曲线<strong>几乎是平的</strong>，跟数据里那条陡峭的 smirk 形成刺眼对比。</li>
+</ul>
+<div class="callout"><div class="callout-title">Warning</div><p>换句话说，若<strong>只</strong>靠风险厌恶当唯一的溢价来源，你没法同时对上三样东西：股票里的溢价、ATM 期权里的溢价、OTM 看跌里的溢价。从股票走到 ATM 期权、再走到深度价外看跌，这些证券对罕见事件的敏感度<strong>单调递增</strong>；少了对这一特定成分的不确定性厌恶，单凭一个 \(\gamma\)，你拟合了其中一个，就必然错过另外两个。</p></div>
+<p>而带上<strong>对罕见事件的不确定性厌恶</strong>之后，模型就活了：它既能造出 ATM 期权那个量级的溢价，又能吹出一条<strong>陡峭的 smirk</strong>，把不同行权价上的期权溢价一道对上。关键在于，模型有两个独立的旋钮——风险厌恶 \(\gamma\) 管扩散与跳跃的<strong>风险</strong>，不确定性厌恶 \(\phi\) 单独管罕见事件的<strong>市场价格</strong>；而本文的检验不是只盯两只证券，而是要求模型对<strong>所有行权价</strong>的期权都说得通。这是一个比「两参数凑两点」严苛得多的检验。</p>
+<div class="callout"><div class="callout-title">Note</div><p>这也回答了一个常见的辩驳：「Bates (2001) 加一个『崩盘厌恶』也能给跳跃风险单配一个系数，效果不一样吗？」本文承认，从拟合上看，崩盘厌恶确实能把跳跃风险的市场价格从扩散风险里分出来；但它没说清这个崩盘厌恶<strong>从哪来</strong>。本文的贡献正是给它一个有公理基础的经济来源：对罕见事件的奈特不确定性。</p></div>
+<p>（关于「从期权里反推出来的风险态度为什么会咧嘴一笑」，本博客另有一篇专门讨论：<a href="/research/why-does-implied-risk-aversion-smile/">《为什么从期权里「读」出来的风险厌恶，会咧嘴一笑？》</a>；把投资者情绪写进期权微笑的另一条路径见<a href="/research/investor-sentiment-and-option-prices/">《情绪会给「微笑」加多少弧度？》</a>。）</p>
+<h2 id="6">6 一个重要的「反例」：递归效用做不到</h2>
+<p>为了证明驱动结果的<strong>真是</strong>不确定性厌恶、而不是别的什么，本文还做了两个干净的「排除法」。</p>
+<p>其一，把投资者换成连续时间的 Epstein &amp; Zin (1989) <strong>递归效用</strong> (recursive utility)，其余设定完全不变。作者显式推出定价核，证明它给扩散和跳跃冲击定价的方式与标准幂效用<strong>一模一样</strong>——那块罕见事件溢价<strong>生不出来</strong>。直觉很清楚：递归效用虽有两个自由参数，但它只有<strong>一个</strong>风险厌恶系数同时给扩散和跳跃风险定价，另一个（跨期替代弹性）只影响无风险利率，<strong>没有</strong>多出来的旋钮去单独调节罕见事件的市场价格。这同时也加固了期权校准的可信度——因为本文的两参数效用（风险厌恶 + 不确定性厌恶）与递归效用的两参数（风险厌恶 + 跨期替代）是「平起平坐」地在比，而递归效用解决不了 smirk。</p>
+<p>其二，针对 Maenhout (2001) 那个归一化因子 \(c(\cdot)\) 可能引入的争议，作者用一个更一般的归一化形式做例子，证明：归一化的具体形式会改变<strong>解的具体数值</strong>，但「主结果建立在对罕见事件的不确定性厌恶之上」这件事，<strong>不受归一化选择的任何定性影响</strong>。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这条线捋一捋，会看到两股河流在 2005 年这里汇合。</p>
+<p>一股是<strong>罕见事件与股权溢价</strong>这条河。源头是 Mehra &amp; Prescott (1985) 那个著名的「股权溢价之谜」——标准模型解释不了股票为何赚这么多。Rietz (1988) 给出一个大胆的解法：往两状态马尔可夫链里塞一个低概率的「崩盘态」，靠罕见灾难把溢价撑起来。Naik &amp; Lee (1990) 则把跳跃直接写进纯交换经济的总禀赋，研究均衡——这正是本文禀赋过程的直接祖先。这一脉的共同点是：<strong>承认罕见事件重要，但保持投资者偏好不变</strong>。</p>
+<p>另一股是<strong>奈特不确定性与稳健控制</strong>这条河。哲学源头是 Knight (1921) 对「风险」与「不确定性」的划分，以及 Ellsberg (1961) 那个让无数人折服的悖论。把它公理化、再请进资产定价的，是 Gilboa &amp; Schmeidler (1989)、Epstein &amp; Wang (1994)；而把它工程化成可解模型的，是 Anderson, Hansen &amp; Sargent (2000) 的稳健控制框架，以及 Maenhout (2001) 引入归一化因子换来的解析可处理性。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>本文站在两条河的交汇处：它借 Naik &amp; Lee 的禀赋、借 AHS-Maenhout 的稳健控制工具，却做了一个<strong>新的限制</strong>——只对跳跃成分启用不确定性厌恶。正是这个限制，让模型在期权（而非股票）上有了可证伪的、且经得起递归效用反例考验的实证含义。它与同期 Pan (2002) 从期权时间序列里实证地剥出「跳跃风险溢价」的工作遥相呼应：一个从理论给出经济来源，一个从数据给出量级。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：「不确定性厌恶」和「极度厌恶跳跃风险」，在数学上不就是同一回事吗？</strong></p>
+<blockquote>
+<p>在拟合层面常常难分，但经济来源不同，且本文设计了能区分的检验。极度厌恶跳跃风险（如 Bates 的崩盘厌恶）是在偏好里直接塞一个更大的系数，缺乏微观基础；本文的不确定性厌恶来自「对跳跃概率本身估不准」，有 Wang (2003) 的公理基础，并且其惩罚项 \(h(\cdot)\)、最坏情形测度 \(P(\xi)\) 都有明确含义。更关键的是反例：递归效用同样有两个参数，却<strong>生不出</strong>这块溢价——说明起作用的不是「多一个参数」，而是「对模型本身的疑虑」这一特定结构。</p>
+</blockquote>
+<p><strong>Q：投资者凭什么只怀疑跳跃、却对扩散深信不疑？这是不是为了好看而设的假设？</strong></p>
+<blockquote>
+<p>这是本文最该被质疑、也辩护得最有力的一处。理由是样本量：日常波动每天都在发生，统计上估得很准，信得过；罕见事件几十年才一次，样本稀疏到没法估准，自然该发虚。本文也把这个直觉做成了可调的旋钮（\(\mathcal{P}^a\) 只疑频率、\(\mathcal{P}^b\) 只疑幅度），而不是一刀切。当然，「扩散完全没有模型不确定性」是个理想化——现实里波动率本身也估不准。</p>
+</blockquote>
+<p><strong>Q：为什么非得用期权？股票数据为什么不够？</strong></p>
+<blockquote>
+<p>因为股票只是单一的「敏感度」，你总能调风险厌恶 \(\gamma\) 去凑出任何观测到的总溢价，于是风险厌恶和不确定性厌恶的贡献在股票里<strong>不可识别</strong>。期权按行权价排开，提供了一条从低到高连续变化的「罕见事件敏感度」谱；要求模型同时对上<strong>整条谱</strong>，才把两种厌恶分了开。这是「用横截面识别一个时间序列里看不出的参数」的经典思路。</p>
+</blockquote>
+<p><strong>Q：模型不能解释「过度波动」，这是不是硬伤？</strong></p>
+<blockquote>
+<p>作者自己坦白了：模型里总产出波动率和股票波动率相等，无法处理「股市波动远高于消费波动」这一过度波动 (excess volatility) 问题。校准时因此面临「用哪个波动率」的选择，本文选了用股权市场的信息来校准，因为目标是探究股市与期权市场之间的联系，而非解释过度波动。这是一个诚实的范围声明，而非缺陷——它把自己的射程限定在「股票–期权」这条联系上。</p>
+</blockquote>
+<p><strong>Q：这套机制只对「向下跳」有效吗？如果允许向上跳会怎样？</strong></p>
+<blockquote>
+<p>本文明确限定 \(k\le 0\)，即只考虑「坏」的罕见事件，这与稳健控制「想最坏情形」的精神一致——投资者担心的是崩盘而非暴涨。这也正好对上 smirk 的方向：市场给下行保险（OTM put）的定价系统性偏贵。若放开向上跳，最坏情形的选择会更复杂，但对解释「向左上翘的 smirk」未必有帮助。</p>
+</blockquote>
+<p><strong>Q：把它从指数期权搬到别的市场（比如个股、信用、外汇），还成立吗？</strong></p>
+<blockquote>
+<p>机制是通用的：只要某类资产对「罕见、难估」的事件有差异化的敏感度，不确定性厌恶就该在它们的横截面价格里留下指纹。但本文只校准了指数期权。换到个股，特质性跳跃的「不可估性」更强、但也更可分散；换到信用或外汇，则要重新界定「罕见事件」是什么（违约？货币崩盘？）。这恰恰指向下面的研究方向。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 公司债信用利差里的「罕见事件溢价」</strong>
+- 【经济故事】公司债的下行尾部（违约、评级断崖式下调）正是典型的「罕见且难估」事件，且债券对它高度敏感、对日常利率波动相对迟钝——结构和指数期权的 OTM put 高度类似。信用利差长期高于「纯违约损失」所能解释的水平（信用利差之谜），本文的不确定性厌恶提供了一个不靠提高风险厌恶的解释。
+- 【可行性】中。数据可用（TRACE 成交、Moody's/S&amp;P 违约历史、CDS 报价）；识别上可把同一发行人不同优先级/不同久期的债券当作「不同罕见事件敏感度」的横截面，类比本文的 moneyness 谱。难点是违约的「罕见」程度因评级而异，校准需要分评级做。</p>
+<p><strong>2. 外资持有人与「比索问题」的现代版</strong>
+- 【经济故事】本文的引子就是比索问题——外汇与主权市场天然带着「钉住汇率随时可能崩」的不确定性。一个自然的问题是：在新兴市场，<strong>外资持有人</strong>是否比本地投资者对这类罕见事件更不确定（信息劣势 + 难估概率），从而要求更高的罕见事件溢价？这会在外资持仓与本地债/汇溢价之间留下可检验的关联。
+- 【可行性】中。需要分国别的外资持仓数据（如 EPFR、IMF CPIS）加主权 CDS / 本币债收益率。识别可用资本账户开放、纳入指数等准自然实验造外生变异。诚实地说，把「不确定性厌恶」与「信息劣势」分开是这条线的核心难点。</p>
+<p><strong>3. 罕见事件不确定性与公司债流动性的「同呼吸」</strong>
+- 【经济故事】危机里公司债流动性骤降，往往伴随尾部恐慌升温。若做市商/投资者对罕见事件的不确定性是流动性溢价的一个驱动，那么尾部不确定性指标（如期权隐含的灾难概率）应当<strong>领先</strong>公司债买卖价差的走阔。
+- 【可行性】中高。流动性度量与尾部指标都有现成数据（TRACE + 指数期权隐含分布）。识别偏相关而非因果，可作为一篇扎实的实证关联研究，与本博客<a href="/research/anatomy-of-a-liquidity-crisis-corporate-bonds-in-the-covid/">《差点死掉的那个市场：一场公司债流动性危机的微观解剖》</a>所记录的危机事件对照。</p>
+<p><strong>4. 把「不确定性厌恶」与「缓慢展开的灾难」放进同一个模型</strong>
+- 【经济故事】本文把罕见事件设成「瞬时跳跃」。但现实中的灾难（疫情、危机）往往是<strong>缓慢展开</strong>的，投资者一边经历、一边学习概率。把贝叶斯学习与不确定性厌恶嵌进同一框架，能区分「我在更新概率」和「我对概率本身发虚」两种动态。
+- 【可行性】低到中。理论上可做（已有学习 + 模糊的文献），但解析解很难，多半要靠数值；实证识别两种机制的分离更难。属于「有意思但难啃」的方向。可与<a href="/research/learning-slowly-unfolding-disasters-and-asset-prices/">《投资者还没回过神，灾难已经走完了一半》</a>对话。</p>
+<h2 id="9">9 我的判断</h2>
+<p><strong>贡献。</strong> 这篇文章最漂亮的地方，不在于「又造了一个能拟合 smirk 的模型」——能拟合 smirk 的模型一抓一大把——而在于它把「拟合」升级成了「识别」。它先用一个<strong>反例</strong>（递归效用做不到）和一个<strong>稳健性论证</strong>（归一化不影响定性结论）把结果牢牢钉在「对罕见事件的不确定性厌恶」这一个经济来源上，再用期权的<strong>整条 moneyness 谱</strong>做出一个远比「两参数凑两点」严苛的检验。「只对跳跃启用不确定性厌恶」这个看似随意的限制，其实是全篇的支点：它既有样本量上的现实理由，又恰好制造了股票看不出、期权才看得出的可证伪含义。技术上，把相对熵推广成扩展熵以驯服跳跃情形下的发散，也是一处真功夫。</p>
+<p><strong>对识别的担忧。</strong> 三点。其一，「扩散零不确定性、跳跃满不确定性」是个非黑即白的理想化，现实里波动率本身也估不准，这个二分被多大程度地推动了结果，值得做敏感性分析。其二，文章承认解决不了过度波动，于是校准时「用哪个波动率」是个不得不做的选择，这个选择对 smirk 的拟合有多关键，外人不易判断。其三，不确定性厌恶 \(\phi\) 与一个足够大的跳跃风险厌恶在数据上高度共线——本文靠递归效用反例做了区分，但那是「排除一个特定替代」，不等于排除了所有「行为等价」的偏好设定。</p>
+<p><strong>后续想看到什么。</strong> 我最想看到的是把这套框架直接拿到<strong>数据</strong>里去估、而不止于校准：用指数期权的横截面 + 时间序列联合估计 \(\gamma\) 与 \(\phi\)，看 \(\phi\) 是否随宏观尾部恐慌（如疫情、危机）显著时变。其次，我很想看它被搬到信用市场——公司债的下行尾部与 OTM put 在结构上太像了，那块「罕见事件溢价」很可能就是信用利差之谜里一直缺的一角。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Anderson, E., L. Hansen, and T. Sargent (2000). Robustness, Detection and the Price of Risk. <em>Working paper</em>, University of North Carolina, University of Chicago, and Stanford University.</li>
+<li>Bates, D. (2001). The Market Price of Crash Risk. <em>Working paper</em>, University of Iowa.</li>
+<li>Black, F., and M. Scholes (1973). The Pricing of Options and Corporate Liabilities. <em>Journal of Political Economy</em> 81, 637–654.</li>
+<li>Ellsberg, D. (1961). Risk, Ambiguity, and the Savage Axioms. <em>Quarterly Journal of Economics</em> 75, 643–669.</li>
+<li>Epstein, L., and T. Wang (1994). Intertemporal Asset Pricing under Knightian Uncertainty. <em>Econometrica</em> 62, 283–322.</li>
+<li>Epstein, L., and S. Zin (1989). Substitution, Risk Aversion, and the Temporal Behavior of Consumption and Asset Returns: A Theoretical Framework. <em>Econometrica</em> 57, 937–969.</li>
+<li>Gilboa, I., and D. Schmeidler (1989). Maxmin Expected Utility Theory with Non-unique Prior. <em>Journal of Mathematical Economics</em> 18, 141–153.</li>
+<li>Jackwerth, J. C., and M. Rubinstein (1996). Recovering Probability Distributions from Option Prices. <em>Journal of Finance</em> 51, 1611–1631.</li>
+<li>Knight, F. (1921). <em>Risk, Uncertainty and Profit</em>. Houghton, Mifflin, Boston.</li>
+<li>Lucas, R. E. (1978). Asset Prices in an Exchange Economy. <em>Econometrica</em> 46, 1429–1445.</li>
+<li>Maenhout, P. (2001). Robust Portfolio Rules, Hedging and Asset Pricing. <em>Working paper</em>, INSEAD.</li>
+<li>Mehra, R., and E. Prescott (1985). The Equity Premium: A Puzzle. <em>Journal of Monetary Economics</em> 15, 145–161.</li>
+<li>Naik, V., and M. Lee (1990). General Equilibrium Pricing of Options on the Market Portfolio with Discontinuous Returns. <em>Review of Financial Studies</em> 3, 493–521.</li>
+<li>Pan, J. (2002). The Jump-Risk Premia Implicit in Option Prices: Evidence from an Integrated Time-Series Study. <em>Journal of Financial Economics</em> 63, 3–50.</li>
+<li>Rietz, T. (1988). The Equity Risk Premium: A Solution. <em>Journal of Monetary Economics</em> 22, 117–131.</li>
+<li>Rubinstein, M. (1994). Implied Binomial Trees. <em>Journal of Finance</em> 49, 771–818.</li>
+<li>Wang, T. (2003). A Class of Multi-Prior Preferences. <em>Working paper</em>, University of British Columbia.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 引言：一只从没真正跳过的「黑天鹅」</a></li>
+        <li><a href="#2">2 风险，还是不确定性？</a></li>
+        <li><a href="#3">3 模型：把「罕见」写成一次跳跃</a></li>
+          <li><a href="#3-1">3.1 经济与禀赋</a></li>
+          <li><a href="#3-2">3.2 用一族「替代模型」来表达疑虑</a></li>
+          <li><a href="#3-3">3.3 偏好：在「最坏情形」与「离基准多远」之间权衡</a></li>
+        <li><a href="#4">4 均衡：被拆成三块的股权溢价</a></li>
+        <li><a href="#5">5 反转：期权的「微笑」出卖了它</a></li>
+        <li><a href="#6">6 一个重要的「反例」：递归效用做不到</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#9">9 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

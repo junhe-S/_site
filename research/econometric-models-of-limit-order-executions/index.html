@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>挂单要等多久才成交？——别再用「股价碰一下」来糊弄自己 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>挂单要等多久才成交？——别再用「股价碰一下」来糊弄自己</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2002 JFE]</span> Econometric Models of Limit-order Executions</div>
+        <div class="paper-source-authors"><a href="/research/author/andrew-w-lo/">Andrew W. Lo</a>, <a href="/research/author/acraig-mackinlay/">A.Craig MacKinlay</a>, <a href="/research/author/june-zhang/">June Zhang</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">市场微观结构</span>
+        
+        
+        
+        
+        <span class="tag">生存分析</span>
+        
+        
+        
+        
+        <span class="tag">限价订单</span>
+        
+        
+        
+        
+        <span class="tag">交易成本</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Lo, MacKinlay &amp; Zhang (2002, <em>Journal of Financial Economics</em>)</strong>：作者用<strong>生存分析 (survival analysis)</strong> 和真实的限价订单数据，第一次把「限价单要等多久才成交」建成一个可估计的计量模型。核心结论有两条——执行时间对<strong>限价</strong>高度敏感、对<strong>订单规模</strong>几乎不敏感；而此前人们偷懒用的两种「假成交」（理论上的布朗运动首达时间、经验上从成交数据反推）都是<strong>糟糕的代理</strong>，会系统性地把执行时间算错。</p></div>
+<h2 id="1">1 一个谁都遇到过、却没人算清的问题</h2>
+<p>如果你做过股票交易，一定挂过限价单。它的好处一句话就能说清：<strong>没有价格风险</strong>——只在你指定的价格成交，绝不会被市场一口吃在更差的位置。限价订单 (limit order) 占了纽约交易所约 <code>45%</code> 的下单量（Harris and Hasbrouck, 1996），它甚至悄悄替市场报着价：Chung et al. (1997) 估计有 <code>21%</code> 的报价完全来自限价订单簿，专家做市商根本没插手。</p>
+<p>但这份「没有价格风险」的好处，是要付学费的。<strong>成交不被保证</strong>，而且——到底要等多久才成交，是个随机变量。它取决于你挂的价格、挂的股数、当时的盘口、市场的波动，甚至取决于你不知道的私有信息。对有些交易，这点等待无所谓；对另一些，等待的机会成本能大到吃掉全部收益。</p>
+<p>于是一个再自然不过的问题摆在面前：<strong>给定我现在挂出的这张单子，它的执行时间服从什么分布？</strong> 任何想在「挂限价单」和「直接打市价单」之间做量化权衡的人，都绕不开这个问题。</p>
+<p>可奇怪的是，在这篇论文之前，几乎没有人<strong>直接</strong>去建这个分布。大家都在抄近路。</p>
+<h2 id="2">2 两条诱人的捷径</h2>
+<p>第一条捷径是<strong>理论</strong>的。既然股价是个随机过程，那就把它写成<strong>几何布朗运动 (geometric Brownian motion)</strong>：</p>
+<p>$$dP(t) = \mu\,P(t)\,dt + \sigma\,P(t)\,dW(t)$$</p>
+<p>限价单成交，不就是股价第一次「碰到」限价这条边界吗？这正是随机过程里经典的<strong>首达时间 (first-passage time)</strong> 问题。取对数、用伊藤引理，得到一个带漂移的算术布朗运动：</p>
+<p>$$d\ln P(t) = \Big(\mu - \tfrac{1}{2}\sigma^2\Big)\,dt + \sigma\,dW(t)$$</p>
+<p>令 \(a = \ln(L/P(0))\) 为对数意义下「现价到限价」的距离（卖单 \(a>0\)，买单 \(a<0\)），\(\nu = \mu - \tfrac12\sigma^2\) 为漂移。那么首达时间 \(\tau\) 的密度就是一个<strong>逆高斯分布 (inverse Gaussian distribution)</strong>：</p>
+<p>$$f_\tau(t) = \frac{|a|}{\sigma\sqrt{2\pi t^3}}\,\exp\!\left(-\frac{(a-\nu t)^2}{2\sigma^2 t}\right)$$</p>
+<p>这套数学很漂亮——它和障碍期权 (barrier option) 的定价用的是同一套首达时间工具（关于把公司价值写成「随时可能碰到边界」的框架，可参见<a href="/research/a-barrier-option-framework-for-corporate-security-valuation/">《公司随时都可能倒下，期权定价却只盯着还债那一天》</a>）。它甚至「自带」了一个不成交的概率：当漂移把价格往<strong>远离</strong>边界的方向推时，</p>
+<p>$$\Pr(\tau < \infty) = \exp\!\left(\frac{2\nu a}{\sigma^2}\right) < 1$$</p>
+<p>也就是说，单子有可能<strong>永远</strong>碰不到限价。看上去，连「成交不被保证」都建模进去了。</p>
+<p>第二条捷径是<strong>经验</strong>的，由 Handa and Schwartz (1996) 提出。原理一模一样，只是把布朗运动换成真实的成交数据：翻历史的逐笔成交，看价格什么时候第一次「穿过」你的限价，那一刻就算它成交了。不需要任何模型假设，简单粗暴。</p>
+<p>两条捷径都有「简单」这个巨大的优点。问题是——<strong>它们对吗？</strong></p>
+<h2 id="3">3 真正关键的一步：把执行时间当成「失效时间」</h2>
+<p>论文真正的洞见，是换了一个看问题的角度。</p>
+<p>限价单的执行时间有三个特征：它<strong>非负</strong>、它<strong>随机</strong>、它<strong>有时间次序</strong>。这三个词放在一起，统计学里早有一门成熟的工具专门对付它——<strong>生存分析 (survival analysis)</strong>，也就是研究「失效时间」「寿命」的那套理论（Kalbfleisch and Prentice, 1980；Cox and Oakes, 1984）。一张限价单从挂出到成交，和一台机器从开机到故障、一个病人从确诊到……，在数学上是同一类对象。</p>
+<p>生存分析的两块基石是<strong>生存函数 (survival function)</strong> \(S(t)=\Pr(T>t)\) 和<strong>危险率 (hazard function)</strong>：</p>
+<p>$$\lambda(t) = \frac{f(t)}{S(t)},\qquad S(t) = \exp\!\left(-\int_0^t \lambda(u)\,du\right)$$</p>
+<p>\(\lambda(t)\) 的直觉是：「已经等到了第 \(t\) 分钟还没成交，下一瞬间成交的条件强度有多大」。把限价、规模、盘口价差、波动率这些解释变量塞进 \(\lambda(t)\)，就能得到<strong>条件</strong>执行时间分布。这正是论文要估的东西。</p>
+<p>但生存分析能进来，靠的不是它名字好听，而是它能干一件其他方法干不了的事：<strong>处理删失 (censoring)</strong>。</p>
+<p>一张单子，可能在成交之前就被投资者<strong>取消、修改</strong>了，也可能因为「有效期」到了而<strong>过期</strong>。这些单子，从没真正成交过。诱惑在于——把它们当成废数据扔掉算了，它们好像没告诉我们任何关于「成交要多久」的信息。</p>
+<p><strong>但这恰恰是最大的陷阱。</strong> 一张在第 30 分钟被取消的单子，确确实实告诉了你一件事：它「<strong>存活</strong>」了至少 30 分钟而没成交。这是关于执行时间分布的真信息。生存分析把这件事写进了似然函数里——这就是全文方法论的核心方程：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\mathcal{L} = \prod_{i=1}^{n}\; \cssId{a1}{f(t_i)^{\delta_i}}\;\cssId{a2}{S(t_i)^{1-\delta_i}}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>已成交的订单（δ_i=1）：贡献「执行时间恰为 t_i」的密度 f(t_i)</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>被删失的订单（δ_i=0，被取消/过期）：只知道「至少存活到 t_i」，贡献生存概率 S(t_i)</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>\(\delta_i\) 是成交指示变量：成交记 <code>1</code>，删失记 <code>0</code>。一个被删失的观测不贡献密度，而贡献「活过 \(t_i\)」的整段生存概率。<strong>忽略删失观测，会严重地、系统性地扭曲条件分布的估计。</strong> 这一步，是前面两条捷径都做不到的——它们的世界里只有「成交了」，没有「等了很久最后放弃」。</p>
+<h2 id="4">4 数据：一份被时间戳追踪到底的订单</h2>
+<p>要估这个模型，得有真正记录了「取消/过期」的数据，而不只是成交记录。论文用的是 Investment Technology Group（ITG）提供的限价订单库：<code>1994 年 8 月</code>到<code>1995 年 8 月</code>，标普 500 里市值最大的 <code>100</code> 只股票，共 <code>375,998</code> 张限价单。每张单子从提交到终结都被打上时间戳，全程追踪——它什么时候被部分成交、被取消、被修改、被过期，一笔不漏。</p>
+<p>几个值得记住的事实：</p>
+<ul>
+<li>单子数量从 DWD 的 <code>1,160</code> 张到 GE 的 <code>11,298</code> 张不等；卖单里<strong>卖空</strong>占了大头（<code>32.83%</code>），因为卖空受「上涨报价规则」约束、动态不同，作者把它们剔除，此后「卖单」只指纯卖单。</li>
+<li>大约<strong>一半</strong>的单子至少被部分成交，<code>37.47%</code> 被完全成交，<code>30.51%</code> 在第一次成交就完成（POOL 口径）。</li>
+<li>大多数完成的单子一次就成交完：<code>81.42%</code> 一次完成，只有约 <code>1%</code> 需要七次以上。这也是为什么论文把模型拆成<strong>到首次成交 (time-to-first-fill)</strong> 和<strong>到完全成交 (time-to-completion)</strong> 两套——它们性质差别很大。</li>
+</ul>
+<p>而最先冒出来、也最顽固的一个经验规律是：<strong>买单系统性地比卖单慢</strong>。POOL 的到首次成交均值，买单约 <code>27.92</code> 分钟、卖单约 <code>11.30</code> 分钟（标准差分别高达 <code>54.91</code> 和 <code>26.84</code> 分钟，离散度惊人）。原因藏在挂单行为里：平均而言，<strong>卖单挂得离买价更近，买单挂得离卖价更远</strong>——卖方比买方更在乎「赶快成交」这件事。一个细节，背后是一整套策略性下单（关于限价订单簿如何在策略博弈中形成，可参见<a href="/research/limit-order-book-as-a-market-for-liquidity/">《买卖价差为什么会「自己长回去」？》</a>）。</p>
+<h2 id="5">5 反转：两条捷径，错得很离谱</h2>
+<p>铺垫到这里，论文最有分量的一击才落下。作者把同一批单子，分别用「真实成交时间」和「假成交时间」算一遍，正面对质。</p>
+<p>结论是：<strong>理论的首达时间也好，经验的成交数据反推也好，都是真实执行时间的糟糕代理。</strong> 偏差严重到让「假成交」根本不能用来判断限价单的执行情况。</p>
+<p>为什么会错得这么离谱？因为两条捷径都默认了一件<strong>根本不成立</strong>的事——「股价碰到限价 = 单子成交」。可现实里：</p>
+<ul>
+<li>价格穿过你的限价时，<strong>前面排着队</strong>。限价订单簿讲价格优先、时间优先，价格碰到不代表轮到你。</li>
+<li>真实的单子会被<strong>取消和修改</strong>——那 <code>30%+</code> 被删失的观测，捷径完全视而不见。捷径的世界里没有「等不及而走人」，而真实世界里这是常态。</li>
+<li>真实的下单是<strong>策略性、内生</strong>的：人们在「等待风险」和「立即成交风险」之间权衡着挂单，挂单价格本身就携带了私有信息。一条外生的布朗运动路径，捕捉不到这层选择。</li>
+</ul>
+<p>换句话说，捷径量的是「价格的运动」，而真正决定成交的是「<strong>订单的命运</strong>」——而订单的命运里写满了排队、取消与策略，这些恰恰被首达时间假设抹掉了。这就是为什么必须回到真实订单、必须用生存分析、必须把删失算进来。</p>
+<h2 id="6">6 主要结果：敏感于价格，麻木于规模</h2>
+<p>把模型估出来，最醒目的两个结论，也是摘要里点名的：</p>
+<p><strong>第一，执行时间对限价高度敏感。</strong> 你把限价往「贵」的方向挪一点（买单挂得更低、卖单挂得更高），等待时间会迅速拉长。这与首达时间的几何直觉一致——离边界越远，越难碰到——但量级和形状只有用真实数据才量得准。论文给出的执行时间<strong>预测中位数</strong>对各解释变量的敏感性，集中报告在表 8：限价是主导变量，盘口价差与市场波动率也显著影响成交快慢。</p>
+<div class="article-image"><img alt="Table 8: contains related results, reporting the sensitivity of the forecast median" src="assets/table-8.png" /></div>
+<p><em>Table 8: contains related results, reporting the sensitivity of the forecast median</em></p>
+<p><strong>第二，也更反直觉：执行时间对订单规模几乎不敏感。</strong> 按朴素直觉，挂一万股当然比挂一百股难成交。但在这份以机构订单为主的数据里，规模的边际作用很弱。一个合理的解读是：在这些最大、最活跃的股票上，深度足够厚，规模不是约束成交的瓶颈；真正卡住你的，永远是你<strong>愿不愿意在价格上让步</strong>。</p>
+<p>这两条合在一起传递了一个干净的信息：<strong>限价单的执行时间，是可以被精确建模、因而可以被控制的。</strong> 这意味着 Angel (1994)、Harris (1994)、Hollifield et al. (1999) 等人描述的那些策略性下单方案，在实践中是有数据支撑、可落地的，而不只是黑板上的理论。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这篇论文放回它生长的土壤里看，会更清楚它补的是哪一块。</p>
+<p>最早，限价订单是作为<strong>理论对象</strong>进入视野的：Cohen et al. (1981) 讨论交易成本与下单策略，Glosten (1994) 追问「电子化的公开限价订单簿是否不可避免」——这一脉关心的是限价单在价格发现中的角色、与市价单的互动、做市商的位置。但它们几乎都不在<strong>连续交易</strong>的环境里，对「执行时间」这个问题帮不上太多忙。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>接着，一批研究开始直接碰<strong>执行概率</strong>：Angel (1994) 在一串很强的假设下推出了限价单成交概率的解析式；Hollifield et al. (1999) 干脆搭了一个纯限价订单市场的结构模型，去估下单策略。与此并行，一批<strong>经验</strong>研究在比较限价单与市价单的盈亏：Harris and Hasbrouck (1996) 用 TORQ 数据发现某些情形下限价单能省成本，Handa and Schwartz (1996) 则用成交数据构造「假成交」来评估限价单收益——而正是后者这套「假成交」方法，成了本文要正面批判的靶子。</p>
+<p>本文的位置，因此非常清楚：它不是又一个限价单理论，也不是又一次盈亏比较；它把统计学里成熟的<strong>生存分析</strong>（Kalbfleisch and Prentice, 1980；Cox and Oakes, 1984）第一次搬进市场微观结构，<strong>直接建模执行时间的条件分布</strong>，并用真实订单证明了此前流行的代理方法靠不住。它既是方法上的引入，也是对一条捷径的「证伪」。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：执行时间不就是个非负的连续变量吗？为什么不能直接拿它对各变量做 OLS 回归，非要搬出生存分析？</strong></p>
+<blockquote>
+<p>因为你的样本里有一大批<strong>根本没成交</strong>的单子（取消/过期），它们没有「执行时间」可言。OLS 要么把它们扔掉、要么瞎填一个数，两种做法都会让估计严重有偏——扔掉等于只看「成交得了的」那群，是典型的选择偏差。生存分析的删失似然 \(\mathcal{L}=\prod f(t_i)^{\delta_i}S(t_i)^{1-\delta_i}\) 正是为这件事造的：未成交的单子贡献「至少存活到 \(t_i\)」的概率，信息不被浪费。</p>
+</blockquote>
+<p><strong>Q：「对规模不敏感」太反直觉了。大单难道不该更难成交？</strong></p>
+<blockquote>
+<p>在这份数据里确实不敏感，但要看清适用范围：样本是标普 500 <strong>最大的 100 只股票</strong>、且以机构订单为主。这些票深度厚、流动性好，规模远没到顶住盘口的程度。真正决定成交快慢的是你在<strong>价格</strong>上让多少步。换到小盘股、或一次性砸进相对深度很大的单子，规模的作用很可能回来——这是个值得单独检验的边界。</p>
+</blockquote>
+<p><strong>Q：首达时间模型那么漂亮，连「永不成交」都建进去了，到底差在哪？</strong></p>
+<blockquote>
+<p>差在它假设「价格碰到限价 = 成交」。可现实里限价订单簿有<strong>价格优先、时间优先</strong>的排队，价格碰到不等于轮到你；更要命的是它没有「取消/修改」这件事，而真实样本里三成以上的单子是这样终结的。首达时间量的是价格路径，真实执行量的是订单在排队与策略中的命运，两者系统性地对不上。</p>
+</blockquote>
+<p><strong>Q：被删失的订单（取消、过期）真有信息？直接扔掉省事，差别能有多大？</strong></p>
+<blockquote>
+<p>有，而且差别是「定性」级别的。一张第 30 分钟被取消的单子，等价于一次观测到「执行时间 &gt; 30 分钟」的事件。把这类观测全扔掉，等于只用「成交快的」那部分样本去估分布，会把整体执行时间系统性地<strong>低估</strong>。论文反复强调：忽略删失会戏剧性地扭曲条件分布的估计量。</p>
+</blockquote>
+<p><strong>Q：买单为什么会系统性地比卖单慢这么多（约 28 分钟 vs 11 分钟）？</strong></p>
+<blockquote>
+<p>不是买单「天生」难成交，而是<strong>人挂得不一样</strong>。数据显示卖单平均挂得离买价更近，买单挂得离卖价更远——卖方更在意立即出手，买方更愿意为更好的价格多等。慢，是策略选择的结果，不是市场对买单有偏见。</p>
+</blockquote>
+<p><strong>Q：ITG 全是机构订单，结论能推广到散户、推广到整个市场吗？</strong></p>
+<blockquote>
+<p>要打折扣。作者自己很坦诚：ITG 客户几乎全是机构和经纪商，几乎看不到散户的小单、零股单，而且部分订单来自 POSIT 撮合后的「残单」，带着「缺流动性」的印记；它的条件信息也比普通 TORQ 单更丰富。所以这是「一类交易者」的执行时间，不是市场的平均。作者的态度也很明确：希望别人把同样的方法用到自己的数据上做对照。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把生存分析搬到公司债的成交执行上。</strong>
+【经济故事】公司债是询价 (RFQ)、电话撮合为主的场外市场，「挂出一个意愿价、等多久能成交」同样是核心问题，而且删失（询价无果、撤单）比股票更普遍。把执行时间建成带删失的失效时间，能直接刻画信用市场的「执行流动性」。
+【可行性】中。TRACE 有逐笔成交但缺「未成交的意愿」，需要拿到交易商层面的报价/询价数据（如某些电子平台的 RFQ 日志）才能识别删失，数据门槛是主要障碍。</p>
+<p><strong>2. 外资 vs. 本地投资者的限价单执行时间差异。</strong>
+【经济故事】如果外资真有「信息劣势」，他们的限价单是不是挂得更保守、等得更久、被删失得更多？把执行时间按投资者国籍分层估计，是对「外资是否吃亏」的一个全新、且基于微观行为的检验。
+【可行性】高。首尔交易所 (KRX) 这类带投资者身份标签的限价订单簿是现成的，识别策略干净（关于这一辩论，可参见<a href="/research/do-domestic-investors-have-an-edge-the-trading-experience/">《外资真有「信息劣势」吗？——首尔交易簿里那 37 个基点的真相》</a>）。</p>
+<p><strong>3. 把「删失信息」做成一个流动性指标。</strong>
+【经济故事】既然未成交的单子携带「存活了多久」的信息，那么一只股票（或一只债）的<strong>取消率与平均存活时间</strong>本身，就是一把流动性的尺子，而且它度量的是「下单后的执行难度」，与价差、深度这些静态指标互补。
+【可行性】中。需要全订单生命周期数据；难点是把这个新指标与既有流动性度量做横向比较、证明它有增量信息。</p>
+<p><strong>4. 用机器学习预测执行时间、并反推最优下单。</strong>
+【经济故事】本文把执行时间建成可估计的条件分布，下一步自然是：给定目标，求「挂什么价、等多久、何时转市价单」的最优策略。把生存模型的预测中位数嵌进一个动态下单优化里，是从「描述」走向「控制」的关键一跳。
+【可行性】中到高。高频限价订单数据已不稀缺；挑战在于策略的内生性——你的下单本身会改变订单簿，需要谨慎处理反馈。</p>
+<p><strong>5. 在信用/利率市场系统检验「首达时间代理」的偏误。</strong>
+【经济故事】本文证明了在股票里首达时间是糟糕代理。结构化信用模型、可转债、障碍型衍生品里大量用首达时间近似「触发事件」，那里的偏误有多大、方向如何，是个干净且有现实意义的问题。
+【可行性】中。需要把模型隐含的首达时间与真实触发事件（违约、转股、敲出）对齐，数据可得但事件样本可能偏少。</p>
+<h2 id="9">9 我的判断</h2>
+<p>这篇论文的贡献是「方法 + 证伪」的双重组合，而且两件事都做得很扎实。<strong>方法上</strong>，把生存分析引入限价单执行，第一次让「执行时间分布」成为一个可以条件化、可以估计、可以预测的对象，且优雅地解决了删失这个被所有捷径回避的硬骨头——这个框架的生命力，二十多年后在高频和算法交易里依然清晰可见。<strong>证伪上</strong>，它用同一批数据正面把「首达时间 / 成交数据反推」这两条流行捷径按在地上，证明它们是糟糕代理，等于替整个领域清掉了一条看似便宜、实则误导的路。</p>
+<p>对识别，我有两点保留。其一是<strong>样本的代表性</strong>：结论建立在 100 只最大股票、几乎全是机构订单的 ITG 数据上，「对规模不敏感」很可能正是「这些票太厚」的产物，外推到小盘股或散户要非常小心，作者自己也承认了这一点。其二是<strong>内生性</strong>：下单价格、规模、是否取消，全是投资者基于私有信息的内生选择，生存模型估的是「给定这些选择之后」的条件分布，并没有打开「人为什么这样挂、为什么取消」这个黑箱——而那恰恰是策略性下单理论最关心的地方。</p>
+<p>后续我最想看到的，是把这套删失似然搬到<strong>外资持有人与公司债流动性</strong>的交叉地带：在一个删失更普遍、信息不对称更强的市场里，「挂出去要等多久、最后等没等到」这件事，也许比价差更能讲清楚谁在为流动性买单。</p>
+<h2 id="">参考文献</h2>
+<p>Angel, J. (1994). Limit versus market orders. Working Paper No. FINC-1377-01-293, Georgetown University.</p>
+<p>Chung, K., Van Ness, B., Van Ness, R. (1997). Limit orders and the bid–ask spread. Working paper, University of Memphis.</p>
+<p>Cohen, K., Maier, S., Schwartz, R., Whitcomb, D. (1981). Transaction costs, order placement strategy and existence of the bid–ask spread. <em>Journal of Political Economy</em> 89(2), 287–305.</p>
+<p>Cox, D., Oakes, D. (1984). <em>Analysis of Survival Data</em>. Chapman &amp; Hall, New York.</p>
+<p>Glosten, L. (1994). Is the electronic open limit order book inevitable? <em>Journal of Finance</em> 49(4), 1127–1161.</p>
+<p>Handa, P., Schwartz, R. (1996). Limit order execution. <em>Journal of Finance</em> 51(5), 1835–1861.</p>
+<p>Harris, L., Hasbrouck, J. (1996). Market vs. limit orders: the SuperDot evidence on order submission strategy. <em>Journal of Financial and Quantitative Analysis</em> 31(2), 213–231.</p>
+<p>Hollifield, B., Miller, R., Sandås, P. (1999). An empirical analysis of a pure limit order market. Working paper, University of Pennsylvania.</p>
+<p>Kalbfleisch, J., Prentice, R. (1980). <em>The Statistical Analysis of Failure Time Data</em>. Wiley, New York.</p>
+<p>Lo, A., MacKinlay, C., Zhang, J. (2002). Econometric models of limit-order executions. <em>Journal of Financial Economics</em> 65(1), 31–71.</p>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个谁都遇到过、却没人算清的问题</a></li>
+        <li><a href="#2">2 两条诱人的捷径</a></li>
+        <li><a href="#3">3 真正关键的一步：把执行时间当成「失效时间」</a></li>
+        <li><a href="#4">4 数据：一份被时间戳追踪到底的订单</a></li>
+        <li><a href="#5">5 反转：两条捷径，错得很离谱</a></li>
+        <li><a href="#6">6 主要结果：敏感于价格，麻木于规模</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#9">9 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

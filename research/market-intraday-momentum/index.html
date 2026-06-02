@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一天里，只有两个半小时真正重要 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>一天里，只有两个半小时真正重要</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2018 JFE]</span> Market Intraday Momentum</div>
+        <div class="paper-source-authors"><a href="/research/author/lei-gao/">Lei Gao</a>, <a href="/research/author/yufeng-han/">Yufeng Han</a>, <a href="/research/author/sophia-zhengzi-li/">Sophia Zhengzi Li</a>, <a href="/research/author/guofu-zhou/">Guofu Zhou</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">日内动量</span>
+        
+        
+        
+        
+        <span class="tag">可预测性</span>
+        
+        
+        
+        
+        <span class="tag">市场择时</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Gao, Han, Li &amp; Zhou (2018, JFE)</strong>：用 1993–2013 年标普 500 ETF（SPY）的高频数据，他们发现一个干净得令人意外的规律——一个交易日里<strong>第一个半小时</strong>的市场收益，能正向预测<strong>最后一个半小时</strong>的市场收益。这种「日内动量」不仅统计显著（单变量 <code>R² = 1.6%</code>），而且经济上可观（择时策略夏普比率 <code>1.08</code>），在波动大、成交高、衰退期、宏观数据发布日尤其强。</p></div>
+<h2 id="1">1 一个被频率「藏起来」的问题</h2>
+<p>动量 (momentum) 大概是资产定价里最顽固的一个异象。自 Jegadeesh and Titman (1993) 以来，我们就知道：过去半年到一年里的赢家，往往在接下来的半年到一年里继续赢；输家继续输。后来这条线越铺越宽——有人把它推到全球股市，有人把横截面动量改写成<strong>时间序列动量</strong> (time-series momentum)：一项资产过去 12 个月的收益，正向预测它自己未来的收益（Moskowitz, Ooi and Pedersen, 2012）。</p>
+<p>但请注意，几乎所有这些研究，都停在<strong>月度或周度</strong>的频率上。</p>
+<p>于是一个自然的问题是：如果把时钟一直往下拨，拨到<strong>一天之内</strong>，动量还在吗？换句话说，市场早上的走势，能不能告诉我们它下午收盘前会怎么走？</p>
+<p>这个问题听上去有点像民间股评，却恰恰戳中了一个严肃的命题：<strong>日内的市场到底有多有效</strong>，以及那群越来越庞大的高频交易者，究竟在价格里留下了什么样的脚印。本文就是第一篇系统研究<strong>市场层面日内时间序列动量</strong>的论文。</p>
+<h2 id="2">2 为什么偏偏是「第一个」和「最后一个」半小时？</h2>
+<p>要讲清楚这篇文章，得先回答一个看似琐碎、其实是全文支点的问题：一天有十三个半小时，为什么作者死死盯住头一个和尾一个？</p>
+<p>作者给的理由很朴素，却环环相扣。<strong>首先</strong>，几乎所有财报和绝大多数重要宏观新闻，都在开盘前发布。所以市场往往不会平开——开盘价已经把隔夜的新信息「吃」了进去。而消化这批信息大约需要 30 分钟，这从开盘头半小时极高的成交量和波动率就能看出来；之后市场逐渐冷却，直到尾盘才重新活跃。日内的成交量和波动率都呈现 U 形。</p>
+<p><strong>接着</strong>，尾盘为什么重要？因为收盘价不是一个普通的价格。正如 Cushing and Madhavan (2000) 和 Foucault, Kadan and Kandel (2005) 所强调的，机构投资者对收盘价有着近乎执念的重视——它被用来计算组合收益、核算基金净值、对各类合约做盯市。与此同时，做市商也急于在收盘前把库存甩出去，以免承担隔夜风险。</p>
+<p>于是头半小时（信息冲击）和尾半小时（机构与做市商的集中行动）成了一天里最关键的两端。本文要做的，就是去检验这两端的收益之间，是不是真的存在正相关。</p>
+<h2 id="3">3 识别策略：把一天切成十三块</h2>
+<p>作者用最actively交易的 SPY 来代表市场，数据来自 TAQ 高频数据库。一个交易日被切成 13 个半小时收益，定义为</p>
+<p>$$ r_{j,t} = \frac{p_{j,t}-p_{j-1,t}}{p_{j-1,t}}, \qquad j = 1,\dots,13 $$</p>
+<p>这里 \(p_{j,t}\) 是第 \(t\) 天第 \(j\) 个半小时末的价格。关键的一笔在于 \(j=1\) 的处理：作者令 \(p_{0,t}=p_{13,t-1}\)，也就是用<strong>前一交易日的收盘价</strong>作为基准，从 4:00pm 一路算到次日 10:00am。这样一来，所谓「第一个半小时收益」 \(r_1\) 其实<strong>裹挟了整个隔夜的信息</strong>——这是全文最巧妙的设定，它把「开盘前发生的一切」压进了一个可观测的变量里。</p>
+<p>而被预测的对象 \(r_{13}\)，是从 3:30pm 到 4:00pm 的最后半小时收益。</p>
+<p>核心回归朴素得不能再朴素。先看单变量：</p>
+<p>$$ r_{13,t} = \alpha + \beta\, r_{1,t} + \epsilon_t $$</p>
+<p>然后，一个自然的追问是：倒数第二个半小时 \(r_{12}\)（即收盘前的那段惯性）会不会也有预测力？于是扩展成双变量回归——这也是全文的中心方程：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+r_{13,t} = \alpha + \cssId{a1}{\beta_{r1}\, r_{1,t}} + \cssId{a2}{\beta_{r12}\, r_{12,t}} + \cssId{a3}{\epsilon_t}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>第一个半小时收益 r1（裹挟隔夜信息），是日内动量的主力预测变量</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>第十二个半小时收益 r12，捕捉收盘前的价格惯性，主要在危机期发力</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>残差；t 统计量用 Newey-West (1987) 异方差-自相关稳健标准误</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>识别上没有花哨的工具变量或断点——这是一篇<strong>预测性回归</strong> (predictive regression) 文章，干净利落。它的可信度来自三点：预测变量 \(r_1\) 严格地用 \(t-1\) 日及更早的信息构造（隔夜 + 头半小时），不存在前视偏差；标准误用 Newey-West (1987) 稳健处理序列相关；最关键的是，作者不满足于样本内，还做了<strong>样本外</strong> (out-of-sample, OS) 的递归回归。</p>
+<p>样本外的衡量标准是</p>
+<p>$$ R^2_{OS} = 1 - \frac{\sum_{t=1}^{T}\left(r_{13,t}-\hat r_{13,t}\right)^2}{\sum_{t=1}^{T}\left(r_{13,t}-\bar r_{13,t}\right)^2} $$</p>
+<p>其中 \(\hat r_{13,t}\) 是用截至 \(t-1\) 期数据估计出的回归预测值，\(\bar r_{13,t}\) 则是同期的历史均值。\(R^2_{OS}>0\) 意味着预测回归打败了「拍脑袋取历史平均」这个朴素基准——而 Welch and Goyal (2008) 早就告诉我们，在月度频率上，能稳定打败历史均值的预测变量寥寥无几。</p>
+<h2 id="4-1-6-r">4 主要结果：1.6% 的 R² 为什么是个大数</h2>
+<p>先看样本内。\(r_1\) 正向预测 \(r_{13}\)，斜率为 <code>6.94</code>（系数乘以 100），<code>t = 9.08</code>，在 1% 水平上显著，单变量 <code>R² = 1.6%</code>。</p>
+<p>你可能会撇嘴：1.6% 而已？但这恰恰是本文最容易被低估的地方。在月度频率上，绝大多数预测变量的 \(R^2\) 还达不到这个水平（参见 Rapach and Zhou, 2013）。而且——同样的 \(R^2\)，在<strong>更高的频率上更值钱</strong>：因为你每天都能据此交易一次，而不是一个月才一次。\(r_{12}\) 单独看 <code>R² = 1.1%</code>；当 \(r_1\) 与 \(r_{12}\) 同时入回归，两个斜率几乎纹丝不动，联合 <code>R² = 2.6%</code>，差不多正好是两个单变量 \(R^2\) 之和——这说明 \(r_1\) 与 \(r_{12}\) 在预测尾盘上<strong>相互独立、彼此互补</strong>。</p>
+<div class="article-image"><img alt="Table 1" src="assets/table-1.png" /></div>
+<p><em>Table 1</em></p>
+<p>样本外呢？\(R^2_{OS}\) 用 \(r_1\) 单独是 <code>1.4%</code>，用两个变量是 <code>2.0%</code>——依旧高于月度频率的典型水平。这一步至关重要：它说明这不是样本内过度拟合出来的幻觉。</p>
+<p>那么，谁是主力？作者把样本拆开来看，结论很有意思：<strong>\(r_1\) 的预测力，无论有没有危机都稳稳显著；而 \(r_{12}\) 的预测力，主要集中在金融危机那段</strong>。危机期间（2007/12–2009/6），\(r_1\) 的斜率飙到 <code>13.6</code>，\(R^2\) 升到 <code>4.1%</code>，两变量联合 <code>R² = 6.9%</code>，高得罕见。把危机日剔除后，\(r_1\) 仍然显著（联合 <code>R² = 1.1%</code>），但 \(r_{12}\) 就基本失声了。</p>
+<p>这正是为什么作者强调 \(r_1\) 才是日内动量真正的发动机。Fig. 1 把 \(r_1\) 和 \(r_{12}\) 的系数随时间递归估计画了出来：\(r_1\) 的斜率在危机前相当稳定，危机后因受其影响而抬升；而 \(r_{12}\) 的斜率本就更跳，危机后窜得更高。</p>
+<div class="article-image"><img alt="Figure 1: Time series of r 1 and r 12 coefficients. Panels A and B plot the coefficients of r 1 and r 12 in the predictive regression (3) , respective" src="assets/figure-1.png" /></div>
+<p><em>Figure 1: Time series of r 1 and r 12 coefficients. Panels A and B plot the coefficients of r 1 and r 12 in the predictive regression (3) , respective</em></p>
+<p><strong>于是一个反转出现了</strong>：日内动量并不是均匀地存在于每一天。它的强弱，系统性地随着「市场紧张程度」起伏。作者把交易日按头半小时波动率分成三档：低波动日 <code>R² = 0.6%</code>，\(r_1\) 系数甚至不显著；中波动日升到 <code>1.0%</code>；<strong>高波动日则跳到 <code>3.3%</code>，是低波动日的五倍多</strong>。按成交量分组也是同样的图景。这与 Zhang (2006) 的发现一脉相承——不确定性越大，趋势的延续性越强。</p>
+<div class="article-image"><img alt="Table 3" src="assets/table-3.png" /></div>
+<p><em>Table 3</em></p>
+<p>更进一步，作者发现预测力在<strong>衰退日</strong>、<strong>低单笔成交规模日</strong>、以及<strong>重大宏观数据发布日</strong>（密歇根消费者信心指数、GDP、CPI、FOMC 纪要）上也更强。换句话说，越是「信息浓度高、注意力分散」的日子，早盘的走势越能预告尾盘。</p>
+<h2 id="5">5 这值多少钱？</h2>
+<p>统计显著是一回事，能不能赚钱是另一回事。作者算了两笔账。</p>
+<p>第一笔，对一个风险厌恶系数为 5 的均值-方差投资者，相比忽略这个预测变量，依据 \(r_1\) 择时能带来 <code>6.02%</code> 每年的「确定性等价收益」(certainty equivalent gains)；若再加上 \(r_{12}\)，进一步升到 <code>6.18%</code>。第二笔，更直观的市场择时：只用 \(r_1\) 的<strong>符号</strong>来决定尾盘做多还是做空，年均收益 <code>6.67%</code>，标准差仅 <code>6.19%</code>，夏普比率高达 <strong><code>1.08</code></strong>；作为对比，简单的每日买入持有策略年均收益 <code>6.04%</code>、标准差却高达 <code>20.57%</code>，夏普比率只有 <code>0.29</code>。即便扣掉交易成本（2001 年报价小数化后成本已大幅下降），这份超额收益依然显著。</p>
+<h2 id="6">6 机制：是谁让早盘的趋势延续到了尾盘？</h2>
+<p>到这里，真正关键的一步来了——<strong>为什么</strong>会有日内动量？作者给出两套微观基础，且都不是自己凭空发明的。</p>
+<p><strong>第一套</strong>来自 Bogousslavsky (2016) 的<strong>不频繁再平衡</strong> (infrequent rebalancing) 模型。由于资本的「慢移动」和种种制度因素，一部分机构在头半小时再平衡组合，另一部分（或同一批）机构在尾盘再平衡；如果尾盘的交易方向与头半小时一致，就会制造出我们观测到的日内动量。Murphy and Thirumalai (2013) 用真实的经纪账户数据，提供了机构「重复性净下单」的直接证据。</p>
+<p><strong>第二套</strong>是<strong>晚到信息交易者</strong> (late-informed traders)。有些投资者收到早盘信息较晚，或处理信息较慢；对他们而言，等到尾盘再交易是更优的选择——既能避开隔夜风险，又能享受尾盘的高流动性。这批人在尾盘的交易方向，恰好与头半小时同向，于是同样催生了动量。</p>
+<p>这两套机制都很自然地解释了「为什么是头尾两端」，也解释了为什么波动率越高、信息越多的日子动量越强。值得一提的是，这条研究脉络与「隔夜 vs 日内」收益的争论密切相关——关于一只股票的隔夜收益与日内收益如何此消彼长，可参见<a href="/research/overnight-returns-daytime-reversals-and-future-stock-returns/">《白天的「过度纠正」：当套利者在拔河里站错了队》</a>。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这篇文章放回它所在的家谱里，会看得更清楚。</p>
+<p>最上游是 Jegadeesh and Titman (1993) 的横截面动量。之后，动量被推广到<strong>时间序列</strong>维度：Moskowitz, Ooi and Pedersen (2012) 证明一项资产过去 12 个月的收益能预测自身未来。与此并行的，是一条关于<strong>日内</strong>收益规律的支线——Heston, Korajczyk and Sadka (2010) 等发现个股收益在跨日的相同半小时区间上存在持续性，Murphy and Thirumalai (2013) 把它归因于机构的重复下单，而 Bogousslavsky (2016) 用不频繁再平衡模型给出了理论解释。</p>
+<p>但请注意，所有这些日内研究都是<strong>横截面</strong>的（个股相对个股）。本文的独特位置在于：它第一次研究<strong>市场层面的日内时间序列动量</strong>——不是「哪只股票早上强下午也强」，而是「整个市场早上强，下午收盘前也强」。同时，它把样本外检验、经济意义评估这一整套源自月度可预测性文献（Welch and Goyal, 2008；Campbell and Thompson, 2008）的工具，搬到了日内频率上。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：这和经典的（横截面）动量是一回事吗？</strong></p>
+<blockquote>
+<p>不是。经典动量是横截面、月度的——买过去的赢家、卖过去的输家。本文是<strong>时间序列、日内</strong>的：用同一资产（市场）今天早上的收益，预测它今天尾盘的收益。两者唯一的共性是「趋势延续」这个直觉，机制和频率完全不同。</p>
+</blockquote>
+<p><strong>Q：1.6% 的 \(R^2\) 真的算高吗？会不会是在小题大做？</strong></p>
+<blockquote>
+<p>关键在频率。月度预测里能稳定做到 1.6% 的预测变量极少（Rapach and Zhou, 2013）；而日内频率下，你每天都能据此下注一次，信息被利用的次数远多于月度。再加上样本外 \(R^2_{OS}\) 也有 1.4%–2.0%，能打败历史均值基准（这本身就很难，见 Welch and Goyal, 2008），所以这个数并不小。</p>
+</blockquote>
+<p><strong>Q：会不会只是危机那段时间的特例？</strong></p>
+<blockquote>
+<p>不会。作者专门把危机日剔除后重做，\(r_1\) 依旧显著（联合 \(R^2\) 仍有 1.1%）。倒是 \(r_{12}\) 的预测力主要来自危机期。所以<strong>真正稳健的发动机是 \(r_1\)</strong>，而非 \(r_{12}\)。</p>
+</blockquote>
+<p><strong>Q：这是不是套利成本吃不掉的「真异象」？</strong></p>
+<blockquote>
+<p>作者声称扣除合理交易成本后超额收益仍显著，尤其在 2001 年小数化、交易技术进步使成本大幅下降之后。但这是用 SPY 这种极高流动性资产做的；换到流动性差的标的，结论会弱化——文中也提到样本外那些 ETF 因流动性低，预测力和确定性等价收益都更小。</p>
+</blockquote>
+<p><strong>Q：两套机制能被区分开吗？</strong></p>
+<blockquote>
+<p>文中没有把「不频繁再平衡」和「晚到信息交易」彻底拆开——它们都预测同向的尾盘交易，观测上难以分辨。作者更多是论证「数据与两套机制都相容」，而非做一个能二选一的判别检验。这是诚实的，但也留下了空间。</p>
+</blockquote>
+<p><strong>Q：用隔夜收益直接预测，会不会更干净？</strong></p>
+<blockquote>
+<p>作者在脚注里说，用纯隔夜收益（捕捉开盘前全部新闻）作为预测变量，结果类似。这其实强化了「信息冲击」这条线：\(r_1\) 之所以有用，很大程度上是因为它裹挟了隔夜信息。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 公司债市场有没有日内动量？</strong></p>
+<blockquote>
+<p>【经济故事】公司债以做市商为中心、流动性远逊于股票，库存管理和尾盘甩货的动机可能更强，理论上日内动量应当更明显。【可行性】<strong>中</strong>。需要 TRACE 的日内逐笔数据（分钟级），但很多债券一天只成交几笔，构造稳定的「头半小时/尾半小时收益」困难，可能只能在最活跃的基准券或债券 ETF（如 LQD、HYG）上做。识别上沿用本文的预测性回归即可。</p>
+</blockquote>
+<p><strong>2. 外资持有比例高的资产，日内动量是更强还是更弱？</strong></p>
+<blockquote>
+<p>【经济故事】外资交易者更可能是「晚到信息交易者」（时区差、信息处理慢），按本文第二套机制，他们持有越多，尾盘的同向交易越多，动量应更强。【可行性】<strong>中低</strong>。需要把日内动量强度与资产层面的外资持有比例匹配，外资持有数据频率低（季度）、且多为持仓而非交易，识别外资的日内行为很难，更适合用某些有清晰外资准入变化的市场做事件研究。</p>
+</blockquote>
+<p><strong>3. 日内动量与流动性供给的关系。</strong></p>
+<blockquote>
+<p>【经济故事】本文发现高波动、高成交日动量更强，而这些恰是做市商库存压力最大的日子。若能把尾盘的价格冲击拆成做市商的存货成分，或许能直接验证「不频繁再平衡/库存甩货」机制。【可行性】<strong>高</strong>。SPY 的 TAQ 数据本身就含报价深度，可构造 Amihud (2002) 式或价差类流动性指标，按流动性分组重做回归，识别清晰、数据现成。</p>
+</blockquote>
+<p><strong>4. 算法/高频交易普及后，日内动量是被「吃掉」了还是被放大了？</strong></p>
+<blockquote>
+<p>【经济故事】本文样本止于 2013 年，正值高频交易爆发期。一个开放问题是：套利者涌入后，这个规律是否衰减？还是说高频做市商的库存行为反而强化了尾盘同向交易？【可行性】<strong>高</strong>。把样本延伸到 2014 年至今，做滚动窗口的 \(R^2_{OS}\) 与系数衰减检验即可，数据可得、识别直接。</p>
+</blockquote>
+<h2 id="9">9 我的判断</h2>
+<p>这篇文章的贡献不在于方法的复杂，恰恰在于它的<strong>简单和干净</strong>：一个谁都能在收盘前 30 分钟实施的规则，一个统计与经济意义双双过关的结果，外加两套现成的微观基础。它把「动量」这条做了三十年的研究线，第一次扎扎实实地拉进了<strong>市场层面的日内时间序列</strong>这一格。在一个充斥着 p-hacking 嫌疑的因子动物园里，这种「频率上的新发现 + 样本外验证 + 经济机制」的组合，是难得的踏实。</p>
+<p>但我对识别仍有两点保留。<strong>其一</strong>，机制是「相容」而非「证明」。不频繁再平衡和晚到信息交易在观测上几乎无法区分，文章给出的是一个相容性论证，而不是一个能排除替代解释的判别检验——比如，它没有完全排除「头尾两端共同暴露于某个日内风险因子」这种纯风险解释。<strong>其二</strong>，结果高度依赖 SPY 的极致流动性与样本期。样本外那些低流动性 ETF 的预测力明显更弱，提示这个规律可能更像是「高流动性资产上的协调交易痕迹」，而非普适的市场规律。</p>
+<p>后续我最想看到的，是把这条规律延伸到 2013 年以后、并直接对接做市商库存数据的研究：如果日内动量在高频交易全面普及后依然顽固，那它就不只是一个可预测性异象，而是市场微观结构里一道结构性的印记。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Amihud, Y. (2002). Illiquidity and stock returns: cross-section and time-series effects. <em>Journal of Financial Markets</em> 5, 31–56.</li>
+<li>Bogousslavsky, V. (2016). Infrequent rebalancing, return autocorrelation, and seasonality. <em>Journal of Finance</em> 71, 2967–3006.</li>
+<li>Campbell, J. Y., &amp; Thompson, S. B. (2008). Predicting excess stock returns out of sample: can anything beat the historical average? <em>Review of Financial Studies</em> 21, 1509–1531.</li>
+<li>Cushing, D., &amp; Madhavan, A. (2000). Stock returns and trading at the close. <em>Journal of Financial Markets</em> 3, 45–67.</li>
+<li>Foucault, T., Kadan, O., &amp; Kandel, E. (2005). Limit order book as a market for liquidity. <em>Review of Financial Studies</em> 18, 1171–1217.</li>
+<li>Gao, L., Han, Y., Li, S. Z., &amp; Zhou, G. (2018). Market intraday momentum. <em>Journal of Financial Economics</em> 129, 394–414.</li>
+<li>Heston, S. L., Korajczyk, R. A., &amp; Sadka, R. (2010). Intraday patterns in the cross-section of stock returns. <em>Journal of Finance</em> 65, 1369–1407.</li>
+<li>Jegadeesh, N., &amp; Titman, S. (1993). Returns to buying winners and selling losers: implications for stock market efficiency. <em>Journal of Finance</em> 48, 65–91.</li>
+<li>Moskowitz, T. J., Ooi, Y. H., &amp; Pedersen, L. H. (2012). Time series momentum. <em>Journal of Financial Economics</em> 104, 228–250.</li>
+<li>Murphy, D., &amp; Thirumalai, R. S. (2013). Short-term return predictability and repetitive institutional net order activity. <em>Journal of Financial Research</em> 40, 455–477.</li>
+<li>Newey, W. K., &amp; West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <em>Econometrica</em> 55, 703–708.</li>
+<li>Rapach, D., &amp; Zhou, G. (2013). Forecasting stock returns. In <em>Handbook of Economic Forecasting</em>, North-Holland, Amsterdam, 328–383.</li>
+<li>Welch, I., &amp; Goyal, A. (2008). A comprehensive look at the empirical performance of equity premium prediction. <em>Review of Financial Studies</em> 21, 1455–1508.</li>
+<li>Zhang, X. F. (2006). Information uncertainty and stock returns. <em>Journal of Finance</em> 61, 105–137.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个被频率「藏起来」的问题</a></li>
+        <li><a href="#2">2 为什么偏偏是「第一个」和「最后一个」半小时？</a></li>
+        <li><a href="#3">3 识别策略：把一天切成十三块</a></li>
+        <li><a href="#4-1-6-r">4 主要结果：1.6% 的 R² 为什么是个大数</a></li>
+        <li><a href="#5">5 这值多少钱？</a></li>
+        <li><a href="#6">6 机制：是谁让早盘的趋势延续到了尾盘？</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#9">9 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

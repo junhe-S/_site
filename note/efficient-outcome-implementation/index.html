@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>30. Implementation of Efficient Outcome – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>30. Implementation of Efficient Outcome</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">机制设计</span><span class="lang en">Mechanism Design</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">VCG机制</span><span class="lang en">VCG Mechanism</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Groves机制</span><span class="lang en">Groves Mechanism</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">AGV机制</span><span class="lang en">AGV Mechanism</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">可能性定理</span><span class="lang en">Possibility Theorem</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>30. Implementation of Efficient Outcome</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Socially Efficient Mechanism Design 组导读 / Socially Efficient Mechanism Design group overview
+<strong>「社会有效机制设计」组</strong>（仅 Ch 30，本书最后一章）把前面的单方/双方机制推广到<strong>多人</strong>（\(n>2\)）一般社会状态设定，讨论如何设计实现<strong>有效结果</strong>的机制。核心：VCG/Groves（DSIC + 事后有效 + IR，但<strong>预算盈余</strong>故不完全有效）；AGV 期望外部性机制（BIC + 预算平衡 + 事后有效 + IR，在事前 IR 下实现第一好）；可能性定理 30.2 给出 BIC + 预算平衡 + 事后有效 + <strong>事中 IR</strong> 机制存在的充要条件——并由例 30.1/30.2 揭示事中 IR 比事前 IR 更强、恰恢复 §28 的 Myerson–Satterthwaite 不可能性。</p>
+<p>[!note] 本章导读
+§30.1 框架：社会状态 \(x\in\mathcal X=\{x_1,\dots,x_k\}\) 完全由机制设计者控制；\(n\) 个参与人，参与人 \(i\) 有私人信号 \(\theta_i\in\Theta_i\)、拟线性效用 \(U_i=u_i(x,\theta_i)-t_i\)（\(u_i\) 关于 \(x\) 凹、\(t_i\) 上缴的税）；直接机制 \(\{\phi(x\mid\hat\theta),t_1(\hat\theta),\dots,t_n(\hat\theta)\}\)。<strong>定义 30.1</strong> 事后有效配置 \(\hat x(\theta)=\arg\max_x\sum_i u_i(x,\theta_i)\)；<strong>命题 30.1</strong> 拟线性下 \(\hat x\) 是唯一帕累托有效配置；<strong>定义 30.2</strong> DSIC（占优策略激励相容）；注 30.1–30.3 比较 DSIC 与 BIC（DSIC 更强、更稳健）；§30.1.3 把框架映射到拍卖/双边交易/公共品。§30.2 用 <strong>DSIC 机制实现事后有效</strong>：Groves (1973) 机制（定义 30.3）DSIC（命题 30.2）；VCG/Clarke 枢轴机制（定义 30.4）DSIC（命题 30.3）、税非负（命题 30.4）、枢轴（定义 30.5）、税 = 对他人的负外部性（注 30.4–30.6）、运行<strong>预算盈余</strong>（命题 30.5）且 IR（命题 30.6）——故事后有效但<strong>因盈余而无效率</strong>。§30.3 用 <strong>BIC 机制实现事后有效</strong>：定理 30.1（任何运行期望盈余的 BIC 机制可改造为预算平衡的 BIC 机制、且各类型不更差）；AGV 期望外部性机制（定义 30.6）；推论 30.1 存在事后有效 + BIC + IR + 预算平衡机制；<strong>例 30.1 双边交易完整算例</strong>（均匀 $[0,1]\(，VCG 与 AGV 全部验证，AGV 实现第一好剩余 \)\frac16$）。§30.4 <strong>可能性定理</strong>：区分事前 IR 与事中 IR（定义 30.7）、最小补贴（定义 30.8）、IR-VCG 机制（定义 30.9）；推论 30.2 与<strong>定理 30.2</strong>（连续独立分布下 BIC + 预算平衡 + 事后有效 + 事中 IR 存在的充要条件 (30.11)）；例 30.2 重访例 30.1 算出 (30.11) 左侧 \(=-\frac23<0\) → 事中 IR 下不存在该机制（注 30.9：事中 IR 强于事前 IR，恢复不可能性）。图无。</p></div>
+</div>
+<div class="lang en">
+<h1>30. Implementation of Efficient Outcome</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Socially Efficient Mechanism Design group overview
+The <strong>"Socially Efficient Mechanism Design" group</strong> (Ch 30 alone, the last chapter of the book) extends the earlier one-/two-sided mechanisms to a general <strong>multi-player</strong> (\(n>2\)) social-state setting, asking how to design a mechanism that implements the <strong>efficient outcome</strong>. Core results: VCG/Groves (DSIC + ex-post efficient + IR, but runs a <strong>budget surplus</strong> and so is not fully efficient); the AGV expected-externality mechanism (BIC + budget balanced + ex-post efficient + IR, achieving the first best under ex-ante IR); and the possibility theorem 30.2, which gives the necessary-and-sufficient condition for a BIC + budget-balanced + ex-post-efficient + <strong>interim-IR</strong> mechanism — with Examples 30.1/30.2 revealing that interim IR is stronger than ex-ante IR and exactly recovers the Myerson–Satterthwaite impossibility of §28.</p>
+<p>[!note] Overview
+§30.1 the framework: social state \(x\in\mathcal X=\{x_1,\dots,x_k\}\) fully controlled by the mechanism designer; \(n\) players, player \(i\) has a private signal \(\theta_i\in\Theta_i\) and quasi-linear utility \(U_i=u_i(x,\theta_i)-t_i\) (\(u_i\) concave in \(x\), \(t_i\) the tax paid); direct mechanism \(\{\phi(x\mid\hat\theta),t_1(\hat\theta),\dots,t_n(\hat\theta)\}\). <strong>Definition 30.1</strong> the ex-post efficient allocation \(\hat x(\theta)=\arg\max_x\sum_i u_i(x,\theta_i)\); <strong>Proposition 30.1</strong> \(\hat x\) is the unique Pareto-efficient allocation under quasi-linearity; <strong>Definition 30.2</strong> DSIC (dominant-strategy incentive compatibility); Remarks 30.1–30.3 compare DSIC and BIC (DSIC stronger and more robust); §30.1.3 maps the framework to auctions/bilateral trade/public goods. §30.2 implementing ex-post efficiency with a <strong>DSIC mechanism</strong>: the Groves (1973) mechanism (Definition 30.3) is DSIC (Proposition 30.2); the VCG/Clarke pivot mechanism (Definition 30.4) is DSIC (Proposition 30.3), has non-negative taxes (Proposition 30.4), pivotality (Definition 30.5), tax = negative externality on others (Remarks 30.4–30.6), runs a <strong>budget surplus</strong> (Proposition 30.5) and is IR (Proposition 30.6) — hence ex-post efficient but <strong>inefficient due to the surplus</strong>. §30.3 implementing ex-post efficiency with a <strong>BIC mechanism</strong>: Theorem 30.1 (any BIC mechanism running an expected surplus can be converted into a budget-balanced BIC mechanism with every type no worse off); the AGV expected-externality mechanism (Definition 30.6); Corollary 30.1 there exists an ex-post-efficient + BIC + IR + budget-balanced mechanism; <strong>the fully-worked bilateral-trade Example 30.1</strong> (uniform $[0,1]\(, all VCG and AGV properties verified, AGV achieves the first-best surplus \)\frac16$). §30.4 the <strong>possibility theorem</strong>: distinguishing ex-ante from interim IR (Definition 30.7), minimum subsidy (Definition 30.8), the IR-VCG mechanism (Definition 30.9); Corollary 30.2 and <strong>Theorem 30.2</strong> (under continuous independent distributions, condition (30.11) is necessary and sufficient for the existence of a BIC + budget-balanced + ex-post-efficient + interim-IR mechanism); Example 30.2 revisits Example 30.1 and computes the LHS of (30.11) \(=-\frac23<0\) → no such mechanism exists under interim IR (Remark 30.9: interim IR is stronger than ex-ante IR, recovering the impossibility). No figures.</p></div>
+</div>
+<div class="lang zh">
+<h2 id="30-1-set-up">30.1 框架 / Set-up</h2>
+<h3 id="30-1-1-notation">30.1.1 记号 / Notation</h3>
+<ul>
+<li>社会状态 \(x\in\mathcal X=\{x_1,x_2,\dots,x_k\}\)；政府（机制设计者）对 \(x\) 有完全控制权。</li>
+<li>有 \(n\) 个参与人，每个参与人 \(i\) 有：信号（类型）\(\theta_i\in\Theta_i\)；拟线性效用函数 \(U_i\)：</li>
+</ul>
+<p>$$U_i=u_i(x,\theta_i)-t_i$$</p>
+<p>其中 \(t_i\) 是参与人 \(i\) 上缴给政府（机制设计者）的转移支付，\(u(x,\theta_i)\) 关于 \(x\) 是凹函数。</p>
+<ul>
+<li>记参与人 \(i\) 的报告类型为 \(\hat\theta_i\)，则<strong>直接机制</strong>为</li>
+</ul>
+<p>$$\big\{\phi(x\mid\hat\theta_1,\dots,\hat\theta_n),\,t_1(\hat\theta_1,\dots,\hat\theta_n),\dots,t_n(\hat\theta_1,\dots,\hat\theta_n)\big\}$$</p>
+<p>其中 \(\phi(x\mid\hat\theta_1,\dots,\hat\theta_n)\) 是给定全体报告时社会状态 \(x\) 的概率，\(t_i(\hat\theta_1,\dots,\hat\theta_n)\) 是政府向参与人 \(i\) 收取的税。类似地定义（对其他人类型取期望的）常用对象 \(\bar\phi_i(x\mid\hat\theta_i)\equiv\mathbb{E}_{\theta_{-i}}[\phi(x\mid\hat\theta_i,\theta_{-i})]\)、\(\bar t_i(\hat\theta_i)\equiv\mathbb{E}_{\theta_{-i}}[t_i(\hat\theta_i,\theta_{-i})]\)，以及</p>
+<p>$$U_i(\hat\theta_i\mid\theta_i)\equiv\Big(\sum_{x\in\mathcal X}\bar\phi_i(x\mid\hat\theta_i)u_i(x,\theta_i)\Big)-\bar t_i(\hat\theta_i),\qquad U_i(\theta_i)\equiv U_i(\theta_i\mid\theta_i)$$</p>
+</div>
+<div class="lang en">
+<h2 id="30-1-set-up">30.1 Set-up</h2>
+<h3 id="30-1-1-notation">30.1.1 Notation</h3>
+<ul>
+<li>The social state \(x\in\mathcal X=\{x_1,x_2,\dots,x_k\}\); the government (mechanism designer) has complete control over \(x\).</li>
+<li>There are \(n\) players, and each player \(i\) has: a signal (type) \(\theta_i\in\Theta_i\); a quasi-linear utility function \(U_i\):</li>
+</ul>
+<p>$$U_i=u_i(x,\theta_i)-t_i$$</p>
+<p>where \(t_i\) is the transfer player \(i\) pays to the government (mechanism designer) and \(u(x,\theta_i)\) is concave in \(x\).</p>
+<ul>
+<li>Denote player \(i\)'s reported type by \(\hat\theta_i\). Then a <strong>direct mechanism</strong> is</li>
+</ul>
+<p>$$\big\{\phi(x\mid\hat\theta_1,\dots,\hat\theta_n),\,t_1(\hat\theta_1,\dots,\hat\theta_n),\dots,t_n(\hat\theta_1,\dots,\hat\theta_n)\big\}$$</p>
+<p>where \(\phi(x\mid\hat\theta_1,\dots,\hat\theta_n)\) is the probability of social state \(x\) given all reports, and \(t_i(\hat\theta_1,\dots,\hat\theta_n)\) is the tax collected from player \(i\) by the government. Similarly we define the usual objects (expectations over the others' types) \(\bar\phi_i(x\mid\hat\theta_i)\equiv\mathbb{E}_{\theta_{-i}}[\phi(x\mid\hat\theta_i,\theta_{-i})]\), \(\bar t_i(\hat\theta_i)\equiv\mathbb{E}_{\theta_{-i}}[t_i(\hat\theta_i,\theta_{-i})]\), and</p>
+<p>$$U_i(\hat\theta_i\mid\theta_i)\equiv\Big(\sum_{x\in\mathcal X}\bar\phi_i(x\mid\hat\theta_i)u_i(x,\theta_i)\Big)-\bar t_i(\hat\theta_i),\qquad U_i(\theta_i)\equiv U_i(\theta_i\mid\theta_i)$$</p>
+</div>
+<div class="lang zh">
+<h3 id="30-1-2-definitions">30.1.2 定义 / Definitions</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 30.1（事后有效配置 / Ex-post efficient allocation）
+<span class="lang zh">称 \(\hat x(\theta_1,\dots,\theta_n)\) 为<strong>事后有效配置</strong>，当且仅当它最大化全体效用之和（不妨设 \(\arg\max\) 唯一）：\(\hat x(\theta_1,\dots,\theta_n)=\arg\max_{x\in\mathcal X}\sum_{i=1}^n u_i(x,\theta_i)\)。</span><span class="lang en">We call \(\hat x(\theta_1,\dots,\theta_n)\) an <strong>ex-post efficient allocation</strong> if and only if it maximizes the sum of all utilities (WLOG assume the \(\arg\max\) is unique): \(\hat x(\theta_1,\dots,\theta_n)=\arg\max_{x\in\mathcal X}\sum_{i=1}^n u_i(x,\theta_i)\).</span></p>
+<p>[!important] 命题 30.1（\(\hat x\) 是唯一帕累托有效配置 / \(\hat x\) is the unique Pareto-efficient allocation）
+<span class="lang zh">在拟线性效用 \(U_i=u_i(x,\theta_i)-t_i\) 下，定义 30.1 的 \(\hat x(\theta_1,\dots,\theta_n)\) 是唯一的帕累托有效配置。</span><span class="lang en">Under quasi-linear utility \(U_i=u_i(x,\theta_i)-t_i\), the \(\hat x(\theta_1,\dots,\theta_n)\) in Definition 30.1 is the unique Pareto-efficient allocation.</span></p>
+<p>[!note]- 证明 / Proof
+<span class="lang zh">先证任意 \(\tilde x(\theta_1,\dots,\theta_n)\ne\hat x(\theta_1,\dots,\theta_n)\) 都可被帕累托改进。考虑转移 \(t_i=u_i(\hat x,\theta_i)-u_i(\tilde x,\theta_i)-\frac1n\sum_{j=1}^n(u_j(\hat x,\theta_j)-u_j(\tilde x,\theta_j))\)。则在 \(\hat x\) 下</span><span class="lang en">First show any \(\tilde x(\theta_1,\dots,\theta_n)\ne\hat x(\theta_1,\dots,\theta_n)\) can be Pareto improved. Consider the transfer \(t_i=u_i(\hat x,\theta_i)-u_i(\tilde x,\theta_i)-\frac1n\sum_{j=1}^n(u_j(\hat x,\theta_j)-u_j(\tilde x,\theta_j))\). Then under \(\hat x\),</span></p>
+<p>$$U_i=u_i(\hat x,\theta_i)-t_i=u_i(\tilde x,\theta_i)+\frac1n\sum_{j=1}^n\big(u_j(\hat x,\theta_j)-u_j(\tilde x,\theta_j)\big)>u_i(\tilde x,\theta_i)$$</p>
+<p><span class="lang zh">最后一步因 \(\hat x\) 最大化效用之和、\(\sum_j(u_j(\hat x,\theta_j)-u_j(\tilde x,\theta_j))>0\)。又 \(\sum_{i=1}^n t_i=\sum_i(u_i(\hat x,\theta_i)-u_i(\tilde x,\theta_i))-\sum_j(u_j(\hat x,\theta_j)-u_j(\tilde x,\theta_j))=0\)，是可行的自筹资金（零和）转移。故所有人在 \(\hat x\) 下都严格更好——\(\tilde x\) 被帕累托支配。最后，\(\hat x\) 因已最大化效用之和，任何人效用上升必使他人下降，故 \(\hat x\) 帕累托有效；由 \(\arg\max\) 唯一，\(\hat x\) 是唯一帕累托有效结果。\(\blacksquare\)</span><span class="lang en">The last step holds because \(\hat x\) maximizes the sum of utilities, so \(\sum_j(u_j(\hat x,\theta_j)-u_j(\tilde x,\theta_j))>0\). Also \(\sum_{i=1}^n t_i=\sum_i(u_i(\hat x,\theta_i)-u_i(\tilde x,\theta_i))-\sum_j(u_j(\hat x,\theta_j)-u_j(\tilde x,\theta_j))=0\), a feasible self-financing (zero-sum) transfer. So everyone is strictly better off under \(\hat x\) — \(\tilde x\) is Pareto dominated. Finally, since \(\hat x\) already maximizes the sum of utilities, raising anyone's utility must lower someone else's, so \(\hat x\) is Pareto efficient; and by uniqueness of the \(\arg\max\), \(\hat x\) is the unique Pareto-efficient outcome. \(\blacksquare\)</span></p>
+<p>[!important] 定义 30.2（占优策略激励相容 / Dominant strategy incentive compatibility, DSIC）
+<span class="lang zh">直接机制 \(\{\phi(x\mid\hat\theta),t_1(\hat\theta),\dots,t_n(\hat\theta)\}\) 是<strong>占优策略激励相容</strong>的，当且仅当对每个 \(i\)、对所有 \(\hat\theta_i,\theta_i,\hat\theta_{-i}\)：\(\sum_{x\in\mathcal X}\phi(x\mid\theta_i,\hat\theta_{-i})u_i(x,\theta_i)-t_i(\theta_i,\hat\theta_{-i})\ge\sum_{x\in\mathcal X}\phi(x\mid\hat\theta_i,\hat\theta_{-i})u_i(x,\theta_i)-t_i(\hat\theta_i,\hat\theta_{-i})\)。即无论他人如何报告，讲真话都最优。</span><span class="lang en">A direct mechanism \(\{\phi(x\mid\hat\theta),t_1(\hat\theta),\dots,t_n(\hat\theta)\}\) is <strong>dominant-strategy incentive compatible</strong> iff for each \(i\) and for all \(\hat\theta_i,\theta_i,\hat\theta_{-i}\): \(\sum_{x\in\mathcal X}\phi(x\mid\theta_i,\hat\theta_{-i})u_i(x,\theta_i)-t_i(\theta_i,\hat\theta_{-i})\ge\sum_{x\in\mathcal X}\phi(x\mid\hat\theta_i,\hat\theta_{-i})u_i(x,\theta_i)-t_i(\hat\theta_i,\hat\theta_{-i})\). I.e. truth-telling is optimal no matter what others report.</span></p></div>
+</div>
+<div class="lang en"></div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Tip</div><p>注 30.1–30.3：DSIC vs BIC / Remarks 30.1–30.3: DSIC vs BIC
+<span class="lang zh"><strong>注 30.1</strong>：回忆常规激励相容（此后称 BIC，Bayesian IC）的约束写成 \(\sum_x\mathbb{E}_{\theta_{-i}}[\phi(x\mid\theta_i,\theta_{-i})]u_i(x,\theta_i)-\mathbb{E}_{\theta_{-i}}[t_i(\theta_i,\theta_{-i})]\ge\sum_x\mathbb{E}_{\theta_{-i}}[\phi(x\mid\hat\theta_i,\theta_{-i})]u_i(x,\theta_i)-\mathbb{E}_{\theta_{-i}}[t_i(\hat\theta_i,\theta_{-i})]\)，即更熟悉的 \(U_i(\theta_i)\ge U_i(\hat\theta_i\mid\theta_i)\)。BIC 只在<strong>对 \(\theta_{-i}\) 取平均</strong>的意义上施加约束，而 DSIC 对每个 \(\theta_{-i}\) 值都施加约束。故 <strong>DSIC 蕴含 BIC</strong>（两边对 \(\theta_{-i}\) 取期望即得），DSIC 是更强的约束。<strong>注 30.2</strong>：之前已证二价拍卖中讲真话是弱占优策略（无论他人如何出价），故二价拍卖讲真话是 DSIC；而一价拍卖的均衡竞价函数只在期望意义上激励相容，若 \(\theta_{-i}\) 被 \(i\) 观测到则不再 IC，故一价拍卖均衡竞价是 BIC 而非 DSIC。<strong>注 30.3</strong>：DSIC 机制有时称为<strong>稳健机制</strong>，因为现实中参与人难以算出对 \(\theta_{-i}\) 的正确期望（BIC 难以遵循），而 DSIC 是普通人在日常中能想明白并遵循的，故现实中更稳健。</span><span class="lang en"><strong>Remark 30.1</strong>: recall the regular incentive compatibility (called BIC, Bayesian IC, from now on) constraint written as \(\sum_x\mathbb{E}_{\theta_{-i}}[\phi(x\mid\theta_i,\theta_{-i})]u_i(x,\theta_i)-\mathbb{E}_{\theta_{-i}}[t_i(\theta_i,\theta_{-i})]\ge\sum_x\mathbb{E}_{\theta_{-i}}[\phi(x\mid\hat\theta_i,\theta_{-i})]u_i(x,\theta_i)-\mathbb{E}_{\theta_{-i}}[t_i(\hat\theta_i,\theta_{-i})]\), i.e. the more familiar \(U_i(\theta_i)\ge U_i(\hat\theta_i\mid\theta_i)\). BIC imposes a restriction only on the <strong>average over \(\theta_{-i}\)</strong>, whereas DSIC imposes a restriction for each value of \(\theta_{-i}\). So <strong>DSIC implies BIC</strong> (take the expectation over \(\theta_{-i}\) on both sides), and DSIC is a more strict constraint. <strong>Remark 30.2</strong>: we have shown that bidding the true valuation is a weakly dominant strategy in a second-price auction (regardless of others' bids), so truth-telling in a second-price auction is DSIC; the equilibrium bidding function of a first-price auction is incentive compatible only in expectation, and is no longer IC once \(\theta_{-i}\) is observed by \(i\), so first-price equilibrium bidding is BIC but not DSIC. <strong>Remark 30.3</strong>: a DSIC mechanism is sometimes called a <strong>robust mechanism</strong>, because in practice agents find it hard to figure out the correct expectation over \(\theta_{-i}\) (BIC is hard to follow), but DSIC is what normal people can figure out and follow in daily practice, so it is robust.</span></p></div>
+<h3 id="30-1-3-mapping-the-general-setting-to-particular-problems">30.1.3 把一般设定映射到具体问题 / Mapping the general setting to particular problems</h3>
+<div class="callout"><div class="callout-title">Note</div><p>三个例子 / Three examples
+<span class="lang zh"><strong>拍卖</strong>：社会状态 \(\{x_1,\dots,x_n,x_0\}\) 中 \(x_i\)（\(i\in\{1,\dots,n\}\)）表示买家 \(i\) 赢得物品、\(x_0\) 表示卖家保留物品。<strong>双边交易</strong>：社会状态变为二元 \(x\in\{0,1\}\)，\(x=0\) 不交易、\(x=1\) 交易。<strong>公共品</strong>：社会状态 \(x\in\{0,1,2,\dots,m\}\)，\(x=0\) 不生产公共品、\(x=i\)（\(i=1,\dots,m\)）表示选择第 \(i\) 个公共品。这说明一般社会状态记号可方便地映射到各具体问题，本节结论也适用于具体问题。</span><span class="lang en"><strong>Auctions</strong>: among social states \(\{x_1,\dots,x_n,x_0\}\), \(x_i\) (\(i\in\{1,\dots,n\}\)) means bidder \(i\) wins the good and \(x_0\) means the seller keeps the good. <strong>Bilateral trade</strong>: the social state becomes binary \(x\in\{0,1\}\), \(x=0\) no trade and \(x=1\) trade. <strong>Public goods</strong>: the social state \(x\in\{0,1,2,\dots,m\}\), \(x=0\) no public good is produced and \(x=i\) (\(i=1,\dots,m\)) means public good \(i\) is chosen. So the general social-state notation maps conveniently onto each particular problem, and the results here apply to specific problems as well.</span></p></div>
+</div>
+<div class="lang en"></div>
+<div class="lang zh">
+<h2 id="30-2-dsic-ex-post-efficiency-with-dsic-inefficiency-due-to-budget-surplus">30.2 用 DSIC 机制实现事后有效：盈余导致无效率 / Ex-post efficiency with DSIC: inefficiency due to budget surplus</h2>
+<p>先介绍 Groves 机制（DSIC 且事后有效），再说明在某些条件下，事后有效的 DSIC 机制都属于 Groves 族，而它们都运行<strong>预算盈余</strong>——故并非"完全无效率"。（注意：事后有效机制需要同时事后有效<strong>与</strong>预算平衡；Groves 族只事后有效、不预算平衡。）</p>
+<h3 id="30-2-1-groves-groves-mechanism">30.2.1 Groves 机制 / Groves mechanism</h3>
+<p>Groves (1973) 讨论了一种总是选取事后有效配置 \(\hat x(\cdot)\) 的机制。由于 \(\phi(x\mid\hat\theta)=1\) 当 \(x=\hat x(\hat\theta)\)、否则 \(0\)，可把 \(\phi(x\mid\hat\theta)\) 替换为 \(\hat x(\hat\theta)\)。</p>
+</div>
+<div class="lang en">
+<h2 id="30-2-ex-post-efficiency-with-dsic-inefficiency-due-to-budget-surplus">30.2 Ex-post efficiency with DSIC: inefficiency due to budget surplus</h2>
+<p>We first introduce the Groves mechanism (DSIC and ex-post efficient), then argue that under certain conditions every ex-post-efficient DSIC mechanism belongs to the Groves family, and that they all run a <strong>budget surplus</strong> — so they are not "fully efficient". (Note: an efficient mechanism requires both ex-post efficiency <strong>and</strong> budget balance; the Groves family is only ex-post efficient, not budget balanced.)</p>
+<h3 id="30-2-1-groves-mechanism">30.2.1 Groves mechanism</h3>
+<p>Groves (1973) discussed a mechanism that always picks the ex-post efficient allocation \(\hat x(\cdot)\). Since \(\phi(x\mid\hat\theta)=1\) when \(x=\hat x(\hat\theta)\) and \(0\) otherwise, we can replace \(\phi(x\mid\hat\theta)\) with \(\hat x(\hat\theta)\).</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 30.3（Groves 机制 / Groves mechanism）
+<span class="lang zh">Groves 机制是 \(\{\hat x(\hat\theta_1,\dots,\hat\theta_n),\,t_1^G(\hat\theta),\dots,t_n^G(\hat\theta)\}\)，其中 \(\hat x(\cdot)\) 是事后有效配置，且</span><span class="lang en">The Groves mechanism is \(\{\hat x(\hat\theta_1,\dots,\hat\theta_n),\,t_1^G(\hat\theta),\dots,t_n^G(\hat\theta)\}\), where \(\hat x(\cdot)\) is the ex-post efficient allocation and</span></p>
+<p>$$t_i^G(\hat\theta_1,\dots,\hat\theta_n)\equiv\Big(-\sum_{j\ne i}u_j(\hat x(\hat\theta_i,\hat\theta_{-i}),\hat\theta_j)\Big)+h_i(\hat\theta_{-i})$$</p>
+<p><span class="lang zh">\(h_i(\cdot)\) 为任意与 \(\hat\theta_i\) 无关的函数。</span><span class="lang en">where \(h_i(\cdot)\) is an arbitrary function not related to \(\hat\theta_i\).</span></p>
+<p>[!important] 命题 30.2（Groves 机制是 DSIC / Groves is DSIC）
+<span class="lang zh">Groves 机制 \(\{\hat x(\hat\theta),t_1^G(\hat\theta),\dots,t_n^G(\hat\theta)\}\) 是 DSIC。</span><span class="lang en">The Groves mechanism \(\{\hat x(\hat\theta),t_1^G(\hat\theta),\dots,t_n^G(\hat\theta)\}\) is DSIC.</span></p>
+<p>[!note]- 证明 / Proof
+<span class="lang zh">记参与人 \(i\) 真实类型 \(\theta_i\)、他人报告 \(\hat\theta_{-i}\) 时报告 \(\hat\theta_i\) 的效用为</span><span class="lang en">Denote player \(i\)'s utility from reporting \(\hat\theta_i\) given true type \(\theta_i\) and others' reports \(\hat\theta_{-i}\) by</span></p>
+<p>$$U_i(\hat\theta_i\mid\theta_i,\hat\theta_{-i})\equiv u_i(\hat x(\hat\theta_i,\hat\theta_{-i}),\theta_i)-t_i^G(\hat\theta)=\underbrace{u_i(\hat x(\hat\theta_i,\hat\theta_{-i}),\theta_i)+\sum_{j\ne i}u_j(\hat x(\hat\theta_i,\hat\theta_{-i}),\hat\theta_j)}_{\text{Part 1}}-\underbrace{h_i(\hat\theta_{-i})}_{\text{Part 2}}$$</p>
+<p><span class="lang zh">Part 1 是类型组合 \((\theta_i,\hat\theta_{-i})\) 下的总剩余。由事后有效 \(\hat x\) 的定义，Part 1 在 \(\hat\theta_i=\theta_i\) 时最大化（\(i\) 不能改变 \(\theta_i\)、但能改变 \(\hat\theta_i\)）。Part 2 与 \(\hat\theta_i\) 无关。故 \(U_i(\hat\theta_i\mid\theta_i,\hat\theta_{-i})\) 在 \(\hat\theta_i=\theta_i\) 时最大化，无论 \(\hat\theta_{-i}\) 如何，即 \(U_i(\theta_i\mid\theta_i,\hat\theta_{-i})\ge U_i(\hat\theta_i\mid\theta_i,\hat\theta_{-i})\)。故 Groves 机制 DSIC。\(\blacksquare\)</span><span class="lang en">Part 1 is the total surplus to the type profile \((\theta_i,\hat\theta_{-i})\). By the definition of the ex-post efficient \(\hat x\), Part 1 is maximized at \(\hat\theta_i=\theta_i\) (\(i\) cannot change \(\theta_i\) but can change \(\hat\theta_i\)). Part 2 is unrelated to \(\hat\theta_i\). So \(U_i(\hat\theta_i\mid\theta_i,\hat\theta_{-i})\) is maximized at \(\hat\theta_i=\theta_i\) regardless of \(\hat\theta_{-i}\), i.e. \(U_i(\theta_i\mid\theta_i,\hat\theta_{-i})\ge U_i(\hat\theta_i\mid\theta_i,\hat\theta_{-i})\). So the Groves mechanism is DSIC. \(\blacksquare\)</span></p>
+<p>[!tip] Green–Laffont (1979) 的两个论断 / Two arguments of Green–Laffont (1979)
+<span class="lang zh"><strong>论断 1</strong>：若支付关于货币线性，且偏好空间 \(\mathcal U=\{u_i(\cdot,\theta_i)\}_{\theta_i\in\Theta_i}\) 足够丰富（每个从 \(\mathcal X\) 到 \(\mathbb R\) 的函数形式都可能），则任何事后有效的 DSIC 机制必属 Groves 族。<strong>论断 2</strong>：在论断 1 同样条件下，任何事后有效的 DSIC 机制（从而 Groves 族）都违反预算平衡。完整证明见 Green &amp; Laffont (1979)。下面我们以 VCG（Vickrey–Clarke–Groves）这个特例证明论断 2，VCG 是 Groves 机制中 \(h_i(\hat\theta_{-i})\) 取特定形式的特例。</span><span class="lang en"><strong>Argument 1</strong>: if payoffs are linear in money and the space of preferences \(\mathcal U=\{u_i(\cdot,\theta_i)\}_{\theta_i\in\Theta_i}\) is sufficiently rich (every functional form mapping \(\mathcal X\) to \(\mathbb R\) is possible), then any ex-post efficient DSIC mechanism must be of the Groves form. <strong>Argument 2</strong>: under the same conditions, any ex-post efficient DSIC mechanism (and thus the Groves family) violates budget balance. See the full proof in Green &amp; Laffont (1979). Below we prove a special case of Argument 2 with the VCG (Vickrey–Clarke–Groves) mechanism, which is the special case of Groves imposing a specific functional form of \(h_i(\hat\theta_{-i})\).</span></p></div>
+<h3 id="30-2-2-vickrey-clarke-groves-vcg-vcg-mechanism">30.2.2 Vickrey–Clarke–Groves (VCG) 机制 / VCG mechanism</h3>
+<p>Clarke (1971) 独立地给出 Groves 机制中取</p>
+<p>$$h_i(\hat\theta_{-i})=\max_{x\in\mathcal X}\sum_{j\ne i}u_j(x,\hat\theta_j)\tag{30.1}$$</p>
+<p>的特例，称为 <strong>VCG 机制</strong>。为改写 (30.1)，定义 \(\hat x_{-i}(\hat\theta_{-i})=\arg\max_{x\in\mathcal X}\sum_{j\ne i}u_j(x,\hat\theta_j)\)（即"若 \(i\) 缺席"时的事后有效配置），则 \(h_i(\hat\theta_{-i})=\sum_{j\ne i}u_j(\hat x_{-i}(\hat\theta_{-i}),\hat\theta_j)\)。</p>
+</div>
+<div class="lang en">
+<h3 id="30-2-2-vickrey-clarke-groves-vcg-mechanism">30.2.2 Vickrey–Clarke–Groves (VCG) mechanism</h3>
+<p>Clarke (1971) independently developed the special case of the Groves mechanism with</p>
+<p>$$h_i(\hat\theta_{-i})=\max_{x\in\mathcal X}\sum_{j\ne i}u_j(x,\hat\theta_j)\tag{30.1}$$</p>
+<p>called the <strong>VCG mechanism</strong>. To rewrite (30.1), define \(\hat x_{-i}(\hat\theta_{-i})=\arg\max_{x\in\mathcal X}\sum_{j\ne i}u_j(x,\hat\theta_j)\) (the ex-post efficient allocation "if agent \(i\) were absent"), so \(h_i(\hat\theta_{-i})=\sum_{j\ne i}u_j(\hat x_{-i}(\hat\theta_{-i}),\hat\theta_j)\).</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 30.4（VCG 机制 / VCG mechanism）
+<span class="lang zh">VCG 机制是 \(\{\hat x(\hat\theta),t_1^{\text{VCG}}(\hat\theta),\dots,t_n^{\text{VCG}}(\hat\theta)\}\)，其中 \(\hat x(\cdot)\) 是事后有效配置，且</span><span class="lang en">The VCG mechanism is \(\{\hat x(\hat\theta),t_1^{\text{VCG}}(\hat\theta),\dots,t_n^{\text{VCG}}(\hat\theta)\}\), where \(\hat x(\cdot)\) is the ex-post efficient allocation and</span></p>
+<p>$$t_i^{\text{VCG}}(\hat\theta_1,\dots,\hat\theta_n)\equiv\underbrace{\Big(-\sum_{j\ne i}u_j(\hat x(\hat\theta_i,\hat\theta_{-i}),\hat\theta_j)\Big)}_{\text{first term}}+\underbrace{\Big(\sum_{j\ne i}u_j(\hat x_{-i}(\hat\theta_{-i}),\hat\theta_j)\Big)}_{\text{second term}}\tag{30.2}$$</p>
+<p>[!important] 命题 30.3、30.4 / Propositions 30.3, 30.4
+<span class="lang zh"><strong>命题 30.3</strong>：VCG 机制是 DSIC（由命题 30.2，代入 \(h_i(\hat\theta_{-i})=\sum_{j\ne i}u_j(\hat x_{-i}(\hat\theta_{-i}),\hat\theta_j)\) 与 \(\hat\theta_i\) 无关即得）。<strong>命题 30.4</strong>：VCG 机制中 \(t_i^{\text{VCG}}(\hat\theta_1,\dots,\hat\theta_n)\ge0\) 对所有 \(i\)。</span><span class="lang en"><strong>Proposition 30.3</strong>: the VCG mechanism is DSIC (from Proposition 30.2, since \(h_i(\hat\theta_{-i})=\sum_{j\ne i}u_j(\hat x_{-i}(\hat\theta_{-i}),\hat\theta_j)\) is unrelated to \(\hat\theta_i\)). <strong>Proposition 30.4</strong>: in a VCG mechanism \(t_i^{\text{VCG}}(\hat\theta_1,\dots,\hat\theta_n)\ge0\) for all \(i\).</span></p>
+<p>[!note]- 命题 30.4 证明 / Proof of Proposition 30.4
+<span class="lang zh">在 (30.2) 中，第二项是当<strong>仅为 \(i\) 之外</strong>的所有人选取最优状态 \(\hat x_{-i}\) 时除 \(i\) 外所有人的效用——按定义这是最大值；第一项是当为<strong>包括 \(i\) 在内</strong>所有人选取最优状态 \(\hat x\) 时除 \(i\) 外所有人的效用——此处 \(\hat x\) 未必最大化除 \(i\) 外的效用之和。故第一项（取负前）\(\le\) 第二项，即 \(t_i^{\text{VCG}}\ge0\)。\(\blacksquare\)</span><span class="lang en">In (30.2), the second term is the utility of all agents but \(i\) when the optimal state \(\hat x_{-i}\) is chosen for <strong>all agents but \(i\)</strong> — by definition this is the maximum; the first term is the utility of all agents but \(i\) when the optimal state \(\hat x\) is chosen for <strong>all agents including \(i\)</strong> — here \(\hat x\) might not maximize the sum of utilities of all but \(i\). So the first term (before negation) \(\le\) the second term, i.e. \(t_i^{\text{VCG}}\ge0\). \(\blacksquare\)</span></p>
+<p>[!important] 定义 30.5（枢轴 / Pivotal）
+<span class="lang zh">称参与人 \(i\) 的报告 \(\hat\theta_i\) 是<strong>枢轴的 (pivotal)</strong>，当且仅当 \(t_i^{\text{VCG}}(\hat\theta_1,\dots,\hat\theta_n)>0\)。</span><span class="lang en">We say player \(i\)'s report \(\hat\theta_i\) is <strong>pivotal</strong> if and only if \(t_i^{\text{VCG}}(\hat\theta_1,\dots,\hat\theta_n)>0\).</span></p>
+<p>[!tip] 注 30.4–30.6：枢轴、负外部性与二价拍卖 / Remarks 30.4–30.6: pivotality, negative externality, second-price auction
+<span class="lang zh"><strong>注 30.4</strong>：\(i\) 枢轴（\(t_i^{\text{VCG}}>0\)）等价于 \(\hat x_{-i}(\hat\theta_{-i})\ne\hat x(\hat\theta_i,\hat\theta_{-i})\)——即 \(i\) 的出现改变了社会选择。<strong>注 30.5</strong>：VCG 机制也被 Clarke 称为<strong>枢轴机制 (Pivot mechanism)</strong>。<strong>注 30.6</strong>：\(t_i^{\text{VCG}}=(\text{first term})+(\text{second term})\) 恰是 \(i\) 的报告对其他所有人造成的成本（负效用），即 \(i\) 出现导致的<strong>负外部性</strong>。类似地，二价拍卖的支付可看作 VCG 支付：赢家支付第二高估值（在价值竞价均衡里），正是他赢得物品对整个社会（本应享有物品的第二高估值者）造成的负效用。</span><span class="lang en"><strong>Remark 30.4</strong>: \(i\) being pivotal (\(t_i^{\text{VCG}}>0\)) is equivalent to \(\hat x_{-i}(\hat\theta_{-i})\ne\hat x(\hat\theta_i,\hat\theta_{-i})\) — i.e. \(i\)'s presence changes the social choice. <strong>Remark 30.5</strong>: the VCG mechanism is also called the <strong>Pivot mechanism</strong> by Clarke. <strong>Remark 30.6</strong>: \(t_i^{\text{VCG}}=(\text{first term})+(\text{second term})\) is exactly the cost (disutility) to all other agents caused by \(i\)'s report, i.e. the <strong>negative externality</strong> caused by \(i\)'s showing up. Analogously, the second-price auction payment can be regarded as a VCG payment: the winner pays the second-highest valuation (in the value-bidding equilibrium), which is the disutility to the whole society (the second-highest-valuation agent who should have enjoyed the good) caused by the winning agent's bidding.</span></p>
+<p>[!important] 命题 30.5、30.6 / Propositions 30.5, 30.6
+<span class="lang zh"><strong>命题 30.5</strong>：任何 VCG 机制运行（弱）预算盈余 \(\sum_{i=1}^n t_i^{\text{VCG}}\ge0\)，一般情形下严格盈余 \(\sum_i t_i^{\text{VCG}}>0\)（直接由命题 30.4）。<strong>命题 30.6</strong>：任何 VCG 机制是个人理性 (IR) 的，即所有参与人自愿参与。</span><span class="lang en"><strong>Proposition 30.5</strong>: any VCG mechanism runs a (weak) budget surplus \(\sum_{i=1}^n t_i^{\text{VCG}}\ge0\), and in general a strict surplus \(\sum_i t_i^{\text{VCG}}>0\) (directly from Proposition 30.4). <strong>Proposition 30.6</strong>: any VCG mechanism is individually rational (IR), i.e. all agents voluntarily participate.</span></p>
+<p>[!note]- 命题 30.6 证明 / Proof of Proposition 30.6
+<span class="lang zh">对参与人 \(i\)，不参与的支付（由 DSIC）为 \(U^{\text{not participate}}\equiv u_i(\hat x_{-i}(\theta_{-i}),\theta_i)\cdot1\) (30.3)。参与的支付为</span><span class="lang en">For agent \(i\), the payoff from not participating (by DSIC) is \(U^{\text{not participate}}\equiv u_i(\hat x_{-i}(\theta_{-i}),\theta_i)\cdot1\) (30.3). The payoff from participating is</span></p>
+<p>$$U^{\text{participate}}\equiv u_i(\hat x(\theta_i,\theta_{-i}),\theta_i)\cdot1-t_i^{\text{VCG}}=u_i(\hat x(\theta_i,\theta_{-i}),\theta_i)+\sum_{j\ne i}u_j(\hat x(\theta_i,\theta_{-i}),\theta_j)-\sum_{j\ne i}u_j(\hat x_{-i}(\theta_{-i}),\theta_j)\tag{30.4}$$</p>
+<p><span class="lang zh">两者之差为 \(U^{\text{participate}}-U^{\text{not participate}}=\sum_{j=1}^n u_j(\hat x(\theta_i,\theta_{-i}),\theta_j)-\sum_{j=1}^n u_j(\hat x_{-i}(\theta_{-i}),\theta_j)\ge0\)，因 \(\hat x(\theta_i,\theta_{-i})\) 最大化全体 \(\sum_{j=1}^n u_j\) 而 \(\hat x_{-i}(\theta_{-i})\) 未必。故 IR 对每个参与人成立。\(\blacksquare\)</span><span class="lang en">The difference is \(U^{\text{participate}}-U^{\text{not participate}}=\sum_{j=1}^n u_j(\hat x(\theta_i,\theta_{-i}),\theta_j)-\sum_{j=1}^n u_j(\hat x_{-i}(\theta_{-i}),\theta_j)\ge0\), since \(\hat x(\theta_i,\theta_{-i})\) maximizes the full \(\sum_{j=1}^n u_j\) while \(\hat x_{-i}(\theta_{-i})\) might not. So IR holds for every agent. \(\blacksquare\)</span></p>
+<p>[!tip] 小结 / Summary
+<span class="lang zh">综上，VCG 机制是 DSIC、事后有效、IR，但运行<strong>预算盈余</strong>，因而（作为"有效机制 = 事后有效 + 预算平衡"的标准）是<strong>无效率</strong>的。</span><span class="lang en">In conclusion, the VCG mechanism is DSIC, ex-post efficient, and IR, but runs a <strong>budget surplus</strong>, so (by the standard "efficient mechanism = ex-post efficient + budget balanced") it is <strong>inefficient</strong>.</span></p></div>
+</div>
+<div class="lang en"></div>
+<div class="lang zh">
+<h2 id="30-3-bic-ex-post-efficiency-with-bic-budget-balance-holds">30.3 用 BIC 机制实现事后有效：预算平衡成立 / Ex-post efficiency with BIC: budget balance holds</h2>
+<p>放松到 BIC（比 DSIC 弱的激励相容）后，事后有效配置可由一个 <strong>IR 且预算平衡</strong>的机制实现。</p>
+</div>
+<div class="lang en">
+<h2 id="30-3-ex-post-efficiency-with-bic-efficient-as-budget-balance-holds">30.3 Ex-post efficiency with BIC: efficient as budget balance holds</h2>
+<p>Once we relax to BIC (a weaker incentive compatibility than DSIC), the ex-post efficient allocation can be implemented by an <strong>IR and budget-balanced</strong> mechanism.</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定理 30.1（盈余 BIC 机制 ⟹ 预算平衡 BIC 机制 / surplus BIC ⟹ budget-balanced BIC）
+<span class="lang zh">设 \(\{\phi(x\mid\cdot),t_1(\cdot),\dots,t_n(\cdot)\}\) 是一个运行<strong>期望预算盈余</strong>的 BIC 机制，即 \(\mathbb{E}_{\{\theta_i\}_{i=1}^n}[\sum_{i=1}^n t_i(\theta_1,\dots,\theta_n)]\ge0\)。则存在一个 BIC 机制 \(\{\phi(x\mid\cdot),\tilde t_1(\cdot),\dots,\tilde t_n(\cdot)\}\)，使 \(\sum_{i=1}^n\tilde t_i(\theta_1,\dots,\theta_n)=0\)（预算平衡）且 \(\tilde U_i(\theta_i)\ge U_i(\theta_i)\) 对所有 \(i,\theta_i\)。</span><span class="lang en">Let \(\{\phi(x\mid\cdot),t_1(\cdot),\dots,t_n(\cdot)\}\) be a BIC mechanism running an <strong>expected budget surplus</strong>, i.e. \(\mathbb{E}_{\{\theta_i\}_{i=1}^n}[\sum_{i=1}^n t_i(\theta_1,\dots,\theta_n)]\ge0\). Then there exists a BIC mechanism \(\{\phi(x\mid\cdot),\tilde t_1(\cdot),\dots,\tilde t_n(\cdot)\}\) such that \(\sum_{i=1}^n\tilde t_i(\theta_1,\dots,\theta_n)=0\) (budget balanced) and \(\tilde U_i(\theta_i)\ge U_i(\theta_i)\) for all \(i,\theta_i\).</span></p>
+<p>[!note]- 证明（构造转移 / constructing the transfer）
+<span class="lang zh">记 \(\bar t_i(\theta_i)\equiv\mathbb{E}_{\theta_{-i}}[t_i(\theta_i,\theta_{-i})]\)、\(\bar t_i\equiv\mathbb{E}_{\theta_i}[\bar t_i(\theta_i)]=\mathbb{E}_{\{\theta_i\}}[t_i(\theta_i,\theta_{-i})]\)。构造（对 \(\forall i<n\)）\(\tilde t_i(\theta)=\bar t_i(\theta_i)+(\bar t_{i+1}-\bar t_{i+1}(\theta_{i+1}))-\frac1n\sum_{j=1}^n\bar t_j\)，对 \(i=n\)：\(\tilde t_n(\theta)=\bar t_n(\theta_n)+(\bar t_1-\bar t_1(\theta_1))-\frac1n\sum_{j=1}^n\bar t_j\)。先验证预算平衡：</span><span class="lang en">Let \(\bar t_i(\theta_i)\equiv\mathbb{E}_{\theta_{-i}}[t_i(\theta_i,\theta_{-i})]\) and \(\bar t_i\equiv\mathbb{E}_{\theta_i}[\bar t_i(\theta_i)]=\mathbb{E}_{\{\theta_i\}}[t_i(\theta_i,\theta_{-i})]\). Construct (for all \(i<n\)) \(\tilde t_i(\theta)=\bar t_i(\theta_i)+(\bar t_{i+1}-\bar t_{i+1}(\theta_{i+1}))-\frac1n\sum_{j=1}^n\bar t_j\), and for \(i=n\): \(\tilde t_n(\theta)=\bar t_n(\theta_n)+(\bar t_1-\bar t_1(\theta_1))-\frac1n\sum_{j=1}^n\bar t_j\). First verify budget balance:</span></p>
+<p>$$\sum_{i=1}^n\tilde t_i(\theta)=\underbrace{\Big(\sum_{i=1}^n\bar t_i(\theta_i)-\sum_{i=1}^n\bar t_{i+1}(\theta_{i+1})\Big)}_{=0}+\underbrace{\Big(\sum_{i=1}^n\bar t_{i+1}-\sum_{j=1}^n\bar t_j\Big)}_{=0}=0$$</p>
+<p><span class="lang zh">（下标按循环 \(n+1\equiv1\)；两组求和各自抵消。）故新机制预算平衡。再证 BIC 与 \(\tilde U_i(\theta_i)\ge U_i(\theta_i)\)。回忆</span><span class="lang en">(indices cyclic with \(n+1\equiv1\); each sum cancels.) So the new mechanism is budget balanced. Next show BIC and \(\tilde U_i(\theta_i)\ge U_i(\theta_i)\). Recall</span></p>
+<p>$$U_i(\hat\theta_i\mid\theta_i)\equiv\Big(\sum_{x\in\mathcal X}\bar\phi_i(x\mid\hat\theta_i)u_i(x,\theta_i)\Big)-\bar t_i(\hat\theta_i)$$</p>
+<p><span class="lang zh">则新机制下</span><span class="lang en">Then under the new mechanism</span></p>
+<p>$$\tilde U_i(\hat\theta_i\mid\theta_i)=U_i(\hat\theta_i\mid\theta_i)+\bar t_i(\hat\theta_i)-\mathbb{E}_{\theta_{-i}}\Big[\bar t_i(\hat\theta_i)+\underbrace{(\bar t_{i+1}-\bar t_{i+1}(\theta_{i+1}))}_{\text{expectation is }0}-\tfrac1n\sum_{j=1}^n\bar t_j\Big]=U_i(\hat\theta_i\mid\theta_i)+\frac1n\sum_{j=1}^n\bar t_j\tag{30.5}$$</p>
+<p><span class="lang zh">即新旧效用只相差一个<strong>与 \(\hat\theta_i\) 无关的常数</strong> \(\frac1n\sum_j\bar t_j\ge0\)（由期望盈余假设）。由 \(\{\phi,t\}\) BIC，\(U_i(\hat\theta_i\mid\theta_i)\) 在 \(\hat\theta_i=\theta_i\) 最大化，故 \(\tilde U_i(\hat\theta_i\mid\theta_i)\) 也在 \(\hat\theta_i=\theta_i\) 最大化，新机制 BIC；且 \(\tilde U_i(\theta_i)=U_i(\theta_i)+\frac1n\sum_j\bar t_j\ge U_i(\theta_i)\)。即任何运行期望盈余的 BIC 机制都对应一个使所有人（弱）更满意的预算平衡 BIC 机制。\(\blacksquare\)</span><span class="lang en">i.e. the new and old utilities differ only by a <strong>constant unrelated to \(\hat\theta_i\)</strong>, namely \(\frac1n\sum_j\bar t_j\ge0\) (by the expected-surplus assumption). Since \(\{\phi,t\}\) is BIC, \(U_i(\hat\theta_i\mid\theta_i)\) is maximized at \(\hat\theta_i=\theta_i\), so \(\tilde U_i(\hat\theta_i\mid\theta_i)\) is also maximized at \(\hat\theta_i=\theta_i\) and the new mechanism is BIC; and \(\tilde U_i(\theta_i)=U_i(\theta_i)+\frac1n\sum_j\bar t_j\ge U_i(\theta_i)\). So any budget-surplus BIC mechanism corresponds to a budget-balanced BIC mechanism in which all agents become equally or more happy. \(\blacksquare\)</span></p></div>
+<p>我们可以把定理 30.1 证明中的转移 \(\tilde t_i(\theta_1,\dots,\theta_n)\) 应用到 VCG 机制上，从而定义<strong>期望外部性机制</strong>。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 30.6（期望外部性机制 / Expected externality (AGV) mechanism）
+<span class="lang zh"><strong>期望外部性机制</strong>（又名 d'Aspremont &amp; Gérard-Varet (AGV) 机制）定义为 \(\{\hat x(\cdot),t_1^{\text{EE}}(\cdot),\dots,t_n^{\text{EE}}(\cdot)\}\)，其中 \(\hat x(\cdot)\) 是事后有效配置，且</span><span class="lang en">The <strong>expected externality mechanism</strong> (also called the d'Aspremont &amp; Gérard-Varet (AGV) mechanism) is defined by \(\{\hat x(\cdot),t_1^{\text{EE}}(\cdot),\dots,t_n^{\text{EE}}(\cdot)\}\), where \(\hat x(\cdot)\) is the ex-post efficient allocation and</span></p>
+<p>$$t_i^{\text{EE}}(\hat\theta_1,\dots,\hat\theta_n)=\bar t_i^{\text{VCG}}(\hat\theta_i)+\big(\bar t_{i+1}^{\text{VCG}}-\bar t_{i+1}^{\text{VCG}}(\hat\theta_{i+1})\big)-\frac1n\sum_{j=1}^n\bar t_j^{\text{VCG}}\tag{30.6}$$</p>
+<p><span class="lang zh">其中 \(\bar t_i^{\text{VCG}}(\hat\theta_i)\equiv\mathbb{E}_{\theta_{-i}}[t_i^{\text{VCG}}(\hat\theta_i,\theta_{-i})]\)、\(\bar t_i^{\text{VCG}}\equiv\mathbb{E}_{\theta_i}[\bar t_i^{\text{VCG}}(\theta_i)]\)，\(t_i^{\text{VCG}}\) 同定义 30.4。</span><span class="lang en">where \(\bar t_i^{\text{VCG}}(\hat\theta_i)\equiv\mathbb{E}_{\theta_{-i}}[t_i^{\text{VCG}}(\hat\theta_i,\theta_{-i})]\), \(\bar t_i^{\text{VCG}}\equiv\mathbb{E}_{\theta_i}[\bar t_i^{\text{VCG}}(\theta_i)]\), and \(t_i^{\text{VCG}}\) is as in Definition 30.4.</span></p>
+<p>[!important] 推论 30.1（对应定理 30.1 / To Theorem 30.1）
+<span class="lang zh">存在一个<strong>事后有效、BIC 且 IR 的预算平衡机制</strong>。</span><span class="lang en">There exists an <strong>ex-post efficient, BIC, and IR mechanism that is budget balanced</strong>.</span></p>
+<p>[!note]- 证明 / Proof
+<span class="lang zh">由命题 30.3、30.4、30.6，VCG 机制 DSIC、IR、事后有效且运行预算盈余。因 DSIC 蕴含 BIC，VCG 也 BIC。于是定理 30.1 告诉我们期望外部性机制 \(\{\hat x(\cdot),t_1^{\text{EE}}(\cdot),\dots,t_n^{\text{EE}}(\cdot)\}\) 预算平衡且 BIC。由于期望外部性机制按构造与 VCG 有<strong>相同的 \(\hat x(\cdot)\)</strong>，它也事后有效。又由定理 30.1，每个人在新机制下（弱）更满意，故它也 IR。综上，期望外部性机制事后有效、BIC、IR、预算平衡。\(\blacksquare\)</span><span class="lang en">By Propositions 30.3, 30.4, 30.6, the VCG mechanism is DSIC, IR, ex-post efficient, and runs a budget surplus. Since DSIC implies BIC, VCG is also BIC. Then Theorem 30.1 tells us the expected externality mechanism \(\{\hat x(\cdot),t_1^{\text{EE}}(\cdot),\dots,t_n^{\text{EE}}(\cdot)\}\) is budget balanced and BIC. Since the expected externality mechanism has the same \(\hat x(\cdot)\) as VCG by construction, it is also ex-post efficient. And by Theorem 30.1 every agent is at least equally happy under the new mechanism, so it is also IR. In conclusion, the expected externality mechanism is ex-post efficient, BIC, IR, and budget balanced. \(\blacksquare\)</span></p></div>
+</div>
+<div class="lang en"></div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>例 30.1（双边交易 / Bilateral trade）
+<span class="lang zh">设买家类型 \(\theta_B\)、卖家类型 \(\theta_S\) 独立同服从 $[0,1]$ 均匀分布。社会状态 \(x\in\{0,1\}\) 为交易量（成交一单位或不交易），效用 \(u_B(x,\theta_B)=\theta_B\cdot x\)、\(u_S(x,\theta_S)=-\theta_S\cdot x\)。则（不以对方报告为条件的）总效用 \(U_B(\hat\theta_B\mid\theta_B)=\sum_{x=0}^1 u_B(x,\theta_B)\mathbb{E}_{\theta_S}[\phi(x\mid\hat\theta_B,\theta_S)]-\mathbb{E}_{\theta_S}[t_B(\hat\theta_B,\theta_S)]\)，\(U_S\) 类似；以对方报告为条件的总效用 \(U_B(\hat\theta_B\mid\theta_B,\hat\theta_S)=\sum_x u_B(x,\theta_B)\phi(x\mid\hat\theta_B,\hat\theta_S)-t_B(\hat\theta_B,\hat\theta_S)\)。下面验证 VCG 与期望外部性机制的性质。</span><span class="lang en">Let the buyer's type \(\theta_B\) and seller's type \(\theta_S\) be i.i.d. uniform on $[0,1]\(. The social state \)x\in{0,1}$ is the quantity traded (one unit or no trade), with utilities \(u_B(x,\theta_B)=\theta_B\cdot x\) and \(u_S(x,\theta_S)=-\theta_S\cdot x\). The total utility (unconditional on the other side's report) is \(U_B(\hat\theta_B\mid\theta_B)=\sum_{x=0}^1 u_B(x,\theta_B)\mathbb{E}_{\theta_S}[\phi(x\mid\hat\theta_B,\theta_S)]-\mathbb{E}_{\theta_S}[t_B(\hat\theta_B,\theta_S)]\), similarly for \(U_S\); the total utility conditional on the other side's report is \(U_B(\hat\theta_B\mid\theta_B,\hat\theta_S)=\sum_x u_B(x,\theta_B)\phi(x\mid\hat\theta_B,\hat\theta_S)-t_B(\hat\theta_B,\hat\theta_S)\). Below we verify the properties of the VCG and expected-externality mechanisms.</span></p>
+<p>[!note]- VCG 机制：转移、DSIC、IR、非预算平衡 / VCG mechanism: transfers, DSIC, IR, not budget balanced
+<span class="lang zh"><strong>转移</strong>（按 (30.2)）：注意此设定下 \(\hat x_{-B}(\hat\theta_S)=0\)（买家缺席则事后有效机制不让卖家生产，因生产对卖家有成本），\(\hat x_{-S}(\hat\theta_B)=1\)（卖家缺席则消费对社会无成本，故事后有效机制总让 \(x=1\)）。于是对买家</span><span class="lang en"><strong>Transfers</strong> (per (30.2)): note that here \(\hat x_{-B}(\hat\theta_S)=0\) (when the buyer is absent the ex-post efficient mechanism won't let the seller produce, since producing is costly to the seller), and \(\hat x_{-S}(\hat\theta_B)=1\) (when the seller is absent consumption is costless to society, so the ex-post efficient mechanism always assigns \(x=1\)). So for the buyer</span></p>
+<p>$$t_B^{\text{VCG}}(\hat\theta_B,\hat\theta_S)=u_S(\hat x_{-B}(\hat\theta_S),\hat\theta_S)-u_S(\hat x(\hat\theta_B,\hat\theta_S),\hat\theta_S)=u_S(0,\hat\theta_S)+\hat x(\hat\theta_B,\hat\theta_S)\cdot\hat\theta_S=\hat x(\hat\theta_B,\hat\theta_S)\cdot\hat\theta_S\tag{30.7}$$</p>
+<p><span class="lang zh">对卖家</span><span class="lang en">and for the seller</span></p>
+<p>$$t_S^{\text{VCG}}(\hat\theta_B,\hat\theta_S)=u_B(\hat x_{-S}(\hat\theta_B),\hat\theta_B)-u_B(\hat x(\hat\theta_B,\hat\theta_S),\hat\theta_B)=u_B(1,\hat\theta_B)-\hat x(\hat\theta_B,\hat\theta_S)\cdot\hat\theta_B=\hat\theta_B\cdot\big(1-\hat x(\hat\theta_B,\hat\theta_S)\big)\tag{30.8}$$</p>
+<p><span class="lang zh"><strong>买家 DSIC</strong>：事后有效 \(\phi(x\mid\hat\theta_B,\hat\theta_S)=1\) 当 \(x=\hat x(\hat\theta_B,\hat\theta_S)\)。买家以对方报告为条件的总效用 \(U_B^{\text{VCG}}(\hat\theta_B\mid\theta_B,\hat\theta_S)=u_B(\hat x(\hat\theta_B,\hat\theta_S),\theta_B)-t_B^{\text{VCG}}=\hat x(\hat\theta_B,\hat\theta_S)\theta_B-\hat x(\hat\theta_B,\hat\theta_S)\hat\theta_S=\hat x(\hat\theta_B,\hat\theta_S)(\theta_B-\hat\theta_S)\)，即（伪）社会剩余；由事后有效 \(\hat x\) 定义，报告 \(\hat\theta_B=\theta_B\) 最大化之，无论 \(\hat\theta_S\)，故 DSIC。<strong>买家 IR</strong>：不参与对应 \(\hat x_{-B}(\hat\theta_S)=0\)、外部选项效用 \(0\)；\(U_B^{\text{VCG}}=\hat x(\theta_B,\hat\theta_S)(\theta_B-\hat\theta_S)\) 总可取零，故 \(\ge0\)，IR。<strong>卖家 DSIC</strong>：\(U_S^{\text{VCG}}(\hat\theta_S\mid\theta_B,\theta_S)=u_S(\hat x(\hat\theta_B,\hat\theta_S),\theta_S)-t_S^{\text{VCG}}=-\hat x\theta_S-\hat\theta_B(1-\hat x)=-\hat\theta_B+\hat x(\hat\theta_B,\hat\theta_S)(\hat\theta_B-\theta_S)\)；\(-\hat\theta_B\) 是与 \(\hat\theta_S\) 无关常数可略，剩 \(\hat x(\hat\theta_B,\hat\theta_S)(\hat\theta_B-\theta_S)\) 在 \(\hat\theta_S=\theta_S\) 时最大化，故 DSIC。<strong>卖家 IR</strong>：不参与对应 \(\hat x_{-S}(\hat\theta_B)=1\)、外部选项效用 \(-\theta_S\)（卖家不参与仍被要求生产 \(x=1\)）；\(U_S^{\text{VCG}}-(-\theta_S)=(\hat x(\hat\theta_B,\theta_S)-1)(\hat\theta_B-\theta_S)\ge0\)（\(\hat\theta_B\ge\theta_S\) 时 \(\hat x=1\Rightarrow0\)；\(\hat\theta_B<\theta_S\) 时 \(\hat x=0\Rightarrow-(\hat\theta_B-\theta_S)>0\)），故 IR。<strong>非预算平衡</strong>：\(t_B^{\text{VCG}}+t_S^{\text{VCG}}=\hat x\hat\theta_S+\hat\theta_B(1-\hat x)=\hat x(\hat\theta_S-\hat\theta_B)+\hat\theta_B\)；由 \(\hat x(\hat\theta_B,\hat\theta_S)=\mathbf 1\{\hat\theta_B\ge\hat\theta_S\}\) (30.9)，得 \(=\hat\theta_S\)（当 \(\hat\theta_B\ge\hat\theta_S\)，\(\ge0\)）或 \(=\hat\theta_B\)（当 \(\hat\theta_B<\hat\theta_S\)，\(\ge0\)），以概率 \(1\) 严格为正，故 VCG 运行预算盈余、非预算平衡。\(\blacksquare\)</span><span class="lang en"><strong>Buyer DSIC</strong>: ex-post efficiency gives \(\phi(x\mid\hat\theta_B,\hat\theta_S)=1\) when \(x=\hat x(\hat\theta_B,\hat\theta_S)\). The buyer's total utility conditional on the other's report is \(U_B^{\text{VCG}}(\hat\theta_B\mid\theta_B,\hat\theta_S)=u_B(\hat x(\hat\theta_B,\hat\theta_S),\theta_B)-t_B^{\text{VCG}}=\hat x(\hat\theta_B,\hat\theta_S)\theta_B-\hat x(\hat\theta_B,\hat\theta_S)\hat\theta_S=\hat x(\hat\theta_B,\hat\theta_S)(\theta_B-\hat\theta_S)\), the (pseudo) social surplus; by the definition of the ex-post efficient \(\hat x\), reporting \(\hat\theta_B=\theta_B\) maximizes it regardless of \(\hat\theta_S\), so DSIC. <strong>Buyer IR</strong>: not participating corresponds to \(\hat x_{-B}(\hat\theta_S)=0\) with outside option utility \(0\); \(U_B^{\text{VCG}}=\hat x(\theta_B,\hat\theta_S)(\theta_B-\hat\theta_S)\) can always be zero, so \(\ge0\), IR. <strong>Seller DSIC</strong>: \(U_S^{\text{VCG}}(\hat\theta_S\mid\theta_B,\theta_S)=u_S(\hat x(\hat\theta_B,\hat\theta_S),\theta_S)-t_S^{\text{VCG}}=-\hat x\theta_S-\hat\theta_B(1-\hat x)=-\hat\theta_B+\hat x(\hat\theta_B,\hat\theta_S)(\hat\theta_B-\theta_S)\); \(-\hat\theta_B\) is a constant not involving \(\hat\theta_S\) and can be ignored, leaving \(\hat x(\hat\theta_B,\hat\theta_S)(\hat\theta_B-\theta_S)\) maximized at \(\hat\theta_S=\theta_S\), so DSIC. <strong>Seller IR</strong>: not participating corresponds to \(\hat x_{-S}(\hat\theta_B)=1\) with outside option utility \(-\theta_S\) (a non-participating seller is still required to produce \(x=1\)); \(U_S^{\text{VCG}}-(-\theta_S)=(\hat x(\hat\theta_B,\theta_S)-1)(\hat\theta_B-\theta_S)\ge0\) (\(\hat\theta_B\ge\theta_S\Rightarrow\hat x=1\Rightarrow0\); \(\hat\theta_B<\theta_S\Rightarrow\hat x=0\Rightarrow-(\hat\theta_B-\theta_S)>0\)), so IR. <strong>Not budget balanced</strong>: \(t_B^{\text{VCG}}+t_S^{\text{VCG}}=\hat x\hat\theta_S+\hat\theta_B(1-\hat x)=\hat x(\hat\theta_S-\hat\theta_B)+\hat\theta_B\); by \(\hat x(\hat\theta_B,\hat\theta_S)=\mathbf 1\{\hat\theta_B\ge\hat\theta_S\}\) (30.9) this equals \(\hat\theta_S\) (when \(\hat\theta_B\ge\hat\theta_S\), \(\ge0\)) or \(\hat\theta_B\) (when \(\hat\theta_B<\hat\theta_S\), \(\ge0\)), strictly positive with probability \(1\), so VCG runs a budget surplus and is not budget balanced. \(\blacksquare\)</span></p>
+<p>[!note]- 期望外部性机制：转移、预算平衡、BIC、IR、第一好 / Expected externality mechanism: transfers, budget balance, BIC, IR, first best
+<span class="lang zh"><strong>转移</strong>（按 (30.6)，\(n=2\)）：对买家 \(t_B^{\text{EE}}(\hat\theta_B,\hat\theta_S)=\bar t_B^{\text{VCG}}(\hat\theta_B)+(\bar t_S^{\text{VCG}}-\bar t_S^{\text{VCG}}(\hat\theta_S))-\frac{\bar t_B^{\text{VCG}}+\bar t_S^{\text{VCG}}}{2}\) (30.10)。用均匀分布与 (30.7)、(30.8)、(30.9)：\(\bar t_B^{\text{VCG}}(\hat\theta_B)=\mathbb{E}_{\theta_S}[\hat x(\hat\theta_B,\theta_S)\theta_S]=\int_0^{\hat\theta_B}\theta_S\,d\theta_S=\frac{\hat\theta_B^2}{2}\)，\(\bar t_S^{\text{VCG}}(\hat\theta_S)=\mathbb{E}_{\theta_B}[\theta_B(1-\hat x(\theta_B,\hat\theta_S))]=\int_0^{\hat\theta_S}\theta_B\,d\theta_B=\frac{\hat\theta_S^2}{2}\)，\(\bar t_B^{\text{VCG}}=\mathbb{E}_{\theta_B}[\frac{\theta_B^2}{2}]=\frac16\)，\(\bar t_S^{\text{VCG}}=\frac16\)。代回 (30.10)：\(t_B^{\text{EE}}=\frac{\hat\theta_B^2}{2}+(\frac16-\frac{\hat\theta_S^2}{2})-\frac{\frac16+\frac16}{2}=\frac{\hat\theta_B^2}{2}-\frac{\hat\theta_S^2}{2}\)，对卖家 \(t_S^{\text{EE}}=\frac{\hat\theta_S^2}{2}-\frac{\hat\theta_B^2}{2}\)。<strong>预算平衡</strong>：\(t_B^{\text{EE}}+t_S^{\text{EE}}=0\)。✓ <strong>买家 BIC &amp; IR</strong>：\(U_B^{\text{EE}}(\hat\theta_B\mid\theta_B)=\mathbb{P}(\theta_S\le\hat\theta_B)\theta_B+\mathbb{P}(\theta_S>\hat\theta_B)\cdot0-\int_0^1(\frac{\hat\theta_B^2}{2}-\frac{\theta_S^2}{2})d\theta_S=\hat\theta_B\theta_B-\frac{\hat\theta_B^2}{2}+\frac16\)，关于 \(\hat\theta_B\) 全局凹，FOC \(\theta_B-\hat\theta_B=0\Rightarrow\hat\theta_B=\theta_B\)，BIC；\(U_B^{\text{EE}}(\theta_B)=\frac{\theta_B^2}{2}+\frac16>0\)（外部选项 \(0\)），IR。<strong>卖家 BIC &amp; IR</strong>：\(U_S^{\text{EE}}(\hat\theta_S\mid\theta_S)=(1-\hat\theta_S)(-\theta_S)-\frac{\hat\theta_S^2}{2}+\frac16\)，关于 \(\hat\theta_S\) 全局凹，FOC \(\theta_S-\hat\theta_S=0\Rightarrow\hat\theta_S=\theta_S\)，BIC；\(U_S^{\text{EE}}(\theta_S)=-(1-\theta_S)\theta_S-\frac{\theta_S^2}{2}+\frac16=\frac{\theta_S^2}{2}-\theta_S+\frac16>-\theta_S\)（外部选项 \(-\theta_S\)），IR。<strong>第一好</strong>：期望总剩余 \(\mathbb{E}[U_B^{\text{EE}}]+\mathbb{E}[U_S^{\text{EE}}]=\int_0^1(\frac{\theta_B^2}{2}+\frac16)d\theta_B+\int_0^1(\frac{\theta_S^2}{2}+\frac16-\theta_S)d\theta_S=\frac13+(-\frac16)=\frac16\)；而事前社会福利最大化（\(\theta_B>\theta_S\) 时交易）的期望总剩余 \(\mathbb{E}[\max\{\theta_B-\theta_S,0\}]=\int_0^1\int_0^{\theta_B}(\theta_B-\theta_S)d\theta_S d\theta_B=\int_0^1\frac{\theta_B^2}{2}d\theta_B=\frac16\)，二者相等。故期望外部性机制实现<strong>第一好</strong>。\(\blacksquare\)</span><span class="lang en"><strong>Transfers</strong> (per (30.6), \(n=2\)): for the buyer \(t_B^{\text{EE}}(\hat\theta_B,\hat\theta_S)=\bar t_B^{\text{VCG}}(\hat\theta_B)+(\bar t_S^{\text{VCG}}-\bar t_S^{\text{VCG}}(\hat\theta_S))-\frac{\bar t_B^{\text{VCG}}+\bar t_S^{\text{VCG}}}{2}\) (30.10). Using the uniform distribution and (30.7), (30.8), (30.9): \(\bar t_B^{\text{VCG}}(\hat\theta_B)=\mathbb{E}_{\theta_S}[\hat x(\hat\theta_B,\theta_S)\theta_S]=\int_0^{\hat\theta_B}\theta_S\,d\theta_S=\frac{\hat\theta_B^2}{2}\), \(\bar t_S^{\text{VCG}}(\hat\theta_S)=\mathbb{E}_{\theta_B}[\theta_B(1-\hat x(\theta_B,\hat\theta_S))]=\int_0^{\hat\theta_S}\theta_B\,d\theta_B=\frac{\hat\theta_S^2}{2}\), \(\bar t_B^{\text{VCG}}=\mathbb{E}_{\theta_B}[\frac{\theta_B^2}{2}]=\frac16\), \(\bar t_S^{\text{VCG}}=\frac16\). Plugging into (30.10): \(t_B^{\text{EE}}=\frac{\hat\theta_B^2}{2}+(\frac16-\frac{\hat\theta_S^2}{2})-\frac{\frac16+\frac16}{2}=\frac{\hat\theta_B^2}{2}-\frac{\hat\theta_S^2}{2}\), and for the seller \(t_S^{\text{EE}}=\frac{\hat\theta_S^2}{2}-\frac{\hat\theta_B^2}{2}\). <strong>Budget balance</strong>: \(t_B^{\text{EE}}+t_S^{\text{EE}}=0\). ✓ <strong>Buyer BIC &amp; IR</strong>: \(U_B^{\text{EE}}(\hat\theta_B\mid\theta_B)=\mathbb{P}(\theta_S\le\hat\theta_B)\theta_B+\mathbb{P}(\theta_S>\hat\theta_B)\cdot0-\int_0^1(\frac{\hat\theta_B^2}{2}-\frac{\theta_S^2}{2})d\theta_S=\hat\theta_B\theta_B-\frac{\hat\theta_B^2}{2}+\frac16\), globally concave in \(\hat\theta_B\), FOC \(\theta_B-\hat\theta_B=0\Rightarrow\hat\theta_B=\theta_B\), BIC; \(U_B^{\text{EE}}(\theta_B)=\frac{\theta_B^2}{2}+\frac16>0\) (outside option \(0\)), IR. <strong>Seller BIC &amp; IR</strong>: \(U_S^{\text{EE}}(\hat\theta_S\mid\theta_S)=(1-\hat\theta_S)(-\theta_S)-\frac{\hat\theta_S^2}{2}+\frac16\), globally concave in \(\hat\theta_S\), FOC \(\theta_S-\hat\theta_S=0\Rightarrow\hat\theta_S=\theta_S\), BIC; \(U_S^{\text{EE}}(\theta_S)=-(1-\theta_S)\theta_S-\frac{\theta_S^2}{2}+\frac16=\frac{\theta_S^2}{2}-\theta_S+\frac16>-\theta_S\) (outside option \(-\theta_S\)), IR. <strong>First best</strong>: expected total surplus \(\mathbb{E}[U_B^{\text{EE}}]+\mathbb{E}[U_S^{\text{EE}}]=\int_0^1(\frac{\theta_B^2}{2}+\frac16)d\theta_B+\int_0^1(\frac{\theta_S^2}{2}+\frac16-\theta_S)d\theta_S=\frac13+(-\frac16)=\frac16\); and the expected total surplus of the ex-ante welfare-maximizing rule (trade when \(\theta_B>\theta_S\)) is \(\mathbb{E}[\max\{\theta_B-\theta_S,0\}]=\int_0^1\int_0^{\theta_B}(\theta_B-\theta_S)d\theta_S d\theta_B=\int_0^1\frac{\theta_B^2}{2}d\theta_B=\frac16\), which is equal. So the expected externality mechanism achieves the <strong>first best</strong>. \(\blacksquare\)</span></p></div>
+</div>
+<div class="lang en"></div>
+<div class="lang zh">
+<h2 id="30-4-bic-ir-possibility-theorem">30.4 可能性定理：BIC + 预算平衡 + 事后有效 + IR 机制的存在条件 / Possibility theorem</h2>
+<p>例 30.1 中期望外部性机制 BIC、预算平衡、事后有效且 IR，似乎挑战了不可能性定理 28.4？但实际并不矛盾：例 30.1 中社会状态 \(x\) 完全由机制设计者控制，<strong>外部选项</strong>对双方都很特殊且糟糕（不参与仍可能被迫生产/无法消费），使 IR 极易成立——双方总是（弱）更愿参与。但一般情形下外部选项不受机制控制，不可能性定理 28.4 仍成立。关键在于区分<strong>事前 IR</strong>与<strong>事中 IR</strong>。记参与人 \(i\) 的外部选项为 \(\underline U_i(\theta_i)\)（\(i\) 类型的函数）。</p>
+</div>
+<div class="lang en">
+<h2 id="30-4-possibility-theorem-conditions-for-the-existence-of-a-bic-budget-balanced-ex-post-efficient-and-ir-mechanism">30.4 Possibility theorem: conditions for the existence of a BIC, budget balanced, ex-post efficient and IR mechanism</h2>
+<p>In Example 30.1 the expected externality mechanism is BIC, budget balanced, ex-post efficient, and IR, which seems to challenge the impossibility theorem 28.4. But it actually does not contradict it: in Example 30.1 the social state \(x\) is completely controlled by the mechanism designer, and the <strong>outside option</strong> is special and terrible for both sides (a non-participant may still be forced to produce / unable to consume), which makes IR hold very easily — both sides are always weakly better off participating. In general, however, the outside option is not controlled by the mechanism, so the impossibility theorem 28.4 still holds. The key is to distinguish <strong>ex-ante IR</strong> from <strong>interim IR</strong>. Denote agent \(i\)'s outside option by \(\underline U_i(\theta_i)\) (a function of \(i\)'s type).</p>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 30.7（事中个人理性 / Interim individual rationality, interim IR）
+<span class="lang zh">机制 \(\{\phi(x\mid\cdot),t_1(\cdot),\dots,t_n(\cdot)\}\) 是<strong>事中个人理性 (interim IR)</strong> 的，当且仅当 \(U_i(\theta_i)\equiv U_i(\theta_i\mid\theta_i)\ge\underline U_i(\theta_i)\) 对所有 \(i,\theta_i\) 成立。</span><span class="lang en">A mechanism \(\{\phi(x\mid\cdot),t_1(\cdot),\dots,t_n(\cdot)\}\) is <strong>interim individually rational (interim IR)</strong> if and only if \(U_i(\theta_i)\equiv U_i(\theta_i\mid\theta_i)\ge\underline U_i(\theta_i)\) for all \(i,\theta_i\).</span></p>
+<p>[!tip] 注 30.7（事中 IR vs 事前 IR / Remark 30.7: interim vs ex-ante IR）
+<span class="lang zh">例 30.1 用的 IR 是<strong>事前 IR</strong>约束——问参与人在<strong>了解自身类型之前</strong>是否愿意参与；而<strong>事中 IR</strong>问的是参与人<strong>了解自身类型之后</strong>是否愿意参与。不可能性定理 28.4 用的是事中 IR，比事前 IR 更难满足。事实上，§30 之前所有讨论用的 IR 都是这种事中 IR（总要保证最差类型仍愿参与），只是此前一直隐式使用，现在把这一区分讲明。</span><span class="lang en">The IR used in Example 30.1 is an <strong>ex-ante IR</strong> constraint — asking whether an agent wants to participate <strong>before</strong> learning his type; whereas <strong>interim IR</strong> asks whether an agent wants to participate <strong>after</strong> learning his type. The impossibility theorem 28.4 uses interim IR, which is more difficult to satisfy than ex-ante IR. In fact, the IR used in all discussion before section 30 was this interim IR (always guaranteeing the worst type still participates); we had been using it implicitly all along, and now make the distinction explicit.</span></p>
+<p>[!important] 定义 30.8、30.9（最小补贴、IR-VCG 机制 / Minimum subsidy, IR-VCG mechanism）
+<span class="lang zh"><strong>定义 30.8（最小补贴）</strong>：给参与人 \(i\) 的补贴记为 \(\varphi_i\)，满足 \(U_i^{\text{VCG}}(\theta_i)+\varphi_i\ge\underline U_i(\theta_i)\)。定义<strong>最小补贴</strong> \(\varphi_i^\star=\max_{\theta_i}\big(\underline U_i(\theta_i)-U_i^{\text{VCG}}(\theta_i)\big)\)，即使 \(U_i^{\text{VCG}}(\theta_i)+\varphi_i\ge\underline U_i(\theta_i)\) 对所有 \(\theta_i\) 成立的最低补贴值。<strong>定义 30.9（IR-VCG 机制）</strong>：IR-VCG 机制定义为 \(\{\hat x(\cdot),t_1^{\text{IR-VCG}}(\cdot),\dots,t_n^{\text{IR-VCG}}(\cdot)\}\)，其中 \(\hat x(\cdot)\) 事后有效，\(t_i^{\text{IR-VCG}}(\theta_1,\dots,\theta_n)=t_i^{\text{VCG}}(\theta_1,\dots,\theta_n)-\varphi_i^\star\)。</span><span class="lang en"><strong>Definition 30.8 (minimum subsidy)</strong>: a subsidy for agent \(i\) is denoted \(\varphi_i\) such that \(U_i^{\text{VCG}}(\theta_i)+\varphi_i\ge\underline U_i(\theta_i)\). Define the <strong>minimum subsidy</strong> \(\varphi_i^\star=\max_{\theta_i}\big(\underline U_i(\theta_i)-U_i^{\text{VCG}}(\theta_i)\big)\), the lowest subsidy value such that \(U_i^{\text{VCG}}(\theta_i)+\varphi_i\ge\underline U_i(\theta_i)\) holds for all \(\theta_i\). <strong>Definition 30.9 (IR-VCG mechanism)</strong>: the IR-VCG mechanism is defined by \(\{\hat x(\cdot),t_1^{\text{IR-VCG}}(\cdot),\dots,t_n^{\text{IR-VCG}}(\cdot)\}\), where \(\hat x(\cdot)\) is ex-post efficient and \(t_i^{\text{IR-VCG}}(\theta_1,\dots,\theta_n)=t_i^{\text{VCG}}(\theta_1,\dots,\theta_n)-\varphi_i^\star\).</span></p>
+<p>[!tip] 命题 30.7、注 30.8 / Proposition 30.7, Remark 30.8
+<span class="lang zh"><strong>命题 30.7</strong>：IR-VCG 机制是 DSIC（它与 VCG 只差一个对每个 \(i\) 而言的常数补贴 \(\varphi_i^\star\)，不影响讲真话；由命题 30.3 即得）。<strong>注 30.8</strong>：IR-VCG 虽仍 DSIC，但<strong>未必</strong>像 VCG 那样运行期望盈余（因从每人支付中减去补贴），故各税之和可能不再非负。</span><span class="lang en"><strong>Proposition 30.7</strong>: the IR-VCG mechanism is DSIC (it differs from VCG only by a constant subsidy \(\varphi_i^\star\) for each \(i\), which doesn't affect truth-telling; immediate from Proposition 30.3). <strong>Remark 30.8</strong>: although the IR-VCG mechanism is still DSIC, it does <strong>not</strong> necessarily run an expected surplus like VCG (since a subsidy is subtracted from each agent's payment), so the taxes may no longer add up to be positive.</span></p>
+<p>[!important] 推论 30.2（可能性，对应定理 30.1 / Possibility, to Theorem 30.1）
+<span class="lang zh">若 IR-VCG 机制运行期望盈余，即 \(\mathbb{E}_{\{\theta_i\}}[\sum_{i=1}^n t_i^{\text{IR-VCG}}(\theta_1,\dots,\theta_n)]=\mathbb{E}_{\{\theta_i\}}[\sum_{i=1}^n(t_i^{\text{VCG}}(\theta_1,\dots,\theta_n)-\varphi_i^\star)]\ge0\) (30.11)，则存在一个 BIC、预算平衡且事中 IR 的机制。</span><span class="lang en">If the IR-VCG mechanism runs an expected surplus, i.e. \(\mathbb{E}_{\{\theta_i\}}[\sum_{i=1}^n t_i^{\text{IR-VCG}}(\theta_1,\dots,\theta_n)]=\mathbb{E}_{\{\theta_i\}}[\sum_{i=1}^n(t_i^{\text{VCG}}(\theta_1,\dots,\theta_n)-\varphi_i^\star)]\ge0\) (30.11), then there exists a BIC, budget balanced and interim IR mechanism.</span></p>
+<p>[!note]- 推论 30.2 证明 / Proof of Corollary 30.2
+<span class="lang zh">由命题 30.7，IR-VCG 是 DSIC（从而 BIC）。若 (30.11) 成立，由定理 30.1 存在与之对应的预算平衡 BIC 机制。又 IR-VCG 按构造事中 IR（最小补贴恰保证 \(U_i^{\text{VCG}}+\varphi_i^\star\ge\underline U_i\)），而定理 30.1 说新机制中各人至少同样满意，故新机制也事中 IR。\(\blacksquare\)</span><span class="lang en">By Proposition 30.7, IR-VCG is DSIC (and thus BIC). If (30.11) holds, by Theorem 30.1 there exists a corresponding budget-balanced BIC mechanism. Also IR-VCG is interim IR by construction (the minimum subsidy exactly guarantees \(U_i^{\text{VCG}}+\varphi_i^\star\ge\underline U_i\)), and Theorem 30.1 says agents are at least equally happy in the new mechanism, so the new mechanism is also interim IR. \(\blacksquare\)</span></p>
+<p>[!important] 定理 30.2（可能性定理 / Possibility theorem）
+<span class="lang zh">若对所有 \(i\)，\(\theta_i\) 在 \([\underline\theta_i,\overline\theta_i]\) 上连续分布且各参与人分布独立，则 (30.11) 是存在 <strong>BIC、预算平衡、事后有效且事中 IR</strong> 机制的<strong>充要条件</strong>。</span><span class="lang en">If for all \(i\), \(\theta_i\) is continuously distributed on \([\underline\theta_i,\overline\theta_i]\) and the distributions across agents are independent, then (30.11) is <strong>necessary and sufficient</strong> for the existence of a <strong>BIC, budget balanced, ex-post efficient and interim IR</strong> mechanism.</span></p>
+<p>[!note]- 证明（充分性 + 必要性 / sufficiency + necessity）
+<span class="lang zh"><strong>充分性</strong>：由推论 30.2 与定理 30.1 直接得到（其证明不依赖 \(\theta_i\) 的分布）。<strong>必要性</strong>：对任意 BIC、预算平衡、事后有效、事中 IR 机制（用 \(a\) 标记），BIC 蕴含 \(U_i^a(\theta_i)\ge U_i^a(\hat\theta_i\mid\theta_i)\)，其中 \(U_i^a(\theta_i)=\mathbb{E}_{\theta_{-i}}[u_i(\hat x(\theta_i,\theta_{-i}),\theta_i)]-\mathbb{E}_{\theta_{-i}}[t_i^a(\theta_i,\theta_{-i})]\)。利用双向偏离不等式 (30.12)、(30.13)，并对 \(\theta_i\to\hat\theta_i\) 取极限得包络条件，积分得 (30.15)：\(U_i^a(\theta_i)=\underbrace{U_i^a(\underline\theta_i)}_{\text{first term}}+\int_{\underline\theta_i}^{\theta_i}\mathbb{E}_{\theta_{-i}}[\frac{\partial u_i(\hat x(w,\theta_{-i}),\theta_i)}{\partial\theta_i}]dw\)，第二项与具体机制无关，故 \(U_i^a(\theta_i)\) 跨机制只通过 \(U_i^a(\underline\theta_i)\) 不同。由 IR-VCG 也事中 IR，结合 (30.16) 得：任何事中 IR 机制 \(a\) 满足 \(U_i^a(\underline\theta_i)\le U_i^{\text{IR-VCG}}(\underline\theta_i)\)，从而 \(\bar t_i^{\text{IR-VCG}}(\theta_i)\ge\bar t_i^a(\theta_i)\)（机制只通过 \(\bar t_i^a(\theta_i)\) 区别 \(U_i^a\)）。由机制 \(a\) 预算平衡 \(\mathbb{E}[\sum_i t_i^a]=0\)（独立性使 \(\mathbb{E}[\sum_i t_i^a]=\sum_i\mathbb{E}_{\theta_i}[\bar t_i^a(\theta_i)]\)），(30.16) 给出 \(\mathbb{E}_{\theta_i}[\sum_i t_i^{\text{IR-VCG}}]\ge\mathbb{E}_{\theta_i}[\sum_i t_i^a]=0\)，即 (30.11)。\(\blacksquare\)</span><span class="lang en"><strong>Sufficiency</strong>: follows directly from Corollary 30.2 and Theorem 30.1 (whose proofs do not depend on the distribution of \(\theta_i\)). <strong>Necessity</strong>: for any BIC, budget balanced, ex-post efficient, interim IR mechanism (indexed by \(a\)), BIC implies \(U_i^a(\theta_i)\ge U_i^a(\hat\theta_i\mid\theta_i)\), where \(U_i^a(\theta_i)=\mathbb{E}_{\theta_{-i}}[u_i(\hat x(\theta_i,\theta_{-i}),\theta_i)]-\mathbb{E}_{\theta_{-i}}[t_i^a(\theta_i,\theta_{-i})]\). Using the two-sided deviation inequalities (30.12), (30.13) and taking \(\theta_i\to\hat\theta_i\) to get an envelope condition, integration gives (30.15): \(U_i^a(\theta_i)=\underbrace{U_i^a(\underline\theta_i)}_{\text{first term}}+\int_{\underline\theta_i}^{\theta_i}\mathbb{E}_{\theta_{-i}}[\frac{\partial u_i(\hat x(w,\theta_{-i}),\theta_i)}{\partial\theta_i}]dw\); the second term is not mechanism-specific, so \(U_i^a(\theta_i)\) differs across mechanisms only through \(U_i^a(\underline\theta_i)\). Since IR-VCG is also interim IR, combined with (30.16) we get: any interim-IR mechanism \(a\) satisfies \(U_i^a(\underline\theta_i)\le U_i^{\text{IR-VCG}}(\underline\theta_i)\), hence \(\bar t_i^{\text{IR-VCG}}(\theta_i)\ge\bar t_i^a(\theta_i)\) (mechanisms differ in \(U_i^a\) only through \(\bar t_i^a(\theta_i)\)). Since mechanism \(a\) is budget balanced \(\mathbb{E}[\sum_i t_i^a]=0\) (independence gives \(\mathbb{E}[\sum_i t_i^a]=\sum_i\mathbb{E}_{\theta_i}[\bar t_i^a(\theta_i)]\)), (30.16) gives \(\mathbb{E}_{\theta_i}[\sum_i t_i^{\text{IR-VCG}}]\ge\mathbb{E}_{\theta_i}[\sum_i t_i^a]=0\), which is exactly (30.11). \(\blacksquare\)</span></p></div>
+</div>
+<div class="lang en"></div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>例 30.2（重访例 30.1 / Revisit Example 30.1）
+<span class="lang zh">在例 30.1 中我们已算得 \(\bar t_B^{\text{VCG}}(\theta_B)=\frac{\theta_B^2}{2}\)、\(\bar t_S^{\text{VCG}}(\theta_S)=\frac{\theta_S^2}{2}\)。则 \(U_B^{\text{VCG}}(\theta_B)=\mathbb{E}_{\theta_S}[u_B(\hat x(\theta_B,\theta_S),\theta_B)]-\bar t_B^{\text{VCG}}(\theta_B)=\mathbb{P}(\theta_S\le\theta_B)\theta_B-\frac{\theta_B^2}{2}=\theta_B^2-\frac{\theta_B^2}{2}=\frac{\theta_B^2}{2}\)，\(U_S^{\text{VCG}}(\theta_S)=(1-\theta_S)(-\theta_S)\dots=-\theta_S+\frac{\theta_S^2}{2}\)。设双方外部选项为 \(0\)：\(\underline U_B(\theta_B)=0\)、\(\underline U_S(\theta_S)=0\)。由定义 30.8，\(\varphi_B^\star=\max_{\theta_B}(0-\frac{\theta_B^2}{2})=0\)、\(\varphi_S^\star=\max_{\theta_S}(0-(-\theta_S+\frac{\theta_S^2}{2}))=\max_{\theta_S}(\theta_S-\frac{\theta_S^2}{2})=\frac12\)（在 \(\theta_S=1\)）。于是 (30.11) 左侧</span><span class="lang en">In Example 30.1 we computed \(\bar t_B^{\text{VCG}}(\theta_B)=\frac{\theta_B^2}{2}\) and \(\bar t_S^{\text{VCG}}(\theta_S)=\frac{\theta_S^2}{2}\). Then \(U_B^{\text{VCG}}(\theta_B)=\mathbb{E}_{\theta_S}[u_B(\hat x(\theta_B,\theta_S),\theta_B)]-\bar t_B^{\text{VCG}}(\theta_B)=\mathbb{P}(\theta_S\le\theta_B)\theta_B-\frac{\theta_B^2}{2}=\theta_B^2-\frac{\theta_B^2}{2}=\frac{\theta_B^2}{2}\), and \(U_S^{\text{VCG}}(\theta_S)=(1-\theta_S)(-\theta_S)\dots=-\theta_S+\frac{\theta_S^2}{2}\). Suppose the outside options for both agents are \(0\): \(\underline U_B(\theta_B)=0\), \(\underline U_S(\theta_S)=0\). By Definition 30.8, \(\varphi_B^\star=\max_{\theta_B}(0-\frac{\theta_B^2}{2})=0\) and \(\varphi_S^\star=\max_{\theta_S}(0-(-\theta_S+\frac{\theta_S^2}{2}))=\max_{\theta_S}(\theta_S-\frac{\theta_S^2}{2})=\frac12\) (at \(\theta_S=1\)). Then the LHS of (30.11) is</span></p>
+<p>$$\mathbb{E}[(t_B^{\text{VCG}}-\varphi_B^\star)+(t_S^{\text{VCG}}-\varphi_S^\star)]=\mathbb{E}[t_B^{\text{VCG}}]+\mathbb{E}[t_S^{\text{VCG}}]-\frac12=\frac16+\frac16-\frac12=-\frac23<0\tag{30.17}$$</p>
+<p><span class="lang zh">由于此例中双方类型连续且独立分布于 $[0,1]\(，定理 30.2 适用；(30.17) 表明 (30.11) **不成立**，故**不存在**同时 BIC、预算平衡、事后有效且事中 IR 的机制。</span><span class="lang en">Since both types are continuously and independently distributed on \)[0,1]$, Theorem 30.2 applies; (30.17) shows that (30.11) <strong>fails</strong>, so there is <strong>no</strong> mechanism that is simultaneously BIC, budget balanced, ex-post efficient and interim IR.</span></p>
+<p>[!tip] 注 30.9（事中 IR 强于事前 IR / Remark 30.9: interim IR is stronger than ex-ante IR）
+<span class="lang zh">在例 30.1 中，我们确有一个 BIC、预算平衡、事后有效且<strong>事前 IR</strong> 的机制（期望外部性机制）。但这里（例 30.2，完全相同的问题）把事前 IR 换成<strong>事中 IR</strong> 后，就<strong>找不到</strong>同时 BIC、预算平衡、事后有效且事中 IR 的机制。所以事中 IR 是比事前 IR 更强的约束——这正是 §28 Myerson–Satterthwaite 不可能性定理在多人一般设定下的体现。</span><span class="lang en">In Example 30.1 we do have a mechanism that is BIC, budget balanced, ex-post efficient and <strong>ex-ante IR</strong> (the expected externality mechanism). But here (Example 30.2, exactly the same problem), by switching ex-ante IR to <strong>interim IR</strong>, we <strong>cannot</strong> find such a mechanism that is BIC, budget balanced, ex-post efficient and interim IR. So interim IR is a stronger restriction than ex-ante IR — which is precisely the §28 Myerson–Satterthwaite impossibility theorem manifested in the general multi-player setting.</span></p></div>
+</div>
+<div class="lang en"></div>
+<div class="lang zh">
+<h2 id="references">参考文献 / References</h2>
+<ul>
+<li>Vickrey, W. (1961); Clarke, E. (1971); Groves, T. (1973).（VCG / Groves 机制）</li>
+<li>Green, J., &amp; Laffont, J.-J. (1979). <em>Incentives in Public Decision Making</em>.（事后有效 DSIC 机制必属 Groves 族且违反预算平衡）</li>
+<li>d'Aspremont, C., &amp; Gérard-Varet, L.-A. (1979). Incentives and Incomplete Information. <em>Journal of Public Economics</em>, 11(1), 25-45.（期望外部性 / AGV 机制）</li>
+<li>本章把 [[bilateral-trade-impossibility]]（Ch 28）、[[second-best-bilateral-trade]]（Ch 29）的双边机制推广到多人一般社会状态；例 30.2 在事中 IR 下恢复了 Ch 28 的 Myerson–Satterthwaite 不可能性。</li>
+</ul>
+</div>
+<div class="lang en">
+<h2 id="references">References</h2>
+<ul>
+<li>Vickrey, W. (1961); Clarke, E. (1971); Groves, T. (1973). (the VCG / Groves mechanisms)</li>
+<li>Green, J., &amp; Laffont, J.-J. (1979). <em>Incentives in Public Decision Making</em>. (every ex-post efficient DSIC mechanism must be of the Groves form and violates budget balance)</li>
+<li>d'Aspremont, C., &amp; Gérard-Varet, L.-A. (1979). Incentives and Incomplete Information. <em>Journal of Public Economics</em>, 11(1), 25-45. (the expected externality / AGV mechanism)</li>
+<li>This chapter extends the two-sided mechanisms of [[bilateral-trade-impossibility]] (Ch 28) and [[second-best-bilateral-trade]] (Ch 29) to a general multi-player social-state setting; Example 30.2 recovers the Ch 28 Myerson–Satterthwaite impossibility under interim IR.</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#30-1-set-up">30.1 框架 / Set-up</a></li>
+          <li><a href="#30-1-1-notation">30.1.1 记号 / Notation</a></li>
+        <li><a href="#30-1-set-up">30.1 Set-up</a></li>
+          <li><a href="#30-1-1-notation">30.1.1 Notation</a></li>
+          <li><a href="#30-1-2-definitions">30.1.2 定义 / Definitions</a></li>
+          <li><a href="#30-1-3-mapping-the-general-setting-to-particular-problems">30.1.3 把一般设定映射到具体问题 / Mapping the general setting to particular problems</a></li>
+        <li><a href="#30-2-dsic-ex-post-efficiency-with-dsic-inefficiency-due-to-budget-surplus">30.2 用 DSIC 机制实现事后有效：盈余导致无效率 / Ex-post efficiency with DSIC: inefficiency due to budget surplus</a></li>
+          <li><a href="#30-2-1-groves-groves-mechanism">30.2.1 Groves 机制 / Groves mechanism</a></li>
+        <li><a href="#30-2-ex-post-efficiency-with-dsic-inefficiency-due-to-budget-surplus">30.2 Ex-post efficiency with DSIC: inefficiency due to budget surplus</a></li>
+          <li><a href="#30-2-1-groves-mechanism">30.2.1 Groves mechanism</a></li>
+          <li><a href="#30-2-2-vickrey-clarke-groves-vcg-vcg-mechanism">30.2.2 Vickrey–Clarke–Groves (VCG) 机制 / VCG mechanism</a></li>
+          <li><a href="#30-2-2-vickrey-clarke-groves-vcg-mechanism">30.2.2 Vickrey–Clarke–Groves (VCG) mechanism</a></li>
+        <li><a href="#30-3-bic-ex-post-efficiency-with-bic-budget-balance-holds">30.3 用 BIC 机制实现事后有效：预算平衡成立 / Ex-post efficiency with BIC: budget balance holds</a></li>
+        <li><a href="#30-3-ex-post-efficiency-with-bic-efficient-as-budget-balance-holds">30.3 Ex-post efficiency with BIC: efficient as budget balance holds</a></li>
+        <li><a href="#30-4-bic-ir-possibility-theorem">30.4 可能性定理：BIC + 预算平衡 + 事后有效 + IR 机制的存在条件 / Possibility theorem</a></li>
+        <li><a href="#30-4-possibility-theorem-conditions-for-the-existence-of-a-bic-budget-balanced-ex-post-efficient-and-ir-mechanism">30.4 Possibility theorem: conditions for the existence of a BIC, budget balanced, ex-post efficient and IR mechanism</a></li>
+        <li><a href="#references">参考文献 / References</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

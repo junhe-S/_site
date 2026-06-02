@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>25. RBC: Neoclassical Growth Model with Labor Productivity Shock – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>25. RBC: Neoclassical Growth Model with Labor Productivity Shock</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">实际经济周期</span><span class="lang en">RBC</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">劳动生产率冲击</span><span class="lang en">Labor Productivity Shock</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">历史变量</span><span class="lang en">History Variable</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">对数线性化</span><span class="lang en">Log-linearization</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">HP 滤波</span><span class="lang en">HP Filter</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>25. RBC：含劳动生产率冲击的新古典增长模型</h1>
+<p>本节讨论含<strong>劳动生产率</strong> \(Z_t(s^t)\) 的新古典增长模型的稳态与转移动态。劳动生产率序列可以是：</p>
+<ul>
+<li><strong>完全确定的</strong>：\(Z_t(s^t)=(1+g)^t s_t\)，其中 \(\ln s_{t+1}=\rho\ln s_t\)，\(s_0\) 给定；</li>
+<li>或<strong>带确定趋势的随机过程</strong>：\(Z_t(s^t)=(1+g)^t s_t\)，其中 \(\ln s_{t+1}=\rho\ln s_t+\upsilon_{t+1}\)，\(s_0\) 给定、\(\upsilon_{t+1}\) 随机；</li>
+<li>或<strong>带随机趋势的随机过程</strong>：\(Z_t(s^t)=Z_{t-1}(s^{t-1})s_t\)。</li>
+</ul>
+<p>在后两种情形中，经济从偏离稳态一点出发如何演化不再确定，因为在收敛途中会有新冲击发生。基本思想是：把 RBC 建模为校准模型的<strong>随机收敛模式</strong>。由于模型本身嵌入了对劳动生产率的冲击，理论上须假定劳动生产率冲击序列的特定模式或结构（生成过程）。</p>
+<h2 id="25-1">25.1 模型</h2>
+<h3 id="25-1-1">25.1.1 设定</h3>
+<ul>
+<li>离散期 \(t=0,1,2,\ldots\)</li>
+<li>状态变量 \(s_t\)：\(t\) 期揭示的信息。</li>
+<li>历史 \(s^t=(s_0,s_1,\ldots,s_t)\)：从 \(0\) 期到 \(t\) 期累计的信息。\(s^{t+1}=\{s^t,s_{t+1}\}\) 是 \(s^t\) 的后继历史，记 \(s^{t+1}>s^t\)。</li>
+<li>\(t\) 期消费 \(C_t(s^t)\)、劳动供给 \(H_t(s^t)\)、生产率 \(Z_t(s^t)\) 与 \(t+1\) 期资本 \(K_{t+1}(s^t)\) 都是历史 \(s^t\) 的函数。（更一般，亦可一阶马尔可夫；为一般性，先保持一般。）</li>
+<li>\(0\) 期 ex-ante 视角下历史上的概率分布 \(\pi_t(s^t)\in[0,1]\) \(\forall t,\forall s^t\)。Bayes 法则：\(s^{t+1}\) 在 \(s^t\) 下的条件概率为 \(\dfrac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\)。</li>
+<li>可测性条件：若给定历史下只能作一个决策，则系统关于历史可测，即 \(C_t(s^t),H_t(s^t),K_{t+1}(s^t)\) 均为良定函数。</li>
+<li>效用函数：\(u(C_t(s^t),H_t(s^t))=\ln C_t(s^t)-v(H_t(s^t))\)，\(v(\cdot)\) 递增且凸。</li>
+<li>生产函数：为本模型只需 CRS；为简便假设 Cobb-Douglas</li>
+</ul>
+<p>$$
+F\big(K_t(s^{t-1}),Z_t(s^t)\cdot H_t(s^t)\big)=\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)\cdot H_t(s^t)\big]^{1-\alpha}
+$$</p>
+<p>其中 \(Z_t(s^t)\) 是劳动的生产率，是外生确定的函数形式、不可控，可能是历史中的最大状态或所有过去状态之和等。</p>
+<h3 id="25-1-2">25.1.2 社会计划者问题</h3>
+<p>$$
+\max_{\{C_t(s^t),H_t(s^t),K_{t+1}(s^t)\}_{t=0}^{\infty}}\sum_{t=0}^{\infty}\sum_{s^t}\beta^t\pi_t(s^t)\big[\ln C_t(s^t)-v(H_t(s^t))\big] \tag{25.1}
+$$</p>
+<p>$$
+\text{s.t.}\quad K_{t+1}(s^t)=\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)H_t(s^t)\big]^{1-\alpha}+(1-\delta)K_t(s^{t-1})-C_t(s^t)\ \text{for }\forall t,\forall s^t \tag{25.2}
+$$</p>
+<p>\(K_0=K_0(s^{-1})\) 给定。</p>
+<h3 id="25-1-3">25.1.3 拉格朗日函数</h3>
+<p>$$
+\begin{aligned}
+\mathcal{L}=&\sum_{t=0}^{\infty}\sum_{s^t}\beta^t\pi_t(s^t)\big[\ln C_t(s^t)-v(H_t(s^t))\big]\\
+&+\sum_{t=0}^{\infty}\sum_{s^t}\beta^t\pi_t(s^t)\lambda_t(s^t)\Big\{\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)H_t(s^t)\big]^{1-\alpha}+(1-\delta)K_t(s^{t-1})-C_t(s^t)-K_{t+1}(s^t)\Big\}
+\end{aligned} \tag{25.3}
+$$</p>
+<p>其中 \(\lambda_t(s^t)\) 是 \(t\) 期历史 \(s^t\) 下预算约束的拉格朗日乘子。</p>
+<h3 id="25-1-4">25.1.4 一阶条件</h3>
+<p>(25.3) 的一阶条件为：</p>
+<p>$$
+[C_t(s^t)]\quad \frac{1}{C_t(s^t)}=\lambda_t(s^t) \tag{25.4}
+$$</p>
+<p>$$
+[H_t(s^t)]\quad v'(H_t(s^t))=(1-\alpha)\lambda_t(s^t)\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)\big]^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.5}
+$$</p>
+<p>$$
+[K_{t+1}(s^t)]\quad \lambda_t(s^t)=\beta\sum_{s^{t+1}>s^t}\lambda_{t+1}(s^{t+1})\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\Big\{\alpha\big[K_{t+1}(s^t)\big]^{\alpha-1}\big[Z_{t+1}(s^{t+1})H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)\Big\} \tag{25.6}
+$$</p>
+<p>$$
+[\lambda_t(s^t)]\quad K_{t+1}(s^t)=\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)H_t(s^t)\big]^{1-\alpha}+(1-\delta)K_t(s^{t-1})-C_t(s^t)\ \text{for }\forall t,\forall s^t
+$$</p>
+<p>由 (25.4)、(25.5) 联立，得<strong>期内无差异条件</strong>：</p>
+<p>$$
+v'(H_t(s^t))C_t(s^t)=(1-\alpha)\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)\big]^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.7}
+$$</p>
+<p>LHS 是 \(MRS_t\)，RHS 是 \(MPL_t\)。</p>
+<h3 id="25-1-5">25.1.5 欧拉方程与横截性条件</h3>
+<p>由 (25.4)、(25.6) 得<strong>欧拉方程（EE）</strong>：</p>
+<p>$$
+\frac{1}{C_t(s^t)}=\beta\sum_{s^{t+1}>s^t}\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\cdot\frac{\alpha\big[K_{t+1}(s^t)\big]^{\alpha-1}\big[Z_{t+1}(s^{t+1})H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{C_{t+1}(s^{t+1})} \tag{25.8}
+$$</p>
+<p>或等价地写成期望形式</p>
+<p>$$
+\frac{1}{C_t(s^t)}=\beta\mathbb{E}_{s^{t+1}}\left[\frac{\alpha\big[K_{t+1}(s^t)\big]^{\alpha-1}\big[Z_{t+1}(s^{t+1})H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{C_{t+1}(s^{t+1})}\,\Big|\,s^t\right] \tag{25.9}
+$$</p>
+<p>以及<strong>横截性条件（TC）</strong>：</p>
+<p>$$
+\lim_{T\to\infty}\beta^T\lambda_T(s^{T-1})K_T(s^{T-1})=0\ \Rightarrow\ \lim_{T\to\infty}\beta^T\frac{1}{C_T(s^{T-1})}K_T(s^{T-1})=0
+$$</p>
+<p>TC 对最优性非必要，但确保资本不爆炸。</p>
+<h3 id="25-1-6">25.1.6 方程系统总结</h3>
+<ul>
+<li>期内无差异条件：</li>
+</ul>
+<p>$$
+v'(H_t(s^t))C_t(s^t)=(1-\alpha)\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)\big]^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.10}
+$$</p>
+<ul>
+<li>欧拉方程（EE）：</li>
+</ul>
+<p>$$
+\frac{1}{C_t(s^t)}=\beta\sum_{s^{t+1}>s^t}\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\cdot\frac{\alpha\big[K_{t+1}(s^t)\big]^{\alpha-1}\big[Z_{t+1}(s^{t+1})H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{C_{t+1}(s^{t+1})} \tag{25.11}
+$$</p>
+<ul>
+<li>资源约束：</li>
+</ul>
+<p>$$
+K_{t+1}(s^t)=\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)H_t(s^t)\big]^{1-\alpha}+(1-\delta)K_t(s^{t-1})-C_t(s^t)\ \text{for }\forall t,\forall s^t \tag{25.12}
+$$</p>
+<ul>
+<li>横截性条件：</li>
+</ul>
+<p>$$
+\lim_{T\to\infty}\beta^T\frac{1}{C_T(s^{T-1})}K_T(s^{T-1})=0 \tag{25.13}
+$$</p>
+<p>(25.10)、(25.11) 用于最优性；(25.12) 用于可行性；(25.13) 排除"疯狂"结果（即累积资本而不消费）。</p>
+<h2 id="25-2">25.2 关于生产率趋势的更多假设</h2>
+<p>为用打靶算法计算鞍点路径、或如 §24.6 在平衡增长邻域内作对数线性化，须对外生函数 \(Z_t(s^t)\) 加假设。两种常用假设：</p>
+<ul>
+<li><strong>确定趋势</strong>：\(Z_t(s^t)=(1+g)^t s_t\)。生产率的不变增长率（确定趋势）为 \(1+g\)；\(t\) 期冲击 \(s_t\) 只影响 \(t\) 期、不影响趋势；从 \(0\) 期看生产率增长是确定的（除某些局部波动）。</li>
+<li><strong>随机趋势</strong>：\(Z_t(s^t)=Z_{t-1}(s^{t-1})s_t\)。\(t\) 期生产率是所有过去已实现随机冲击的累积效应；从 \(0\) 期看生产率增长完全随机，取决于未来冲击序列。</li>
+</ul>
+<p>注意：若用确定趋势假设 + 极度持久的 \(s_t\) 序列（自相关约为 1 或几乎单位根），则几乎等同于用随机趋势假设配 i.i.d. 的 \(s_t\) 序列——它们给出相同的 \(Z_t(s^t)\) 序列，经济在两种假设下表现相同。故此后坚持确定趋势 \(Z_t(s^t)=(1+g)^t s_t\)。</p>
+<h2 id="25-3">25.3 去趋势变量并重写系统</h2>
+<p>如新古典增长模型，去趋势 \(c_t(s^t)\equiv\dfrac{C_t(s^t)}{(1+g)^t}\)，\(k_t(s^{t-1})\equiv\dfrac{K_t(s^{t-1})}{(1+g)^t}\)。重写系统 (25.10)、(25.11)、(25.12)：</p>
+<p>$$
+v'(H_t(s^t))c_t(s^t)=(1-\alpha)\big[k_t(s^{t-1})\big]^{\alpha}s_t^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.14}
+$$</p>
+<p>$$
+\frac{1+g}{c_t(s^t)}=\beta\sum_{s^{t+1}>s^t}\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\cdot\frac{\alpha\big[k_{t+1}(s^t)\big]^{\alpha-1}\big[s_{t+1}H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{c_{t+1}(s^{t+1})} \tag{25.15}
+$$</p>
+<p>$$
+(1+g)k_{t+1}(s^t)=\big[k_t(s^{t-1})\big]^{\alpha}\big[s_t H_t(s^t)\big]^{1-\alpha}+(1-\delta)k_t(s^{t-1})-c_t(s^t)\ \text{for }\forall t,\forall s^t \tag{25.16}
+$$</p>
+<p>由于 \((1+g)^t\) 确定，(25.14)、(25.15)、(25.16) 的解即经济的最优解（平衡增长路径）。</p>
+<h2 id="25-4-s-t-t-0-infty">25.4 冲击过程 \(\{s_t\}_{t=0}^{\infty}\) 的两种情形</h2>
+<p>可像 §24.6 一样把平衡增长路径作为相图中两条轨迹的交点、用打靶算法计算鞍点路径，过程完全相同，故不再赘述。这里改为讨论冲击过程 \(\{s_t\}_{t=0}^{\infty}\) 的两种情形以作对数线性化。</p>
+<h3 id="25-4-1">25.4.1 确定情形</h3>
+<p>设 \(\ln s_{t+1}=\rho\ln s_t\)，\(s_0\) 给定。则系统 (25.14)、(25.15)、(25.16) 全部确定，问题平凡，与新古典增长模型相同，只是含了一个以不同于 \(g\) 的速率增长的确定生产率序列。用 §24.6.4 同样逻辑可对数线性化。假设 \(v(H)=\dfrac{\gamma\varepsilon}{1+\varepsilon}H^{\frac{1+\varepsilon}{\varepsilon}}\)（\(\varepsilon>0\)，\(v'(H)=\gamma H^{1/\varepsilon}\)，\(\varepsilon\) 为 Frisch 弹性），要对数线性化</p>
+<p>$$
+c_t(s^t)\gamma\big[H_t(s^t)\big]^{\frac{1}{\varepsilon}}=(1-\alpha)\big[k_t(s^{t-1})\big]^{\alpha}s_t^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.17}
+$$</p>
+<p>$$
+\frac{1+g}{c_t(s^t)}=\beta\sum_{s^{t+1}>s^t}\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\cdot\frac{\alpha\big[k_{t+1}(s^t)\big]^{\alpha-1}\big[s_{t+1}H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{c_{t+1}(s^{t+1})} \tag{25.18}
+$$</p>
+<p>$$
+(1+g)k_{t+1}(s^t)=\big[k_t(s^{t-1})\big]^{\alpha}\big[s_t H_t(s^t)\big]^{1-\alpha}+(1-\delta)k_t(s^{t-1})-c_t(s^t) \tag{25.19}
+$$</p>
+<p>一阶 Taylor 近似后：</p>
+<ul>
+<li>定义 \(\phi_t=(\hat k_t,\hat c_t,\hat s_t)'\)，其中 \(\hat k_t\equiv\ln k_t-\ln k\)、\(\hat c_t\equiv\ln c_t-\ln c\)、\(\hat s_t\equiv\ln s_t-\ln s\)，\(k,c,s\) 为稳态值。则 (25.17)、(25.18)、(25.19) 给出</li>
+</ul>
+<p>$$
+\phi_{t+1}=\mathbf{A}\phi_t \tag{25.20}
+$$</p>
+<p>\(\mathbf{A}\) 为 \(3\times3\) 矩阵，稳态解满足 \(\phi_t=\mathbf{0}\)。</p>
+<ul>
+<li>记 \(\mathbf{A}\) 的三特征值 \(\lambda_1,\lambda_2,\lambda_3\)、特征向量 \(\mathbf{v}_1,\mathbf{v}_2,\mathbf{v}_3\)，\(\mathbf{A}=\begin{bmatrix}\mathbf{v}_1&\mathbf{v}_2&\mathbf{v}_3\end{bmatrix}\text{diag}(\lambda_1,\lambda_2,\lambda_3)\begin{bmatrix}\mathbf{v}_1&\mathbf{v}_2&\mathbf{v}_3\end{bmatrix}^{-1}\)。给定 \(k_0,s_0\)（从而 \(\phi_0\)），记 \(\begin{bmatrix}\mu_1&\mu_2&\mu_3\end{bmatrix}\equiv\begin{bmatrix}\mathbf{v}_1&\mathbf{v}_2&\mathbf{v}_3\end{bmatrix}^{-1}\phi_0\)，则</li>
+</ul>
+<p>$$
+\phi_t=\begin{pmatrix}\hat k_t\\ \hat c_t\\ \hat s_t\end{pmatrix}=\mu_1\lambda_1^t\mathbf{v}_1+\mu_2\lambda_2^t\mathbf{v}_2+\mu_3\lambda_3^t\mathbf{v}_3
+$$</p>
+<ul>
+<li>代入数据 \(g=0.005\)，\(\beta=0.989\)，\(\alpha=0.4\)，\(\delta=0.014\)，\(\varepsilon=1\)，\(\rho=0.95\)，\(\gamma=0.00152\Rightarrow H=23\)，得</li>
+</ul>
+<p>$$
+\begin{pmatrix}\hat k_{t+1}\\ \hat c_{t+1}\\ \hat s_{t+1}\end{pmatrix}=\begin{bmatrix}1.024 & 0.088 & 0.064\\ -0.013 & 0.989 & 0.023\\ 0 & 0 & 0.95\end{bmatrix}\begin{pmatrix}\hat k_t\\ \hat c_t\\ \hat s_t\end{pmatrix}
+$$</p>
+<p>三特征值 \(\lambda_1=0.968\)、\(\lambda_2=1.044\)、\(\lambda_3=0.95\)。为收敛到稳态须 \(\mu_2=0\)（对给定 \(\hat k_0,\hat s_0\) 选适当 \(\hat c_0\)，钉住 \(\mu_1,\mu_3\)），否则解随 \(\lambda_2>1\) 爆炸；亦须 \(\mu_1\mathbf{v}_1\ne0\)、\(\mu_3\mathbf{v}_3\ne0\)。由已知 \(\mathbf{v}_1,\mathbf{v}_3\) 得</p>
+<p>$$
+\hat c_t=0.632\hat k_t+0.186\hat s_t \tag{25.21}
+$$</p>
+<p>由已知 \(\mathbf{A}\) 与 (25.21) 得</p>
+<p>$$
+\hat k_{t+1}=0.968\hat k_t+0.098\hat s_t \tag{25.22}
+$$</p>
+<p>把 (25.21) 代入 (25.17) 的一阶 Taylor 近似得</p>
+<p>$$
+\hat H_t=-0.160\hat k_t+0.273\hat s_t \tag{25.23}
+$$</p>
+<p>劳动供给更高以抵消低于稳态的资本，且在正生产率冲击时更高。又</p>
+<p>$$
+\hat x_t=-0.653\hat k_t+0.2474\hat s_t \tag{25.24}
+$$</p>
+<p>（来自资本运动律 \(x_t=k_{t+1}-(1-\delta)k_t\)）。最后别忘了</p>
+<p>$$
+\hat s_{t+1}=0.95\hat s_t \tag{25.25}
+$$</p>
+<p><strong>图 16（对数线性化系统的转移动态，已转述）</strong>：设从 \(\hat s_1<0\) 出发。横轴 \(t\)。生产率 \(\hat s_t\)（及由之驱动的）各变量路径：\(\hat H_t\)（及类似 \(\hat x_t\)）先跳升再回落；\(\hat s_t\)、\(\hat k_t\) 自负值单调回升至 \(0\)；\(\hat c_t\) 自某负值先降后升回归。各变量平滑收敛到稳态 \(0\)。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 25.1
+此处对数线性化的校准与 §24.6.4 相比，对 \(\hat k_t\) 有完全相同的系数、相同的特征值 \(\lambda_1,\lambda_2\)、相同的特征向量 \(\mathbf{v}_1,\mathbf{v}_2\)，因为用了相同的效用 \(v(H)\)、相同的生产函数、相同的校准数据。若令 \(Z_t(s^t)\) 恒等于 1，则 \(\hat s_t\) 变为零，便与 §24.6.4 完全相同。</p></div>
+<h3 id="25-4-2">25.4.2 随机情形</h3>
+<p>此处"随机"不指改变 \(Z_t(s^t)\) 的趋势假设——我们仍假设确定趋势 \(Z_t(s^t)=(1+g)^t s_t\)。"随机"指给状态变量序列添加随机成分，即</p>
+<p>$$
+\ln s_{t+1}=\rho\ln s_t+\upsilon_{t+1}
+$$</p>
+<p>其中 \(s_0\) 给定、\(\upsilon_{t+1}\) 随机。</p>
+<p>则 (25.21)、(25.22)、(25.23)、(25.24) 都不变，唯一改变的是对数线性化校准中的 (25.25)，变为</p>
+<p>$$
+\hat s_{t+1}=0.95\hat s_t+\upsilon_{t+1}
+$$</p>
+<p>这一特征使对数线性化很容易把随机性纳入冲击、而与简单的确定情形相差无几。然而这也是对数线性化的<strong>缺点</strong>：只要 \(\upsilon_{t+1}\) 的均值为零，(25.21)、(25.22)、(25.23)、(25.24) 就不变，故 \(\upsilon_{t+1}\) 的方差在系统中根本不起作用，这并不那么合理。但若纳入更高阶 Taylor 近似（不再是线性化），\(\upsilon_{t+1}\) 的高阶矩便可进入模型。</p>
+<h2 id="25-5-hodrick-prescott-hp">25.5 Hodrick-Prescott（HP）滤波</h2>
+<p>既然模型中已去趋势变量，也应使用去趋势数据。HP 滤波给出把数据去趋势到不同程度的灵活性。这里采用与第 196 页略不同的记号。</p>
+<h3 id="25-5-1-hp">25.5.1 HP 滤波趋势的定义</h3>
+<p>给定 \(y_t\)（\(t=1,\ldots,T\)，如季度实际 GDP 或季度对数实际 GDP），Hodrick-Prescott 趋势 \(\tau_t\)（\(t=1,\ldots,T\)）由如下惩罚函数最小化定义（第一项为偏离趋势，第二项为趋势变化）：</p>
+<p>$$
+\min_{\tau_t}\ \sum_{t=1}^{T}(y_t-\tau_t)^2+\lambda\sum_{t=2}^{T-1}\big((\tau_{t+1}-\tau_t)-(\tau_t-\tau_{t-1})\big)^2
+$$</p>
+<p>其中 \(\lambda\) 是对两部分赋权的平滑参数。周期成分（去趋势变量）定义为 \(y_t^c=y_t-\tau_t\)。</p>
+<h3 id="25-5-2-lambda">25.5.2 平滑参数 \(\lambda\) 提供去趋势的灵活性</h3>
+<p>考虑 \(\lambda\) 的两个极端：</p>
+<p>$$
+\lambda=\infty\ \Rightarrow\ \tau_t=\hat y t\quad(\text{no change in trend})
+$$</p>
+<p>$$
+\lambda=0\ \Rightarrow\ \tau_t=y_t\quad(\text{trivial trend})
+$$</p>
+<p>即 \(\lambda=\infty\) 时趋势无变化、\(\lambda=0\) 时为平凡趋势。</p>
+<p>故若 \(\lambda\) 很大，研究者根本不想趋势变化，于是假设线性趋势，用偏离来解释 \(y_t\) 与趋势的全部差异；反之若 \(\lambda\) 很小，则研究者不介意改变趋势，趋势总会变化以匹配实际数据 \(y_t\)。</p>
+<h3 id="25-5-3-hp">25.5.3 求解 HP 滤波趋势</h3>
+<p>\(\tau_t\) 出现在四个项中。故 \(\tau_t\)（\(t=3,\ldots,T-2\)）的一阶条件为</p>
+<p>$$
+\begin{aligned}
+&2\lambda\big((\tau_t-\tau_{t-1})-(\tau_{t-1}-\tau_{t-2})\big)-4\lambda\big((\tau_{t+1}-\tau_t)-(\tau_t-\tau_{t-1})\big)\\
+&-2(y_t-\tau_t)+2\lambda\big((\tau_{t+2}-\tau_{t+1})-(\tau_{t+1}-\tau_t)\big)=0
+\end{aligned}
+$$</p>
+<p>整理得</p>
+<p>$$
+\begin{aligned}
+&\lambda\big(2\tau_t-4\tau_{t-1}+2\tau_{t-2}-4\tau_{t+1}+8\tau_t-4\tau_{t-1}+2\tau_{t+2}-4\tau_{t+1}+2\tau_t\big)=2(y_t-\tau_t)\\
+\Rightarrow\ &y_t=\tau_t+\lambda\big(\tau_{t-2}-4\tau_{t-1}+6\tau_t-4\tau_{t+1}+\tau_{t+2}\big)\\
+\Rightarrow\ &(6\lambda+1)\tau_t=y_t-\lambda\big(\tau_{t-2}-4\tau_{t-1}-4\tau_{t+1}+\tau_{t+2}\big)\\
+\Rightarrow\ &\tau_t=\frac{y_t-\lambda\big(\tau_{t-2}-4\tau_{t-1}-4\tau_{t+1}+\tau_{t+2}\big)}{6\lambda+1}
+\end{aligned} \tag{25.26}
+$$</p>
+<p>\(\tau_t\)（\(t=1,2,T-1,T\)）的一阶条件略有不同，但当 \(T\) 大时无关紧要。</p>
+<p>或等价地，把所有 \(y_t\) 堆叠成 \(T\times1\) 向量 \(\mathbf{y}^t\)、所有 \(\tau_t\) 堆叠成 \(T\times1\) 向量 \(\boldsymbol\tau^t\)，由 (25.26) 与 \(t=1,2,T-1,T\) 的一阶条件，可写成矩阵方程</p>
+<p>$$
+\mathbf{y}^t=\mathbf{M}\boldsymbol\tau^t
+$$</p>
+<p>其中 \(\mathbf{M}\) 是 \(T\times T\) 可逆矩阵。于是可解出 \(\boldsymbol\tau^t=\mathbf{M}^{-1}\mathbf{y}^t\)，而 \(\mathbf{y}^t-\boldsymbol\tau^t\) 即去趋势序列。</p>
+<div class="callout"><div class="callout-title">Note</div><p>参考文献
+Cooley, Thomas F., and Edward C. Prescott. "Economic growth and business cycles." <em>Frontiers of Business Cycle Research</em> (1995).</p></div>
+</div>
+<div class="lang en">
+<h1>25. RBC: Neoclassical Growth Model with Labor Productivity Shock</h1>
+<p>In this section, we are going to discuss the steady state and transitional dynamics of a Neoclassical Growth Model that has <strong>labor productivity</strong> \(Z_t(s^t)\) in it. In this set-up, the labor productivity series could be:</p>
+<ul>
+<li><strong>completely deterministic</strong>: \(Z_t(s^t)=(1+g)^t s_t\) with \(\ln s_{t+1}=\rho\ln s_t\), \(s_0\) given;</li>
+<li>or <strong>stochastic with deterministic trend</strong>: \(Z_t(s^t)=(1+g)^t s_t\) with \(\ln s_{t+1}=\rho\ln s_t+\upsilon_{t+1}\), \(s_0\) given and \(\upsilon_{t+1}\) stochastic;</li>
+<li>or <strong>stochastic with stochastic trend</strong>: \(Z_t(s^t)=Z_{t-1}(s^{t-1})s_t\).</li>
+</ul>
+<p>So, in the latter two cases, it is no longer deterministic how the economy would evolve starting from any point off the steady state, because there might be new shocks happening along the way of convergence. Basically the idea is that we model the RBC as the stochastic convergence pattern of a calibrated model. Since the model itself embeds shocks to labor productivity, we are theoretically assuming a specific pattern or structure (generating process) of the labor productivity shock series.</p>
+<h2 id="25-1-the-model">25.1 The model</h2>
+<h3 id="25-1-1-set-up">25.1.1 Set-up</h3>
+<ul>
+<li>Discrete periods \(t=0,1,2,\ldots\)</li>
+<li>State variable \(s_t\): the information revealed in period \(t\).</li>
+<li>History \(s^t=(s_0,s_1,\ldots,s_t)\): the accumulated information from period 0 up to period \(t\). \(s^{t+1}=\{s^t,s_{t+1}\}\) is a successor history of \(s^t\). We can denote \(s^{t+1}>s^t\).</li>
+<li>The period \(t\) consumption \(C_t(s^t)\), labor supply \(H_t(s^t)\), productivity \(Z_t(s^t)\) and period \(t+1\) capital \(K_{t+1}(s^t)\) are all functions of history \(s^t\). (This is a more general assumption than first-order Markov process; we can also, as we will do later, assume first-order Markov process for simplicity. But at the beginning, let's keep it general.)</li>
+<li>Probability distribution over history in ex ante perspective in period 0: \(\pi_t(s^t)\in[0,1]\) for \(\forall t\) and \(\forall s^t\). Bayes' rule: the conditional probability of \(s^{t+1}|s^t\) is \(\dfrac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\).</li>
+<li>Measurability condition: we say the system is measurable w.r.t. history if only one decision can be made based on a given history. In other words, \(C_t(s^t),H_t(s^t),K_{t+1}(s^t)\) are all well-defined functions.</li>
+<li>Utility function: \(u(C_t(s^t),H_t(s^t))=\ln C_t(s^t)-v(H_t(s^t))\) where \(v(\cdot)\) is increasing and convex.</li>
+<li>Production function: for the purpose of this model, we actually only need the production function to be CRS. But for simplicity, we will assume Cobb-Douglas production function</li>
+</ul>
+<p>$$
+F\big(K_t(s^{t-1}),Z_t(s^t)\cdot H_t(s^t)\big)=\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)\cdot H_t(s^t)\big]^{1-\alpha}
+$$</p>
+<p>where \(Z_t(s^t)\) is the productivity of labor. Notice that \(Z_t(s^t)\), unlike endogenous functions \(K_{t+1}(s^t),H_t(s^t)\) and \(C_t(s^t)\), is an exogenously determined functional form out of control, which could possibly the maximum state in the history or the sum of all past states etc.</p>
+<h3 id="25-1-2-social-planner-s-problem">25.1.2 Social planner's problem</h3>
+<p>The social planner's problem is to maximize the expected value (in perspective of period 0) of the additively time separable discounted utility of the infinitely living representative household, i.e.</p>
+<p>$$
+\max_{\{C_t(s^t),H_t(s^t),K_{t+1}(s^t)\}_{t=0}^{\infty}}\sum_{t=0}^{\infty}\sum_{s^t}\beta^t\pi_t(s^t)\big[\ln C_t(s^t)-v(H_t(s^t))\big] \tag{25.1}
+$$</p>
+<p>$$
+\text{s.t.}\quad K_{t+1}(s^t)=\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)H_t(s^t)\big]^{1-\alpha}+(1-\delta)K_t(s^{t-1})-C_t(s^t)\ \text{for }\forall t,\forall s^t \tag{25.2}
+$$</p>
+<p>\(K_0=K_0(s^{-1})\) given.</p>
+<h3 id="25-1-3-the-lagrangian">25.1.3 The Lagrangian</h3>
+<p>$$
+\begin{aligned}
+\mathcal{L}=&\sum_{t=0}^{\infty}\sum_{s^t}\beta^t\pi_t(s^t)\big[\ln C_t(s^t)-v(H_t(s^t))\big]\\
+&+\sum_{t=0}^{\infty}\sum_{s^t}\beta^t\pi_t(s^t)\lambda_t(s^t)\Big\{\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)H_t(s^t)\big]^{1-\alpha}+(1-\delta)K_t(s^{t-1})-C_t(s^t)-K_{t+1}(s^t)\Big\}
+\end{aligned} \tag{25.3}
+$$</p>
+<p>where \(\lambda_t(s^t)\) is the Lagrangian multiplier for the budget constraint in period \(t\) with history \(s^t\).</p>
+<h3 id="25-1-4-first-order-conditions">25.1.4 First order conditions</h3>
+<p>The f.o.c. of (25.3) are:</p>
+<p>$$
+[C_t(s^t)]\quad \frac{1}{C_t(s^t)}=\lambda_t(s^t) \tag{25.4}
+$$</p>
+<p>$$
+[H_t(s^t)]\quad v'(H_t(s^t))=(1-\alpha)\lambda_t(s^t)\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)\big]^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.5}
+$$</p>
+<p>$$
+[K_{t+1}(s^t)]\quad \lambda_t(s^t)=\beta\sum_{s^{t+1}>s^t}\lambda_{t+1}(s^{t+1})\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\Big\{\alpha\big[K_{t+1}(s^t)\big]^{\alpha-1}\big[Z_{t+1}(s^{t+1})H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)\Big\} \tag{25.6}
+$$</p>
+<p>$$
+[\lambda_t(s^t)]\quad K_{t+1}(s^t)=\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)H_t(s^t)\big]^{1-\alpha}+(1-\delta)K_t(s^{t-1})-C_t(s^t)\ \text{for }\forall t,\forall s^t
+$$</p>
+<p>Using both (25.4) and (25.5), we can get the stacked f.o.c., which is also the <strong>intra-temporal indifference condition</strong>:</p>
+<p>$$
+v'(H_t(s^t))C_t(s^t)=(1-\alpha)\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)\big]^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.7}
+$$</p>
+<p>where the LHS is \(MRS_t\) and the RHS is \(MPL_t\).</p>
+<h3 id="25-1-5-euler-equation-and-transversality-condition">25.1.5 Euler equation and transversality condition</h3>
+<p>The Euler equation (EE) can be obtained by using (25.4) and (25.6):</p>
+<p>$$
+\frac{1}{C_t(s^t)}=\beta\sum_{s^{t+1}>s^t}\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\cdot\frac{\alpha\big[K_{t+1}(s^t)\big]^{\alpha-1}\big[Z_{t+1}(s^{t+1})H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{C_{t+1}(s^{t+1})} \tag{25.8}
+$$</p>
+<p>Or equivalently, we can write the EE in expectation form, i.e.</p>
+<p>$$
+\frac{1}{C_t(s^t)}=\beta\mathbb{E}_{s^{t+1}}\left[\frac{\alpha\big[K_{t+1}(s^t)\big]^{\alpha-1}\big[Z_{t+1}(s^{t+1})H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{C_{t+1}(s^{t+1})}\,\Big|\,s^t\right] \tag{25.9}
+$$</p>
+<p>And the transversality condition (TC) is</p>
+<p>$$
+\lim_{T\to\infty}\beta^T\lambda_T(s^{T-1})K_T(s^{T-1})=0\ \Rightarrow\ \lim_{T\to\infty}\beta^T\frac{1}{C_T(s^{T-1})}K_T(s^{T-1})=0
+$$</p>
+<p>Note that the transversality condition is not necessary for optimality of the solution, but it ensures that the capital stock won't explode along time.</p>
+<h3 id="25-1-6-summary-of-system-of-equations">25.1.6 Summary of system of equations</h3>
+<ul>
+<li>Intra-temporal indifference condition (stacked f.o.c.):</li>
+</ul>
+<p>$$
+v'(H_t(s^t))C_t(s^t)=(1-\alpha)\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)\big]^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.10}
+$$</p>
+<ul>
+<li>Inter-temporal indifference condition (EE):</li>
+</ul>
+<p>$$
+\frac{1}{C_t(s^t)}=\beta\sum_{s^{t+1}>s^t}\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\cdot\frac{\alpha\big[K_{t+1}(s^t)\big]^{\alpha-1}\big[Z_{t+1}(s^{t+1})H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{C_{t+1}(s^{t+1})} \tag{25.11}
+$$</p>
+<ul>
+<li>Resource constraint:</li>
+</ul>
+<p>$$
+K_{t+1}(s^t)=\big[K_t(s^{t-1})\big]^{\alpha}\big[Z_t(s^t)H_t(s^t)\big]^{1-\alpha}+(1-\delta)K_t(s^{t-1})-C_t(s^t)\ \text{for }\forall t,\forall s^t \tag{25.12}
+$$</p>
+<ul>
+<li>Transversality condition:</li>
+</ul>
+<p>$$
+\lim_{T\to\infty}\beta^T\frac{1}{C_T(s^{T-1})}K_T(s^{T-1})=0 \tag{25.13}
+$$</p>
+<p>Note that (25.10) and (25.11) are for optimality; (25.12) is for feasibility; and (25.13) rules out "crazy" result (i.e. accumulate capital without consuming anything).</p>
+<h2 id="25-2-more-assumptions-on-productivity-trend">25.2 More assumptions on productivity trend</h2>
+<p>To compute saddle path using shooting algorithm or do the log-linearization in the neighborhood of balanced growth path as we did in section 24.6, we need to impose some assumption on the exogenous function \(Z_t(s^t)\). Two commonly used assumptions are:</p>
+<ul>
+<li><strong>Deterministic trend</strong>: \(Z_t(s^t)=(1+g)^t s_t\). The unchanging growth rate (i.e. the deterministic trend) for productivity is \(1+g\); shock \(s_t\) in period \(t\) can only affect period \(t\), and the trend is not affected; from the perspective in period 0, the productivity growth is deterministic except some local fluctuations.</li>
+<li><strong>Stochastic trend</strong>: \(Z_t(s^t)=Z_{t-1}(s^{t-1})s_t\). The productivity in period \(t\) is the accumulated effects of all past realized stochastic shocks; from the perspective in period 0, the productivity growth is completely stochastic depending on the sequence of shocks to come.</li>
+</ul>
+<p>Notice that if we use the deterministic trend assumption plus an extremely persistent \(s_t\) sequence (i.e. auto-correlation approximately 1 or almost unit root), it is almost the same as using the stochastic trend assumption with i.i.d. \(s_t\) sequence. Saying they are the same means that they give us the same \(Z_t(s^t)\) sequence and the economy would behave the same under those two assumptions. So, we can stick to the deterministic trend assumption \(Z_t(s^t)=(1+g)^t s_t\) hereafter.</p>
+<h2 id="25-3-detrend-the-variables-and-rewrite-the-system-of-equations">25.3 Detrend the variables and rewrite the system of equations</h2>
+<p>Same as before in the Neoclassical Growth Model, we can detrend the variables by \(c_t(s^t)\equiv\dfrac{C_t(s^t)}{(1+g)^t}\) and \(k_t(s^{t-1})\equiv\dfrac{K_t(s^{t-1})}{(1+g)^t}\). And we can rewrite the system of equations (25.10), (25.11), and (25.12) as</p>
+<p>$$
+v'(H_t(s^t))c_t(s^t)=(1-\alpha)\big[k_t(s^{t-1})\big]^{\alpha}s_t^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.14}
+$$</p>
+<p>$$
+\frac{1+g}{c_t(s^t)}=\beta\sum_{s^{t+1}>s^t}\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\cdot\frac{\alpha\big[k_{t+1}(s^t)\big]^{\alpha-1}\big[s_{t+1}H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{c_{t+1}(s^{t+1})} \tag{25.15}
+$$</p>
+<p>$$
+(1+g)k_{t+1}(s^t)=\big[k_t(s^{t-1})\big]^{\alpha}\big[s_t H_t(s^t)\big]^{1-\alpha}+(1-\delta)k_t(s^{t-1})-c_t(s^t)\ \text{for }\forall t,\forall s^t \tag{25.16}
+$$</p>
+<p>Since \((1+g)^t\) is deterministic, the solution to the system of equations (25.14), (25.15), and (25.16) is the optimal solution (balanced growth path) for the economy.</p>
+<h2 id="25-4-two-cases-of-the-shock-process-s-t-t-0-infty">25.4 Two cases of the shock process \(\{s_t\}_{t=0}^{\infty}\)</h2>
+<p>We can obtain the balanced growth path as the intersection point of two locus in the phase diagram and compute the saddle path using shooting algorithm following exactly the same procedure as in section 24.6. Here we will not present that redundant procedure. Instead, we will proceed and discuss two cases of the shock process \(\{s_t\}_{t=0}^{\infty}\) for log-linearization.</p>
+<h3 id="25-4-1-deterministic-case">25.4.1 Deterministic case</h3>
+<p>Suppose that \(\ln s_{t+1}=\rho\ln s_t\), \(s_0\) given. Then the system of equations (25.14), (25.15), and (25.16) are all deterministic, and this problem becomes trivial, which is the same as the Neoclassical Growth Model with the exception that here we have included a deterministic sequence of productivity that grows at a different rate than \(g\). Using exactly the same logic as in subsection 24.6.4, we can do the log-linearization to the system of equations (25.14), (25.15), and (25.16). Assume \(v(H)=\dfrac{\gamma\varepsilon}{1+\varepsilon}H^{\frac{1+\varepsilon}{\varepsilon}}\) (\(\varepsilon>0\), \(v'(H)=\gamma H^{1/\varepsilon}\), \(\varepsilon\) is the Frisch elasticity of labor supply). We want to log-linearize the following system of equations</p>
+<p>$$
+c_t(s^t)\gamma\big[H_t(s^t)\big]^{\frac{1}{\varepsilon}}=(1-\alpha)\big[k_t(s^{t-1})\big]^{\alpha}s_t^{1-\alpha}\big[H_t(s^t)\big]^{-\alpha} \tag{25.17}
+$$</p>
+<p>$$
+\frac{1+g}{c_t(s^t)}=\beta\sum_{s^{t+1}>s^t}\frac{\pi_{t+1}(s^{t+1})}{\pi_t(s^t)}\cdot\frac{\alpha\big[k_{t+1}(s^t)\big]^{\alpha-1}\big[s_{t+1}H_{t+1}(s^{t+1})\big]^{1-\alpha}+(1-\delta)}{c_{t+1}(s^{t+1})} \tag{25.18}
+$$</p>
+<p>$$
+(1+g)k_{t+1}(s^t)=\big[k_t(s^{t-1})\big]^{\alpha}\big[s_t H_t(s^t)\big]^{1-\alpha}+(1-\delta)k_t(s^{t-1})-c_t(s^t) \tag{25.19}
+$$</p>
+<p>After first-order Taylor approximation:</p>
+<ul>
+<li>Define \(\phi_t=(\hat k_t,\hat c_t,\hat s_t)'\) where \(\hat k_t\equiv\ln k_t-\ln k\), \(\hat c_t\equiv\ln c_t-\ln c\), and \(\hat s_t\equiv\ln s_t-\ln s\) and \(k,c,s\) are steady state values. Then (25.17), (25.18), and (25.19) gives us</li>
+</ul>
+<p>$$
+\phi_{t+1}=\mathbf{A}\phi_t \tag{25.20}
+$$</p>
+<p>where \(\mathbf{A}\) is a \(3\times3\) matrix and the steady state solution satisfies \(\phi_t=\mathbf{0}\).</p>
+<ul>
+<li>Denote the three eigenvalues of \(\mathbf{A}\) by \(\lambda_1,\lambda_2,\lambda_3\) and the corresponding eigenvectors by \(\mathbf{v}_1,\mathbf{v}_2,\mathbf{v}_3\), so \(\mathbf{A}=\begin{bmatrix}\mathbf{v}_1&\mathbf{v}_2&\mathbf{v}_3\end{bmatrix}\text{diag}(\lambda_1,\lambda_2,\lambda_3)\begin{bmatrix}\mathbf{v}_1&\mathbf{v}_2&\mathbf{v}_3\end{bmatrix}^{-1}\). Given \(k_0,s_0\) (and thus \(\phi_0\)), denote \(\begin{bmatrix}\mu_1&\mu_2&\mu_3\end{bmatrix}\equiv\begin{bmatrix}\mathbf{v}_1&\mathbf{v}_2&\mathbf{v}_3\end{bmatrix}^{-1}\phi_0\), then</li>
+</ul>
+<p>$$
+\phi_t=\begin{pmatrix}\hat k_t\\ \hat c_t\\ \hat s_t\end{pmatrix}=\mu_1\lambda_1^t\mathbf{v}_1+\mu_2\lambda_2^t\mathbf{v}_2+\mu_3\lambda_3^t\mathbf{v}_3
+$$</p>
+<ul>
+<li>Plug in the data \(g=0.005\), \(\beta=0.989\), \(\alpha=0.4\), \(\delta=0.014\), \(\varepsilon=1\), \(\rho=0.95\), \(\gamma=0.00152\Rightarrow H=23\), and we get</li>
+</ul>
+<p>$$
+\begin{pmatrix}\hat k_{t+1}\\ \hat c_{t+1}\\ \hat s_{t+1}\end{pmatrix}=\begin{bmatrix}1.024 & 0.088 & 0.064\\ -0.013 & 0.989 & 0.023\\ 0 & 0 & 0.95\end{bmatrix}\begin{pmatrix}\hat k_t\\ \hat c_t\\ \hat s_t\end{pmatrix}
+$$</p>
+<p>The three eigenvalues are \(\lambda_1=0.968\), \(\lambda_2=1.044\) and \(\lambda_3=0.95\). It has to be the case that \(\mu_2=0\) if we want to get to the steady state, which is achieved by having appropriate \(\hat c_0\) for given \(\hat k_0\) and \(\hat s_0\) (this also pins down \(\mu_1\) and \(\mu_3\)). Otherwise the solution will explode as the eigenvalue \(\lambda_2\) associated with \(\mu_2\) is greater than one. We also must have that \(\mu_1\mathbf{v}_1\ne0\) and \(\mu_3\mathbf{v}_3\ne0\). Since we already know \(\mathbf{v}_1\) and \(\mathbf{v}_3\), we have that</p>
+<p>$$
+\hat c_t=0.632\hat k_t+0.186\hat s_t \tag{25.21}
+$$</p>
+<p>Since we know \(\mathbf{A}\) and (25.21), we have that</p>
+<p>$$
+\hat k_{t+1}=0.968\hat k_t+0.098\hat s_t \tag{25.22}
+$$</p>
+<p>Also, plug (25.21) into the first-order Taylor approximation of (25.17), we get</p>
+<p>$$
+\hat H_t=-0.160\hat k_t+0.273\hat s_t \tag{25.23}
+$$</p>
+<p>clearly, the labor supply is higher to offset the lower-than-steady-state capital, and labor supply is higher when the positive productivity shock takes place. We can also get</p>
+<p>$$
+\hat x_t=-0.653\hat k_t+0.2474\hat s_t \tag{25.24}
+$$</p>
+<p>which comes from the law of motion of capital \(x_t=k_{t+1}-(1-\delta)k_t\). Finally, don't forget</p>
+<p>$$
+\hat s_{t+1}=0.95\hat s_t \tag{25.25}
+$$</p>
+<p><strong>Figure 16 (Transitional Dynamics of the Log-linearized System, paraphrased)</strong>: suppose we start at \(\hat s_1<0\). Horizontal axis is \(t\). Driven by the productivity \(\hat s_t\), the variables' paths: \(\hat H_t\) (and similarly \(\hat x_t\)) jumps up first and then declines back; \(\hat s_t\) and \(\hat k_t\) rise monotonically from negative values back to \(0\); \(\hat c_t\) falls first and then rises back from some negative value. All variables converge smoothly to the steady state \(0\).</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 25.1
+The calibration of log-linearization obtained here compared with what we got in subsection 24.6.4 has exactly the same coefficient for \(\hat k_t\), the same eigenvalues \(\lambda_1\) and \(\lambda_2\), and the same eigenvectors \(\mathbf{v}_1\) and \(\mathbf{v}_2\) because we used the same utility function \(v(H)\), same production function and same data for calibration. If we set \(Z_t(s^t)\) always equal to one, then \(\hat s_t\) becomes zero, and it becomes exactly the same as in subsection 24.6.4.</p></div>
+<h3 id="25-4-2-stochastic-case">25.4.2 Stochastic case</h3>
+<p>Here the stochastic doesn't mean changing the trend assumption for \(Z_t(s^t)\). We still assume deterministic trend in \(Z_t(s^t)\), i.e. \(Z_t(s^t)=(1+g)^t s_t\). Instead, the stochastic here means adding stochastic component to the state variable sequence, i.e.</p>
+<p>$$
+\ln s_{t+1}=\rho\ln s_t+\upsilon_{t+1},\quad s_0\text{ given and }\upsilon_{t+1}\text{ stochastic}
+$$</p>
+<p>Then, (25.21), (25.22), (25.23) and (25.24) don't change. The only thing that changes in the log-linearization calibration is (25.25), which becomes</p>
+<p>$$
+\hat s_{t+1}=0.95\hat s_t+\upsilon_{t+1}
+$$</p>
+<p>This feature of the log-linearization makes the model very easy to incorporate randomness in the shocks without changing too much from the simple deterministic case. However, the unchanging (25.21), (25.22), (25.23) and (25.24) also is a drawback of the log-linearization because as long as the mean of \(\upsilon_{t+1}\) is zero, (25.21), (25.22), (25.23) and (25.24) won't change, and thus the variance of \(\upsilon_{t+1}\) plays no role in the system at all, which is not that reasonable. But if we include higher order Taylor approximation (not linearization any more), the higher order moment of \(\upsilon_{t+1}\) could enter the model.</p>
+<h2 id="25-5-hodrick-prescott-hp-filter">25.5 Hodrick-Prescott (HP) Filter</h2>
+<p>Since we used detrended variables in the model, we should also use detrended data. HP Filter gives us the flexibility of detrending the data to a different level. Here we will be using a slightly different notation as on page 196.</p>
+<h3 id="25-5-1-definition-of-hp-filter-trend">25.5.1 Definition of HP Filter trend</h3>
+<p>Given \(y_t\) for \(t=1,\ldots,T\) (e.g. quarterly real-GDP or quarterly log real-GDP), the Hodrick-Prescott trend \(\tau_t\) for \(t=1,\ldots,T\) is defined per the minimization of penalty function (the first term is deviation from trend, the second is change in trend):</p>
+<p>$$
+\min_{\tau_t}\ \sum_{t=1}^{T}(y_t-\tau_t)^2+\lambda\sum_{t=2}^{T-1}\big((\tau_{t+1}-\tau_t)-(\tau_t-\tau_{t-1})\big)^2
+$$</p>
+<p>where \(\lambda\) is a smoothing parameter that puts weights on the penalty of two parts. The cyclical component (detrended variable) is defined as \(y_t^c=y_t-\tau_t\).</p>
+<h3 id="25-5-2-smoothing-parameter-lambda-provides-flexibility-in-detrending">25.5.2 Smoothing parameter \(\lambda\) provides flexibility in detrending</h3>
+<p>Consider two extreme cases for \(\lambda\):</p>
+<p>$$
+\lambda=\infty\ \Rightarrow\ \tau_t=\hat y t\ (\text{i.e. no change in trend})
+$$</p>
+<p>$$
+\lambda=0\ \Rightarrow\ \tau_t=y_t\ (\text{trivial trend})
+$$</p>
+<p>So, if \(\lambda\) is very large, the researcher really doesn't want the trend to change, so he ends up assuming linear trend and using deviation to explain for all the difference between \(y_t\) and the trend. On the contrary, if \(\lambda\) is very small, then the research doesn't mind changing the trend all the time, so the deviation becomes zero and trend is always changing to match the real data \(y_t\).</p>
+<h3 id="25-5-3-solving-for-the-hp-filter-trend">25.5.3 Solving for the HP Filter trend</h3>
+<p>\(\tau_t\) appears in four terms. So the f.o.c. for \(\tau_t\), \(t=3,\ldots,T-2\) is</p>
+<p>$$
+\begin{aligned}
+&2\lambda\big((\tau_t-\tau_{t-1})-(\tau_{t-1}-\tau_{t-2})\big)-4\lambda\big((\tau_{t+1}-\tau_t)-(\tau_t-\tau_{t-1})\big)\\
+&-2(y_t-\tau_t)+2\lambda\big((\tau_{t+2}-\tau_{t+1})-(\tau_{t+1}-\tau_t)\big)=0
+\end{aligned}
+$$</p>
+<p>which gives</p>
+<p>$$
+\begin{aligned}
+&\lambda\big(2\tau_t-4\tau_{t-1}+2\tau_{t-2}-4\tau_{t+1}+8\tau_t-4\tau_{t-1}+2\tau_{t+2}-4\tau_{t+1}+2\tau_t\big)=2(y_t-\tau_t)\\
+\Rightarrow\ &y_t=\tau_t+\lambda\big(\tau_{t-2}-4\tau_{t-1}+6\tau_t-4\tau_{t+1}+\tau_{t+2}\big)\\
+\Rightarrow\ &(6\lambda+1)\tau_t=y_t-\lambda\big(\tau_{t-2}-4\tau_{t-1}-4\tau_{t+1}+\tau_{t+2}\big)\\
+\Rightarrow\ &\tau_t=\frac{y_t-\lambda\big(\tau_{t-2}-4\tau_{t-1}-4\tau_{t+1}+\tau_{t+2}\big)}{6\lambda+1}
+\end{aligned} \tag{25.26}
+$$</p>
+<p>the f.o.c. for \(\tau_t\), \(t=1,2,T-1,T\) are slightly different and not important when \(T\) is large.</p>
+<p>Or equivalently, we can stack all \(y_t\)'s into a \(T\times1\) vector \(\mathbf{y}^t\) and all \(\tau_t\)'s into a \(T\times1\) vector \(\boldsymbol\tau^t\), and based on (25.26) and f.o.c. for \(t=1,2,T-1,T\), we can write the following matrix equation</p>
+<p>$$
+\mathbf{y}^t=\mathbf{M}\boldsymbol\tau^t
+$$</p>
+<p>where \(\mathbf{M}\) is a \(T\times T\) invertible matrix. Then, we can solve for \(\boldsymbol\tau^t\) by</p>
+<p>$$
+\boldsymbol\tau^t=\mathbf{M}^{-1}\mathbf{y}^t
+$$</p>
+<p>and \(\mathbf{y}^t-\boldsymbol\tau^t\) gives us the detrended series.</p>
+<div class="callout"><div class="callout-title">Note</div><p>References
+Cooley, Thomas F., and Edward C. Prescott. "Economic growth and business cycles." <em>Frontiers of Business Cycle Research</em> (1995).</p></div>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#25-1">25.1 模型</a></li>
+          <li><a href="#25-1-1">25.1.1 设定</a></li>
+          <li><a href="#25-1-2">25.1.2 社会计划者问题</a></li>
+          <li><a href="#25-1-3">25.1.3 拉格朗日函数</a></li>
+          <li><a href="#25-1-4">25.1.4 一阶条件</a></li>
+          <li><a href="#25-1-5">25.1.5 欧拉方程与横截性条件</a></li>
+          <li><a href="#25-1-6">25.1.6 方程系统总结</a></li>
+        <li><a href="#25-2">25.2 关于生产率趋势的更多假设</a></li>
+        <li><a href="#25-3">25.3 去趋势变量并重写系统</a></li>
+        <li><a href="#25-4-s-t-t-0-infty">25.4 冲击过程 \(\{s_t\}_{t=0}^{\infty}\) 的两种情形</a></li>
+          <li><a href="#25-4-1">25.4.1 确定情形</a></li>
+          <li><a href="#25-4-2">25.4.2 随机情形</a></li>
+        <li><a href="#25-5-hodrick-prescott-hp">25.5 Hodrick-Prescott（HP）滤波</a></li>
+          <li><a href="#25-5-1-hp">25.5.1 HP 滤波趋势的定义</a></li>
+          <li><a href="#25-5-2-lambda">25.5.2 平滑参数 \(\lambda\) 提供去趋势的灵活性</a></li>
+          <li><a href="#25-5-3-hp">25.5.3 求解 HP 滤波趋势</a></li>
+        <li><a href="#25-1-the-model">25.1 The model</a></li>
+          <li><a href="#25-1-1-set-up">25.1.1 Set-up</a></li>
+          <li><a href="#25-1-2-social-planner-s-problem">25.1.2 Social planner's problem</a></li>
+          <li><a href="#25-1-3-the-lagrangian">25.1.3 The Lagrangian</a></li>
+          <li><a href="#25-1-4-first-order-conditions">25.1.4 First order conditions</a></li>
+          <li><a href="#25-1-5-euler-equation-and-transversality-condition">25.1.5 Euler equation and transversality condition</a></li>
+          <li><a href="#25-1-6-summary-of-system-of-equations">25.1.6 Summary of system of equations</a></li>
+        <li><a href="#25-2-more-assumptions-on-productivity-trend">25.2 More assumptions on productivity trend</a></li>
+        <li><a href="#25-3-detrend-the-variables-and-rewrite-the-system-of-equations">25.3 Detrend the variables and rewrite the system of equations</a></li>
+        <li><a href="#25-4-two-cases-of-the-shock-process-s-t-t-0-infty">25.4 Two cases of the shock process \(\{s_t\}_{t=0}^{\infty}\)</a></li>
+          <li><a href="#25-4-1-deterministic-case">25.4.1 Deterministic case</a></li>
+          <li><a href="#25-4-2-stochastic-case">25.4.2 Stochastic case</a></li>
+        <li><a href="#25-5-hodrick-prescott-hp-filter">25.5 Hodrick-Prescott (HP) Filter</a></li>
+          <li><a href="#25-5-1-definition-of-hp-filter-trend">25.5.1 Definition of HP Filter trend</a></li>
+          <li><a href="#25-5-2-smoothing-parameter-lambda-provides-flexibility-in-detrending">25.5.2 Smoothing parameter \(\lambda\) provides flexibility in detrending</a></li>
+          <li><a href="#25-5-3-solving-for-the-hp-filter-trend">25.5.3 Solving for the HP Filter trend</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

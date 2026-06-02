@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>谁在真正交易期权？——一份藏在 CBOE 账本里的「行为」证据 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>谁在真正交易期权？——一份藏在 CBOE 账本里的「行为」证据</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2007 RFS]</span> Option Market Activity</div>
+        <div class="paper-source-authors"><a href="/research/author/josef-lakonishok/">Josef Lakonishok</a>, <a href="/research/author/inmoo-lee/">Inmoo Lee</a>, <a href="/research/author/neil-d-pearson/">Neil D. Pearson</a>, <a href="/research/author/allen-m-poteshman/">Allen M. Poteshman</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">期权市场</span>
+        
+        
+        
+        
+        <span class="tag">投资者行为</span>
+        
+        
+        
+        
+        <span class="tag">市场微观结构</span>
+        
+        
+        
+        
+        <span class="tag">互联网泡沫</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Lakonishok, Lee, Pearson &amp; Poteshman (2007, Review of Financial Studies)</strong>：他们用一份能按投资者类型拆开的独家 CBOE 数据，把「人们到底怎么交易期权」这件事第一次摊在桌面上。结论一再反直觉——<strong>卖期权比买期权更常见，教科书力推的波动率交易（跨式/宽跨式）只占很小一份额，最罕见的恰恰是「保护性看跌」</strong>；而在 1999–2000 的互联网泡沫里，数据集中最「不成熟」的折扣券商客户大举买入成长股看涨期权、卖出看跌期权，像是在给泡沫添柴。</p></div>
+<h2 id="1">1 一个被冷落了三十年的问题</h2>
+<p>1973 年，Black 和 Scholes 写下了那个后来人人会背的公式，Merton 紧随其后把它一般化。一夜之间，「期权该值多少钱」成了金融学里被研究得最透的问题之一——理论价格、对冲比率、隐含波动率，论文汗牛充栋。</p>
+<p>可是，有一个同样基本、却被冷落了整整三十年的问题：<strong>人们到底是怎么交易期权的？</strong></p>
+<p>这听上去不像个「问题」。但你只要追问一句就会发现自己其实一无所知：在所有买入和卖出的期权背后，是谁在交易？他们是在押注方向，还是在对冲？是在赌波动率，还是在用期权绕开做空股票的种种限制？教科书会告诉你「保护性看跌 (protective put)」「跨式 (straddle)」这些策略多么经典，但<strong>真实世界里，这些策略到底占多大份额，从来没人数过</strong>。</p>
+<p>原因很简单：没有数据。市面上常见的期权数据——伯克利期权数据库、CBOE 的 MDR 数据——只给你逐笔成交的时间戳和价量，既不告诉你交易者是谁，也不告诉你这笔成交是开新仓还是平旧仓，甚至连买还是卖都要靠 Lee and Ready (1991) 的算法去猜。</p>
+<p>本文的第一个、也是最大的贡献，就是它手里那份<strong>独一无二的数据</strong>。</p>
+<h2 id="2">2 数据：一本能「点名」的账本</h2>
+<p>这份数据直接来自芝加哥期权交易所 (CBOE)，覆盖 1990 年初到 2001 年底所有挂牌个股期权的每日<strong>未平仓量 (open interest)</strong> 和成交量。它的不寻常之处有两点。</p>
+<p><strong>第一，它能区分持仓的方向。</strong> 期权清算公司 (OCC) 给每一笔成交打一个来源代码：<code>F</code> 是自营交易员 (firm proprietary traders)，<code>C</code> 是公众客户，<code>M</code> 是做市商 (market maker)。更妙的是，CBOE 的一位分析师进一步把公众客户拆成了三类：<strong>折扣券商客户 (discount customers)</strong>（比如 E-Trade 的散户）、<strong>全方位服务券商客户 (full-service customers)</strong>（比如美林的客户，对冲基金大多走这条通道）、以及其他公众客户。</p>
+<p><strong>第二，它能区分开仓与平仓、买与卖。</strong> 成交量被拆成四类：开新多仓的买单、开新空仓的卖单、平旧空仓的买单、平旧多仓的卖单。这意味着你能看到「<strong>开仓买入量 (open buy volume)</strong>」这种别处看不到的量——它干净地告诉你某类投资者主动建立了一个什么样的新头寸。</p>
+<p>这两点合在一起，作者得以提出一个贯穿全文的判断：<strong>三类投资者的「成熟度」是有高低的</strong>。自营交易员最成熟（Poteshman and Serbin (2003) 证明他们几乎从不做非理性的提前行权），全方位服务客户居中（对冲基金在此），折扣券商客户最不成熟。后一点有独立证据支撑——Mahani and Poteshman (2005) 发现折扣客户偏爱在财报前重仓成长股期权，尽管财报日价值股反而大幅跑赢成长股 [La Porta et al. (1997)]。</p>
+<p>记住这条「成熟度阶梯」，它是全文反转的引线。</p>
+<h2 id="3">3 怎么把期权头寸「翻译」成股票</h2>
+<p>在看结果之前，得先解决一个度量问题：一张行权价 130、delta 为 0.55 的看涨期权，和一张行权价 125、delta 为 0.60 的看涨期权，怎么加总才有意义？</p>
+<p>作者的办法是把所有期权头寸<strong>做 delta 调整</strong>，折算成「等价的标的股数」，再除以流通股本，得到一个无量纲的百分比。对某只股票 <code>s</code>、某交易日 <code>t</code>、某类持仓 <code>k</code>（买入看涨/买入看跌/卖出看涨/卖出看跌）、某类投资者 <code>i</code>，定义：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\text{OpenInterestPercentageShares}^{k,i}_{s,t} = \frac{100 \times \cssId{a1}{\sum_{j=1}^{N^{k}_{s,t}} \text{OpenInterest}^{k,i}_{s,j,t}}\,\cssId{a2}{\big|\Delta^{k}_{s,j,t}\big|}}{\cssId{a3}{\text{NShares}_{s,t}}} \times 100
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>把该投资者该类持仓的所有合约（不同行权价、不同到期日）加总</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>乘以 Black-Scholes delta 的绝对值，把期权折算成「等价标的股数」；首个因子 100 是因为一张合约对应 100 股</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>除以标的流通股数，最后再乘 100 化为百分比——即「相当于流通盘的百分之几」</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>一个例子能让它落地：1998 年 6 月 1 日，XYZ 有 23,000,000 股流通，自营交易员持有 120 张 6 月到期、行权价 130 的看涨（delta 0.55），和 35 张 7 月到期、行权价 125 的看涨（delta 0.60）。代入上式，他们的买入看涨未平仓量是流通盘的 <code>0.0378%</code>。</p>
+<p>作者特别说明：delta 调整即便完全不做，主要结论也不变——所以不必纠结 Black-Scholes 在美式期权、随机波动率下的种种失真，它对这里的目的是够用的。成交量用完全平行的方式度量。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>为什么用「占流通股的比例」而不是美元金额？因为前者基本不受股价涨跌的机械影响，而后者会被股价波动搅得面目全非。这是一个看似不起眼、却让全文的跨期比较变得干净的选择。</p></div>
+<p>先说一个量级感：对大盘股，所有非做市商加总的未平仓量约为流通盘的 <code>0.62%</code>。看上去很小，但合约换手很快——年化期权换手对应约 <code>7%</code> 的标的股数；考虑到标的股票本身年换手约 <code>60%</code>，期权市场的活跃度其实相当可观。</p>
+<h2 id="4">4 第一个反转：卖期权的人，比买期权的人多</h2>
+<p>接着，一个自然的问题是——这 <code>0.62%</code> 里，到底是买的多还是卖的多？</p>
+<p>直觉会说「买」。期权不就是用有限的钱去博一个不对称收益吗？教科书第一课讲的就是买看涨、买看跌。</p>
+<p>数据给出的答案恰恰相反。看全样本所有非做市商（Table 1 的 Panel E）：买入看涨和卖出看涨未平仓量分别是 <code>0.232%</code> 和 <code>0.282%</code>，买入看跌和卖出看跌分别是 <code>0.055%</code> 和 <code>0.072%</code>。把看涨看跌合起来，<strong>卖出持仓 <code>0.354%</code> 比买入持仓 <code>0.287%</code> 高出约 <code>23%</code></strong>。</p>
+<p>这个「卖多于买」主要由全方位服务客户驱动——他们的头寸占了非做市商的大头。对他们，卖出看涨 <code>0.198%</code> 比买入看涨 <code>0.132%</code> 高出整整 <code>50%</code>，卖出看跌 <code>0.048%</code> 也比买入看跌 <code>0.031%</code> 高出略超 <code>50%</code>。只有最成熟的自营交易员是个例外：他们买入多于卖出，也是唯一一类买入看跌超过卖出看跌的投资者。</p>
+<p>但真正出人意料的是<strong>买入看跌（purchased put）</strong>——它在四类持仓里是<strong>最罕见的一类</strong>。非做市商的买入看涨大约是买入看跌的 4 倍。</p>
+<p>这为什么反直觉？因为几乎每一本给 MBA 和本科生写的衍生品教材，都把「保护性看跌」当成头号策略来讲（McDonald 2003 第 3 章里它就是第一个出场的）。而且做空股票又贵又难，按理说买看跌正是一条绕过这些麻烦的捷径。可现实里，买看跌偏偏最少有人问津。</p>
+<p>与之镜像的另一面是<strong>卖出看跌（written put）的流行</strong>。作者翻遍手头的衍生品教材，只有 Ritchken (1996) 提了一句裸卖看跌是常见策略，只有 Stoll and Whaley (1993) 提到了「持股同时卖看跌」——而且是他们讨论的第 50 个、也就是最后一个策略。教科书里垫底的东西，数据里却名列前茅。</p>
+<p>到这里，一个更尖锐的问题浮现出来：如果买看跌（赌跌或对冲）这么少，卖看跌（赌不跌）这么多，那期权市场到底在被用来<strong>对冲</strong>，还是被用来<strong>押方向</strong>？</p>
+<h2 id="5">5 第二个反转：几乎没人在用期权赌波动率</h2>
+<p>要回答上面那个问题，得先排除一个最经典的「非方向」动机：<strong>波动率交易</strong>。</p>
+<p>教科书里，赌波动率的旗舰策略是<strong>跨式 (straddle)</strong> 和<strong>宽跨式 (strangle)</strong>——同时买入（或卖出）看涨和看跌，从而把对股价方向的暴露对冲掉，只留下对波动率的押注。MacDonald (2003) 专门有一节叫「Speculating on Volatility」。</p>
+<p>作者设计了一套巧妙的办法，给跨式/宽跨式的使用频率定一个<strong>上界 (upper bound)</strong>：因为他们看不到账户层面的策略组合，只能从「一个投资者在同一标的上同时持有的看涨和看跌量」里，尽可能多地配对出可能的跨式/宽跨式，从而得到一个偏高的估计。</p>
+<p>结果如下表所示：即便用这种「往多了算」的上界口径，<strong>波动率交易也只占期权活动的很小一部分</strong>。</p>
+<div class="article-image"><img alt="Table 6: reports averages of the upper bounds on the proportions of" src="assets/table-6.png" /></div>
+<p><em>Table 6: reports averages of the upper bounds on the proportions of</em></p>
+<p>这个发现本身就值钱。它意味着，既然波动率交易不是期权活动的主要驱动力，那剩下的舞台就让给了<strong>对股价方向的押注与对冲</strong>。于是问题被逼到了墙角：方向性的那部分，是对冲，还是投机？</p>
+<p>然后是第三块拼图。作者动用了<strong>另一份数据</strong>——某折扣券商一批账户的完整持仓——来看那些「卖出看涨」到底是不是裸的。答案是：很大一部分卖出看涨其实是<strong>备兑看涨 (covered call)</strong> 的一条腿（持股同时卖看涨）。但除了备兑看涨这一项，方向性对冲的份额其实很小：在卖出看涨之后，最常见的头寸是买入看涨和卖出看跌，而既有研究都表明做空股票的头寸少得可怜 [Dechow et al. (2001); Lamont and Stein (2004)]——这就意味着买看涨、卖看跌的人极少同时在做空股票，因而这些期权头寸<strong>几乎不可能是对冲</strong>。更进一步，那份补充数据显示，多数买入看跌是<strong>裸头寸</strong>，强烈暗示它们就是在赌股价会跌。</p>
+<p>把三块拼图拼起来，结论清晰得让人意外：</p>
+<div class="callout"><div class="callout-title">Warning</div><p>除了备兑看涨，期权市场里几乎没有多少量能归因于「对冲」。这意味着<strong>绝大部分期权活动，是由对未来股价方向的看法驱动的</strong>——而这种看法，既可能来自正确的信息，也可能来自认知偏差等「行为」因素。</p></div>
+<p>（关于「期权里的方向性押注究竟含不含信息」，这条线后来被反复挖掘，可参见<a href="/research/is-there-price-discovery-in-equity-options/">《期权报价里，到底有没有「先知」？》</a>与<a href="/research/why-does-options-market-information-predict-stock-returns/">《期权里藏着的，不是先知，而是一张借券账单》</a>。）</p>
+<h2 id="6">6 于是，泡沫成了一块天然的试金石</h2>
+<p>如果期权活动主要由「方向看法」驱动，那么一个自然的实验场，就是那场所有人都对方向有强烈看法的时期——<strong>1999 年到 2000 年初的互联网泡沫</strong>。</p>
+<p>作者把样本切到泡沫期，按投资者类型和股票类型（成长 vs 价值）分别看。几个事实浮出水面：</p>
+<p><strong>第一，最不成熟的折扣客户全面「上头」。</strong> 泡沫期间，折扣客户的买入看涨、卖出看跌、以及通过期权市场获得的对标的的<strong>净正向暴露</strong>都急剧上升——而且这些变化几乎都集中在<strong>成长股</strong>而非价值股上。</p>
+<div class="article-image"><img alt="Table 9: which presents the open interest by period and investor class from" src="assets/table-9.png" /></div>
+<p><em>Table 9: which presents the open interest by period and investor class from</em></p>
+<p><strong>第二，更成熟的投资者按兵不动。</strong> 与折扣客户形成鲜明对比，自营交易员和全方位服务客户<strong>没有</strong>增加开仓的买入看涨或卖出看跌，他们的买入看涨、卖出看跌未平仓量只有有限变化。</p>
+<div class="article-image"><img alt="Table 10: contains for each investor group and each of the four sub-" src="assets/table-10.png" /></div>
+<p><em>Table 10: contains for each investor group and each of the four sub-</em></p>
+<p><strong>第三，没有人去赌泡沫破裂。</strong> 整个泡沫期，<strong>任何一类投资者</strong>开仓买入看跌的量都没有上升。这一点尤其耐人寻味：买看跌本是赌下跌、做空泡沫最便捷的工具，可就连这条路也无人问津。</p>
+<p>把成熟度阶梯接回来，故事就完整了：<strong>最不成熟的投资者在押注成长股会继续涨，他们的投机很可能给泡沫添了柴；而更成熟的投资者顶多是温和地跟一把多。</strong></p>
+<p>这给互联网泡沫提供了一个和 Ofek and Richardson (2003) 不同的视角。后者强调是<strong>卖空约束</strong>助长了泡沫、约束松动又刺破了泡沫。但本文指出：既然散户连「买看跌」这条不受卖空约束限制的看空捷径都懒得走，说明当时根本就<strong>没什么人有看空泡沫的胃口</strong>——问题或许不在「不能做空」，而在「没人想做空」。（关于「进入太多还是太少」的另一面争论，可参见<a href="/research/was-there-too-little-entry-during-the-dot-com-era/">《互联网泡沫，错不在「进得太多」，而在「进得太少」？》</a>。）</p>
+<div class="callout"><div class="callout-title">Note</div><p>顺带一个被脚注藏起来的漂亮推论：既然客户整体上「卖期权多于买期权」，那做市商整体上就必然是<strong>净买入看跌、净买入期权</strong>的一方。这说明，如果当时真有大量散户想买看跌来做空泡沫，做市商为了平衡库存，几乎一定乐意卖给他们。看空的「供给」一直在，缺的是「需求」。</p></div>
+<p>补充一句方法上的收尾：作者还用 Tobit 回归把买入/卖出看涨/看跌成交量对标的的过去收益、账面市值比 (book-to-market, BM)、波动率、是否分红做了回归，发现期权活动总体上与<strong>更高的过去收益、更低的 BM、更高的波动率</strong>相关——这与「散户追涨、偏爱波动大的成长股」的图景一致。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把镜头拉远，这篇论文坐在一条很清晰的研究脉络上。</p>
+<p><strong>源头是定价。</strong> Black and Scholes (1973) 与 Merton (1973) 把随机分析引入期权定价，开启了三十年的「如何给期权标价」的研究洪流。但正如本文开篇所言，定价的繁荣反衬出<strong>交易行为</strong>研究的贫瘠。</p>
+<p><strong>中间的瓶颈是数据。</strong> 在没有投资者身份信息的年代，人们只能用 Lee and Ready (1991) 的算法去推断成交方向，做不了精细的行为刻画。</p>
+<p><strong>转折来自一组用同一份 CBOE 独家数据展开的论文。</strong> Poteshman and Serbin (2003) 用它证明了不同投资者在提前行权上的「（非）理性」差异，从而给「成熟度阶梯」奠了基；Pan and Poteshman (2005) 发现期权成交量里含有对未来股价的信息，且全方位服务客户比折扣客户更「先知」；Gârleanu, Pedersen and Poteshman (2006) 则从需求出发给期权定价，把「谁在买、谁在卖」直接写进了价格。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p><strong>本文所处的位置</strong>，是这条脉络里最「描述性」、却也最基础的一块拼图：它不急于建模或检验某个定价假说，而是先把「不同投资者到底持有什么、交易什么」这套基本事实老老实实地数清楚——并在数的过程中，撞出了一连串与教科书相悖的反直觉事实，又顺势给互联网泡沫提供了一份微观证据。后来关于散户期权需求如何扭曲波动率曲面的研究（可参见<a href="/research/retail-option-traders-and-the-implied-volatility-surface/">《当波动率曲面被「散户」推歪：从券商宕机里读出的需求压力》</a>与<a href="/research/investor-sentiment-and-option-prices/">《情绪会给「微笑」加多少弧度？——把投资者情绪写进期权价格》</a>），某种程度上都站在本文铺好的「事实地基」上。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：这只是一篇「描述性统计」论文，凭什么发 RFS？</strong></p>
+<blockquote>
+<p>因为在它之前，这些「基本事实」根本不存在。一篇论文的价值不只在于精巧的识别，也在于它是否第一次让一类现象变得可见。本文用一份谁也没有的数据，推翻了几条被教科书当作常识的判断（保护性看跌很重要、波动率交易很常见），这本身就是稀缺的实证贡献。</p>
+</blockquote>
+<p><strong>Q：「卖出看跌比买入看跌多」会不会只是做市商口径或数据假象？</strong></p>
+<blockquote>
+<p>不太可能。作者明确把做市商（<code>M</code> 代码）剔除，只看非做市商客户，而且结论在四类投资者中分别成立，差异在 1% 水平上对均值的 t 检验和对中位数的 Wilcoxon 符号秩检验都显著。这是真实客户行为，不是清算口径的副产品。</p>
+</blockquote>
+<p><strong>Q：把所有期权用 Black-Scholes delta 折算，会不会因为模型误设而带偏结论？</strong></p>
+<blockquote>
+<p>作者直接回应了这一点：即便完全不做 delta 调整，主要结论也不变。换言之，结论靠的是「买卖、看涨看跌、开平仓」这些一阶的方向事实，而不是 delta 的精确数值——模型误设最多影响量级的小数点，动不了定性结论。</p>
+</blockquote>
+<p><strong>Q：「波动率交易只占小份额」是不是被上界口径低估了，反而显得更少？</strong></p>
+<blockquote>
+<p>恰恰相反。上界是「往多了算」——把同一标的上能配对的看涨看跌尽量都算成跨式/宽跨式。一个<strong>偏高</strong>的估计都只得到很小的份额，意味着真实份额只会更小。这让结论更有说服力，而非更弱。</p>
+</blockquote>
+<p><strong>Q：泡沫期散户大买成长股看涨，能算「散户吹大了泡沫」的因果证据吗？</strong></p>
+<blockquote>
+<p>不能下因果断言，作者也很克制，只说散户的投机「可能（may have）贡献了泡沫」。数据是相关性的：散户在泡沫期增持了成长股的看涨暴露。它更像是给「行为驱动泡沫」假说提供了一块一致的微观拼图，而非一个干净的因果识别。</p>
+</blockquote>
+<p><strong>Q：本文和 Ofek-Richardson、Battalio-Schultz 到底分歧在哪？</strong></p>
+<blockquote>
+<p>层次不同。Ofek and Richardson (2003) 谈的是「卖空约束如何成就并刺破泡沫」；Battalio and Schultz (2005) 问的是「投资者<strong>本可以</strong>怎样用期权做空泡沫」。本文问的是「投资者<strong>实际上</strong>怎么交易了」——答案是几乎没人去买看跌做空，从而把矛头从「不能做空」转向了「没人想做空」。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把这套「投资者类型 × 开平仓 × 买卖」的镜头搬到信用衍生品市场。</strong>
+【经济故事】期权市场的核心发现是「卖保险（写期权）比买保险更普遍，且最不成熟的人在错误的时点加仓」。CDS 本质也是一份违约「保单」，写 CDS = 卖保险。在信用周期的繁荣末期，是不是也存在「最不成熟的卖方在错误时点大举卖出保护」的镜像？
+【可行性】中。难点在于 CDS 缺少类似 CBOE 的「投资者身份 + 开平仓」标签；DTCC 的交易仓库数据有交易对手类别但获取受限。识别上可借鉴本文「按成熟度分组 + 周期切片」的设计。</p>
+<p><strong>2. 外资持有人在新兴市场股指期权里是「卖保险」还是「买保险」？</strong>
+【经济故事】本文揭示了客户整体净卖出看跌、做市商净买入看跌的结构。如果把投资者维度换成「本地 vs 外资」，外资在危机前后是承担尾部风险（卖看跌赚权利金）还是购买尾部保险（买看跌避险）？这直接关系到危机中谁是稳定器、谁是放大器。
+【可行性】中。需要交易所提供按本地/外资拆分的期权持仓（部分亚洲交易所如 KRX、TAIFEX 公布期货期权的投资者类别），识别可用汇率/资本管制事件做准自然实验。</p>
+<p><strong>3. 公司债市场里的「方向押注 vs 对冲」分解。</strong>
+【经济故事】本文用「补充账户数据 + 裸头寸比例」把方向押注从对冲里剥离出来。债券基金用 CDS 时，到底是在对冲组合久期/信用风险，还是在裸赌某个发行人？这决定了我们该把基金的 CDS 头寸读成「保险」还是「杠杆」。
+【可行性】高。基金 N-PORT/N-Q 持仓 + 同发行人的债券持仓可以配对，凡「持债 + 买 CDS」算对冲，凡「无债 + 卖/买 CDS」算方向押注，思路与本文备兑看涨的识别同构。（与<a href="/research/the-use-of-credit-default-swaps-by-bond-mutual-funds/">《危机里谁在「逆向接盘」？——债券基金、信用违约互换与一笔藏着风险的流动性溢价》</a>的问题相邻。）</p>
+<p><strong>4. 「成熟度阶梯」在零佣金时代是否被重排？</strong>
+【经济故事】本文写于 1990–2001，折扣客户=最不成熟。但 2019 年后零佣金 + 散户期权热潮，可能让「折扣/散户」这一类的构成和行为都变了。今天的散户是更天真，还是已经学会了备兑/价差？
+【可行性】高。OCC 仍按 customer/firm/market-maker 分类，部分券商（如 Robinhood 时代）的聚合数据可得；可对照本文的口径做一次「跨二十年」的复刻，识别上用 2020 散户潮做断点。</p>
+<h2 id="9">9 我的判断</h2>
+<p>这篇论文的贡献，是那种「事后看理所当然、事前却无人能做」的贡献：它用一份独家数据，把「人们怎么交易期权」从一片空白变成了一组扎实、可被后人站立其上的事实，并在过程中接连推翻了教科书的几条想当然——保护性看跌很重要（错，它最罕见）、波动率交易很普遍（错，只占小份额）、对冲是主要动机（错，除备兑看涨外几乎可忽略）。仅这几条「祛魅」，就足够有价值。</p>
+<p>对识别的担忧也很诚实地摆在台面上。其一，这本质是描述性的，泡沫一节的因果味道最浓、证据却最弱——「散户投机可能助推了泡沫」始终只是相关性。其二，「成熟度阶梯」的三档划分虽有 Poteshman-Serbin 等独立证据支撑，但「折扣客户=最不成熟」毕竟是个粗粒度标签，组内异质性可能很大。其三，跨式/宽跨式的「上界」虽然方向稳健，却无法告诉我们真实份额究竟是 1% 还是 5%，对「波动率交易到底有多边缘」只能给出定性结论。</p>
+<p>我最想看到的后续，是把这套「身份 × 开平仓 × 买卖」的显微镜，对准<strong>做市商被迫承接的那一侧</strong>：既然客户系统性地卖期权、做市商系统性地接下，那么做市商的库存压力如何传导到隐含波动率曲面、又如何随情绪和泡沫起落——这恰恰是 Gârleanu, Pedersen and Poteshman (2006) 需求型定价的实证延长线。本文把「需求长什么样」数清楚了；下一步，是把「这份需求值多少钱」算出来。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Battalio, R., and P. Schultz (2005). Options and the Bubble. <em>Journal of Finance</em> (forthcoming).</li>
+<li>Black, F., and M. Scholes (1973). The Pricing of Options and Corporate Liabilities. <em>Journal of Political Economy</em> 81(3), 637–659.</li>
+<li>Dechow, P. M., A. P. Hutton, L. Meulbroek, and R. Sloan (2001). Short-Sellers, Fundamental Analysis, and Stock Returns. <em>Journal of Financial Economics</em> 61(1), 77–106.</li>
+<li>Gârleanu, N., L. H. Pedersen, and A. M. Poteshman (2006). Demand-Based Option Pricing. Working Paper, University of Illinois at Urbana-Champaign.</li>
+<li>Lakonishok, J., I. Lee, N. D. Pearson, and A. M. Poteshman (2007). Option Market Activity. <em>Review of Financial Studies</em> 20(3), 813–857.</li>
+<li>Lamont, O. A., and J. C. Stein (2004). Aggregate Short Interest and Market Valuations. <em>American Economic Review</em> 94(2), 29–32.</li>
+<li>La Porta, R., J. Lakonishok, A. Shleifer, and R. Vishny (1997). Good News for Value Stocks: Further Evidence on Market Efficiency. <em>Journal of Finance</em> 52(2), 859–874.</li>
+<li>Lee, C. M. C., and M. J. Ready (1991). Inferring Trade Direction from Intraday Data. <em>Journal of Finance</em> 46(2), 733–746.</li>
+<li>MacDonald, R. L. (2003). <em>Derivatives Markets</em>. Addison Wesley.</li>
+<li>Mahani, R. S., and A. M. Poteshman (2005). Overreaction to Stock Market News and Misevaluation of Stock Prices by Unsophisticated Investors: Evidence from the Option Market. Working Paper, University of Illinois at Urbana-Champaign.</li>
+<li>Merton, R. C. (1973). Theory of Rational Option Pricing. <em>Bell Journal of Economics and Management Science</em> 4(1), 141–183.</li>
+<li>Ofek, E., and M. Richardson (2003). DotCom Mania: The Rise and Fall of Internet Stock Prices. <em>Journal of Finance</em> 58(3), 1113–1137.</li>
+<li>Pan, J., and A. M. Poteshman (2005). The Information in Option Volume for Future Stock Prices. <em>Review of Financial Studies</em> (forthcoming).</li>
+<li>Poteshman, A. M., and V. Serbin (2003). Clearly Irrational Financial Market Behavior: Evidence from the Early Exercise of Exchange Traded Stock Options. <em>Journal of Finance</em> 58(1), 37–70.</li>
+<li>Ritchken, P. (1996). <em>Derivatives Markets: Theory, Strategy, and Applications</em>. HarperCollins.</li>
+<li>Stoll, H., and R. Whaley (1993). <em>Futures and Options: Theory and Applications</em>. Southwestern Publishing.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个被冷落了三十年的问题</a></li>
+        <li><a href="#2">2 数据：一本能「点名」的账本</a></li>
+        <li><a href="#3">3 怎么把期权头寸「翻译」成股票</a></li>
+        <li><a href="#4">4 第一个反转：卖期权的人，比买期权的人多</a></li>
+        <li><a href="#5">5 第二个反转：几乎没人在用期权赌波动率</a></li>
+        <li><a href="#6">6 于是，泡沫成了一块天然的试金石</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#9">9 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

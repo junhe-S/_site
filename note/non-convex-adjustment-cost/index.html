@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>33. Non-Convex Adjustment Cost – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>33. Non-Convex Adjustment Cost</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">投资</span><span class="lang en">Investment</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">非凸调整成本</span><span class="lang en">Non-Convex Adjustment Cost</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">平滑粘合</span><span class="lang en">Smooth Pasting</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">超接触</span><span class="lang en">Super Contact</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">(S,s) 政策</span><span class="lang en">(S,s) Policy</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>33. 非凸调整成本</h1>
+<p>本节考虑每个个体企业面对资本<strong>买价 \(p_b\) 与卖价 \(p_s\) 之间楔子</strong>（\(p_b\ge p_s\)）的模型。调整成本来自资本价格楔子，即企业不能自由地来回转换资本（卖出再回购一单位资本须花 \(p_b-p_s\)）。这种成本<strong>不</strong>像第 32 节那样涉及凸函数 \(C(k_{t+1}/k_t)\)。</p>
+<h2 id="33-1">33.1 设定</h2>
+<ul>
+<li>每个企业面对资本买价 \(p_b\) 与卖价 \(p_s\)，\(p_b\ge p_s\)。</li>
+<li>企业每期被生产率（或需求）冲击 \(z_t(s^t)\) 击中。</li>
+<li>生产（收入）函数 \(k_t(s^t)^{\alpha}z_t(s^t)^{1-\alpha}\)。<ul>
+<li>生产只用资本 \(k_t(s^t)\)（无劳动）；规模报酬递减，\(0<\alpha<1\)，关于 \((k_t,z_t)\) 一次以下齐次。</li>
+</ul>
+</li>
+<li>\(t\) 期购买资本成本：\(p_b\times\max\{k_t(s^t)-k_{t-1}(s^{t-1}),0\}\)。</li>
+<li>\(t\) 期出售资本收益：\(p_s\times\max\{k_{t-1}(s^{t-1})-k_t(s^t),0\}\)。</li>
+<li>企业以 \(\beta<1\) 贴现利润。</li>
+<li>生产率（需求）冲击比率 \(\gamma_{t+1}(s^{t+1})=\dfrac{z_{t+1}(s^{t+1})}{z_t(s^t)}\) i.i.d.，假设 \(\beta\mathbb{E}[\gamma]<1\)。</li>
+<li>历史 \(s^t\) 仅用于指示可测性（每个变量在 \(s^t\) 下唯一钉住）。</li>
+</ul>
+<h2 id="33-2">33.2 价值函数与递归表示</h2>
+<h3 id="33-2-1">33.2.1 序列问题</h3>
+<p>企业每期利润 = 生产 + 资本出售收益 − 资本购买成本：</p>
+<p>$$
+V(k_0,z_0)=\max_{\{k_t\}_{t=1}^{\infty}}\sum_{t=1}^{\infty}\beta^t\big((k_t)^{\alpha}z_t^{1-\alpha}+p_s\max\{k_t-k_{t+1},0\}-p_b\max\{k_{t+1}-k_t,0\}\big) \tag{33.1}
+$$</p>
+<p>与命题 32.1 同样的论证表明 \(V(k,z)\) 关于 \((k,z)\) 一次齐次（\(V(\alpha k_0,\alpha z_0)=\alpha V(k_0,z_0)\)，见 (33.2)、(33.3)）。</p>
+<h3 id="33-2-2">33.2.2 递归形式</h3>
+<p>原始贝尔曼方程：</p>
+<p>$$
+V(k,z)=\max_{k'}\big\{(k')^{\alpha}z^{1-\alpha}-p_b\max\{k'-k,0\}+p_s\max\{k-k',0\}+\beta\mathbb{E}[V(k',z')]\big\} \tag{33.4}
+$$</p>
+<p>其中 \(z\) 当期冲击，\(k\) 本期期初资本，\(k'\) 本期生产（下期期初）资本，\(z'\) 下期冲击。定义 \(x=\dfrac{k}{z}\)、\(x'=\dfrac{k'}{z}\)、\(z'=\gamma z\)、\(v(x)\equiv v(\frac{k}{z})\equiv V(\frac{k}{z},1)=\frac{V(k,z)}{z}\)，两边除以 \(z\) 得简化贝尔曼方程：</p>
+<p>$$
+v(x)=\max_{x'}\big\{(x')^{\alpha}-p_b\max\{x'-x,0\}+p_s\max\{x-x',0\}+\beta\mathbb{E}\big[\gamma v(x'/\gamma)\big]\big\} \tag{33.5}
+$$</p>
+<p>单一状态变量 \(x\)、单一选择变量 \(x'\)。</p>
+<h2 id="33-3-p-b-p-s-p">33.3 无调整成本的模型（\(p_b=p_s=p\)）</h2>
+<p>$$
+v(x)=\max_{x'}\big\{(x')^{\alpha}-p(x'-x)+\beta\mathbb{E}[\gamma v(x'/\gamma)]\big\}
+$$</p>
+<p>包络条件 \(v'(x)=p\) (33.6)。对 \(x'\) 的一阶条件：\(\alpha(x')^{\alpha-1}-p+\beta\mathbb{E}[v'(x'/\gamma)]=0\)，由包络 \(v'=p\) 得</p>
+<p>$$
+\alpha(x')^{\alpha-1}=p(1-\beta)
+$$</p>
+<p>故无调整成本时 \(x'=x\)（企业每期都调整到最优）。</p>
+<h2 id="33-4-p-b-p-s">33.4 有调整成本的模型（\(p_b>p_s\)）</h2>
+<h3 id="33-4-1">33.4.1 解的猜想</h3>
+<p>设 \(\gamma\in\{e^{-\Delta},1,e^{\Delta}\}\) i.i.d.，概率 \(\pi,1-2\pi,\pi\)。则 \(\mathbb{E}[\ln\gamma]=-\Delta\pi+0+\Delta\pi=0\)、\(\text{Var}(\ln\gamma)=2\Delta^2\pi\)。假设 \(\beta\mathbb{E}[\gamma]<1\) 即 \(1>\beta(\pi e^{-\Delta}+(1-2\pi)+\pi e^{\Delta})\)。猜想解 \(x'\) 满足</p>
+<p>$$
+x'=\begin{cases}\underline x & \text{if }x<\underline x\\ x & \text{if }\underline x\le x\le\bar x\\ \bar x & \text{if }x>\bar x\end{cases} \tag{33.7}
+$$</p>
+<p>即 <strong>(S,s) 政策</strong>。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 33.1
+猜想 (33.7) 合理，因价值函数关于 \(k\) 凹（递减报酬 + 贝尔曼方程性质），资本买卖价格固定且有楔子。对太高（太低）的 \(x\)，企业卖出（买入）资本直到边际价值 = 卖价（买价）；对 \(x\) 介于 \(\underline x,\bar x\) 之间，边际价值既不够低以卖、也不够高以买，故 \(x'=x\) 保持不变。须钉住价值函数与最优 \(\underline x,\bar x\)。</p></div>
+<h3 id="33-4-2">33.4.2 用猜想求解价值函数并验证</h3>
+<p>对 \(x\in[\underline x,\bar x]\)，\(x'=x\)，(33.5) 给出</p>
+<p>$$
+v(x)=x^{\alpha}+\beta\big[\pi e^{-\Delta}v(xe^{\Delta})+(1-2\pi)v(x)+\pi e^{\Delta}v(xe^{-\Delta})\big] \tag{33.8}
+$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 求解二阶差分方程 (33.8)
+记 \(y=\frac{\ln x}{\Delta}\)、\(w(y)=v(x)\)，则 \(w(y+1)=v(xe^{\Delta})\)、\(w(y-1)=v(xe^{-\Delta})\)，(33.8) 化为
+$$
+> w(y)[1-\beta(1-2\pi)]=e^{\alpha\Delta y}+\beta[\pi e^{-\Delta}w(y+1)+\pi e^{\Delta}w(y-1)] \tag{33.9}
+> $$
+齐次方程特征方程 \(\beta\pi e^{-\Delta}\lambda^2-[1-\beta(1-2\pi)]\lambda+\beta\pi e^{\Delta}=0\) (33.10) 有两根 \(\lambda_1,\lambda_2\)，齐次解 \(C_1\lambda_1^y+C_2\lambda_2^y\)。特解为常数项 \(c=\dfrac{x^{\alpha}}{1-\beta[\pi e^{-\Delta}+(1-2\pi)+\pi e^{\Delta}]}\)。用 \(\lambda_i^{\ln x/\Delta}=x^{\ln\lambda_i/\Delta}\)，得
+$$
+> v(x)=\frac{x^{\alpha}}{1-\beta[\pi e^{-\Delta}+(1-2\pi)+\pi e^{\Delta}]}+C_1 x^{\frac{\ln\lambda_1}{\Delta}}+C_2 x^{\frac{\ln\lambda_2}{\Delta}} \tag{33.11}
+> $$</p></div>
+<p><strong>平滑粘合（smooth pasting）条件</strong>：考虑 \(x<\underline x\)：在 \(x=\underline x\) 处若 \(z\) 受正冲击 \(e^{\Delta}\)（即 \(x\) 受负冲击使其成 \(\underline xe^{-\Delta}\)），企业买资本直到 \(x=\underline x\)，即 \(v(\underline xe^{-\Delta})=-p_b(\underline x-\underline xe^{-\Delta})+v(\underline x)\)；对 \(\Delta=0\) 作一阶 Taylor 展开得 \(v'(\underline x)=p_b\)。类似地，\(x>\bar x\)：\(v(\bar xe^{\Delta})=p_s(\bar xe^{\Delta}-\bar x)+v(\bar x)\) 展开得 \(v'(\bar x)=p_s\)。即</p>
+<p>$$
+v'(\underline x)=p_b,\qquad v'(\bar x)=p_s
+$$</p>
+<p>称为<strong>平滑粘合条件</strong>（阈值之下资本总被调上至 \(\underline x\)，多一单位资本即少买一单位，边际价值 \(=p_b\)；阈值之上资本总被调下至 \(\bar x\)，多一单位即多卖一单位，边际价值 \(=p_s\)）。</p>
+<div class="callout"><div class="callout-title">Note</div><p>- 最优 \((\underline x,\bar x)\) 与超接触条件
+(33.11) 中 \((\underline x,\bar x)\) 只通过 \(C_1,C_2\) 进入，记 \(C_1(\underline x,\bar x),C_2(\underline x,\bar x)\)，重写 \(v(x;\underline x,\bar x)=f(x)+C_1(\underline x,\bar x)x^{\frac{\ln\lambda_1}{\Delta}}+C_2(\underline x,\bar x)x^{\frac{\ln\lambda_2}{\Delta}}\) (33.13)。对 \((\underline x,\bar x)\) 最大化的一阶条件 (33.14)、(33.15)：\(\frac{\partial C_1}{\partial\underline x}x^{\frac{\ln\lambda_1}{\Delta}}+\frac{\partial C_2}{\partial\underline x}x^{\frac{\ln\lambda_2}{\Delta}}=0\) 等。对 \(v_1(\underline x;\underline x,\bar x)=p_b\) 关于 \(\underline x\) 全微分，最后两项之和由 (33.14) 为零 ⟹ \(v_{11}(\underline x;\underline x,\bar x)=0\)，即 \(v''(\underline x)=0\)；类似 \(v''(\bar x)=0\)。即
+$$
+> v''(\underline x)=0,\qquad v''(\bar x)=0
+> $$
+称为<strong>超接触（super contact）条件</strong>。</p>
+<p>[!tip] 注记 33.2
+平滑粘合条件对任意 \((\underline x,\bar x)\) 都成立；超接触条件只对最优选定的 \((\underline x,\bar x)\) 成立。</p></div>
+<p><strong>图 20（资本的边际价值，已转述）</strong>：\(v'(x)\) 关于 \(x\)：\(x<\underline x\) 时 \(v'(x)=p_b\) 水平；\(x\in[\underline x,\bar x]\) 时从 \(p_b\) 递减到 \(p_s\)；\(x>\bar x\) 时 \(v'(x)=p_s\) 水平。平滑粘合 + 超接触使曲线在阈值处平滑相切。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 33.4
+由平滑粘合、超接触与 \(v(\cdot)\) 的凹性、图 20 的 \(v'(x)\) 形状，可确认初始猜想 (33.7) 成立。</p></div>
+<h3 id="33-4-3-x">33.4.3 \(x'\) 的平稳分布：离散均匀</h3>
+<p>为简便假设从 \(\underline x\) 到 \(\bar x\) 须整数步冲击，即 \(\dfrac{\bar x}{\underline x}=e^{n\Delta}\)，\(n\in\mathbb{Z}_+\)。定义 \(\phi_t(x')\) 为 \(t\) 期某企业 \(\frac{k_t}{z_t}=x'\)（撇号指调整后）的概率，得 Kolmogorov 前向方程的离散类比：</p>
+<p>对 \(x'\in[\underline xe^{\Delta},\bar xe^{-\Delta}]\)：</p>
+<p>$$
+\phi_t(x')=\pi\phi_{t-1}(x'e^{-\Delta})+(1-2\pi)\phi_{t-1}(x')+\pi\phi_{t-1}(x'e^{\Delta}) \tag{33.16}
+$$</p>
+<p>对 \(x'=\bar x\)：</p>
+<p>$$
+\phi_t(\bar x)=\pi\phi_{t-1}(\bar xe^{-\Delta})+(1-\pi)\phi_{t-1}(\bar x) \tag{33.17}
+$$</p>
+<p>对 \(x'=\underline x\)：</p>
+<p>$$
+\phi_t(\underline x)=(1-\pi)\phi_{t-1}(\underline x)+\pi\phi_{t-1}(\underline xe^{\Delta}) \tag{33.18}
+$$</p>
+<p>可在有限步到达 \(\mathcal{X}=\{\underline x,\underline xe^{\Delta},\ldots,\bar xe^{-\Delta},\bar x\}\) 中任意点 ⟹ 唯一遍历集 \(\mathcal{X}\) ⟹ 唯一平稳分布。在稳态下（正负冲击对称），重写 (33.16)、(33.17)：</p>
+<p>$$
+\phi(x')=\frac{\phi(x'e^{-\Delta})+\phi(x'e^{\Delta})}{2}\ \text{(33.19)},\qquad \phi(\bar x)=\phi(\bar xe^{-\Delta})\ \text{(33.20)}
+$$</p>
+<p>把 (33.20) 代入 (33.19) 反复推得 \(\phi(\bar x)=\phi(\bar xe^{-\Delta})=\cdots=\phi(\underline x)\)，再由归一化 \(\phi(\bar x)+\cdots+\phi(\underline x)=1\) 得<strong>离散均匀分布</strong></p>
+<p>$$
+\phi(\bar x)=\cdots=\phi(\underline x)=\frac{1}{n+1}
+$$</p>
+<h3 id="33-4-4">33.4.4 关于离散均匀分布的讨论</h3>
+<ul>
+<li><strong>企业层面</strong>：企业在 \(0\) 期投资（始于 \(\underline x\)），渐进（极久之后）其 \(x'\) 服从离散均匀（唯一平稳）；但只在企业想极远未来时成立。\(0\) 期附近仍近 \(\underline x\)，故再投资概率仍较高、逐渐减小，呈<strong>序列相关投资</strong>（个体企业层面）：想极远未来时任一远期投资概率 \(\frac{1}{n+1}\pi\)，但本期投资后下一期再投资概率高得多 \(=\pi\)。</li>
+<li><strong>总量层面</strong>：<ul>
+<li><strong>个体（特质）冲击</strong>：众多企业各面对自身特质冲击；总量 = 企业间的分布（个体层面分布是跨时间的）；每格等可能被击中，稳态企业均匀分布于 \(n+1\) 格；即便个体层面跨时间短期非均匀，总量层面均匀（正负冲击平均相抵，企业众多）。</li>
+<li><strong>总量冲击</strong>：所有企业面对同一总量冲击；稳态均匀；但冲击发生后每企业同方向移一格，分布不再均匀；只在极远未来恢复离散均匀（同企业层面跨时间的原因）。</li>
+<li><strong>图 21（MIT 冲击前：稳态初始分布，已转述）</strong>：\(\phi(x')\) 在各格 \(\underline x\) 到 \(\bar x\) 均匀为 \(\frac{1}{n+1}\)。</li>
+<li>然后 MIT 冲击（一次性意外）：对 \(z\) 的正冲击使所有企业（在 \(x\) 上）下移一格，分布不再均匀；只在无后续冲击（或每期等可能上下）的极远未来恢复。<strong>图 22（正 MIT 总量冲击后：滞后一期，已转述）</strong>：某格堆积 \(\frac{2}{n+1}\)、其余 \(\frac{1}{n+1}\)。</li>
+<li>若 MIT 冲击作用于 \(\pi\)（上下冲击概率）：所有企业方差增加（停留概率 \(1-2\pi\) 减小），对均匀分布增大方差的唯一方式是增大范围，故 \(\underline x\) 左移、\(\bar x\) 右移，企业逐渐扩展到新区域；短期均匀被破坏，长期企业铺满新空间、均匀恢复。</li>
+</ul>
+</li>
+</ul>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 33.6 与 33.7
+<strong>33.6</strong>：资本买卖价格楔子模型中个体企业投资呈序列相关，与凸调整成本模型的直观结果相同（凸假设下最优是把投资分摊到多期以降成本）。故不同模型未必生成不同预测。
+<strong>33.7</strong>：离散均匀的结果来自正负冲击概率相同（都为 \(\pi\)）。若不同，则状态变量 \(x\) 的运动有漂移，平稳分布不再均匀。</p>
+<p>[!note] 参考文献
+- Cooper and Haltiwanger. "On the Nature of Capital Adjustment Costs." <em>Review of Economic Studies</em> (2006).
+- Bloom. "The Impact of Uncertainty Shocks." <em>Econometrica</em> (2009).</p></div>
+</div>
+<div class="lang en">
+<h1>33. Non-Convex Adjustment Cost</h1>
+<p>In this section, we will be considering a model for each individual firm that faces a wedge between the <strong>buy price \(p_b\) and the sell price \(p_s\) of capital</strong> where \(p_b\ge p_s\). And the adjustment cost comes from the capital price wedge in the sense that firms cannot freely convert back and forth between capital and goods (e.g. to sell and then repurchase one unit of capital, the cost is \(p_b-p_s\)). But such cost does not involve a convex function \(C\!\left(\frac{k_{t+1}(s^t)}{k_t(s^{t-1})}\right)\) as in section 32.</p>
+<h2 id="33-1-set-up">33.1 Set-up</h2>
+<ul>
+<li>Each firm faces a buy price \(p_b\) and sell price \(p_s\) of capital where \(p_b\ge p_s\).</li>
+<li>Firms are hit by productivity (or demand) shock \(z_t(s^t)\) in every period.</li>
+<li>The firm's production function (revenue function) is \(k_t(s^t)^{\alpha}z_t(s^t)^{1-\alpha}\).<ul>
+<li>Only capital \(k_t(s^t)\) is involved in production in every period (so there is no labor in the model); the firm's production (revenue) has diminishing returns to scale since \(0<\alpha<1\), but is h.o.d. &lt; 1 in \((k_t,z_t)\).</li>
+</ul>
+</li>
+<li>The cost of purchasing capital in period \(t\) is given by \(p_b\times\max\{k_t(s^t)-k_{t-1}(s^{t-1}),0\}\).</li>
+<li>The payoff from selling capital in period \(t\) is given by \(p_s\times\max\{k_{t-1}(s^{t-1})-k_t(s^t),0\}\).</li>
+<li>The firm will discount profits at rate \(\beta<1\).</li>
+<li>We also assume that the productivity (demand) shock ratios \(\gamma_{t+1}(s^{t+1})=\dfrac{z_{t+1}(s^{t+1})}{z_t(s^t)}\) are i.i.d., and assume \(\beta\mathbb{E}[\gamma]<1\).</li>
+<li>Here the history \(s^t\) is included simply to indicate the measurability property, i.e. each variable is uniquely pinned down given history \(s^t\).</li>
+</ul>
+<h2 id="33-2-the-value-function-and-recursive-representation">33.2 The value function and recursive representation</h2>
+<h3 id="33-2-1-the-sequence-problem">33.2.1 The sequence problem</h3>
+<p>Firm's period profit is the production plus revenue from capital sale minus cost from capital purchase, i.e.</p>
+<p>$$
+V(k_0,z_0)=\max_{\{k_t\}_{t=1}^{\infty}}\sum_{t=1}^{\infty}\beta^t\big((k_t)^{\alpha}z_t^{1-\alpha}+p_s\max\{k_t-k_{t+1},0\}-p_b\max\{k_{t+1}-k_t,0\}\big) \tag{33.1}
+$$</p>
+<p>By exactly the same argument as in the proof for proposition 32.1, \(V(k,z)\) is h.o.d. 1 in \((k,z)\) (i.e. \(V(\alpha k_0,\alpha z_0)=\alpha V(k_0,z_0)\); see (33.2), (33.3)).</p>
+<h3 id="33-2-2-recursive-formulation">33.2.2 Recursive formulation</h3>
+<p>The original Bellman equation for the firm's value function \(V(k,z)\):</p>
+<p>$$
+V(k,z)=\max_{k'}\big\{(k')^{\alpha}z^{1-\alpha}-p_b\max\{k'-k,0\}+p_s\max\{k-k',0\}+\beta\mathbb{E}[V(k',z')]\big\} \tag{33.4}
+$$</p>
+<p>where \(z\) is the current period shock, \(k\) is the begin-of-current-period capital, \(k'\) is the current-period-production (begin-of-next-period) capital, and \(z'\) is the next period shock. Now define \(x=\dfrac{k}{z}\), \(x'=\dfrac{k'}{z}\), \(z'=\gamma z\), and \(v(x)\equiv v(\frac{k}{z})\equiv V(\frac{k}{z},1)=\frac{V(k,z)}{z}\). Divide \(z\) through (33.4) to obtain a simplified version of Bellman equation:</p>
+<p>$$
+v(x)=\max_{x'}\big\{(x')^{\alpha}-p_b\max\{x'-x,0\}+p_s\max\{x-x',0\}+\beta\mathbb{E}\big[\gamma v(x'/\gamma)\big]\big\} \tag{33.5}
+$$</p>
+<p>with single state variable \(x\) and single choice variable \(x'\).</p>
+<h2 id="33-3-model-with-no-adjustment-costs-p-b-p-s-p">33.3 Model with no adjustment costs (\(p_b=p_s=p\))</h2>
+<p>$$
+v(x)=\max_{x'}\big\{(x')^{\alpha}-p(x'-x)+\beta\mathbb{E}[\gamma v(x'/\gamma)]\big\}
+$$</p>
+<p>The envelop condition is \(v'(x)=p\) (33.6). The first-order condition for \(x'\) is \(\alpha(x')^{\alpha-1}-p+\beta\mathbb{E}[v'(x'/\gamma)]=0\), and using the envelop condition \(v'=p\),</p>
+<p>$$
+\alpha(x')^{\alpha-1}=p(1-\beta)
+$$</p>
+<p>So, with no adjustment cost, \(x'=x\) always (firm adjusts to the optimal every period).</p>
+<h2 id="33-4-model-with-adjustment-costs-p-b-p-s">33.4 Model with adjustment costs (\(p_b>p_s\))</h2>
+<h3 id="33-4-1-conjecture-of-the-solution">33.4.1 Conjecture of the solution</h3>
+<p>Assume that \(\gamma\in\{e^{-\Delta},1,e^{\Delta}\}\) i.i.d. with probabilities \(\pi,1-2\pi,\pi\) respectively. This implies \(\mathbb{E}[\ln\gamma]=-\Delta\pi+0+\Delta\pi=0\) and \(\text{Var}(\ln\gamma)=2\Delta^2\pi\). The assumption \(\beta\mathbb{E}[\gamma]<1\) here implies that \(1>\beta(\pi e^{-\Delta}+(1-2\pi)+\pi e^{\Delta})\). To solve for an equilibrium, we will conjecture that the solution \(x'\) satisfies</p>
+<p>$$
+x'=\begin{cases}\underline x & \text{if }x<\underline x\\ x & \text{if }\underline x\le x\le\bar x\\ \bar x & \text{if }x>\bar x\end{cases} \tag{33.7}
+$$</p>
+<p>which is an <strong>(S,s) policy</strong>.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 33.1
+The conjecture (33.7) makes sense because the value function is concave in \(k\) (by diminishing return in \(V\) in \(k\) and properties of Bellman equation), and the capital buy and sell prices are fixed with wedge. So, for too high (or too low) \(x\), firms will sell (or buy) capital up to the point that the marginal value of capital is equal to the sell (or buy) price of capital. For \(x\) in between \(\underline x\) and \(\bar x\), marginal value of capital \(v'(x)\) is neither low enough for selling capital nor high enough for purchasing capital, so we leave capital unchanged, i.e. \(x'=x\). So, this conjecture is correct, and we only need to pin down the value function and the optimal \(\underline x\) and \(\bar x\).</p></div>
+<h3 id="33-4-2-use-the-conjecture-to-solve-the-value-function-and-verify-the-conjecture">33.4.2 Use the conjecture to solve the value function and verify the conjecture</h3>
+<p>For \(x\in[\underline x,\bar x]\), \(x'=x\), and the Bellman equation (33.5) implies</p>
+<p>$$
+v(x)=x^{\alpha}+\beta\big[\pi e^{-\Delta}v(xe^{\Delta})+(1-2\pi)v(x)+\pi e^{\Delta}v(xe^{-\Delta})\big] \tag{33.8}
+$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Solving the second-order difference equation (33.8)
+Denote \(y=\frac{\ln x}{\Delta}\) and \(w(y)=v(x)\), then \(w(y+1)=v(xe^{\Delta})\) and \(w(y-1)=v(xe^{-\Delta})\), and (33.8) becomes
+$$
+> w(y)[1-\beta(1-2\pi)]=e^{\alpha\Delta y}+\beta[\pi e^{-\Delta}w(y+1)+\pi e^{\Delta}w(y-1)] \tag{33.9}
+> $$
+The characteristic equation of the homogeneous equation \(\beta\pi e^{-\Delta}\lambda^2-[1-\beta(1-2\pi)]\lambda+\beta\pi e^{\Delta}=0\) (33.10) has two roots \(\lambda_1,\lambda_2\), and the homogeneous solution is \(C_1\lambda_1^y+C_2\lambda_2^y\). The particular solution is the constant term \(c=\dfrac{x^{\alpha}}{1-\beta[\pi e^{-\Delta}+(1-2\pi)+\pi e^{\Delta}]}\). Using \(\lambda_i^{\ln x/\Delta}=x^{\ln\lambda_i/\Delta}\),
+$$
+> v(x)=\frac{x^{\alpha}}{1-\beta[\pi e^{-\Delta}+(1-2\pi)+\pi e^{\Delta}]}+C_1 x^{\frac{\ln\lambda_1}{\Delta}}+C_2 x^{\frac{\ln\lambda_2}{\Delta}} \tag{33.11}
+> $$</p></div>
+<p><strong>Smooth pasting conditions</strong>: consider \(x<\underline x\): at \(x=\underline x\) if the firm experiences a positive shock \(e^{\Delta}\) to \(z\) (i.e. a negative shock \(e^{-\Delta}\) to \(x\) making it become \(\underline xe^{-\Delta}\)), the firm will buy capital until \(x=\underline x\), i.e. \(v(\underline xe^{-\Delta})=-p_b(\underline x-\underline xe^{-\Delta})+v(\underline x)\); the first-order Taylor expansion around \(\Delta=0\) gives \(v'(\underline x)=p_b\). Similarly, consider \(x>\bar x\): \(v(\bar xe^{\Delta})=p_s(\bar xe^{\Delta}-\bar x)+v(\bar x)\) gives \(v'(\bar x)=p_s\). So</p>
+<p>$$
+v'(\underline x)=p_b,\qquad v'(\bar x)=p_s
+$$</p>
+<p>are called <strong>smooth pasting conditions</strong> (this says the value of capital below the threshold \(\underline x\) is what the firm doesn't have to buy when adjusting up to \(\underline x\), i.e. the cost of purchasing capital \(p_b\); the value of capital above the threshold \(\bar x\) is what the firm can earn from the market buy price when adjusting down (selling) to \(\bar x\), i.e. the revenue of selling capital \(p_s\)).</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Optimal \((\underline x,\bar x)\) and the super contact condition
+In (33.11), \((\underline x,\bar x)\) could only enter the value function through \(C_1\) and \(C_2\), denote \(C_1(\underline x,\bar x),C_2(\underline x,\bar x)\), and rewrite \(v(x;\underline x,\bar x)=f(x)+C_1(\underline x,\bar x)x^{\frac{\ln\lambda_1}{\Delta}}+C_2(\underline x,\bar x)x^{\frac{\ln\lambda_2}{\Delta}}\) (33.13) (since the first term doesn't involve \(\underline x\) or \(\bar x\)). Maximizing over \((\underline x,\bar x)\), the f.o.c. (33.14), (33.15) for the optimal \((\underline x,\bar x)\) satisfy \(\frac{\partial C_1}{\partial\underline x}x^{\frac{\ln\lambda_1}{\Delta}}+\frac{\partial C_2}{\partial\underline x}x^{\frac{\ln\lambda_2}{\Delta}}=0\) etc. Then, totally differentiate \(v_1(\underline x;\underline x,\bar x)=p_b\) w.r.t. \(\underline x\), where the sum of the last two terms is zero because of (33.14), so we have \(v_{11}(\underline x;\underline x,\bar x)=0\), i.e. \(v''(\underline x)=0\); similarly \(v''(\bar x)=0\). So
+$$
+> v''(\underline x)=0,\qquad v''(\bar x)=0
+> $$
+are called <strong>super contact</strong> conditions.</p>
+<p>[!tip] Remark 33.2
+The smooth pasting condition is true for any arbitrary pair of \((\underline x,\bar x)\) as long as they are part of the value function. However, the super contact condition is only true for the optimally selected pair of \((\underline x,\bar x)\).</p></div>
+<p><strong>Figure 20 (Marginal Value of Capital, paraphrased)</strong>: \(v'(x)\) versus \(x\): for \(x<\underline x\), \(v'(x)=p_b\) (flat); for \(x\in[\underline x,\bar x]\), \(v'(x)\) decreases from \(p_b\) to \(p_s\); for \(x>\bar x\), \(v'(x)=p_s\) (flat). Smooth pasting + super contact make the curve smoothly tangent at the thresholds.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 33.4
+By smooth pasting condition, super contact condition and the concavity of the value function \(v(\cdot)\), the shape of the value function's first derivative is pinned down as in Figure 20. And by Figure 20, we can confirm that the initial conjecture (33.7) of \(x'\) holds.</p></div>
+<h3 id="33-4-3-the-stationary-distribution-of-x-discrete-uniform-distribution">33.4.3 The stationary distribution of \(x'\): discrete uniform distribution</h3>
+<p>For simplicity we impose the assumption that there are integer number of steps for shocks to get the state variable from \(\underline x\) to \(\bar x\), i.e. \(\dfrac{\bar x}{\underline x}=e^{n\Delta}\) for \(n\in\mathbb{Z}_+\). Define \(\phi_t(x')\) as the probability of a firm having \(\frac{k_t}{z_t}=x'\) (prime indicates after-adjustment) in period \(t\). Then we obtain the discrete analog of Kolmogorov forward equation:</p>
+<p>$$
+\text{for }x'\in[\underline xe^{\Delta},\bar xe^{-\Delta}]:\quad \phi_t(x')=\pi\phi_{t-1}(x'e^{-\Delta})+(1-2\pi)\phi_{t-1}(x')+\pi\phi_{t-1}(x'e^{\Delta}) \tag{33.16}
+$$</p>
+<p>$$
+\text{for }x'=\bar x:\quad \phi_t(\bar x)=\pi\phi_{t-1}(\bar xe^{-\Delta})+(1-\pi)\phi_{t-1}(\bar x) \tag{33.17}
+$$</p>
+<p>$$
+\text{for }x'=\underline x:\quad \phi_t(\underline x)=(1-\pi)\phi_{t-1}(\underline x)+\pi\phi_{t-1}(\underline xe^{\Delta}) \tag{33.18}
+$$</p>
+<p>There is positive probability to reach any point in \(\mathcal{X}=\{\underline x,\underline xe^{\Delta},\ldots,\bar xe^{-\Delta},\bar x\}\) within finite steps, so there is a unique ergodic set \(\mathcal{X}\), and thus a unique stationary distribution. In steady state (positive and negative shocks are symmetric in size and probability), rewrite (33.16), (33.17):</p>
+<p>$$
+\phi(x')=\frac{\phi(x'e^{-\Delta})+\phi(x'e^{\Delta})}{2}\ \text{(33.19)},\qquad \phi(\bar x)=\phi(\bar xe^{-\Delta})\ \text{(33.20)}
+$$</p>
+<p>Use (33.20) in (33.19) repeatedly to obtain \(\phi(\bar x)=\phi(\bar xe^{-\Delta})=\cdots=\phi(\underline x)\), then by normalization \(\phi(\bar x)+\cdots+\phi(\underline x)=1\), the <strong>discrete uniform distribution</strong></p>
+<p>$$
+\phi(\bar x)=\cdots=\phi(\underline x)=\frac{1}{n+1}
+$$</p>
+<h3 id="33-4-4-discussion-on-the-discrete-uniform-distribution">33.4.4 Discussion on the discrete uniform distribution</h3>
+<ul>
+<li><strong>On the firm level</strong>: suppose a firm invests in period 0 (start from \(\underline x\)), asymptotically (very long time) the firm's \(x'\) follows the discrete uniform (the unique stationary distribution). This is only true when the firm thinks about a very far future. Once that future comes, the right next few periods are not discrete uniform. Around period 0, the firm is still near \(\underline x\), so its probability of investing again is still higher, and it reduces gradually, which displays a pattern of <strong>serially correlated investment</strong> (on individual firm level): when the firm think about the very far future, the probability of investing in any far future period is \(\frac{1}{n+1}\pi\); but when the firm invests in this period, its probability of investing again in right next period is much higher, which is \(\pi\).</li>
+<li><strong>On the aggregate level</strong>:<ul>
+<li><strong>Individual (idiosyncratic) shock</strong>: suppose there are many firms each facing its own idiosyncratic shocks, and on the aggregate level it is a distribution across firms (on individual firm level the distribution is across time). Since each grid is equally likely to be hit, in the steady state, firms are uniformly distributed at each of the \(n+1\) grids. Even though on individual firm level the distribution across time is not uniform in short run, on aggregate level, equally likely positive and negative shocks cancel with each other on average, and the distribution over firms is always uniform given that the number of firms is very large.</li>
+<li><strong>Aggregate shock</strong>: suppose that all firms face the same aggregate shocks. Again, since each grid is equally likely to be hit, in the steady state, firms are uniformly distributed at each of the \(n+1\) grids. However, once the shock takes place, each firm is moved by one grid in the same direction, so the distribution is not uniform anymore. The distribution of firms over the grids will become uniform only when looking into extremely far in the future, which then becomes uniform for the same reason as the distribution over time on the firm level.</li>
+<li><strong>Figure 21 (Before the MIT Shock: Steady State Initial Distribution, paraphrased)</strong>: \(\phi(x')\) uniform at \(\frac{1}{n+1}\) over the grids \(\underline x\) to \(\bar x\).</li>
+<li>Then a MIT shock (one-time unexpected shock) happens: suppose the shock is a positive shock to \(z\), which moves all firms one grid down (in \(x\)); the distribution is not uniform anymore. Only in infinitely far future without any further shocks (or with equally like up and down shocks every period) can the system restore the discrete uniform distribution. <strong>Figure 22 (After the Positive MIT Aggregate Shock: One Period Lag, paraphrased)</strong>: one grid bunched at \(\frac{2}{n+1}\) with the rest at \(\frac{1}{n+1}\).</li>
+<li>Suppose the MIT shock happens to \(\pi\) (the probability of up and down shocks): then the variance of all firms increases (less probability \(1-2\pi\) of staying put), and the only possible way to increase variance for a uniform distribution is to increase the range, so \(\underline x\) moves left and \(\bar x\) moves right, and the system of many firms will gradually expand to the newly created region. In the short run, the uniform distribution is broken, but after a long time, the firms will gradually spread over the new whole space, and the uniform distribution is thus restored.</li>
+</ul>
+</li>
+</ul>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 33.6 and 33.7
+<strong>33.6</strong>: In this capital buy-sell price wedge model, the individual firm's investment displays serial correlation, which is the same as the intuitive result from convex adjustment cost model (since it is optimal to spread investment to multi-periods to reduce cost under convex adjustment assumption). So, different models don't necessarily generate different predictions.
+<strong>33.7</strong>: The result of discrete uniform distribution comes from the same probability of positive and negative shock (i.e. both are \(\pi\)). If this is not the case, then there will be a drift in the movement of state variable \(x\), and thus the stationary distribution is no longer uniform.</p>
+<p>[!note] References
+- Cooper and Haltiwanger. "On the Nature of Capital Adjustment Costs." <em>Review of Economic Studies</em> (2006).
+- Bloom. "The Impact of Uncertainty Shocks." <em>Econometrica</em> (2009).</p></div>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#33-1">33.1 设定</a></li>
+        <li><a href="#33-2">33.2 价值函数与递归表示</a></li>
+          <li><a href="#33-2-1">33.2.1 序列问题</a></li>
+          <li><a href="#33-2-2">33.2.2 递归形式</a></li>
+        <li><a href="#33-3-p-b-p-s-p">33.3 无调整成本的模型（\(p_b=p_s=p\)）</a></li>
+        <li><a href="#33-4-p-b-p-s">33.4 有调整成本的模型（\(p_b>p_s\)）</a></li>
+          <li><a href="#33-4-1">33.4.1 解的猜想</a></li>
+          <li><a href="#33-4-2">33.4.2 用猜想求解价值函数并验证</a></li>
+          <li><a href="#33-4-3-x">33.4.3 \(x'\) 的平稳分布：离散均匀</a></li>
+          <li><a href="#33-4-4">33.4.4 关于离散均匀分布的讨论</a></li>
+        <li><a href="#33-1-set-up">33.1 Set-up</a></li>
+        <li><a href="#33-2-the-value-function-and-recursive-representation">33.2 The value function and recursive representation</a></li>
+          <li><a href="#33-2-1-the-sequence-problem">33.2.1 The sequence problem</a></li>
+          <li><a href="#33-2-2-recursive-formulation">33.2.2 Recursive formulation</a></li>
+        <li><a href="#33-3-model-with-no-adjustment-costs-p-b-p-s-p">33.3 Model with no adjustment costs (\(p_b=p_s=p\))</a></li>
+        <li><a href="#33-4-model-with-adjustment-costs-p-b-p-s">33.4 Model with adjustment costs (\(p_b>p_s\))</a></li>
+          <li><a href="#33-4-1-conjecture-of-the-solution">33.4.1 Conjecture of the solution</a></li>
+          <li><a href="#33-4-2-use-the-conjecture-to-solve-the-value-function-and-verify-the-conjecture">33.4.2 Use the conjecture to solve the value function and verify the conjecture</a></li>
+          <li><a href="#33-4-3-the-stationary-distribution-of-x-discrete-uniform-distribution">33.4.3 The stationary distribution of \(x'\): discrete uniform distribution</a></li>
+          <li><a href="#33-4-4-discussion-on-the-discrete-uniform-distribution">33.4.4 Discussion on the discrete uniform distribution</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

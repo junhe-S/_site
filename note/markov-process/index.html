@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>42. Markov Process – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>42. Markov Process</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">马尔可夫过程</span><span class="lang en">Markov Process</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">转移矩阵</span><span class="lang en">Transition Matrix</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">遍历集</span><span class="lang en">Ergodic Set</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">平稳分布</span><span class="lang en">Stationary Distribution</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">数学附录</span><span class="lang en">Math Appendix</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>42. 马尔可夫过程</h1>
+<div class="callout"><div class="callout-title">Important</div><p>定义 42.1（马尔可夫过程）
+一阶马尔可夫过程 \(\{x_t\}\) 是具如下性质的随机过程：\(\forall k\ge1\)、\(\forall t\)，
+$$
+> \mathbb{P}(x_{t+1}|x_t,x_{t-1},\ldots,x_{t-k})=\mathbb{P}(x_{t+1}|x_t)
+> $$</p>
+<p>[!important] 定义 42.2（马尔可夫链）
+马尔可夫链是有限状态空间上的马尔可夫过程。</p>
+<p>[!important] 定义 42.3（转移矩阵）
+\(n\) 个状态的马尔可夫链的转移矩阵（Markov 矩阵 / 随机矩阵）可表示为 \(n\times n\) 矩阵
+$$
+> Q=\begin{bmatrix}q_{1,1} & q_{1,2} & \ldots & q_{1,n}\\ q_{2,1} & q_{2,2} & \ldots & q_{2,n}\\ \vdots & \vdots & \vdots & \vdots\\ q_{n,1} & q_{n,2} & \ldots & q_{n,n}\end{bmatrix}
+> $$
+其中 \(q_{i,j}\) 是本期状态为 \(z_i\) 时下期状态为 \(z_j\) 的概率。注意 \(\sum_{j=1}^n q_{i,j}=1\)（\(i=1,\ldots,n\)）。</p></div>
+<p>设 \(\mathbf{p}_t=(p_{1,t},\ldots,p_{n,t})'\) 为日期 \(t\) 关于 \(n\) 个状态的概率分布，\(\sum_{i=1}^n p_{i,t}=1\)。则 \(\mathbf{p}_{t+1}=Q'\mathbf{p}_t\)，故 \(m\) 步转移 \(\mathbf{p}_{t+m}=(Q')^m\mathbf{p}_t\)。</p>
+<div class="callout"><div class="callout-title">Important</div><p>定义 42.4（遍历集）
+设 \(S=\{s_1,\ldots,s_n\}\) 为状态集。集 \(E\subseteq S\) 称为<strong>遍历集（ergodic set）</strong>，若 \(\sum_{s_i\in E}q_{j,i}=1\) 对 \(\forall j\) 使 \(s_j\in E\)，且 \(E\) 没有子集具此性质。</p>
+<p>[!tip] 注记 42.1
+遍历集背后的直观：从遍历集内任一状态出发，移动到遍历集内状态的概率之和为 \(1\)，意味无法从其内任一状态移出遍历集。"无子集具此性质"要求只要从遍历集内任一状态出发，每个状态都总有严格正概率在某时刻被访问到。这就是"遍历（ergodic）"之义。</p>
+<p>[!important] 定义 42.5（瞬态）
+一状态称为<strong>瞬态（transient）</strong>，若有严格正概率离开该状态且永不返回。</p>
+<p>[!tip] 注记 42.2
+由瞬态定义，若状态空间有一个（或多个）子集为遍历集，则其补集中的所有状态都是瞬态。</p>
+<p>[!important] 定理 42.1
+任何转移矩阵至少有一个平稳分布。</p></div>
+<p>可通过以下引理证明定理 42.1。</p>
+<div class="callout"><div class="callout-title">Important</div><p>引理 42.1
+对任何转移矩阵 \(Q\)，其所有特征值的绝对值都小于或等于 \(1\)。</p>
+<p>[!note]- 证明
+反证。设 \(\exists\) 特征值 \(|\lambda_m|>1\)。考虑
+$$
+> \mathbf{p}_t=(Q')^t\mathbf{p}_0=\mathbf{A}\,\text{diag}(\lambda_i^t)\,\mathbf{A}^{-1}\mathbf{p}_0=\mathbf{A}\big(\lambda_1^t a_{1,0},\ldots,\lambda_m^t a_{m,0},\ldots,\lambda_n^t a_{n,0}\big)' \tag{42.1}
+> $$
+因 \(|\lambda_m|>1\)，存在初始分布使 \(a_{m,0}\ne0\)，\(\lim_{t\to\infty}\lambda_m^t a_{m,0}=\infty\)。\(\mathbf{A}\) 可逆，第 \(m\) 列不能全零，故 \(\mathbf{p}_t\) 中至少一元素趋于无穷，与 \(\mathbf{p}_t\) 为概率分布矛盾。\(\blacksquare\)</p>
+<p>[!important] 引理 42.2
+对任何转移矩阵 \(Q\)，至少有一个特征值等于 \(1\)。</p>
+<p>[!note]- 证明
+反证。设不然，则要么所有特征值绝对值严格小于 \(1\)，要么有些特征值等于 $-1$、其余绝对值严格小于 \(1\)。</p>
+<p><strong>情形 1</strong>（所有 \(|\lambda_i|<1\)）：由 (42.1) \(\mathbf{p}_t\to\mathbf{0}\)，与概率分布矛盾。</p>
+<p><strong>情形 2</strong>（有些 \(\lambda_j=-1\)、其余 \(|\lambda_i|<1\)）：\(t\to\infty\)，WLOG \(|\lambda_i|<1\)（\(i\in\{1,\ldots,m-1\}\)）、\(\lambda_j=-1\)（\(j\in\{m,\ldots,n\}\)），由 (42.1) \(\lim_{t\to\infty}\mathbf{p}_t=(-1)^t\mathbf{A}(0,\ldots,0,a_{m,0},\ldots,a_{n,0})'\) (42.2)，即 \(\mathbf{p}_t\) 在正负之间振荡，对某初始分布 \((a_{m,0},\ldots,a_{n,0})\) 至少一个非零，极限分布在正负区间跳动，不可能为概率分布。故至少一特征值为 \(1\)。\(\blacksquare\)</p>
+<p>[!important] 引理 42.3
+对任何转移矩阵 \(Q\)，特征值 \(1\) 至少能有一个为概率分布的特征向量。</p>
+<p>[!note]- 证明
+由 \(Q\) 至少有一特征值 \(1\)，可重写 \(\mathbf{p}=Q'\mathbf{p}\Rightarrow(\mathbf{I}-Q')\mathbf{p}=\mathbf{0}\)，记 \(\mathbf{M}\equiv\mathbf{I}-Q'\)，\(\mathbf{M}\mathbf{p}=\mathbf{0}\) (42.3)。由转移矩阵定义，\(\mathbf{M}\) 对角元非负、非对角元非正。对 \(\mathbf{p}=(p_1,\ldots,p_n)'\)，(42.3) 给出 \(\underbrace{d_1}_{\ge0}p_1=\underbrace{-s_{1,2}}_{\ge0}p_2+\cdots+\underbrace{-s_{1,n}}_{\ge0}p_n\) 等。必有至少一个 \(i\) 使 \(d_i>0\)（否则 \(\mathbf{M}=\mathbf{I}\)，任何 \(\mathbf{p}\) 平稳，证毕）。WLOG \(d_m>0\)，则取 \(p_m\) 足够大使 \((p_1,\ldots,p_k)\) 每元素非负。故总能找到对应特征值 \(1\) 的非负元素特征向量，归一化（除以元素之和使和为 \(1\)）即得概率分布，亦即一特定平稳分布。定理 42.1 证毕。\(\blacksquare\)</p>
+<p>[!important] 定理 42.2
+任何有唯一遍历集的转移矩阵有唯一平稳分布。</p>
+<p>[!note]- 引理 42.4 与证明
+<strong>引理 42.4</strong>：任何平稳分布必对瞬态赋零概率。证明：由瞬态定义，瞬态有严格正概率离开且永不返回，故命中瞬态的概率沿转移严格递减——设状态 \(n\) 瞬态，若 \(p_{n,0}>0\) 则 \(p_{n,t}\) 严格递减，故任何平稳分布须 \(p_{n,0}=0\)。</p>
+<p><strong>定理 42.2 证明</strong>：平稳分布对瞬态赋零概率、可忽略，考虑只有一个遍历集、无瞬态的情形；则每个状态都有严格正概率在有限步内被到达。反证。设有两个不同平稳分布 \(\mathbf{p}_1\ne\mathbf{p}_2\)，\(Q'\mathbf{p}_1=\mathbf{p}_1\)、\(Q'\mathbf{p}_2=\mathbf{p}_2\)。则 \(\forall\lambda\in\mathbb{R}\)，\(Q'[\lambda\mathbf{p}_1+(1-\lambda)\mathbf{p}_2]=\lambda\mathbf{p}_1+(1-\lambda)\mathbf{p}_2\)。故 \(\bar{\mathbf{p}}=\lambda\mathbf{p}_1+(1-\lambda)\mathbf{p}_2\)（所有元素非负的某 \(\lambda\)）也是平稳分布。对某 \(\lambda=\lambda_0\)，\(\bar{\mathbf{p}}\) 某些元素为负，而 \(\lambda=1\) 时全非负，故存在 \(\tilde\lambda\) 使所有元素非负且至少一元素为零。但每状态有严格正概率在有限步内被到达，矛盾，故不能多于一个平稳分布；由定理 42.1 知有唯一平稳分布。\(\blacksquare\)</p>
+<p>[!important] 定理 42.3
+在唯一遍历集与唯一平稳分布的情形，系统将渐进收敛到其唯一平稳分布，与初始分布无关。</p>
+<p>[!note]- 证明
+引理 42.2 已证所有特征值绝对值严格小于 \(1\)、或等于正的 \(1\)。定理 42.2 已证唯一遍历集情形只有一个平稳分布；现证只有一个特征值为 \(1\)（反证）：设不然 \(\exists\lambda_1=\lambda_2=1\)，由引理 42.3 各对应一个为概率分布的平稳分布向量 \(\mathbf{p}_1,\mathbf{p}_2\)，由 \(\mathbf{A}\) 可逆它们是不同（线性无关）概率分布，与唯一平稳分布矛盾。故只有一特征值 \(1\)，WLOG \(\lambda_1=1\)、\(|\lambda_i|<1\)（\(i\ne1\)）。由 (42.1)，
+$$
+> \lim_{t\to\infty}\mathbf{p}_t=\mathbf{A}\big(\lambda_1^t a_{1,0},\ldots,\lambda_n^t a_{n,0}\big)'=\mathbf{A}\,(a_{1,0},0,\ldots,0)'
+> $$
+它收敛到对应 \(\lambda_1=1\) 的特征向量乘以常数，即唯一平稳分布（因初始分布 \(\mathbf{p}_0\) 是概率分布、\(Q\) 是转移矩阵，任意步数的结果都须是概率分布；极限分布与平稳分布成常数比例，故必为平稳分布本身）。\(\blacksquare\)</p></div>
+</div>
+<div class="lang en">
+<h1>42. Markov Process</h1>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 42.1 (Markov process)
+A first-order Markov process \(\{x_t\}\) is a stochastic process with the property that for \(\forall k\ge1\) and \(\forall t\),
+$$
+> \mathbb{P}(x_{t+1}|x_t,x_{t-1},\ldots,x_{t-k})=\mathbb{P}(x_{t+1}|x_t)
+> $$</p>
+<p>[!important] Definition 42.2 (Markov chain)
+A Markov chain is a Markov process on a finite state space.</p>
+<p>[!important] Definition 42.3 (Transition matrix)
+The transition matrix (or Markov matrix or stochastic matrix) of a Markov chain with \(n\) states can be expressed as an \(n\times n\) matrix
+$$
+> Q=\begin{bmatrix}q_{1,1} & q_{1,2} & \ldots & q_{1,n}\\ q_{2,1} & q_{2,2} & \ldots & q_{2,n}\\ \vdots & \vdots & \vdots & \vdots\\ q_{n,1} & q_{n,2} & \ldots & q_{n,n}\end{bmatrix}
+> $$
+where \(q_{i,j}\) is the probability of having state \(z_j\) in the next period given state \(z_i\) in this period. Note that \(\sum_{j=1}^n q_{i,j}=1\) for \(i=1,2,\ldots,n\).</p></div>
+<p>Let \(\mathbf{p}_t=(p_{1,t},\ldots,p_{n,t})'\) be the probability distribution over \(n\) states at date \(t\) with \(\sum_{i=1}^n p_{i,t}=1\). Then it follows that \(\mathbf{p}_{t+1}=Q'\mathbf{p}_t\), so an \(m\)-step transition can be described as \(\mathbf{p}_{t+m}=(Q')^m\mathbf{p}_t\).</p>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 42.4 (Ergodic set)
+Let \(S=\{s_1,\ldots,s_n\}\) be a set of states. A set \(E\subseteq S\) is called an <strong>ergodic set</strong> if \(\sum_{s_i\in E}q_{j,i}=1\) for \(\forall j\) s.t. \(s_j\in E\), and no subset of \(E\) has this property.</p>
+<p>[!tip] Remark 42.1
+The intuition behind the definition of ergodic set: starting from any state in the ergodic set, the probability of moving to a state inside the ergodic set sum up to 1, which means it is not possible to move out of the ergodic set from any state inside it. No subset having this property requires that there is always strictly positive probability for each state to be visited at some point once we start with any state in the ergodic set. This is where the meaning of "ergodic" comes from.</p>
+<p>[!important] Definition 42.5 (Transient state)
+A state is called <strong>transient</strong> if there is positive probability of leaving that state and never returning.</p>
+<p>[!tip] Remark 42.2
+By the definition of transient state, if there is one (or multiple) subset(s) of the state space as ergodic set(s), then all the states in its(their) complement are transient states.</p>
+<p>[!important] Theorem 42.1
+Any transition matrix has at least one stationary distribution.</p></div>
+<p>We can prove theorem 42.1 by proving the following lemmas.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Lemma 42.1
+For any transition matrix \(Q\), all of its eigenvalues are less or equal to 1 in absolute values.</p>
+<p>[!note]- Proof
+By way of contradiction. Suppose there exists an eigenvalue \(|\lambda_m|>1\). Consider
+$$
+> \mathbf{p}_t=(Q')^t\mathbf{p}_0=\mathbf{A}\,\text{diag}(\lambda_i^t)\,\mathbf{A}^{-1}\mathbf{p}_0=\mathbf{A}\big(\lambda_1^t a_{1,0},\ldots,\lambda_m^t a_{m,0},\ldots,\lambda_n^t a_{n,0}\big)' \tag{42.1}
+> $$
+Since \(|\lambda_m|>1\), there exists an initial distribution such that \(a_{m,0}\ne0\), then \(\lim_{t\to\infty}\lambda_m^t a_{m,0}=\infty\). Since \(\mathbf{A}\) is invertible, the \(m\)th column cannot be all zeros, so at least one element in \(\mathbf{p}_t\) goes to infinity, which contradicts that \(\mathbf{p}_t\) is a probability distribution. \(\blacksquare\)</p>
+<p>[!important] Lemma 42.2
+For any transition matrix \(Q\), at least one eigenvalue is equal to one.</p>
+<p>[!note]- Proof
+By way of contradiction. Suppose not, then it must be that all eigenvalues are strictly less than 1 in absolute values, or some eigenvalues equal to $-1$ and others are strictly less than 1 in absolute values.</p>
+<p><strong>Case 1</strong> (all \(|\lambda_i|<1\)): by (42.1), \(\mathbf{p}_t\to\mathbf{0}\), which contradicts that it is a probability distribution.</p>
+<p><strong>Case 2</strong> (some \(\lambda_j=-1\), others \(|\lambda_i|<1\)): as \(t\to\infty\), WLOG \(|\lambda_i|<1\) for \(i\in\{1,\ldots,m-1\}\) and \(\lambda_j=-1\) for \(j\in\{m,\ldots,n\}\), by (42.1) again \(\lim_{t\to\infty}\mathbf{p}_t=(-1)^t\mathbf{A}(0,\ldots,0,a_{m,0},\ldots,a_{n,0})'\) (42.2), i.e. \(\mathbf{p}_t\) is oscillating between positive and negative; for some initial distribution at least one of \((a_{m,0},\ldots,a_{n,0})\) is non-zero, the limiting distribution jumps back and forth between positive and negative, which makes it impossible for \(\mathbf{p}_t\) to be a probability distribution. So at least one eigenvalue is 1. \(\blacksquare\)</p>
+<p>[!important] Lemma 42.3
+For any transition matrix \(Q\), the eigenvalue 1 can have at least one eigenvector that is a probability distribution.</p>
+<p>[!note]- Proof
+Since \(Q\) has at least one eigenvalue that equals to 1, we can rewrite \(\mathbf{p}=Q'\mathbf{p}\Rightarrow(\mathbf{I}-Q')\mathbf{p}=\mathbf{0}\), denote \(\mathbf{M}\equiv\mathbf{I}-Q'\), \(\mathbf{M}\mathbf{p}=\mathbf{0}\) (42.3). By definition of transition matrix, \(\mathbf{M}\) has non-negative diagonal values and non-positive non-diagonal values. So, for \(\mathbf{p}=(p_1,\ldots,p_n)'\), (42.3) becomes \(\underbrace{d_1}_{\ge0}p_1=\underbrace{-s_{1,2}}_{\ge0}p_2+\cdots+\underbrace{-s_{1,n}}_{\ge0}p_n\) etc. There must be at least one \(i\) such that \(d_i>0\) (otherwise \(\mathbf{M}=\mathbf{I}\), and any \(\mathbf{p}\) is a stationary distribution, and the proof is done). WLOG let \(d_m>0\), then \(p_m\) can be large enough such that each element of \((p_1,\ldots,p_k)\) is non-negative. So we have shown that we can always find an eigenvector with non-negative elements corresponding to the eigenvalue 1. Then, we can normalize the eigenvector by dividing it by its elements add up to 1, which makes it a probability distribution, in particular, a stationary distribution. And thus theorem 42.1 is proved. \(\blacksquare\)</p>
+<p>[!important] Theorem 42.2
+Any transition matrix with a unique ergodic set has a unique stationary distribution.</p>
+<p>[!note]- Lemma 42.4 and Proof
+<strong>Lemma 42.4</strong>: Any stationary distribution must put zero probability on transient states. Proof: by definition, the transient states have strictly positive probability of leaving and never returning, so the probability of hitting a transient state must strictly decrease along the transitions; suppose state \(n\) is transient, then \(p_{n,t}\) strictly decreases in \(t\) if \(p_{n,0}>0\), which makes it impossible for any stationary distribution to have \(p_{n,0}>0\). So, it must be that \(p_{n,0}=0\).</p>
+<p><strong>Proof of Theorem 42.2</strong>: stationary distributions put zero probability on transient states and thus can be ignored; now consider the case with only one ergodic set and no transient states; then every state has strictly positive probability to be reached within finite steps. We show uniqueness of stationary distribution by way of contradiction. Suppose there are two distinct stationary distributions \(\mathbf{p}_1\ne\mathbf{p}_2\). Then \(Q'\mathbf{p}_1=\mathbf{p}_1\) and \(Q'\mathbf{p}_2=\mathbf{p}_2\). Then, for any \(\lambda\in\mathbb{R}\), \(Q'[\lambda\mathbf{p}_1+(1-\lambda)\mathbf{p}_2]=\lambda\mathbf{p}_1+(1-\lambda)\mathbf{p}_2\). So \(\bar{\mathbf{p}}=\lambda\mathbf{p}_1+(1-\lambda)\mathbf{p}_2\) for some \(\lambda\) such that all elements in \(\bar{\mathbf{p}}\) are non-negative is also a stationary distribution. For some \(\lambda=\lambda_0\), we will have some elements in \(\bar{\mathbf{p}}\) be negative, while for \(\lambda=1\) all elements are non-negative, so there must exist a \(\tilde\lambda\) such that all elements are non-negative such that at least one element is zero. But every state has strictly positive probability of being reached within finite steps, so it contradicts that there cannot be more than one stationary distribution; and by theorem 42.1 we know that there is a unique stationary distribution. \(\blacksquare\)</p>
+<p>[!important] Theorem 42.3
+In the case of unique ergodic set and unique stationary distribution, the system will asymptotically converge to its unique stationary distribution regardless of the initial distribution.</p>
+<p>[!note]- Proof
+First of all, in lemma 42.2, we have shown that all eigenvalues are either strictly less than 1 in absolute values, or equal to positive one. Then, in theorem 42.2, we showed that there is only one stationary distribution in the case of unique ergodic set. Now, we can show that there is only one eigenvalue as 1 by way of contradiction. Suppose not, then there are two eigenvalues \(\lambda_1=\lambda_2=1\). Lemma 42.3 implies that each of \(\lambda_1\) and \(\lambda_2\) correspond to a stationary distribution vector as the eigenvector (\(\mathbf{p}_1\) and \(\mathbf{p}_2\) respectively) as a probability distribution. By invertibility of \(\mathbf{A}\) (and the fact that \(\mathbf{A}\) contains the eigenvectors for each of the eigenvalues), \(\mathbf{p}_1\) and \(\mathbf{p}_2\) are distinct (linearly independent) probability distributions, which contradicts that there is a unique stationary distribution. So we have proved that in the case of unique ergodic set, there is only one eigenvalue as 1. WLOG let \(\lambda_1=1\) and \(|\lambda_i|<1\) for \(i\ne1\). Rewrite (42.1):
+$$
+> \lim_{t\to\infty}\mathbf{p}_t=\mathbf{A}\big(\lambda_1^t a_{1,0},\ldots,\lambda_n^t a_{n,0}\big)'=\mathbf{A}\,(a_{1,0},0,\ldots,0)'
+> $$
+which converges to the eigenvector corresponding to \(\lambda_1=1\) times a constant, which is the unique stationary distribution (this is true because the initial distribution \(\mathbf{p}_0\) is indeed a probability distribution and \(Q\) is a transition matrix, so the outcome of arbitrary steps must also be a probability distribution; since the limiting distribution is proportional by a constant to the stationary distribution, it must be the stationary distribution itself). \(\blacksquare\)</p></div>
+</div>
+
+    
+  </div>
+
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

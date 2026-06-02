@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>把结算价「拨」一下：衍生品操纵，究竟错在哪一步 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>把结算价「拨」一下：衍生品操纵，究竟错在哪一步</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2022 JFE]</span> Competition and Manipulation in Derivative Contract Markets</div>
+        <div class="paper-source-authors"><a href="/research/author/anthony-lee-zhang/">Anthony Lee Zhang</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">衍生品</span>
+        
+        
+        
+        
+        <span class="tag">市场操纵</span>
+        
+        
+        
+        
+        <span class="tag">做市与流动性</span>
+        
+        
+        
+        
+        <span class="tag">理论模型</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Zhang (2022, <em>Journal of Financial Economics</em>)</strong>：当交易者用衍生品对冲某个风险因子时，他们可以通过在现货市场买卖标的物来「拨动」结算价、抬高自己的合约收益——这就是合约市场操纵。模型给出了一个把「操纵」从普通策略性交易里干净切出来的定义，并证明：在均衡里，操纵可以让<strong>所有人</strong>都更糟；而对现货交易者的合约头寸设上限，反而可能是一次帕累托改进。</p></div>
+<h2 id="1">1 引言：一桩「说不清」的罪</h2>
+<p>先说一个让监管者很尴尬的事实。</p>
+<p>过去二十年里，全球的监管机构为「市场操纵」开出的罚单是以<strong>十亿美元</strong>计的：操纵外汇基准的银行被罚了超过 <code>$10 billion</code>，操纵 LIBOR 等利率基准的罚了 <code>$8 billion</code> 以上，连一个听上去很冷门的 ISDAFIX 利率掉期基准，相关罚款也超过了 <code>$500 million</code>。光是 2018 年，UBS 就因为试图操纵黄金期货被 CFTC 罚了 <code>$15 million</code>。</p>
+<p>罚得这么狠，照理说「操纵」应该是一个定义得很清楚的罪名。可现实恰恰相反：1936 年的《商品交易法》把操纵列为非法，<strong>却从没给它下过定义</strong>。CFTC 在实务里的口径，大致是「带着制造人为价格的意图去交易」。问题在于，「意图」这两个字，几乎抓不住。</p>
+<p>为什么抓不住？因为任何一个稍微有规模的交易者，都知道自己的买卖会推动价格——这本就是他们在市场里扮演的角色：管理、优化自己交易的价格冲击 (price impact)。如果把「明知会推动价格还去交易」就算作操纵，那几乎所有的策略性交易都得算操纵。法律文献近些年干脆转向了「intent（意图）」这个标准，靠的是从邮件、聊天记录里翻出来的「smoking gun」——某个交易员亲口承认「我就是要把价格推上去」。可一个法务上足够老练的机构，只要在录音里<strong>闭口不谈</strong>自己的价格冲击，就能轻松绕开这套指控。</p>
+<p>于是我们就有了一个很别扭的局面：一个被罚了几百亿美元的罪名，经济学上却<strong>说不清它到底是什么</strong>——它和合法的策略性交易，边界在哪里？（关于「操纵」在另一个场景里的样子，可参见<a href="/research/corporate-actions-and-the-manipulation-of-retail-investors/">《一次「拆股」，如何把散户钉在最高点》</a>。）</p>
+<p>这篇论文要做的，就是把这条边界画出来。</p>
+<h2 id="2">2 一个最小的操纵模型</h2>
+<p>要画清这条线，作者搭了一个尽可能简单的模型。它的两块「积木」其实很直观。</p>
+<p><strong>第一块积木：合约与现货之间的流动性错配 (liquidity mismatch)。</strong> 衍生品市场往往比它脚下的现货市场大得多。论文给的例子很扎实：天然气的 Platts Inside FERC Houston Ship Channel（HSC）基准，背后每周实际成交的物理天然气大约只有 <code>1.4 million MMBtu</code>；可挂钩这个基准、以它做现金结算的 ICE HSC 基差期货，许多交割月的未平仓量 (open interest) 超过 <code>75 million MMBtu</code>。利率市场更夸张：SOFR 背后是每天约 <code>$1 trillion</code> 的隔夜回购，而 2014 年挂钩 USD LIBOR 的合约名义本金已超过 <code>$160 trillion</code>。</p>
+<p>这种错配意味着什么？意味着只要你在合约上的头寸够大，你在现货市场上<strong>哪怕亏一点</strong>去拨动那个小小的基准价，合约上赚的也可能远远盖过现货上的损失。</p>
+<p><strong>第二块积木：现货市场不完全竞争。</strong> 现货交易者人数有限（模型里是 <code>n &gt; 2</code> 个），所以他们的买卖会移动价格。如果他们都老老实实地按竞争方式报价，现货市场会以「零成交」出清，拍卖价 <code>p</code> 恰好等于风险因子 <code>ψ</code>，所有人都能用衍生品完美地分担因子风险。可一旦有人有动机去扭曲现货，这个「第一最优」就破了。</p>
+<p>把这两块拼起来：一个手握大额合约头寸、又能在现货市场动手的交易者，会<strong>故意</strong>去买（或卖）现货，把结算价朝着对自己合约有利的方向推。论文把这种行为，正式命名为<strong>合约市场操纵 (contract market manipulation)</strong>。</p>
+<h2 id="3">3 三种价格冲击，与那唯一「越界」的一步</h2>
+<p>现在到了全篇最关键的一步——也是这篇论文真正的贡献所在。</p>
+<p>作者注意到，在这个模型里，价格冲击会对交易者的行为产生<strong>三种</strong>截然不同的影响：</p>
+<ul>
+<li><strong>第一，少提供流动性。</strong> 有价格冲击时，交易者报价曲线（bid curve）的斜率会比竞争市场下更平——他们不愿意为别人当「价格的减震器」。</li>
+<li><strong>第二，压价（shade bids）。</strong> 面对自己的库存冲击 (inventory shock)，交易者不会一比一地去现货市场对冲，而是有所保留地少交易一点。</li>
+<li><strong>第三，</strong>也是<strong>唯一一种合约市场独有的：</strong>同时活跃在合约和现货两个市场的交易者，会为了抬高自己<strong>合约头寸</strong>上的收益，去扭曲现货交易。</li>
+</ul>
+<p>请注意前两种效应：它们在<strong>任何</strong>不完全竞争的金融市场里都存在，是策略性交易的「常态」，谈不上什么罪。真正越界的，只有第三种。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>这就是本文给「操纵」下的经济学定义：<strong>把价格冲击的第三种效应——为合约收益而扭曲现货——单独切出来，定义为非法操纵。</strong> 它干净地把操纵和合法的流动性管理、库存对冲区分开了。</p></div>
+<p>而且这个定义还自带一个漂亮的政策推论。设想一个极端政策：<strong>禁止现货市场参与者持有任何衍生品合约</strong>。在这个世界里，现货交易者照样会少提供流动性、照样会压价（前两种效应还在），但他们<strong>再也没有任何合约头寸的收益可以去影响</strong>，于是第三种效应——操纵——被精准地清零了。</p>
+<p>现实中当然很难真去禁止。但它给了监管者一把极好用的概念尺子：面对一个可疑的交易模式，去问一句——</p>
+<blockquote>
+<p>「如果这位交易者<strong>手里没有任何合约头寸</strong>，他在现货市场的这套操作，还能用利润最大化来解释吗？」</p>
+</blockquote>
+<p>解释不了，那就指向操纵。这比在录音里找「smoking gun」要硬气得多。</p>
+<h2 id="4">4 模型：从拍卖的一阶条件，看见那一项「操纵」</h2>
+<p>接着，一个自然的问题是：操纵这件事，在数学上长什么样？</p>
+<p>模型让 <code>n</code> 个现货交易者在一个<strong>统一价格双向拍卖 (uniform-price double auction)</strong> 里交易一种同质的现货品。每个交易者都是风险厌恶的，持有 CARA 效用——若最终财富为 <code>W</code>，则</p>
+<p>$$U_i(W) = -e^{-\alpha W}$$</p>
+<p>风险因子 <code>ψ</code>、各人的因子敞口 <code>x_i</code>、合约头寸 <code>c_i</code> 都各自独立正态：<code>x_i ∼ N(0, σ_x²)</code>，<code>x_H ∼ N(0, σ_H²)</code>，<code>ψ ∼ N(μ_ψ, σ_ψ²)</code>。一个现货交易者净买入 <code>z_i</code> 单位现货，能拿到的货币收益是</p>
+<p>$$\psi z_i - \tfrac{1}{2}\kappa z_i^2$$</p>
+<p>这里 <code>ψ z_i</code> 说明现货的边际价值随风险因子 <code>ψ</code> 波动；二次项 <code>-½κ z_i²</code> 则是<strong>储存/持有成本</strong>——它让交易者对现货的边际价值递减，<code>κ</code> 越大，意味着总储存容量越小。</p>
+<p>但真正关键的一步，在于把<strong>合约结算</strong>也写进这位交易者在拍卖里的目标。在第 5 阶段，每位合约持有人按现货拍卖价拿到 <code>c_i · p</code> 的结算。于是现货交易者 <code>i</code> 在拍卖那一刻，要最大化的总货币收益是：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{a1}{\psi z_i} \;-\; \cssId{a2}{\tfrac{1}{2}\kappa z_i^2} \;-\; \cssId{a3}{p\, z_i} \;+\; \cssId{a4}{c_i\, p}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>现货的基本面价值，ψ 是已实现的风险因子</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>储存/持有成本，κ 是总储存容量的倒数（容量越小 κ 越大）</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>以拍卖价 p 买入 z_i 单位现货的成本</div><div class="mathanno-card" data-target="a4"><span class="mathanno-num">4</span>合约结算收益——操纵的「命门」：p 本身会被 z_i 推动</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>整个故事的张力，全压在前三项和最后一项 <code>c_i p</code> 的对立上。前三项是「我在现货上能赚多少、要花多少」；最后一项是「我的合约能结算到多少」。而 <code>p</code> 不是给定的——在不完全竞争里，多买一单位现货 <code>z_i</code>，就会把拍卖价 <code>p</code> 往上抬一点（价格冲击 <code>λ</code>）。</p>
+<p>把这一点写进一阶条件。对 <code>z_i</code> 求导（注意 <code>dp/dz_i = λ</code>）：</p>
+<p>$$\psi - \kappa z_i - p - \lambda z_i + \lambda c_i = 0$$</p>
+<p>整理出现货交易者的需求：</p>
+<p>$$z_i = \frac{\psi - p + \lambda c_i}{\kappa + \lambda}$$</p>
+<p>这个式子，把三种效应一次性摊在了阳光下。分母里的 <code>κ + λ</code>（而不是竞争市场下的 <code>κ</code>）——那是<strong>第一种</strong>效应：价格冲击让需求曲线更平、流动性更少。分子里 <code>ψ - p</code> 决定了基于基本面的交易，会被 <code>1/(κ+λ)</code> <strong>压扁</strong>——那是<strong>第二种</strong>效应：压价。</p>
+<p>而那一项 <code>λ c_i / (κ+λ)</code>，才是这篇论文的主角。它说：一个持有正的合约头寸 <code>c_i &gt; 0</code> 的交易者，会<strong>额外</strong>多买现货——不为别的，只为把 <code>p</code> 推高、让自己 <code>c_i p</code> 的结算更值钱。这就是<strong>操纵项</strong>。<code>c_i = 0</code> 时它消失，操纵随之消失——这正好印证了上一节那个「禁止持仓」的概念基准。</p>
+<h2 id="5">5 主要结果：操纵如何让所有人都更糟</h2>
+<p>于是反转出现了。</p>
+<p>你可能会想：既然操纵者能在结算价上「占便宜」，那他们至少是受益的吧？亏的应该是那些不能碰现货的纯对冲者 (pure hedger)？</p>
+<p>模型给出的答案是：<strong>不一定。在均衡里，操纵可以让所有人都更糟——包括操纵者自己。</strong></p>
+<p>道理在于，操纵对现货交易者的福利有<strong>两股反向</strong>的力量：</p>
+<ul>
+<li><strong>一股是正的转移。</strong> 期望上，每个交易者都能把结算价往<strong>有利于自己合约头寸</strong>的方向推一点，于是平均而言能赚到一笔转移收益。</li>
+<li><strong>另一股是变大的风险。</strong> 但<strong>所有人都这么干</strong>的时候，每个人的操纵都在给结算价注入非基本面的噪声。结算价 <code>p</code> 不再是风险因子 <code>ψ</code> 的干净信号，而成了一个带噪声的信号——这就给<strong>每一个</strong>合约持有人都凭空造出了一笔<strong>非基本面基差风险 (non-fundamental basis risk)</strong>。</li>
+</ul>
+<p>对风险厌恶的交易者来说，第二股力量可以强到压过第一股。论文证明：在某些参数下，现货交易者<strong>作为一个群体，在均衡里反而比大家都竞争行事时更糟</strong>。如下图 1 所示，现货交易者的福利完全可能落到负区间。</p>
+<div class="article-image"><img alt="Figure 1: Spot trader welfare" src="assets/figure-1.png" /></div>
+<p><em>Figure 1: Spot trader welfare</em></p>
+<p>更妙的是均衡里那个反直觉的行为：现货交易者会<strong>过度对冲 (over-hedge)</strong>——买入<strong>超过</strong>自己真实因子敞口的合约头寸。为什么？因为合约头寸 <code>c_i</code> 越大，操纵的边际收益越大（回看那一项 <code>λ c_i</code>）。所以他们会主动加码合约，不是为了对冲，而是为了在现货市场操纵时赚得更多。这反过来给了监管者一条经验线索：<strong>当一个头寸大到远超对冲所需，本身就是操纵意图的信号。</strong></p>
+<p>而既然现货交易者<strong>自己</strong>都可能在均衡里受损，那么一个限制他们合约头寸规模的监管，就有可能是一次<strong>帕累托改进 (Pareto improvement)</strong>——既保护了纯对冲者，也保护了操纵者自己。这是全篇最漂亮的政策含义：position limits 不是零和的「劫富济贫」，而可能让<strong>每一类</strong>参与者都变好。</p>
+<h2 id="6">6 市场结构：储存、竞争与头寸上限</h2>
+<p>最后，论文把镜头拉远，问了一个监管者最关心的问题：<strong>什么样的市场结构，最容易被操纵？</strong></p>
+<p>模型给出三条干净的比较静态：</p>
+<ul>
+<li><strong>储存容量越小，扭曲越大。</strong> <code>κ</code> 是现货的边际储存成本（容量的倒数）。<code>κ</code> 越大、容量越小，同样幅度的价格扭曲只需更少的现货交易就能实现——操纵变「便宜」了，扭曲随之变大。</li>
+<li><strong>固定总储存容量，竞争越充分，扭曲越小。</strong> 把同样的总容量分散到更多的现货交易者 <code>n</code> 身上，单个交易者的价格冲击 <code>λ</code> 下降，谁也没法轻易把价格单方面拨到自己想要的位置。于是——这是一个很重要的政策点——<strong>现货市场的竞争政策，即便完全不增加总储存容量，也能缓解操纵风险。</strong></li>
+<li><strong>合约头寸越大，扭曲越大。</strong> 直接对应那一项 <code>λ c_i</code>。所以对现货交易者的<strong>合约头寸上限 (contract position limits)</strong>，是压低操纵风险最直接的工具。</li>
+</ul>
+<p>而且作者强调，这些操纵导致的基差风险，<strong>可以用监管者通常就能看到的数据估出来</strong>——在一般化的模型里，它能被表达成各人报价曲线的斜率、以及现货交易者库存冲击与合约头寸的方差/协方差的函数。这把一个抽象的理论，变成了一件监管者手边真能用的量尺：用来决定头寸上限该设多大，甚至决定一个新提出的衍生品合约该不该获批。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这篇论文放回它所在的研究长河里，脉络会清晰很多。</p>
+<p>最早把「期货操纵」搬上理论台面的，是 Kyle (1983) 和同期的 Garbade &amp; Silber (1983)、Paul (1984)——他们开始追问现金结算 (cash settlement) 的期货合约，会不会天然地诱发对现货价格的操纵。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>接着，<strong>Kumar &amp; Seppi (1992)</strong> 是真正的先声：他们把 Kyle (1985) 那个带做市商的共同价值市场，嫁接上挂钩现货价的期货合约，第一次在均衡里刻画了现金结算期货的操纵。<strong>Pirrong (2001)</strong> 沿着现金结算这条线继续深挖，<strong>Dutt &amp; Harris (2005)</strong> 则专门讨论了该如何为现货交易者设置头寸上限来防操纵。本文相对于这一脉的关键推进在于：它<strong>内生化了交易者的合约头寸</strong>（于是才能谈福利），并允许交易者之间有丰富的异质性（于是模型才能真的去拟合数据）。</p>
+<p>另一条平行的线，是「价格被用作其他决策的输入」时产生的操纵动机——<strong>Goldstein &amp; Guembel (2008)</strong>、<strong>Bond et al. (2010)</strong>、<strong>Bond &amp; Goldstein (2015)</strong> 这一支的反馈效应 (feedback) 操纵。再加上一大批实证：<strong>Abrantes-Metz et al. (2012)</strong> 查 LIBOR、<strong>Griffin &amp; Shams (2018)</strong> 查 VIX、<strong>Evans et al. (2018)</strong> 查外汇——它们把「操纵真实存在」这件事钉得很死。（基准本身在 LIBOR 退场后如何被重新设计、谁更「干净」，可参见<a href="/research/benchmarking-benchmarks/">《给基准做体检：LIBOR 退场之后，谁更「干净」？》</a>与<a href="/research/the-sofr-discount/">《把「信用敏感」弄丢之后，借钱反而更便宜了——重读 SOFR 折价》</a>。）</p>
+<p>技术上，本文的现货拍卖模型，站在线性-二次双向拍卖 (linear-quadratic double auction) 这一支肩膀上：Kyle (1989)、Vayanos (1999)、Vives (2011)、Rostek &amp; Weretka (2015)、Du &amp; Zhu (2017)、Duffie &amp; Zhu (2017)、Lee &amp; Kyle (2018)。还有一支研究<strong>最优基准设计</strong>的——Duffie et al. (2017)、Duffie &amp; Dworczak (2018)、Coulter et al. (2018)、Baldauf et al. (2018)。本文与它们相关，但目标不同：它要的不是「设计一个最优机制」，而是<strong>量化既有市场里的操纵风险</strong>。</p>
+<p>把这些线交汇起来，本文的位置就很清楚了：据作者所知，<strong>这是第一篇同时给合约市场和现货市场行为做微观基础、并系统分析合约市场操纵福利效应的论文。</strong></p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：操纵和普通的「策略性交易/价格冲击」到底差在哪？</strong></p>
+<blockquote>
+<p>差在那「第三种」效应。模型里价格冲击有三重作用：少提供流动性、压价、以及为合约头寸收益而扭曲现货。前两种在任何不完全竞争市场都有，是合法常态；唯独第三种是合约市场独有的，本文把它——也只把它——定义为非法操纵。</p>
+</blockquote>
+<p><strong>Q：既然操纵者能在结算价上占便宜，为什么均衡里他们反而可能更糟？</strong></p>
+<blockquote>
+<p>两股反向力量。期望上他们能把结算价推向有利方向（正的转移），但当所有人都操纵时，结算价方差变大，给每个合约持有人凭空造出非基本面基差风险。对风险厌恶者，这股风险效应可强到压过转移收益，使现货交易者作为群体净亏。</p>
+</blockquote>
+<p><strong>Q：为什么「储存容量越小，操纵越严重」？</strong></p>
+<blockquote>
+<p><code>κ</code> 是现货的边际储存成本，也是总容量的倒数。<code>κ</code> 越大、容量越小，实现同样的价格扭曲只需更小的现货交易量，操纵变得更「便宜」，因而扭曲更大。</p>
+</blockquote>
+<p><strong>Q：竞争（更多现货交易者）为什么能在不增加储存容量的前提下减小扭曲？</strong></p>
+<blockquote>
+<p>固定总储存容量、把它摊到更多交易者身上，单个交易者的价格冲击 <code>λ</code> 下降，谁也无法轻易单方面把价格拨到自己想要的位置，操纵诱因被稀释。这给出了一个非储存性的政策杠杆：竞争政策本身就能防操纵。</p>
+</blockquote>
+<p><strong>Q：为什么理性交易者会「过度对冲」，买入超过真实敞口的合约？</strong></p>
+<blockquote>
+<p>因为操纵的边际收益随合约头寸 <code>c_i</code> 递增（需求里那一项 <code>λ c_i</code>）。多持合约，不为对冲，而为在现货操纵时赚更多。所以一个远超对冲所需的巨大头寸，本身就是操纵意图的信号。</p>
+</blockquote>
+<p><strong>Q：「禁止现货参与者持有衍生品」这条政策真能落地吗？</strong></p>
+<blockquote>
+<p>多数场景下不现实。但它的价值在于充当一个<strong>概念基准</strong>：监管者可以问「如果这位交易者不持有任何合约头寸，他在现货市场的行为还能用利润最大化解释吗？」不能解释，就指向操纵——这比靠录音里的「intent」要可操作得多。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把模型搬到公司债大宗交易/结算基准上。</strong>
+【经济故事】公司债缺乏连续的现货价格，很多衍生与组合产品依赖少数成交价或评估价做基准；持有大额合约的交易者，是否有动机去「拨动」那几笔稀薄的现货成交？这正是本文「流动性错配 + 不完全竞争」的教科书场景。
+【可行性】中。TRACE 有逐笔成交，但要识别「谁同时持有挂钩合约」很难——需要监管端的持仓数据。识别上可借鉴本文的「头寸—库存协方差」表达式。（合约形态本身如何被设计，可参见<a href="/research/block-trade-contracting/">《看不见交易商的手：一份大宗交易合约该长成什么形状》</a>。）</p>
+<p><strong>2. 外资持有人与新兴市场基准的操纵风险。</strong>
+【经济故事】当一国的利率/汇率基准背后的现货市场很薄，而离岸衍生品市场很厚，外资持有人的合约头寸相对本地现货容量可能极大——本文预测，正是这种「错配 + 头寸大」的组合最易被操纵。
+【可行性】中偏低。需要离岸合约持仓 + 在岸现货成交的匹配数据，跨境数据可得性是主要障碍；但比较静态（容量、竞争、头寸）可以做跨市场的横截面检验。</p>
+<p><strong>3. 用持仓数据，把「过度对冲」当作操纵意图的可检验信号。</strong>
+【经济故事】模型给出一个干净的可证伪命题：操纵者的合约头寸会系统性地<strong>超过</strong>其真实因子敞口。能不能直接在数据里看到「头寸 − 敞口」这个楔子，并验证它与随后现货市场的异常交易相关？
+【可行性】高（在有持仓数据的市场，如 CFTC 的 Commitments of Traders / 大户报告）。识别上把「头寸超出对冲所需的部分」作为右侧变量，看它是否预测结算窗口附近的现货异常量。</p>
+<p><strong>4. LIBOR→SOFR 转换是否改变了操纵的「技术可行性」。</strong>
+【经济故事】SOFR 背后是每天约 <code>$1 trillion</code> 的回购成交，远比 LIBOR 的报价式基准「厚」。按本文逻辑，更大的现货容量（更小的 <code>κ</code>）应当降低操纵导致的扭曲。这是一个现成的「自然实验」式叙事。
+【可行性】中。可比较两套基准下挂钩合约结算窗口附近的现货价格异常，难点在于控制同期的其他制度变化。</p>
+<h2 id="">我的判断</h2>
+<p>这篇论文最让我欣赏的，是它的<strong>克制</strong>。它没有去追求一个能拟合一切的复杂结构，而是用一个最小模型，把一件法律上吵了几十年、经济学上一直含糊的事——「操纵到底是什么」——切出了一条<strong>可操作</strong>的边界：价格冲击的第三种效应。这个定义之所以有力，是因为它自带一个可检验、可执行的反事实（「若无合约头寸，行为还能否被利润最大化解释」），把监管从「找录音」的泥潭里捞了出来。「操纵可以是帕累托劣化的、而 position limits 可以是帕累托改进」这个结论，也漂亮地翻转了「头寸上限是在惩罚某一方」的直觉。</p>
+<p>对识别（或者说，对模型落地）我有两点保留。其一，全篇的福利结论高度依赖 CARA-正态-线性二次这套设定带来的解析便利；储存成本 <code>κ</code> 被解释成「容量倒数」是一个相当强的简化，真实的现货市场里，容量、运输、交割摩擦未必能被一个二次项干净地概括，这会直接影响那几条比较静态的外部效度。其二，模型假设风险因子 <code>ψ</code> 在拍卖前已被共同观测——非基本面噪声<strong>完全</strong>来自操纵；可现实中的结算价噪声里，多少来自操纵、多少来自普通的流动性冲击，恰恰是实证上最难分的一刀，而这正是把模型「拿去估」时绕不开的关。</p>
+<p>后续我最想看到的，是有人真的把第 5 节那个「用监管常见数据估操纵基差风险」的承诺<strong>兑现</strong>成一篇实证——哪怕只在一个市场（HSC 天然气基差期货是天然的候选）上，把「头寸 − 敞口」的楔子和结算窗口的现货异常量对上号。一个能落地的操纵度量，比再多一个漂亮的均衡，对监管者更有用。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Bond, P., Goldstein, I. (2015). Government Intervention and Information Aggregation by Prices. <em>Journal of Finance</em> 70(6), 2777–2812.</li>
+<li>Bond, P., Goldstein, I., Prescott, E.S. (2010). Market-Based Corrective Actions. <em>Review of Financial Studies</em> 23(2), 781–820.</li>
+<li>Du, S., Zhu, H. (2017). What is the Optimal Trading Frequency in Financial Markets? <em>Review of Economic Studies</em> 84(4), 1606–1651.</li>
+<li>Duffie, D., Zhu, H. (2017). Size Discovery. <em>Review of Financial Studies</em> 30(4), 1095–1150.</li>
+<li>Dutt, H.R., Harris, L.E. (2005). Position Limits for Cash-Settled Derivative Contracts. <em>Journal of Futures Markets</em> 25(10), 945–965.</li>
+<li>Garbade, K.D., Silber, W.L. (1983). Cash Settlement of Futures Contracts: An Economic Analysis. <em>Journal of Futures Markets</em> 3(4), 451–472.</li>
+<li>Goldstein, I., Guembel, A. (2008). Manipulation and the Allocational Role of Prices. <em>Review of Economic Studies</em> 75(1), 133–164.</li>
+<li>Griffin, J.M., Shams, A. (2018). Manipulation in the VIX? <em>Review of Financial Studies</em> 31(4), 1377–1417.</li>
+<li>Kumar, P., Seppi, D.J. (1992). Futures Manipulation with "Cash Settlement". <em>Journal of Finance</em> 47(4), 1485–1502.</li>
+<li>Kyle, A.S. (1983). A Theory of Futures Market Manipulations. Center for the Study of Futures Markets, Columbia Business School.</li>
+<li>Kyle, A.S. (1985). Continuous Auctions and Insider Trading. <em>Econometrica</em> 53(6), 1315–1335.</li>
+<li>Kyle, A.S. (1989). Informed Speculation with Imperfect Competition. <em>Review of Economic Studies</em> 56(3), 317–355.</li>
+<li>Pirrong, C. (2001). Manipulation of Cash-Settled Futures Contracts. <em>Journal of Business</em> 74(2), 221–244.</li>
+<li>Vives, X. (2011). Strategic Supply Function Competition With Private Information. <em>Econometrica</em> 79(6), 1919–1966.</li>
+<li>Zhang, A.L. (2022). Competition and Manipulation in Derivative Contract Markets. <em>Journal of Financial Economics</em> 144(2), 396–413.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 引言：一桩「说不清」的罪</a></li>
+        <li><a href="#2">2 一个最小的操纵模型</a></li>
+        <li><a href="#3">3 三种价格冲击，与那唯一「越界」的一步</a></li>
+        <li><a href="#4">4 模型：从拍卖的一阶条件，看见那一项「操纵」</a></li>
+        <li><a href="#5">5 主要结果：操纵如何让所有人都更糟</a></li>
+        <li><a href="#6">6 市场结构：储存、竞争与头寸上限</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#">我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

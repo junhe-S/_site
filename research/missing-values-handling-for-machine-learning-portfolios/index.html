@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>缺失值的「无用之用」：当朴素的均值填补，打败了教科书里的最优算法 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>缺失值的「无用之用」：当朴素的均值填补，打败了教科书里的最优算法</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2024 JFE]</span> Missing Values Handling for Machine Learning Portfolios</div>
+        <div class="paper-source-authors"><a href="/research/author/andrew-y-chen/">Andrew Y. Chen</a>, <a href="/research/author/jack-mccoy/">Jack McCoy</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">机器学习</span>
+        
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">缺失值</span>
+        
+        
+        
+        
+        <span class="tag">因子动物园</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Chen &amp; McCoy (2024, <em>Journal of Financial Economics</em>)</strong>：把 159 个横截面收益预测变量喂进机器学习模型时，「该拿缺失值怎么办」是个绕不过去的脏活。作者发现，最朴素的<strong>横截面均值填补 (cross-sectional mean imputation)</strong> 与教科书力荐的<strong>期望最大化 (expectation-maximization, EM)</strong> 算法，给出的组合收益几乎一模一样——而且 EM 有时还会因为引入估计噪声而<strong>跑输</strong>。背后的原因，是关于这批数据的三个朴素事实。</p></div>
+<h2 id="1">1 一个没人愿意谈的脏活</h2>
+<p>机器学习进入资产定价，是过去十年最热闹的一条线。故事的主线大家都熟：把预测变量(predictor)的数量往上堆。Freyberger et al. (2020) 用了 62 个，Kelly et al. (2023) 用了 138 个，Han et al. (2022) 一口气堆到 193 个；每一篇都告诉你，把变量集扩到 Fama and French (2015) 那五个之外，是有经济回报的——Sharpe 比率能从 0.8 一路冲到 1.8 甚至 2.4。</p>
+<p>但热闹背后，埋着一件没人愿意拿到台面上说的脏活：<strong>缺失值 (missing values)</strong>。</p>
+<p>道理很简单。单看一个预测变量，缺失也许不算严重；可一旦你要把上百个变量「拼」到一起喂给模型，麻烦就被指数级地放大了。机器学习的标准做法是：一只股票只要有任何一个变量缺失，这只股票这个月就不能用。于是问题来了——作者算了一笔账：如果你老老实实按这个标准，去用 Chen and Zimmermann (2022) 数据里<strong>观测最全的 125 个变量</strong>，那么你会丢掉 <strong>99%</strong> 的股票。</p>
+<p>99%。这不是「处理一下」就能糊弄过去的小数目。它意味着：当变量数量足够多时，研究者根本没得选——<strong>要么填补缺失值，要么没有样本</strong>。填补（imputation）听上去很危险，可机器学习的研究者别无选择。</p>
+<p>那么，该怎么填？</p>
+<h2 id="2">2 张力：教科书的「最优」，和华尔街的「将就」</h2>
+<p>这里就出现了本文的核心张力。</p>
+<p>填补缺失值这件事，统计学有一套成熟的理论。最权威的教科书 Little and Rubin (2019) 力荐的是 <strong>EM 算法</strong>——它在合适的假设下<strong>更少偏误、更有效率</strong>，理论上能给出更准的预测。可在资产定价的实践里，几乎所有人用的却是最「将就」的办法：<strong>横截面均值填补</strong>——一个变量这个月缺了，就用这个月所有其他股票在该变量上的横截面均值去补。Gu et al. (2020)、Freyberger et al. (2020)、Kozak et al. (2020)，全都这么干。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>一个值得记住的小技巧：本文在填补前先把每个变量标准化成零均值、单位方差。于是「均值填补」实际上等价于——<strong>缺失的地方一律填 0</strong>。它简单到近乎偷懒。</p></div>
+<p>教科书说 EM 更好，实践里大家用最笨的均值——这两者之间，到底谁对？一个自然的问题是：如果认真用上 EM，机器学习组合的表现会不会显著更好？</p>
+<p>作者把这个问题摆上了实验台。他们用 159 个预测变量，搭配主成分回归 (principal component regression, PCR)、神经网络、梯度提升等多种预测方法，把均值填补和 EM 正面对撞。结果令人意外：</p>
+<ul>
+<li>用<strong>均值填补</strong>、再用三层神经网络做预测、排序成多空十分位组合，年化收益是 <strong>66%</strong>（等权）/ <strong>37%</strong>（市值加权）；</li>
+<li>换成<strong>横截面 EM</strong>填补，几乎纹丝不动：<strong>67%</strong>（等权）/ <strong>39%</strong>（市值加权）。</li>
+</ul>
+<div class="article-image"><img alt="Figure 2: Missing Data Effects in 159-Predictor Strategies using PCR. Each" src="assets/figure-2.png" /></div>
+<p><em>Figure 2: Missing Data Effects in 159-Predictor Strategies using PCR. Each</em></p>
+<p>把预测方法换成 PCR，结论一样：均值填补给出 51%／32%，EM 给出 54%／36%——差异小到可以忽略。这种「不管你用什么填补方法，结果都差不多」的<strong>不变性 (invariance)</strong>，贯穿了几乎所有的预测方法与填补方法组合。</p>
+<p>一个理论上严格占优的算法，在实践中却毫无优势可言。这就是论文要解释的反常。</p>
+<h2 id="3">3 真正关键的一步：观测数据里，根本没有缺失数据的信息</h2>
+<p>为什么会这样？真正关键的一步，在于回答一个更底层的问题：<strong>当一个值缺失时，我们手上观测到的那些数据，到底能告诉我们多少关于这个缺失值的信息？</strong></p>
+<p>EM 之所以「理应更优」，全部的本钱就在于——它假设观测数据里藏着缺失数据的线索，于是用回归把这条线索榨出来。而均值填补则干脆地说：观测数据里没什么有用的，缺了就填个平均数算了。</p>
+<p>作者的核心论断是：在横截面预测变量这批数据上，<strong>均值填补的「悲观假设」其实更接近真相</strong>。他们用三个朴素的事实把这一点钉死。</p>
+<p><strong>事实一：缺失以「时间大块」的形式出现。</strong> 对那些这个月缺了账面市值比 (book-to-market) 的股票，有 <strong>81%</strong> 在此前的<strong>每一个月</strong>也都缺这个变量。换句话说，缺失极其持久——一个变量从「没数据」到「有数据」往往是一次性的结构断点，之前一直缺，之后一直有。这意味着，<strong>时间序列方向上几乎没有关于缺失值的信息</strong>。</p>
+<p><strong>事实二：变量之间横截面相关性很弱。</strong> 几乎所有变量两两之间的相关系数都落在 <strong>−0.25 到 +0.25</strong> 之间；前 10 个主成分加起来也只解释了总方差的 <strong>40%</strong>（关于这套「横截面里到底有几维信息」的讨论，可参见<a href="/research/shrinking-the-cross-section/">《压缩横截面：因子动物园的尽头，不是更少的因子，而是更聪明的收缩》</a>）。变量彼此几乎不相关，那么用「别的观测到的变量」去推断「这个缺失的变量」，自然也榨不出多少东西。</p>
+<p><strong>事实三：缺失本身也是成块的，按数据来源组织。</strong> 这一条最微妙。账面市值比和盈余价格比 (earnings-to-price) 的横截面相关性其实不低，约 0.3——按理说可以互相填补。可问题是：在缺账面市值比的股票里，约有 <strong>90%</strong> 同时也缺盈余价格比。<strong>两个变量一起缺</strong>，那点 0.3 的相关性就根本用不上。</p>
+<div class="article-image"><img alt="Figure 4: Imputation Errors in a Random Masking Exercise. We measure" src="assets/figure-4.png" /></div>
+<p><em>Figure 4: Imputation Errors in a Random Masking Exercise. We measure</em></p>
+<p>三条合在一起，结论就水落石出了：<strong>观测到的变量，几乎不携带关于缺失变量的信息</strong>。既然如此，那 EM 辛辛苦苦估计出来的那点「线索」，本质上都是噪声。你一刀切地填上横截面均值，反而干净利落。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>更糟的是，在某些设定下，EM 不只是「没用」，而是<strong>有害</strong>。作者按微盘、小盘、大盘分别建模时一切尚好；可一旦把所有股票放在一起同时建模，EM 给出的市值加权收益常常<strong>小于</strong>朴素均值填补。原因正是：EM 引入的估计噪声，在预测结构没搭好的时候会被放大；而随机掩码 (random masking) 实验显示，EM 的填补误差恰恰在小股票里最大。</p></div>
+<h2 id="4-em">4 EM 到底在做什么：把最核心的那个方程拆开看</h2>
+<p>为了让上面的直觉落地，我们把本文方法的核心方程拆开讲一遍。它不是一个结构经济模型，而是一套填补算法，但其几何含义非常清晰。</p>
+<p>设有 \(N\) 只股票，股票 \(i\) 在第 \(t\) 月有一个预测变量向量 \(X_{i,t}\)。把它拆成缺失的子向量 \(X_{miss|i,t}\) 和观测到的子向量 \(X_{obs|i,t}\)。比如 \(X_{i,t}=\begin{bmatrix}1&2&3&4\end{bmatrix}'\)，若第一、三个元素缺失，则 \(X_{miss|i,t}=[1\ 3]\)、\(X_{obs|i,t}=[2\ 4]\)。</p>
+<p>EM 的思路是：先估出股票间的协方差矩阵 \(\hat\Sigma_t\)（\(\Sigma_t\) 是 \(X_{i,t}\) 的横截面协方差矩阵，可以像 BLLP 那样用两两都有数据的股票对算样本协方差），再用「缺失块对观测块做回归」的方式去填。最核心的填补公式是：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{a0}{\hat{X}_{miss|i,t}} = \cssId{a1}{\hat{\beta}_{i,t}'}\,\cssId{a2}{X_{obs|i,t}}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a0"><span class="mathanno-num">1</span>对股票 i、第 t 月那些缺失变量的填补值</div><div class="mathanno-card" data-target="a1"><span class="mathanno-num">2</span>回归系数，由协方差矩阵 Σ̂ 的「缺失—观测」分块算出，等于 Σ̂(miss,obs)·Σ̂(obs,obs)⁻¹</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">3</span>该股票当月真正观测到的那些变量</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这一步的直觉是：<strong>把缺失的变量，写成观测到的变量的线性组合</strong>，权重 \(\hat\beta_{i,t}\) 来自变量间的协方差结构。如果变量之间相关性强，\(\hat\beta_{i,t}\) 就能借观测值有效地预测缺失值；如果相关性弱（也就是上一节的「事实二」），\(\hat\beta_{i,t}\) 趋近于 0，那么——</p>
+<p>$$\hat{X}_{miss|i,t}=\hat{\beta}_{i,t}'\,X_{obs|i,t}\;\longrightarrow\;0.$$</p>
+<p>而由于变量已被标准化成零均值，<strong>填 0 恰恰就是均值填补</strong>。</p>
+<p>于是反转出现了：在「弱相关 + 成块缺失」的世界里，EM 的最优解会自动退化成均值填补。两者之所以给出几乎相同的组合收益，不是巧合，而是数据结构的必然。EM 唯一多出来的，是估计 \(\hat\Sigma_t\) 和 \(\hat\beta_{i,t}\) 时引入的那一层<strong>估计噪声</strong>——在它本该带来收益的地方它带不来，在它不该添乱的地方它却添了乱。</p>
+<p>这套填补方法的合理性，最终依赖 Rubin (1976) 的<strong>可忽略性 (ignorability)</strong> 假设。作者坦承，159 个变量的缺失机制错综复杂——Fig. 1 的「缺失地图」里有几十种不同形状，要为每一种写一个缺失模型几乎不可能，所以只能退而假设可忽略，把焦点放在 EM 这类方法上。</p>
+<h2 id="5">5 顺带回答了一个老问题：横截面到底有几维？</h2>
+<p>高维预测变量天然引出一个问题：这上百个维度里，真正对预期收益有贡献的有几个？本文的主成分回归给出的答案很微妙，且高度依赖测量方式。</p>
+<p>按标准方法算主成分，约 <strong>75 个 PC</strong> 才能撑起等权口径下 50%／年的潜在收益，<strong>40 个 PC</strong> 撑起市值加权的约 20%。但标准 PCA 是无监督的，它无视了收益信息。一旦用 Huang et al. (2022) 的 <strong>scaled-PCA</strong> 把收益信息纳进来，维数骤降：等权口径约 <strong>30 个 PC</strong>，市值加权只要 <strong>15 个</strong>。</p>
+<div class="article-image"><img alt="Table 4: shows the result across all combinations of the 6 imputa-" src="assets/table-4.png" /></div>
+<p><em>Table 4: shows the result across all combinations of the 6 imputa-</em></p>
+<p>这个发现，恰好接上了关于横截面因子结构的长期争论：如果你关心<strong>所有</strong>股票，那预测的维度确实很多；可如果你只看<strong>大股票</strong>，一个中等强度的因子结构是站得住的。换句话说，「因子动物园」有多大，取决于你站在哪个市值段上看（这条线也可参见<a href="/research/the-origins-of-the-factor-zoo-investors-weakly-substitute/">《弱替代：因子动物园是从哪里冒出来的？》</a>）。</p>
+<h2 id="6">6 缺失从哪来：三个驱动力</h2>
+<p>本文还有一个常被忽视、却极有价值的贡献：它细致地刻画了 Chen and Zimmermann (2022) 数据里缺失值的<strong>来源</strong>。作者归纳出三个驱动力——(1) 底层数据本身缺失；(2) 变量需要很长的历史数据；(3) 用缺失来「替代」交互效应。</p>
+<p>几个有代表性的数字（均为 1985 年的观测占比）：规模 (size) 观测率 99.8%、12 个月动量 91.6%；一旦要用会计数据，掉到 60%–75%（账面市值比 74.4%、资产增长 67.1%）；要用分析师预测数据，最多到 50%（EPS 预测修正 46.0%）；要 5 年销售增长这类长历史的，约 40%。最极端的是「高卖空兴趣股票中的机构持股」(Asquith et al. 2005)——它既要专门的底层数据、又用缺失去代表交互效应，1985 年观测率只有 <strong>0.2%</strong>。</p>
+<p>第三个驱动力尤其值得玩味：很多「缺失」其实是研究者<strong>人为</strong>塞进去的——资产有形性 (asset tangibility) 只对制造业公司计算、对其余公司一律记为缺失；派息率 (payout yield) 把非正派息的股票剔成缺失。这其实是在用「缺失」这个标签，去近似一个本该用交互项建模的非单调关系。作者把「把这些交互效应正确还原」留给了未来研究——这是一条很好的延伸方向。</p>
+<h2 id="7">7 文献脉络</h2>
+<p>把这条线捋一捋，它其实是两股河流的交汇。</p>
+<p>一股来自统计学的缺失数据理论：Rubin (1976) 提出可忽略性，Dempster, Laird and Rubin (1977) 给出 EM 算法，最终沉淀为 Little and Rubin (2019) 的经典教科书——这一脉的信条是「认真建模、追求无偏与有效」。</p>
+<p>另一股来自资产定价里的机器学习浪潮：从 Fama and French (2015) 的五因子出发，Gu et al. (2020) 把机器学习系统地引入实证资产定价，Kozak et al. (2020) 用收缩处理高维横截面，Freyberger et al. (2020)、Kelly et al. (2023)、Han et al. (2022) 不断把变量数量推高；而 Chen and Zimmermann (2022) 的开源数据集，则为整条线提供了「弹药库」。这一脉里，几乎所有人都顺手用了均值填补——却很少有人停下来问一句：这样做到底对不对？</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>本文正是站在两股河流的交汇处，为「资产定价里那个无处不在的均值填补」提供了一个<strong>严格的辩护</strong>。与它同期的 Freyberger et al. (2023)、Bryzgalova et al. (2023)、Beckmeyer and Wiedemann (2023) 各自主张一种更精巧的填补算法，本文则反其道而行——它不去推销某一种算法，而是冷静地论证：在这类数据上，精巧未必有用，朴素恰恰够用。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：均值填补和 EM 收益几乎一样，会不会只是因为多空组合本身就把噪声平均掉了？</strong></p>
+<blockquote>
+<p>不全是。作者把不变性展示在多种预测方法（PCR、神经网络、GBRT）和多种填补方法上，且配有随机掩码实验直接度量<strong>填补误差</strong>本身——误差量级小、且集中在小股票，这是机制层面的证据，而不只是组合层面的「碰巧抵消」。</p>
+</blockquote>
+<p><strong>Q：那 EM 在哪些情况下真的会跑输？这是不是个边角案例？</strong></p>
+<blockquote>
+<p>不是边角。当把所有股票放在一起同时建模（而非按市值分层）时，EM 的市值加权收益常常小于均值填补。机制是估计噪声在「预测结构没搭好」时被放大。这恰恰提醒：填补方法不能脱离下游的预测结构单独评价。</p>
+</blockquote>
+<p><strong>Q：把缺失一律填 0，难道不会系统性地低估某些真实非零的变量吗？</strong></p>
+<blockquote>
+<p>会有偏误，这正是 EM 理论上占优的地方。但本文的论点是：由于变量弱相关、缺失成块，观测数据能纠正的偏误极其有限，而 EM 为此付出的估计噪声代价可能更大。是「偏误小一点」还是「方差小一点」更划算——在这批数据上，答案偏向后者。</p>
+</blockquote>
+<p><strong>Q：这个结论能推广到公司债、期权这些其它资产类别吗？</strong></p>
+<blockquote>
+<p>不能直接推广。作者明确把期权类变量排除在外（期权价格 1990 年代才有）。结论的成立依赖「弱横截面相关 + 成块缺失」这两个性质；换一类资产，这两个性质未必同样成立，需要重新检验。</p>
+</blockquote>
+<p><strong>Q：横截面到底几维，为什么标准 PCA 和 scaled-PCA 差这么多（75 vs 30）？</strong></p>
+<blockquote>
+<p>因为标准 PCA 是无监督的，只看方差不看收益；它会把一些「方差大但不预测收益」的方向也算进去。scaled-PCA 用收益信息加权后，真正对收益有贡献的维度被凸显出来，所以维数更低。这说明「有几维」本身就是个依赖测量方式的问题。</p>
+</blockquote>
+<p><strong>Q：人为塞进去的缺失（如资产有形性只算制造业）也用均值填补，会不会把信息抹掉？</strong></p>
+<blockquote>
+<p>会，而且这正是本文坦承的局限。这类缺失编码了交互效应，填均值等于丢掉了「非制造业」这一信息。作者把「还原这些交互项」列为未来工作——这也是下面一个研究方向的来源。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把「人为缺失」还原成交互项，再评填补方法。</strong>
+【经济故事】本文指出资产有形性、派息率等变量的缺失其实编码了交互效应。若把这些缺失拆回「变量 × 行业/派息状态」的交互项，机器学习模型本可自己学到非单调关系，填补方法的优劣排序可能因此改变。
+【可行性】高。数据现成（CZ 开源数据 + 各变量构造代码），识别靠对照实验（还原前 vs 还原后的组合收益），唯一的工作量在于逐个变量改写构造代码。</p>
+<p><strong>2. 把同一套缺失值诊断搬到公司债市场。</strong>
+【经济故事】公司债的横截面变量（评级、久期、流动性指标、发行人会计变量）缺失同样严重，但其相关结构未必像股票这样弱。若公司债变量横截面相关更强，则 EM 可能真的占优——这会反过来界定本文结论的适用边界。
+【可行性】中。需要 TRACE + Mergent FISD + Compustat 合并，缺失诊断（时间块、相关性、来源块）可照搬本文方法；难点在于公司债观测频率低、变量构造不统一（这条线可参见<a href="/research/glass-box-machine-learning-and-corporate-bond-returns/">《把机器学习的黑箱拆成玻璃箱：公司债收益率能被「看懂」地预测吗？》</a>）。</p>
+<p><strong>3. 外资持有人数据里的缺失结构与填补。</strong>
+【经济故事】跨境持仓数据（如 13F、各国托管数据）的缺失高度依赖披露制度，缺失本身可能与「是否外资」相关，违反可忽略性。研究填补方法在「非随机缺失」下的稳健性，对外资—流动性这条线尤为关键。
+【可行性】中偏低。识别难点在于缺失机制不可忽略，需要外生的披露规则变化（如某国突然要求申报）来检验，数据可得性是主要瓶颈。</p>
+<p><strong>4. 填补噪声如何沿预测结构传导。</strong>
+【经济故事】本文发现 EM 在「不分层建模」时跑输。一个自然的问题是：填补噪声放大的程度，是否可以写成预测模型复杂度（正则化强度、网络深度）的函数？这能给出「该用多复杂的模型 + 多精巧的填补」的配对法则。
+【可行性】高。纯方法/模拟研究，用本文公开代码即可做敏感性矩阵；识别不是问题，工作量在于系统的网格实验。</p>
+<h2 id="9">9 我的判断</h2>
+<p>这是一篇「做减法」的好论文，贡献清晰且诚实。</p>
+<p><strong>贡献。</strong> 它为机器学习资产定价里一个无处不在、却几乎从未被认真审视的操作——均值填补——提供了严格的辩护，并且不是靠「结果差不多」一句话糊弄过去，而是用三个可检验的数据事实把机制讲透，再用 EM 退化成均值填补的逻辑收尾。它顺带刻画的缺失来源（159 个变量逐一）和维数测量（标准 PCA vs scaled-PCA），都是有长期参考价值的「公共品」。在我看来，它最大的价值是方法论上的：提醒大家「理论最优」与「实践有用」之间，隔着一层叫<strong>估计噪声</strong>的东西。</p>
+<p><strong>对识别的担忧。</strong> 全部结论都建立在 Rubin (1976) 可忽略性之上，而作者自己也承认 159 个变量的缺失机制复杂到无法建模。一旦缺失是<strong>非随机</strong>的（比如「人为塞进去的缺失」本身就携带信息），均值填补抹掉的可能就不是噪声而是信号。此外，结论强依赖「弱横截面相关 + 成块缺失」这两个性质——它们在股票上成立，但论文没有、也不可能保证它们在别处成立。</p>
+<p><strong>后续想看到什么。</strong> 我最想看到的是把「人为缺失」还原成交互项之后，填补方法的优劣是否会重新洗牌；以及把这套缺失诊断搬到公司债、跨境持仓等横截面相关更强、缺失更可能非随机的市场上去——那里，才是真正能检验「朴素是否依然够用」的试金石。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Asquith, P., Pathak, P. A., Ritter, J. R. (2005). Short interest, institutional ownership, and stock returns. <em>Journal of Financial Economics</em> 78, 243–276.</li>
+<li>Bryzgalova, S., Lerner, S., Lettau, M., Pelger, M. (2023). Missing financial data. <em>Available at SSRN 4106794</em>.</li>
+<li>Chen, A. Y., McCoy, J. (2024). Missing values handling for machine learning portfolios. <em>Journal of Financial Economics</em> 155, 103815.</li>
+<li>Chen, A. Y., Zimmermann, T. (2022). Open source cross-sectional asset pricing. <em>Critical Finance Review</em>.</li>
+<li>Dempster, A. P., Laird, N. M., Rubin, D. B. (1977). Maximum likelihood from incomplete data via the EM algorithm. <em>Journal of the Royal Statistical Society, Series B</em> 39, 1–22.</li>
+<li>Fama, E. F., French, K. R. (2015). A five-factor asset pricing model. <em>Journal of Financial Economics</em> 116, 1–22.</li>
+<li>Freyberger, J., Neuhierl, A., Weber, M. (2020). Dissecting characteristics nonparametrically. <em>Review of Financial Studies</em> 33, 2326–2377.</li>
+<li>Freyberger, J., Höppner, B., Neuhierl, A., Weber, M. (2023). Missing data in asset pricing panels. <em>University of Chicago Becker Friedman Institute Working Paper</em>.</li>
+<li>Gu, S., Kelly, B., Xiu, D. (2020). Empirical asset pricing via machine learning. <em>Review of Financial Studies</em> 33, 2223–2273.</li>
+<li>Han, Y., He, A., Rapach, D., Zhou, G. (2022). Expected stock returns and firm characteristics: E-enet, assessment, and implications. <em>Working Paper</em>.</li>
+<li>Huang, D., Jiang, F., Li, K., Tong, G., Zhou, G. (2022). Scaled PCA: A new approach to dimension reduction. <em>Management Science</em> 68, 1678–1695.</li>
+<li>Kelly, B., Malamud, S., Pedersen, L. H. (2023). Principal portfolios. <em>Journal of Finance</em>.</li>
+<li>Kozak, S., Nagel, S., Santosh, S. (2020). Shrinking the cross-section. <em>Journal of Financial Economics</em> 135, 271–292.</li>
+<li>Little, R. J., Rubin, D. B. (2019). <em>Statistical Analysis with Missing Data</em>, vol. 793. Wiley.</li>
+<li>Rubin, D. B. (1976). Inference and missing data. <em>Biometrika</em> 63, 581–592.</li>
+<li>Xiong, R., Pelger, M. (2023). Large dimensional latent factor modeling with missing observations and applications to causal inference. <em>Journal of Econometrics</em>.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个没人愿意谈的脏活</a></li>
+        <li><a href="#2">2 张力：教科书的「最优」，和华尔街的「将就」</a></li>
+        <li><a href="#3">3 真正关键的一步：观测数据里，根本没有缺失数据的信息</a></li>
+        <li><a href="#4-em">4 EM 到底在做什么：把最核心的那个方程拆开看</a></li>
+        <li><a href="#5">5 顺带回答了一个老问题：横截面到底有几维？</a></li>
+        <li><a href="#6">6 缺失从哪来：三个驱动力</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#9">9 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

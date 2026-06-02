@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GARCH 从哪儿来？——把「波动会扎堆」这件事，还给投资者的情绪 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>GARCH 从哪儿来？——把「波动会扎堆」这件事，还给投资者的情绪</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2004 RFS]</span> Whence GARCH? a Preference-Based Explanation for Conditional Volatility</div>
+        <div class="paper-source-authors"><a href="/research/author/grant-mcqueen/">Grant McQueen</a>, <a href="/research/author/keith-vorkink/">Keith Vorkink</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">行为金融</span>
+        
+        
+        
+        
+        <span class="tag">条件波动率</span>
+        
+        
+        
+        
+        <span class="tag">前景理论</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>McQueen &amp; Vorkink (2004, Review of Financial Studies)</strong>：他们写下一个带「心理记分牌」的偏好型资产定价模型，让投资者在被意外收益「惊扰」之后，<strong>暂时对新闻更敏感</strong>，于是即便新闻本身是 i.i.d. 的，股票收益也会内生地长出 GARCH 式的波动聚集（volatility clustering），并且复现「坏消息比好消息更能放大波动」的不对称。</p></div>
+<h2 id="1">1 一个我们天天在用、却说不清来历的东西</h2>
+<p>做实证金融的人,对一个词大概熟到可以闭着眼睛敲出来:GARCH。</p>
+<p>只要你处理的是收益率序列,几乎没有哪篇论文不会在某个角落写上一句「我们用 广义自回归条件异方差 (generalized autoregressive conditional heteroskedasticity, GARCH) 来刻画波动」。它太好用了:波动会扎堆——平静的日子连成一串平静,动荡的日子又连成一串动荡——而 GARCH 恰好能把这种「波动的记忆」装进一个简洁的递归式里。从 Engle (1982) 的 ARCH 到 Bollerslev (1986) 的 GARCH,我们对「波动如何聚集」的统计刻画,可以说精致到了令人叹为观止的地步。</p>
+<p>但请你停下来想一个更笨、也更要命的问题:<strong>波动为什么会扎堆?</strong></p>
+<p>我们对「波动聚集长什么样」了如指掌,对「波动聚集从哪儿来」却几乎一无所知。这正是这篇论文标题里那个挑衅式的发问——<em>Whence GARCH?</em>(GARCH 从何而来?)。作者 McQueen 和 Vorkink 一上来就点破了这层尴尬:我们的统计知识 (statistical knowledge) 令人印象深刻,我们的理论知识 (theoretical knowledge) 却「显得贫乏 (paltry)」。</p>
+<p>那么,教科书式的默认答案是什么?</p>
+<div class="callout"><div class="callout-title">Note</div><p>默认解释是:<strong>新闻本身就是扎堆来的</strong>。仿佛有一个「外生的新闻供应商」,有些时段加班加点地放消息,另一些时段则跑去度假。波动之所以聚集,只是因为基本面消息聚集而已。</p></div>
+<p>这个解释听上去顺理成章,却经不起推敲。一来,宏观新闻的发布是高度规律的(就业数据、CPI 都有固定日历);二来,Schwert (1989) 以及 Pagan &amp; Schwert (1990) 早就发现,股票收益的波动和经济基本面之间,关系其实<strong>很弱</strong>。把波动聚集全推给「基本面新闻的节奏」,等于把问题踢给了一个我们看不见、也对不上账的黑箱。</p>
+<p>于是,一个自然的问题是:能不能让波动聚集<strong>从市场内部长出来</strong>,而不是外生地假设进去?</p>
+<h2 id="2">2 已有的两条路,和它们各自的「半截」</h2>
+<p>在 McQueen 和 Vorkink 之前,想给波动聚集找一个「内生」来源的人,大致走了两条路。</p>
+<p><strong>第一条路,是异质交易者 (heterogeneous traders)。</strong> Brock &amp; LeBaron (1996) 证明,如果不同交易者调整策略的时间尺度比交易本身慢,波动就会自相关;Cao, Coval &amp; Hirshleifer (2002)、Kelly &amp; Steigerwald (1999) 这些工作,则让「场外观望的投资者」陆续入场,从而制造出时变波动;Peng &amp; Xiong (2001) 让分析师消化新闻的速度变化,也能凑出 GARCH 样的收益。这些模型有一个共同的漂亮之处:新闻的<strong>生成</strong>是 i.i.d. 的,但新闻<strong>通过交易进入价格</strong>的过程被聚集了。</p>
+<p>可惜,作者指出,这条路有三处「半截」:其一,摩擦和反馈通常是<strong>对称</strong>的,解释不了好消息/坏消息的不对称;其二,市场摩擦往往是<strong>短命</strong>的,只能解释高频数据里那种转瞬即逝的聚集,管不了 Ding &amp; Granger (1996)、Bollerslev &amp; Mikkelsen (1996) 发现的<strong>长记忆</strong>;其三——也是最关键的——Engle &amp; Lee (1999) 和 Kim, Morley &amp; Nelson (2003) 证明,真正能进入风险溢价 (risk premium) 的,只有波动聚集里那个<strong>长期成分</strong>。短命的摩擦,定不了价。</p>
+<p><strong>第二条路,是杠杆与学习。</strong> Black (1976)、Christie (1982) 的杠杆模型预测坏消息后波动更高(公司杠杆被动抬升),David (1997)、Veronesi (1999) 的状态不确定性模型则用贝叶斯学习来制造条件异方差。但它们都栽在同一处:它们都<strong>错误地预测好消息之后波动会下降</strong>,这和「好消息、坏消息都抬高波动」的典型事实(stylized fact)相悖。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>把这几条「半截」叠在一起看,McQueen 和 Vorkink 要找的,其实是一个能<strong>同时</strong>做到三件事的机制:(1) 在<strong>低频</strong>上制造聚集;(2) 复现<strong>好/坏消息的不对称</strong>;(3) 让这种聚集<strong>天然就被定价</strong>。</p></div>
+<h2 id="3">3 真正关键的一步:让投资者「被惊扰」之后更敏感</h2>
+<p>故事在这里转了个弯。</p>
+<p>既然偏好型模型 (preference-based model) 已经能解释长期可预测性和过度波动,为什么不让它顺手把波动聚集也解释了?作者的出发点,是 Barberis, Huang &amp; Santos (2001,下称 BHS) 那篇名作《Prospect Theory and Asset Prices》。</p>
+<p>BHS 让投资者不只从消费 (consumption) 中获得效用,也从<strong>财富的波动</strong>中获得效用;而且他们会<strong>损失厌恶 (loss aversion)</strong>——亏一块钱的痛,大于赚一块钱的爽——并且持有一块「心理记分牌 (mental scorecard)」,记录过往的投资战绩:输多了就变得更厌恶风险。(关于前景理论如何被搬进资产定价的逻辑,可参见<a href="/research/prospect-theory-and-mean-variance-analysis/">《前景理论想「废掉」均值-方差,却反被它收编》</a>与<a href="/research/prospect-theory-in-the-field-revealed-preferences-from/">《用真金白银投出来的前景理论》</a>。)</p>
+<p>但 BHS 的记分牌只调节<strong>风险厌恶的水平</strong>。McQueen 和 Vorkink 做了一处看似微小、却点石成金的改动:</p>
+<div class="callout"><div class="callout-title">Note</div><p>记分牌不只决定投资者<strong>有多厌恶风险</strong>,还决定他们<strong>对新闻有多敏感</strong>。当一笔意外收益把记分牌「惊扰」(perturb) 之后,投资者会变得<strong>暂时格外留意、格外敏感</strong>;然后慢慢习惯新的财富水平,敏感度再缓缓回落到常态。</p></div>
+<p>为什么这一改就够了?直觉是这样的:一笔大冲击把投资者推离了他「习惯的」财富水平,他被惊动了、警觉了,于是接下来对每一条新闻都反应更剧烈——这本身就放大了<strong>下一期</strong>的波动;而这种警觉状态衰减得很慢,所以放大效应会<strong>持续好几期</strong>。新闻还是那个 i.i.d. 的新闻,但投资者「接收新闻的增益旋钮」被一次冲击拧大了,且需要时间才拧得回去。波动,就这样一期接一期地扎了堆。</p>
+<p>作者还很坦诚地承认:这条行为假设是<strong>新</strong>的,所以他们专门搬来两支心理学文献给它撑腰——Kahneman (1973) 的注意力理论(突然、强烈的刺激会触发「定向反应」,提前调动认知资源去迎接后续信息),以及 Hilgard &amp; Marquis (1940) 起源的<strong>敏化 (sensitization)</strong> 理论(一次刺激会提高对后续刺激的反应性,而反复刺激则带来习惯化)。他们甚至打了个绝妙的比方:一位密歇根的教授冬天飞去亚利桑那开会,初来时短袖出门、天天盯着天气预报、不停调温控——这正是「适应 + 注意 + 敏化」三件事在一个被温差惊扰的人身上的合体。</p>
+<h2 id="4">4 模型:把「记分牌」一步步写成方程</h2>
+<p>这是一篇有模型的论文,我们值得把它的骨架一节一节拆开。模型是一个 Lucas (1978) 式的交换经济:同质、无限存活的代理人,在消费 \(C_t\)、风险资产 \(S_t\)、无风险资产 \(B_t\) 之间分配财富。</p>
+<p><strong>第一步,效用函数。</strong> 跟 BHS 一样,代理人既从消费、也从<strong>未预期到的财富波动</strong> \(F(W_{t+1})\) 中获得效用:</p>
+<p>$$
+\max\; E_0 \sum_{t=0}^{\infty}\left[\, \delta^t U(C_t) + b_0\,\bar{C}_t^{-\gamma}\,\delta^{t+1} F(W_{t+1})\,\right]
+$$</p>
+<p>这里 \(\delta\) 是主观贴现率,\(b_0>0\) 控制「财富效用」相对「消费效用」有多重要——当 \(b_0=0\),它就退化成标准的消费型模型。作者特意选了「消费/股利」两收益经济,因为历史上<strong>消费增长和股票收益的相关性很弱</strong>:一次大的股价波动几乎不动消费,所以靠消费型风险厌恶根本掀不起后续的股票波动;只有把风险与损失厌恶定义在<strong>金融财富</strong>上,一次股价大动才能诱发足够大的厌恶与敏感度变化,进而搅动后续波动。</p>
+<p><strong>第二步,什么叫「财富波动」。</strong> 财富的得失是相对于<strong>预期</strong>来定义的:</p>
+<p>$$
+W_{t+1} = S_t X_{t+1}, \qquad X_{t+1} = R_{t+1} - E_t(R_{t+1})
+$$</p>
+<p>\(X_{t+1}\) 就是「收益冲击 (return shock)」。收益高于预期,投资者享受财务效用;低于预期,则承受财务负效用。\(F(W_{t+1})\) 的符号,完全取自 \(X_{t+1}\)。</p>
+<p><strong>第三步,财务效用与风险厌恶。</strong> 关键的 \(\lambda\) 函数登场:</p>
+<p>$$
+F(W_{t+1}) = \lambda(z_t, X_{t+1})\, W_{t+1}
+$$
+$$
+\lambda(z_t, X_{t+1}) =
+\begin{cases}
+k\,(a_0 - a_1 z_t), & X_{t+1} < 0\\[4pt]
+a_0 - a_1 z_t, & X_{t+1}\ge 0
+\end{cases}
+$$</p>
+<p>这里 \(k>1\) 是<strong>损失厌恶</strong>:亏损那一支被 \(k\) 放大(论文取 \(k=1.5\),即一笔损失对效用的冲击比同样大小的收益大 50%)。\(a_1\) 则是<strong>记分牌依赖</strong>:经历一串差收益后,\(z_t\) 为负且绝对值大,\(\lambda\) 变得又正又大,得失都被感受得更强烈——也就是说,<strong>亏过之后更厌恶风险</strong>。损失厌恶来自 Kahneman &amp; Tversky (1979) 的前景理论,记分牌依赖则对应 Thaler &amp; Johnson (1990) 的「赌资效应 (house money effect)」。</p>
+<p><strong>第四步——也是这篇论文的灵魂——记分牌的运动定律。</strong> 这是全文唯一真正「新」的方程,我们用一个带标注的形式把它讲透:</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+z_{t+1} = \cssId{a1}{\phi z_t} + \cssId{a2}{h(z_t)}\,\cssId{a3}{X_{t+1}}, \qquad \cssId{a4}{h(z_t) = a_2 |z_t| + a_3}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>记忆/衰减项,0&lt;φ≤1;φ 越接近 1,投资者一旦被惊扰就「久久不能平静」</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span><span class="lang zh">记分牌对冲击的敏感度——这一项随</span><span class="lang en">z_t</span></div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>当期收益冲击 X_{t+1}:正惊喜抬高记分牌,负惊喜压低记分牌</div><div class="mathanno-card" data-target="a4"><span class="mathanno-num">4</span><span class="lang zh">敏感度的具体形式:a_2</span><span class="lang en">z_t</span></div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>把这四步连起来,机制就一目了然了。在 BHS 里,\(h(\cdot)\) 是个常数,记分牌只是被动地记账;而在这里,\(h(z_t)=a_2|z_t|+a_3\) 让<strong>敏感度本身随记分牌的绝对值上升</strong>。一旦 \(|z_t|\) 因为一次大冲击而变大,下一期同样大小的新闻 \(X_{t+1}\) 就会<strong>更猛烈地</strong>推动记分牌,从而把高波动状态一期一期地传下去。由于 \(\phi\) 让 \(|z_t|\) 缓慢衰减回零,这种放大效应是<strong>持久</strong>的——正好对上了那个「能被定价」的低频成分。</p>
+<p>下面这张图刻画的,正是这条记分牌运动定律的形状。</p>
+<div class="article-image"><img alt="Figure 5: is related to the law of motion for the scorecard. When the" src="assets/figure-5.png" /></div>
+<p><em>Figure 5: is related to the law of motion for the scorecard. When the</em></p>
+<p><strong>第五步,均衡定价。</strong> 由于 \(z_t\) 是唯一的状态变量,我们得到一个单因子马尔可夫均衡。对 (1) 式求一阶条件,风险资产的欧拉方程 (Euler equation) 为:</p>
+<p>$$
+1 = \delta\, E_t\!\left[\left(\frac{C_{t+1}}{C_t}\right)^{-\gamma}\!\big(R_{t+1} + F'(W_{t+1})\big)\right]
+$$</p>
+<p>它有标准的解读:此刻少消费一单位、拿去投资的边际效用成本,应等于下期卖出这笔投资所得的边际效用收益——只不过在这个模型里,卖出所得既生<strong>消费效用</strong>,又生<strong>财务效用</strong>。把财务效用的导数 \(F'(W_{t+1})=\lambda(z_t,X_{t+1})[R_{t+1}-E_t(R_{t+1})]\) 代回去并整理,就得到熟悉的定价核形式:</p>
+<p>$$
+1 = E_t[m_{t+1}R_{t+1}], \qquad m_{t+1} = k_t\!\left[\left(\frac{C_{t+1}}{C_t}\right)^{-\gamma} + \lambda(z_t, X_{t+1})\right]
+$$</p>
+<p>注意这个定价核 \(m_{t+1}\) 多出来的那一块 \(\lambda(z_t,X_{t+1})\):<strong>风险溢价主要由财务效用与损失厌恶生成,而不是靠把消费的风险厌恶系数 \(\gamma\) 抬到天上去</strong>。这带来一个标准模型梦寐以求的组合——无风险利率既低又稳:</p>
+<p>$$
+R_{f,t+1} = \frac{1}{\delta\, E_t\!\left[\left(\dfrac{C_{t+1}}{C_t}\right)^{-\gamma}\right]}
+$$</p>
+<p>(这正是 Mehra &amp; Prescott (1985) 的无风险利率,在本模型里它是常数),<strong>而股权溢价却可以很高</strong>。把 (8) 式乘 \(P_t\)、除 \(D_t\),最终得到价格/股利的递归式:</p>
+<p>$$
+\frac{P_t}{D_t}(z_t) = E_t\!\left[ m_{t+1}\left(\frac{P_{t+1}}{D_{t+1}} + 1\right)\frac{D_{t+1}}{D_t} \right]
+$$</p>
+<p>模型没有解析解,作者数值求解。但定性直觉已经呼之欲出。</p>
+<p><strong>为什么会有不对称?</strong> 设投资者记分牌恰在均值零。一则<strong>坏</strong>的股利消息构成「三重威胁 (triple threat)」:消息本身压低价格;它推高风险厌恶,价格再跌;它还抬高了对后续新闻的敏感度,预期波动上升,而更高的预期波动通过波动反馈 (volatility feedback) 再次压价。三股力量叠加,价格大幅下挫。反过来,一则<strong>好</strong>消息只是「双重威胁」——冲击本身被随之而来的风险厌恶下降所放大,但这份涨势又被预期波动上升所<strong>抵消</strong>。于是,尽管记分牌对正负冲击的敏感度是<strong>对称</strong>的 (\(h\) 里是 \(|z_t|\)),模型却产出了<strong>不对称</strong>的价格反应——坏消息后的下跌,大于好消息后的上涨。这和 Nelson (1991) 的实证完全吻合。</p>
+<p>这一步,正是本文相对 Campbell &amp; Hentschel (1992) 的妙处:Campbell &amp; Hentschel 把「新闻聚集」<strong>外生</strong>塞进去,再内生地解释不对称;而 McQueen 和 Vorkink <strong>连聚集本身也内生化了</strong>——不是预设新闻扎堆,而是让投资者在被惊扰时变得敏感,从而<strong>亲手把收益搅成了扎堆的样子</strong>。</p>
+<h2 id="5">5 把模型「逼上法庭」:可证伪的预测与检验</h2>
+<p>作者很清醒地引用了 Shefrin &amp; Statman (1994) 的警告:偏好模型几乎能解释任何东西,要想有用,就必须能被<strong>证伪 (falsify)</strong>。</p>
+<p>所以他们没有停在「模型能复现典型事实」这一步——那只是「事后对花」。他们逼着模型吐出<strong>超出</strong>那些原始事实之外的、<strong>新的可证伪预测</strong>,再像 Campbell &amp; Hentschel (1992) 那样把预测拿去 U.S. 股票数据上检验。核心的可检验含义是:<strong>记分牌 \(z_t\) 应当与条件波动率、条件偏度系统地挂钩</strong>——具体说,记分牌的绝对值越大(投资者越被惊扰),后续条件波动应越高;而记分牌的符号应当与条件偏度相联系。</p>
+<p>结果是:模型关于<strong>条件波动率与偏度</strong>的预测得到了数据支持,关于<strong>超额收益</strong>的预测则只得到有限支持。换句话说,这把「行为之尺」量波动和偏度颇准,量收益则差强人意——作者对此并不遮掩。</p>
+<h2 id="6">6 文献脉络</h2>
+<p>把这条线索摊开来看,会很清楚地看到两股河流在 2004 年汇合。</p>
+<p>一股是<strong>波动率建模</strong>的统计河流:Engle (1982) 的 ARCH 开了源,Bollerslev (1986) 的 GARCH 把它发扬光大,Nelson (1991) 用 EGARCH 抓住了好/坏消息的不对称,Engle &amp; Lee (1999) 又把波动拆成短期与长期两个成分——这条河越流越精致,却始终没回答「为什么」。</p>
+<p>另一股是<strong>偏好/行为定价</strong>的理论河流:从 Mehra &amp; Prescott (1985) 的股权溢价之谜出发,Campbell &amp; Cochrane (1999) 用「习惯 (habit)」给出消费型的解释,而 Kahneman &amp; Tversky (1979) 的前景理论则催生了 Barberis, Huang &amp; Santos (2001) 把损失厌恶与心理记分牌搬进资产价格。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>McQueen &amp; Vorkink (2004) 站在两河交汇处:它把 BHS 的偏好框架往前推了一步(让记分牌不仅调风险厌恶、还调新闻敏感度),又把 Campbell &amp; Hentschel (1992) 的波动反馈往回拉了一步(把外生的「新闻聚集」内生化)。它给统计河流那个悬而未决的「为什么」,递上了一份<strong>偏好型</strong>的答案。(关于「收益的不对称」如何独立于模型地被度量,可参见<a href="/research/asymmetries-in-stock-returns-statistical-tests-and-economic/">《涨时各走各的,跌时一起跳水》</a>;关于波动与风险溢价那段缠绕已久的关系,可参见<a href="/research/on-the-relationship-between-the-conditional-mean-and/">《收益与风险,到底是「正相关」还是「负相关」?》</a>。)</p>
+<h2>7 评论与延伸(Q&amp;A + 研究方向)</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q:这跟 BHS 到底差在哪?不就是多了一个参数吗?</strong></p>
+<blockquote>
+<p>差别虽小,方向却根本不同。BHS 的记分牌只调<strong>风险厌恶水平</strong>,\(h(\cdot)\) 是常数,所以它能解释长期可预测性和过度波动,却产生不了<strong>条件波动的聚集</strong>。本文让 \(h(z_t)=a_2|z_t|+a_3\),使<strong>敏感度</strong>随记分牌绝对值上升——这一项才是「被惊扰→更敏感→波动扎堆」机制的引擎。一个参数,换来的是一整类新的可证伪预测。</p>
+</blockquote>
+<p><strong>Q:既然记分牌对正负冲击的敏感度是对称的,不对称又从哪来?</strong></p>
+<blockquote>
+<p>不对称不在 \(h\) 里,而在<strong>定价</strong>里。坏消息是「三重威胁」(消息本身 + 风险厌恶上升 + 敏感度上升经波动反馈压价),好消息是「双重威胁」且涨势被预期波动上升抵消。对称的敏感度,经过波动反馈这道「不对称的放大器」,产出了不对称的价格反应。这是 Campbell &amp; Hentschel (1992) 反馈逻辑的继承。</p>
+</blockquote>
+<p><strong>Q:为什么非要把效用定义在财富上,而不是直接让消费的 \(\gamma\) 时变?</strong></p>
+<blockquote>
+<p>因为消费增长和股票收益的历史相关性<strong>太弱</strong>。一次股价大动几乎不影响消费,也就动不了「绑在消费上的」风险厌恶,自然掀不起后续股票波动。把风险与损失厌恶挂在<strong>金融财富</strong>上,股价的一次大动才能诱发足够大的厌恶与敏感度变化——这是机制能跑起来的前提。</p>
+</blockquote>
+<p><strong>Q:这跟杠杆模型、Veronesi/David 的学习模型比,强在哪?</strong></p>
+<blockquote>
+<p>强在「好消息」这一侧。杠杆模型 (Black 1976; Christie 1982) 和状态不确定性模型 (David 1997; Veronesi 1999) 都<strong>错误地预测好消息后波动下降</strong>;本文因为「好/坏消息都抬高敏感度」,能让两侧都升波动,只是幅度不对称——这才对上典型事实。</p>
+</blockquote>
+<p><strong>Q:模型对收益的预测只得到「有限支持」,是不是说机制有问题?</strong></p>
+<blockquote>
+<p>不必这么悲观,但要诚实。波动和偏度的预测被数据支持,说明「敏感度时变」这条线是真的抓住了什么;收益预测偏弱,可能是因为风险溢价里掺了太多其他来源(参与成本、流动性等),单靠记分牌一个状态变量解释不全。这恰恰是把模型「逼上法庭」的价值:它没有假装自己什么都对。</p>
+</blockquote>
+<p><strong>Q:它能解释波动的「长记忆」吗?</strong></p>
+<blockquote>
+<p>部分能。\(\phi\) 接近 1 时,被惊扰的状态衰减很慢,这正对应 Ding &amp; Granger (1996)、Bollerslev &amp; Mikkelsen (1996) 关心的持久成分,也对应 Engle &amp; Lee (1999) 里「能进入风险溢价」的长期成分。这是它相对「短命摩擦」类模型的关键优势——后者只够解释高频里转瞬即逝的聚集。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把「记分牌敏感度」搬到公司债与信用利差上。</strong>
+【经济故事】信用市场的波动聚集比股票更剧烈,且高度不对称(坏消息时利差骤升、流动性骤降)。如果债券持有人(尤其是机构)在经历一轮信用冲击后变得「更敏感」,那么信用利差的条件波动应当系统地随某个「债市记分牌」变化。
+【可行性】中。数据可用 TRACE 成交 + 利差序列构造记分牌代理;识别难点在于把「偏好型敏感度」与「真实违约风险上升」分开,需要控制基本面违约预期。可借鉴本文「拿可证伪预测去检验偏度」的思路。</p>
+<p><strong>2. 外资持有人是否带来更强的「敏感度时变」?</strong>
+【经济故事】外资被普遍认为更容易被本地冲击「惊扰」、撤离也更快。若把记分牌机制按持有人类型拆分,外资占比高的资产,其条件波动对冲击的反应应当更陡、衰减更慢。
+【可行性】中。可用各国「可投资度 (investibility)」或外资持股微观数据(如首尔交易簿)交叉验证;识别上需处理外资进入的内生性,可用指数纳入等准自然实验。</p>
+<p><strong>3. 用期权隐含量直接「读」出敏感度的时变。</strong>
+【经济故事】本文的核心是「敏感度旋钮」被冲击拧大又缓慢回落。隐含波动率曲面、隐含偏度对一次大冲击的反应轨迹,正是这个旋钮的「指纹」。
+【可行性】高。期权隐含矩数据现成,事件研究式地看大冲击后隐含偏度/波动的衰减半衰期,即可检验 \(\phi\) 与 \(a_2\) 的含义,且无需求解结构模型。</p>
+<p><strong>4. 把「记分牌」做成横截面状态变量,解释波动的共动。</strong>
+【经济故事】若投资者持有的是组合而非单只股票,被惊扰的是「组合记分牌」,那么同一组合内的股票应当出现<strong>条件波动的共动</strong>——共用持有人 → 共用记分牌 → 共同的波动聚集。
+【可行性】中。需机构持仓 (13F) 把股票按共同持有人聚类,再看波动共动是否沿持有人网络传播;识别需排除共同基本面冲击。</p>
+<p><strong>5. 检验「赌资效应」方向:好年景后投资者是否真的「敏感度回落」?</strong>
+【经济故事】模型预测一串好收益会把 \(z_t\) 推高、随后敏感度先升后随适应而回落。若能在数据里看到「长牛之后市场对新闻反应钝化」,就是对适应机制的直接支持。
+【可行性】高。可用滚动窗口估计「新闻—收益」反应系数,看它是否随累计收益先升后降;数据门槛低,关键是把「适应」与「波动率本身的均值回归」区分开。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Barberis, N., M. Huang, and T. Santos (2001). Prospect Theory and Asset Prices. <em>Quarterly Journal of Economics</em> 116(1), 1–53.</li>
+<li>Black, F. (1976). Studies of Stock Price Volatility Changes. <em>Proceedings of the 1976 Meetings of the American Statistical Association, Business and Economic Statistics Section</em>, 177–181.</li>
+<li>Bollerslev, T. (1986). Generalized Autoregressive Conditional Heteroskedasticity. <em>Journal of Econometrics</em> 31(3), 307–327.</li>
+<li>Bollerslev, T., and H. Mikkelsen (1996). Modeling and Pricing Long Memory in Stock Market Volatility. <em>Journal of Econometrics</em> 73(1), 151–184.</li>
+<li>Campbell, J., and J. Cochrane (1999). By Force of Habit: A Consumption-Based Explanation of Aggregate Stock Market Behavior. <em>Journal of Political Economy</em> 107(2), 205–251.</li>
+<li>Campbell, J., and L. Hentschel (1992). No News is Good News: An Asymmetric Model of Changing Volatility in Stock Returns. <em>Journal of Financial Economics</em> 31(3), 281–318.</li>
+<li>Christie, A. (1982). The Stochastic Behavior of Common Stock Variances: Value, Leverage and Interest Rate Effects. <em>Journal of Financial Economics</em> 10(4), 407–432.</li>
+<li>David, A. (1997). Fluctuating Confidence in Stock Markets: Implications for Returns and Volatility. <em>Journal of Financial and Quantitative Analysis</em> 32(4), 427–462.</li>
+<li>Ding, Z., and C. Granger (1996). Modeling Volatility Persistence of Speculative Returns: A New Approach. <em>Journal of Econometrics</em> 73(1), 185–215.</li>
+<li>Engle, R. (1982). Autoregressive Conditional Heteroskedasticity with Estimates of the Variance of United Kingdom Inflation. <em>Econometrica</em> 50(4), 987–1008.</li>
+<li>Engle, R., and G. Lee (1999). A Permanent and Transitory Model of Stock Return Volatility. In <em>Cointegration, Causality, and Forecasting: A Festschrift in Honor of Clive W. J. Granger</em>, Oxford University Press, 475–497.</li>
+<li>French, K., G. W. Schwert, and R. Stambaugh (1987). Expected Stock Returns and Volatility. <em>Journal of Financial Economics</em> 19(1), 3–29.</li>
+<li>Kahneman, D. (1973). <em>Attention and Effort</em>. Prentice Hall, Englewood Cliffs, NJ.</li>
+<li>Kahneman, D., and A. Tversky (1979). Prospect Theory: An Analysis of Decision Under Risk. <em>Econometrica</em> 47(2), 263–291.</li>
+<li>Lucas, R. (1978). Asset Prices in an Exchange Economy. <em>Econometrica</em> 46(6), 1429–1445.</li>
+<li>McQueen, G., and K. Vorkink (2004). Whence GARCH? A Preference-Based Explanation for Conditional Volatility. <em>Review of Financial Studies</em> 17(4), 915–949.</li>
+<li>Mehra, R., and E. Prescott (1985). The Equity Premium: A Puzzle. <em>Journal of Monetary Economics</em> 15(2), 145–161.</li>
+<li>Merton, R. (1980). On Estimating the Expected Return on the Market: An Exploratory Investigation. <em>Journal of Financial Economics</em> 8(4), 323–361.</li>
+<li>Nelson, D. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. <em>Econometrica</em> 59(2), 347–370.</li>
+<li>Schwert, G. W. (1989). Why Does Stock Market Volatility Change Over Time? <em>Journal of Finance</em> 44(5), 1115–1153.</li>
+<li>Shefrin, H., and M. Statman (1994). Behavioral Capital Asset Pricing Theory. <em>Journal of Financial and Quantitative Analysis</em> 29(3), 323–349.</li>
+<li>Thaler, R., and E. Johnson (1990). Gambling with the House Money and Trying to Break Even: The Effects of Prior Outcomes on Risky Choice. <em>Management Science</em> 36(6), 643–660.</li>
+<li>Veronesi, P. (1999). Stock Market Overreaction to Bad News in Good Times: A Rational Expectations Equilibrium Model. <em>Review of Financial Studies</em> 12(5), 975–1007.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个我们天天在用、却说不清来历的东西</a></li>
+        <li><a href="#2">2 已有的两条路,和它们各自的「半截」</a></li>
+        <li><a href="#3">3 真正关键的一步:让投资者「被惊扰」之后更敏感</a></li>
+        <li><a href="#4">4 模型:把「记分牌」一步步写成方程</a></li>
+        <li><a href="#5">5 把模型「逼上法庭」:可证伪的预测与检验</a></li>
+        <li><a href="#6">6 文献脉络</a></li>
+        <li><a href="#7-q-a">7 评论与延伸(Q&A + 研究方向)</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>为了留住那些「零」，我们把结论的符号弄反了 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>为了留住那些「零」，我们把结论的符号弄反了</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2022 JFE]</span> Count (and Count-like) Data in Finance</div>
+        <div class="paper-source-authors"><a href="/research/author/jonathan-b-cohn/">Jonathan B. Cohn</a>, <a href="/research/author/zack-liu/">Zack Liu</a>, <a href="/research/author/malcolm-i-wardlaw/">Malcolm I. Wardlaw</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>September 05, 2022</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">实证方法</span>
+        
+        
+        
+        
+        <span class="tag">计数数据</span>
+        
+        
+        
+        
+        <span class="tag">泊松回归</span>
+        
+        
+        
+        
+        <span class="tag">公司金融</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Cohn, Liu &amp; Wardlaw (2022, JFE)</strong>：当被解释变量是「专利数」「工伤数」「排污量」这类只能取非负整数、又在零处堆成一座山的计数 (count) 变量时，公司金融里最流行的做法——对 <code>log(1+y)</code> 跑线性回归——得到的系数没有任何可解释的经济含义，并且在期望意义上<strong>可能连符号都是错的</strong>；而一个朴素的固定效应泊松 (Poisson) 回归，在更宽松的假设下就能给出一致、可解释的半弹性估计。作者复制了六篇顶刊论文，发现换一个回归模型对系数的影响，比漏掉最重要的控制变量还要大。</p></div>
+<h2 id="1">1 一个你天天在用、却从没想清楚的「加一」</h2>
+<p>先讲一个几乎每个做实证的人都干过的事。</p>
+<p>你手上有一个右偏得很厉害的被解释变量——比如公司一年拿到的专利数。<code>Compustat</code> 里大约 <code>69%</code> 的公司在某一年的专利授予数是<strong>零</strong>，剩下的公司里又有人一年几百项。这个分布既不连续、又在零处堆成一座山，直接跑线性回归 (OLS) 显然不合适：残差也会严重偏斜，效率低得可怕，置信区间都不好定。</p>
+<p>于是你想起了教科书里的老办法：取对数。<code>log(y)</code> 把右偏的尾巴压平了，系数还能解释成半弹性 (semi-elasticity)，多好。可问题是，<code>log(0)</code> 没有定义——而你有一大半样本都是零。把这些零样本扔掉？那等于只研究「已经在创新的公司」，把外延边际 (extensive margin) 整个丢了。</p>
+<p>怎么办？一个看起来无比自然、几乎不假思索的补救是：<strong>先加一，再取对数</strong>。于是 <code>log(1+y)</code> 横空出世。它对所有 <code>y≥0</code> 都有定义，零样本一个不少地保留下来，系数似乎还能继续当半弹性读。作者引用了一个 EconTwitter 的投票：<code>69%</code> 的受访者承认自己估过 <code>log1plus</code> 回归、或者用过它的近亲——反双曲正弦 (inverse hyperbolic sine, IHS) 变换。这不是个别人的偷懒，而是一个领域的集体习惯：2011–2020 年间在 JF、JFE、RFS 上建模公司年度专利计数的论文有 <code>44</code> 篇，其中 <code>25</code> 篇用了 <code>log1plus</code>，而这 <code>25</code> 篇里有 <code>23</code> 篇<strong>只</strong>用了这一种做法。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>本文的全部张力就藏在这个「加一」里：它看起来只是一个无害的技术性修补，让公式不再除零；但作者要证明的是，正是这一步，把回归系数变成了一个<strong>没有经济含义、还可能指错方向</strong>的数字。</p></div>
+<p>这篇文章我想只围绕这一个核心讲透：<strong><code>log(1+y)</code> 到底错在哪，错得有多严重，又该用什么替代它</strong>。</p>
+<h2>2 先退一步：连 <code>log(y)</code> 都没那么干净</h2>
+<p>要理解 <code>log(1+y)</code> 的病灶，得先看清它的「健康版本」<code>log(y)</code> 本身就带着一处暗伤。这一步是 Santos Silva &amp; Tenreyro (2006) 那篇著名的《The log of gravity》早就点破的，本文把它接了下去。</p>
+<p>设想一个常弹性 (constant-elasticity) 模型，它的条件均值是指数形式：</p>
+<p>$$E[y \mid x] = \exp(x\beta)$$</p>
+<p>给它配一个<strong>乘性</strong>误差项 \(\eta\)，写成</p>
+<p>$$y = \exp(x\beta)\,\eta$$</p>
+<p>两边取对数：</p>
+<p>$$\log(y) = x\beta + \log(\eta)$$</p>
+<p>要让 OLS 一致地估出 \(\beta\)，需要的不是「\(\eta\) 与 \(x\) 独立」，而是更微妙的一条：\(E[\log(\eta)\mid x]\) 与 \(x\) 不相关。这里就埋了一个 Jensen 不等式的坑——<strong>\(\log(\cdot)\) 是凹函数</strong>，即便 \(\eta\) 本身的均值与 \(x\) 无关，\(\log(\eta)\) 的期望也会随 \(x\) 漂移，只要 \(\eta\) 的方差随 \(x\) 变化。换句话说，<strong>异方差 (heteroskedasticity) 会让对数线性回归不一致</strong>。</p>
+<div class="callout"><div class="callout-title">Note</div><p>这是第一层警告（作者称 Takeaway 1）：异方差会让 <code>log(y)</code> 回归有偏、不一致。Santos Silva &amp; Tenreyro (2006) 已经证到这里。</p></div>
+<p>接着，一个自然的问题是：偏，到底偏多少？会不会偏到把符号都弄反？这正是本文相对前人的第一个增量。在引力贸易模型里，理论对系数符号有强先验（贸易量不可能随距离上升），所以大家只关心量级；可在公司金融里，我们<strong>几乎从不知道一个关系到底该是正还是负</strong>——符号本身就是结论。于是「会不会反号」就不再是吹毛求疵。</p>
+<p>作者给了一个干净的二元例子：令 \(y = \exp(\beta x)\,\eta\)，其中 \(x \sim N(0, \sigma_x^2)\)，\(\eta\) 服从对数正态、均值为 1、其标准差随 \(x\) 变化：</p>
+<p>$$\sigma_\eta(x) = \exp(\delta x)$$</p>
+<p>这里的 \(\delta\) 就是异方差的「方向旋钮」：\(\delta>0\) 表示误差随 \(x\)「散开」(fanning out)，\(\delta<0\) 表示「收拢」(funnelling in)。他们在附录里证明，此时对数线性回归在 \(x\) 上的系数偏误恰好是</p>
+<p>$$\text{bias} = -\,\frac{\delta}{2}$$</p>
+<p>写成相对于真值的比例，就是 \(-\delta/(2\beta)\)。于是结论一目了然：<strong>只要 \(\delta/\beta > 2\)，偏误就大到足以让系数反号</strong>。而且这个偏误的方向是可知的——误差方差与某协变量正相关，系数就被往上抬；负相关，就被往下压。知道方向，至少能把估计值当成一个<strong>边界</strong>来读。</p>
+<div class="callout"><div class="callout-title">Note</div><p>第二、三层警告（Takeaway 2、3）：异方差导致的偏误可以让 <code>log(y)</code> 系数反号；且偏误方向由「误差方差与协变量的相关性」符号决定。</p></div>
+<p>记住这个 <code>-δ/2</code>——它会在下一节告诉我们，加了那个「1」之后，事情只会更糟。</p>
+<h2>3 真正的病灶：<code>log(1+y)</code> 的系数根本不是半弹性</h2>
+<p>现在回到主角。把零样本救回来的 <code>log1plus</code> 回归写出来：</p>
+<p>$$\log(1+y) = x\lambda + \varphi$$</p>
+<p>最诱人的误解是：既然加的那个常数 1 与 \(x\) 无关，那 \(\lambda_j\) 不就还是 \(y\) 关于 \(x_j\) 的半弹性（最多差个常数）吗？</p>
+<p><strong>不是。</strong> 这个直觉忽略了 Jensen 不等式。作者直接把 \(\lambda_j\) 推导出来，它和真正的常弹性系数 \(\beta_j\) 之间的关系是：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\lambda_j = \cssId{a1}{\frac{E[y \mid x]}{1+E[y \mid x]}}\;\cssId{a2}{\beta_j}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span><span class="lang zh">一个收缩因子，取决于 y 的条件期望水平；E[y</span><span class="lang en">x] 越接近 0，它越把系数压扁</span></div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>你真正想要的那个常弹性半弹性（来自对数线性模型的系数）</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这条式子是整篇文章的「七寸」。它说的是：<code>log1plus</code> 系数 \(\lambda_j\) 等于真半弹性 \(\beta_j\) 乘上一个<strong>随 \(y\) 的水平而变的收缩因子</strong> \(\tfrac{E[y\mid x]}{1+E[y\mid x]}\)。</p>
+<ul>
+<li>当 \(E[y\mid x]\) 很大（公司平均一年几百项专利），收缩因子趋近 1，\(\lambda_j \approx \beta_j\)——可这时候本来就没几个零样本，你根本不需要那个「+1」；</li>
+<li>当 \(E[y\mid x]\) 很小（绝大多数公司专利数是零或个位数），收缩因子趋近 0，\(\lambda_j\) 被压得几乎与 \(\beta_j\) 无关——而这恰恰是你<strong>最需要</strong>用 <code>log1plus</code> 的场景。</li>
+</ul>
+<div class="callout"><div class="callout-title">Note</div><p>Takeaway 4：<code>log1plus</code> 系数不能解释成 \(y\) 的半弹性，也无法从中还原出 \(y\) 与协变量之间任何有经济意义的关系。它在你最需要它的地方，恰恰最不可信。</p></div>
+<p>可有人会退一步说：我不在乎量级，我只想知道符号、知道方向，行不行？</p>
+<p>然后，本文给出了最致命的一击：<strong>连符号都靠不住</strong>，而且有两个几乎必然发生的偏误来源（Takeaway 5）。</p>
+<p><strong>第一个来源，是协变量之间的非线性关系。</strong> 任何一个像样的经济模型，只要让 \(\log(y)\) 与某个 \(x_j\) 线性，就会让 \(\log(1+y)\) 与 \(x_j\) <strong>非线性</strong>。作者用一个极简例子把这层直觉摊开：设 \(\log(y)=\beta_1 x_1+\beta_2 x_2\)，真值 \(\beta_1=1,\ \beta_2=0\)，\(x_1\) 在 $[-4,4]$ 上均匀分布。按构造，\(x_2\) 与 \(y\) 毫无关系，可一旦 \(x_2 = x_1^2\)（一个再普通不过的非线性），在 <code>log1plus</code> 回归里 \(x_2\) 的系数就会<strong>显著为正</strong>——尽管 <code>log(1+y)</code> 按假设与 \(x_2\) 完全独立。也就是说，对一个变量的非线性误设，会<strong>污染</strong>其他变量的系数。这种事在现实里几乎无法避免。</p>
+<p><strong>第二个来源，是对误差矩的隐性假设。</strong> 在对数线性那一节，同方差的乘性误差还勉强够用；可加了「1」之后，要让估计一致，需要的异方差形式变成了 \(\varepsilon' = \exp(x\beta)\nu - 1\) 这种「任何合理经济模型都不会满足」的怪相。换句话说，<code>log1plus</code> 想一致，得靠运气。</p>
+<p>最后还有一记回马枪：加的为什么非得是 1？换成任意常数 \(c\)，得到 <code>logcplus</code> 回归 \(\log(c+y)=x\lambda^c+\varphi^c\)，其系数会<strong>随 \(c\) 增大而机械地、任意地缩小</strong>。一个连「加几」都会改变结论量级的估计量，本身就说明它没有锚定在任何真实的经济量上。</p>
+<p>（关于「一个看似无害的技术选择如何悄悄改写一篇已发表论文的结论」，可参见<a href="/research/retraction-notice-to-common-risk-factors-in-the-cross/">《一篇被作者亲手撤回的 JFE：当「公司债四因子」死于一次时间对齐错误》</a>；这篇文章则把这种风险从「偶发的错误」上升成了「方法本身的系统性缺陷」。）</p>
+<h2 id="4">4 那该用什么？泊松回归的「以退为进」</h2>
+<p>讲到这里，张力已经满了：一边是有零、有偏、还右偏的数据，一边是会反号、不可解释的 <code>log1plus</code>。出路在哪？</p>
+<p>作者的答案朴素得有点反高潮：<strong>固定效应泊松回归</strong>。它属于广义线性模型 (generalized linear model, GLM)，同样对应一个常弹性模型 \(E[y\mid x]=\exp(x\beta)\)，但有几条决定性的好处：</p>
+<p><strong>第一，它天然容纳零。</strong> 泊松对 \(y=0\) 没有任何障碍，外延边际和内涵边际一起估。</p>
+<p><strong>第二，它对一致性的要求极低。</strong> 这是关键的反转。泊松不需要数据真的服从泊松分布——靠的是伪极大似然 (pseudo maximum likelihood) 这套理论（Gourieroux, Monfort &amp; Trognon, 1984）：<strong>只要条件均值 \(\exp(x\beta)\) 设对了，估计就一致</strong>，对更高阶矩不作任何要求。泊松那个臭名昭著的「条件均值=条件方差」限制，违反了只会损失<strong>效率</strong>，<strong>不会带来偏误</strong>。更妙的是，Santos Silva &amp; Tenreyro (2011) 证明，哪怕 \(y\) 是连续的、或者有大量零，泊松照样给出有效的半弹性估计和标准误。</p>
+<p><strong>第三，也是对公司金融最要命的一条——它容得下可分离的组固定效应。</strong> 这正是 <code>log1plus</code> 的拥趸们最舍不得放弃的东西。负二项模型、零膨胀模型、Type I Tobit 在某些场景下或许更有效率，但它们<strong>都不能容纳可分离的固定效应</strong>（把组虚拟变量硬塞进去会触发附带参数问题 (incidental parameters problem)，导致系数有偏，见 Lancaster, 2000）。而图论与矩阵计算的进展，已经造出了能带高维多重固定效应的快速泊松算法——Stata 的 <code>ppmlhdfe</code>（Correia, Guimarães &amp; Zylkin, 2020）、R 的 <code>feglm</code>。这一条几乎单枪匹马地决定了泊松在公司金融里的可用性。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>有个常被误解的细节：泊松里的固定效应是<strong>乘性</strong>的，不是加性的。加性固定效应只移动均值，乘性固定效应同时缩放均值和标准差。这听上去非标准，但其实 <code>log1plus</code> 也隐含了乘性结构；而且对计数变量来说，乘性更自然——一家平均每年 10 项专利的公司，其专利数的年际标准差，本就大约是平均每年 1 项的公司的 10 倍。</p></div>
+<h2 id="5">5 复制：换个模型，比漏掉最重要的控制变量还离谱</h2>
+<p>理论说得再漂亮，也得回答那个最现实的问题：在真实论文里，这种差别到底是「小数点后的讲究」，还是「能掀翻结论」？</p>
+<p>于是有了本文最有冲击力的一节。作者挑了六篇发表在顶级金融期刊上的论文，覆盖两类计数型结果——<strong>公司年度专利授予数</strong>与<strong>工厂年度毒物排放量</strong>——在每篇论文主表里选一个回归设定，分别用 <code>log1plus</code> 和泊松重估，对比关心的那个系数。</p>
+<p>结果是：<strong>六个系数在所有六个案例里都明显不同；其中三个案例，符号是反的。</strong> 也就是说，「这个关系到底是正还是负」这件最基本的事，在现实应用里就取决于你选了哪个回归模型。</p>
+<div class="article-image"><img alt="Table 5" src="assets/table-5.png" /></div>
+<p><em>Table 5</em></p>
+<p>更扎心的是一个用来「定标」的对比：在全部五个带控制变量的案例里，<strong>从 <code>log1plus</code> 换成泊松所引起的系数变化，比从模型里漏掉最重要的那个控制变量还要大</strong>，而且往往大得多。我们平时审稿时对「漏了关键控制变量」如临大敌，却对「选了哪种回归」毫不设防——本文等于说，后者才是房间里那头更大的象。</p>
+<div class="article-image"><img alt="Table 6" src="assets/table-6.png" /></div>
+<p><em>Table 6</em></p>
+<p>（这种「方法论选择本身就足以左右因果方向」的警示，与<a href="/research/past-is-prologue-inference-from-the-cross-section-of/">《事件研究里的「假阳性」：当一根 t 值不再等于因果》</a>是同一种精神——我们对系数的信心，常常建立在没被审视的默认设定之上。）</p>
+<h2 id="6">6 文献脉络</h2>
+<p>把这条线索捋一捋，会发现它并不新，只是一直被金融学界忽略。</p>
+<p>最早，计数数据的计量基础来自 Gourieroux, Monfort &amp; Trognon (1984) 的伪极大似然理论，以及 Cameron &amp; Trivedi (1986) 对各类泊松/负二项估计量的系统比较。King (1988) 在政治学里就警告过：<code>log1plus</code> 这种做法会产生有偏估计，并主张用指数泊松回归。生态学界的 O'Hara &amp; Kotze (2010) 干脆把论文题目写成《Do not log-transform count data》。</p>
+<p>真正的理论枢纽是 Santos Silva &amp; Tenreyro (2006) 的《The log of gravity》：他们在贸易引力模型里证明，异方差会让对数线性回归不一致，而泊松能绕开这个问题；其后 Santos Silva &amp; Tenreyro (2011) 又补上一刀，证明泊松在连续、多零的数据上同样稳健。计算上的最后一块拼图，是 Correia, Guimarães &amp; Zylkin (2020) 的高维固定效应快速泊松算法，让这套方法在公司金融的大面板上真正跑得动。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>本文站在这条线索的末端，把它<strong>搬进公司金融</strong>并往前推了三步：第一，明确指出 <code>log1plus</code>（而非干净的 <code>log(y)</code>）特有的两类偏误；第二，证明偏误可以让系数<strong>反号</strong>，并刻画其方向与量级；第三，用六篇顶刊论文的复制，把「这事很严重」从理论命题变成了经验事实。在金融领域并行的应用工作里，Cohn &amp; Wardlaw (2016)、Cohn, Nestoriak &amp; Wardlaw (2020) 研究工伤、Akey &amp; Appel (2021) 研究工业污染，都正面撞上了同一个计数数据的难题。</p>
+<h2>7 评论与延伸（Q&amp;A + 研究方向）</h2>
+<p><strong>(a) 几个可能的疑问</strong></p>
+<p><strong>Q：<code>log(y)</code> 和 <code>log(1+y)</code> 不就差一个「1」吗，怎么会病灶完全不同？</strong></p>
+<blockquote>
+<p>差别在于「1」相对于 \(y\) 的水平。<code>log(y)</code> 的病主要来自异方差，且系数仍是干净的半弹性；<code>log(1+y)</code> 则多出一个随 \(E[y\mid x]\) 变化的收缩因子 \(\tfrac{E[y|x]}{1+E[y|x]}\)，使系数彻底失去半弹性含义。\(y\) 越小（零越多），这个因子越把系数压扁——恰恰是在你最依赖「+1」的低计数场景里，它最不可信。</p>
+</blockquote>
+<p><strong>Q：泊松不是要求「均值=方差」吗？计数数据明明经常过度离散 (overdispersion)，这不就违反假设了？</strong></p>
+<blockquote>
+<p>这正是最大的误解。本文反复强调：均值=方差的限制一旦违反，损失的只是<strong>效率</strong>，不会带来<strong>偏误</strong>。泊松作为伪极大似然估计量，只要条件均值 \(\exp(x\beta)\) 设对就一致，对二阶及更高阶矩不作要求。所以过度离散不构成弃用泊松的理由——它只意味着标准误要稳健处理。</p>
+</blockquote>
+<p><strong>Q：那为什么不用负二项模型？它本来就是为过度离散设计的。</strong></p>
+<blockquote>
+<p>因为负二项、零膨胀、Tobit 这些模型<strong>不能容纳可分离的组固定效应</strong>。把组虚拟变量硬塞进去会触发附带参数问题（Lancaster, 2000）导致系数有偏；而 Stata 的 <code>xtnbreg</code> 允许条件方差有组间差异、却不允许条件均值有，而我们关心的恰恰是条件均值。对依赖公司/年份固定效应的公司金融来说，这是硬伤。</p>
+</blockquote>
+<p><strong>Q：用 IHS（反双曲正弦）变换是不是能躲过这些问题？毕竟它在零处有定义，又近似对数。</strong></p>
+<blockquote>
+<p>不能。本文明确指出 IHS 会遭遇与 <code>log1plus</code> 完全相同的问题：它同样是一个凹变换，同样让系数失去可解释性、同样可能反号。换汤不换药。</p>
+</blockquote>
+<p><strong>Q：既然换模型能让符号反过来，那是不是说之前那些用 <code>log1plus</code> 的论文结论都错了？</strong></p>
+<blockquote>
+<p>作者很克制，没有这么说。<code>log1plus</code> 系数的不可解释，未必就推翻某篇论文的核心叙事——但复制结果确实表明，<strong>结论对模型选择高度敏感</strong>，敏感到超过漏掉关键控制变量。审慎的读法是：这些结论需要用泊松重做一遍来确认方向，而不是默认它们已被证伪。</p>
+</blockquote>
+<p><strong>Q：泊松要求 \(E[y\mid x]=\exp(x\beta)\) 这个指数均值，万一真实的均值不是指数形式呢？</strong></p>
+<blockquote>
+<p>这是泊松自己的识别前提，也是它唯一较强的假设。好在指数均值对「非负、右偏、堆零」的计数变量是相当自然的函数形式；而相比 <code>log1plus</code> 那种「任何合理模型都不满足」的隐性异方差要求，泊松的代价小得多。这是一种诚实的权衡，而非免费的午餐。</p>
+</blockquote>
+<p><strong>(b) 几个可能的研究问题与提案</strong></p>
+<ol>
+<li><strong>把这套诊断搬到公司债与信用市场的计数型结果上。</strong></li>
+<li>【经济故事】信用市场里有大量天然的计数/计数型变量：一家公司一年内的评级调整次数、债券新发只数、违约/技术性违约事件数、被纳入指数的次数。这些变量同样右偏、堆零，却很少有人用泊松处理。若既有「评级下调 → 流动性恶化」之类的结论是用 <code>log1plus</code> 得到的，方向可能并不稳。</li>
+<li>
+<p>【可行性】高。<code>Mergent FISD</code>、<code>TRACE</code>、评级机构数据都现成；识别上沿用本文的「同一设定下 <code>log1plus</code> vs 泊松」对比即可，是一个低成本、高信息量的复制型项目。</p>
+</li>
+<li>
+<p><strong>外资持有人与公司创新：用泊松重估「外资 → 专利」。</strong></p>
+</li>
+<li>【经济故事】「外国机构持股是否促进/抑制创新」是一条热门线索，而专利计数正是本文点名的重灾区（44 篇专利计数论文里 25 篇用 <code>log1plus</code>）。外资持股的内生性又常用工具变量或指数纳入断点处理——而计数模型下的工具变量泊松 (Windmeijer &amp; Santos Silva, 1997; Mullahy, 1997) 是一个尚未被充分利用的工具。</li>
+<li>
+<p>【可行性】中。专利数据（需做截断偏误修正，见 Dass, Nanda &amp; Xiao, 2017）、<code>13F</code>/<code>FactSet</code> 外资持股都可得；难点在把外生变异（如 MSCI 纳入）与计数模型的工具变量框架干净地拼起来。</p>
+</li>
+<li>
+<p><strong>流动性事件计数：把「零交易日」当成正经的外延边际。</strong></p>
+</li>
+<li>【经济故事】公司债的一大特征是大量「零成交日」。研究者常把零交易当噪声扔掉或粗暴 <code>log1plus</code>，但「债券今天到底交不交易」本身就是流动性的外延边际。用固定效应泊松对「月度成交笔数/活跃交易日数」建模，能把外延与内涵边际一起估出来。</li>
+<li>
+<p>【可行性】高。<code>TRACE</code> 逐笔数据可直接聚合成债券-月计数；<code>ppmlhdfe</code> 能容纳债券与时间双向固定效应，技术上完全 doable。</p>
+</li>
+<li>
+<p><strong>复制范围的「规模化」：用规约曲线把模型敏感性系统化。</strong></p>
+</li>
+<li>【经济故事】本文手工复制了六篇论文。一个自然的延伸是借鉴规约曲线分析 (specification curve analysis, Simonsohn, Simmons &amp; Nelson, 2020)，对一大批计数型论文系统地跑「<code>log1plus</code> vs 泊松 vs IHS」，量化「结论方向在多大比例上会翻转」。</li>
+<li>【可行性】中。数据要靠复制包或重建，工作量大；但方法成熟、结论极具政策含义（对期刊与审稿规范），值得投入。</li>
+</ol>
+<h2 id="8">8 参考文献</h2>
+<ul>
+<li>Cohn, J.B., Liu, Z., Wardlaw, M.I. (2022). Count (and count-like) data in finance. <em>Journal of Financial Economics</em> 146(2), 529–552.</li>
+<li>Santos Silva, J.M.C., Tenreyro, S. (2006). The log of gravity. <em>Review of Economics and Statistics</em> 88(4), 641–658.</li>
+<li>Santos Silva, J.M.C., Tenreyro, S. (2011). Further simulation evidence on the performance of the Poisson pseudo-maximum likelihood estimator. <em>Economics Letters</em> 112(2), 220–222.</li>
+<li>Gourieroux, C., Monfort, A., Trognon, A. (1984). Pseudo maximum likelihood methods: theory. <em>Econometrica</em> 52(3), 681–700.</li>
+<li>Cameron, A.C., Trivedi, P.K. (1986). Econometric models based on count data: comparisons and applications of some estimators and tests. <em>Journal of Applied Econometrics</em> 1(1), 29–53.</li>
+<li>King, G. (1988). Statistical models for political science event counts: bias in conventional procedures and evidence for the exponential Poisson regression model. <em>American Journal of Political Science</em> 32(3), 838–863.</li>
+<li>O'Hara, R., Kotze, J. (2010). Do not log-transform count data. <em>Nature Precedings</em> 1, 1–17.</li>
+<li>Correia, S., Guimarães, P., Zylkin, T. (2020). Fast Poisson estimation with high-dimensional fixed effects. <em>Stata Journal</em> 20(1), 95–115.</li>
+<li>Lancaster, T. (2000). The incidental parameter problem since 1948. <em>Journal of Econometrics</em> 95(2), 391–413.</li>
+<li>Cohn, J.B., Wardlaw, M.I. (2016). Financing constraints and workplace safety. <em>Journal of Finance</em> 71(5), 2017–2058.</li>
+<li>Akey, P., Appel, I. (2021). The limits of limited liability: evidence from industrial pollution. <em>Journal of Finance</em> 76(1), 5–55.</li>
+<li>Dass, N., Nanda, V., Xiao, S.C. (2017). Truncation bias corrections in patent data: implications for recent research on innovation. <em>Journal of Corporate Finance</em> 44, 353–374.</li>
+<li>Mullahy, J. (1997). Instrumental-variable estimation of count data models: applications to models of cigarette smoking behavior. <em>Review of Economics and Statistics</em> 79(4), 586–593.</li>
+<li>Windmeijer, F.A.G., Santos Silva, J.M.C. (1997). Endogeneity in count data models: an application to demand for health care. <em>Journal of Applied Econometrics</em> 12(3), 281–294.</li>
+<li>Simonsohn, U., Simmons, J.P., Nelson, L.D. (2020). Specification curve analysis. <em>Nature Human Behaviour</em> 4(11), 1208–1214.</li>
+</ul>
+<p>我的总评：这是一篇「方法论体检报告」式的论文，贡献不在于发明新估计量——泊松伪极大似然早已有之——而在于把一条沉睡多年的计量警告<strong>精准地翻译到公司金融的语境</strong>，并用复制把代价量化得无可辩驳。它最漂亮的一步，是把 <code>log1plus</code> 系数写成 \(\lambda_j = \tfrac{E[y|x]}{1+E[y|x]}\beta_j\)，一眼看穿「这个数到底是什么」。要说担忧，有二：其一，泊松的指数均值假设 \(E[y\mid x]=\exp(x\beta)\) 并非免费，当真实数据生成过程偏离指数形式时它也会有偏，本文对这一前提的检验着墨较少；其二，复制只覆盖了专利与排污两类结果、六篇论文，「三个反号」固然触目，但能否外推到全部计数型应用，仍需更大样本的系统证据。我接下来最想看到的，是有人把这套对比规模化——用规约曲线扫一遍过去十年的计数型实证，告诉我们到底有多大比例的已发表结论，其方向经不起换一个回归模型的考验。</p>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个你天天在用、却从没想清楚的「加一」</a></li>
+        <li><a href="#2-log-y">2 先退一步：连 log(y) 都没那么干净</a></li>
+        <li><a href="#3-log-1-y">3 真正的病灶：log(1+y) 的系数根本不是半弹性</a></li>
+        <li><a href="#4">4 那该用什么？泊松回归的「以退为进」</a></li>
+        <li><a href="#5">5 复制：换个模型，比漏掉最重要的控制变量还离谱</a></li>
+        <li><a href="#6">6 文献脉络</a></li>
+        <li><a href="#7-q-a">7 评论与延伸（Q&A + 研究方向）</a></li>
+        <li><a href="#8">8 参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

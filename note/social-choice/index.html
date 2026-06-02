@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9. Social Choice – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+<link href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>9. Social Choice</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">社会选择</span><span class="lang en">Social Choice</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">阿罗不可能定理</span><span class="lang en">Arrow's Theorem</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">社会福利函数</span><span class="lang en">Social Welfare Function</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">防策略</span><span class="lang en">Strategy-proof</span></span>
+        
+        
+        
+        
+        <span class="tag">Gibbard-Satterthwaite</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>9. Social Choice</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+问题：能否把个体偏好关系"连贯地"加总为社会偏好关系？答案是否定的。§9.1 给出 <strong>Arrow 不可能定理</strong>：当社会状态 \(\ge3\) 时，没有社会福利函数能同时满足无限制定义域 (U)、弱 Pareto (WP)、无关方案独立性 (IIA) 与非独裁 (D)（Condorcet 悖论说明多数投票失败，Borda 规则违反 IIA）。§9.2 转向只挑出 \(R\) 顶端的<strong>社会选择函数</strong>，定义防策略性，证明 <strong>Gibbard–Satterthwaite 定理</strong>：状态 \(\ge3\) 时每个防策略社会选择函数都是独裁的（途径：防策略 \(\Rightarrow\) Pareto 有效 + 单调，Prop 9.1）。</p></div>
+</div>
+<div class="lang en">
+<h1>9. Social Choice</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+The question: is it possible to "coherently" aggregate individual preference relations into a preference relation for society? The answer is no. §9.1 gives <strong>Arrow's Impossibility Theorem</strong>: with \(\ge3\) social states, no social welfare function satisfies unrestricted domain (U), weak Pareto (WP), independence of irrelevant alternatives (IIA), and non-dictatorship (D) (Condorcet's paradox shows majority voting fails, the Borda rule violates IIA). §9.2 turns to <strong>social choice functions</strong> that pick only the top of \(R\), defines strategy-proofness, and proves the <strong>Gibbard–Satterthwaite Theorem</strong>: with \(\ge3\) states every strategy-proof social choice function is dictatorial (route: strategy-proof \(\Rightarrow\) Pareto efficient + monotonic, Prop 9.1).</p></div>
+</div>
+<div class="lang zh">
+<h2 id="9-1-arrow-s-impossibility-theorem">9.1 Arrow's Impossibility Theorem</h2>
+<h4>9.1.1 Framework</h4>
+<ul>
+<li>设 \(X\) 为有限的、互斥的社会状态集合；</li>
+<li>设有 \(N\) 个个体，每个个体 \(i\) 在 \(X\) 的所有状态上有偏好关系（排序）：\(i\) 的偏好关系记为 \(R^i\)（即 \(\succsim_i\)），严格偏好记为 \(P^i\)（即 \(\succ_i\)）；</li>
+<li>设 \(\mathcal{R}\) 为 \(X\) 上所有可能偏好关系之集。</li>
+</ul>
+<h4>9.1.2 The question for the society</h4>
+<p>在此框架下，关键问题是：给定 \(R^1,R^2,\dots,R^N\in\mathcal{R}\)，能否把它们"连贯地"加总为某 \(R\in\mathcal{R}\)？</p>
+</div>
+<div class="lang en">
+<h2 id="9-1-arrow-s-impossibility-theorem">9.1 Arrow's Impossibility Theorem</h2>
+<h4>9.1.1 Framework</h4>
+<ul>
+<li>Let \(X\) be a finite set of mutually exclusive social states;</li>
+<li>Suppose there are \(N\) individuals; each individual \(i\) has a preference relation (ranking) over all states in \(X\): \(i\)'s preference relation is denoted \(R^i\) (i.e. \(\succsim_i\)), and strict preference \(P^i\) (i.e. \(\succ_i\));</li>
+<li>Let \(\mathcal{R}\) be the set of all possible preference relations on \(X\).</li>
+</ul>
+<h4>9.1.2 The question for the society</h4>
+<p>Under this framework, the key question: given \(R^1,R^2,\dots,R^N\in\mathcal{R}\), can we "coherently" aggregate them to some \(R\in\mathcal{R}\)?</p>
+</div>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 9.1 / Remark 9.1
+<span class="lang zh">带上标的 \(R^i,P^i\) 是个体层面的，不带上标的 \(R,P\) 是社会层面的。</span><span class="lang en">\(R^i,P^i\) with superscripts are individual level, while \(R,P\) without superscripts are social level.</span></p>
+<p>[!important] Example 9.1（Condorcet's paradox）
+<span class="lang zh">\(X=\{x,y,z\}\)，\(N=100\)。\(P\) 为基于成对多数投票的社会偏好。个体偏好如下表。</span><span class="lang en">\(X=\{x,y,z\}\), \(N=100\). \(P\) is the social preference based on pairwise majority voting. Individual preferences below.</span></p></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Ranking</th>
+<th style="text-align: center;">20</th>
+<th style="text-align: center;">35</th>
+<th style="text-align: center;">45</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">\(x\)</td>
+<td style="text-align: center;">\(y\)</td>
+<td style="text-align: center;">\(z\)</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">\(y\)</td>
+<td style="text-align: center;">\(z\)</td>
+<td style="text-align: center;">\(x\)</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">\(z\)</td>
+<td style="text-align: center;">\(x\)</td>
+<td style="text-align: center;">\(y\)</td>
+</tr>
+</tbody>
+</table>
+<div class="lang zh">
+<ul>
+<li>比较 \(x,y\)：$20+45=65$ 人偏好 \(x\) 胜 \(y\)，\(35\) 人偏好 \(y\) 胜 \(x\)，故 \(xPy\)。</li>
+<li>比较 \(y,z\)：$20+35=55$ 人偏好 \(y\) 胜 \(z\)，\(45\) 人偏好 \(z\) 胜 \(y\)，故 \(yPz\)。</li>
+<li>比较 \(x,z\)：$35+45=80$ 人偏好 \(z\) 胜 \(x\)，\(20\) 人偏好 \(x\) 胜 \(z\)，故 \(zPx\)。</li>
+</ul>
+<p>任何偏好关系都有传递性，\(xPy\) 与 \(yPz\) 蕴含 \(xPz\)，与 \(zPx\) 矛盾。故多数投票给出的 \(P\) 不是偏好关系。</p>
+</div>
+<div class="lang en">
+<ul>
+<li>Comparing \(x,y\): $20+45=65$ prefer \(x\) to \(y\), \(35\) prefer \(y\) to \(x\), so \(xPy\).</li>
+<li>Comparing \(y,z\): $20+35=55$ prefer \(y\) to \(z\), \(45\) prefer \(z\) to \(y\), so \(yPz\).</li>
+<li>Comparing \(x,z\): $35+45=80$ prefer \(z\) to \(x\), \(20\) prefer \(x\) to \(z\), so \(zPx\).</li>
+</ul>
+<p>Any preference relation has transitivity; \(xPy\) and \(yPz\) imply \(xPz\), contradicting \(zPx\). So the \(P\) given by majority voting is not a preference relation.</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.1（Borda count）
+<span class="lang zh">对 \(x\in X\)，Borda 分 \(B:X\to\mathbb{R}\) 定义为 \(B(x)=\sum_{i=1}^n\text{card}\{y:xR^i y\}\)，即先数个体 \(i\) 排在 \(x\) 之下的状态数，再跨个体相加。Borda 规则为 \(xR_B y\Leftrightarrow B(x)\ge B(y)\)。因实数上 \(\ge\) 满足传递性与完备性，社会偏好 \(R_B\) 总满足传递性与完备性，故 Borda 规则是社会偏好关系。</span><span class="lang en">For \(x\in X\), the Borda score \(B:X\to\mathbb{R}\) is defined by \(B(x)=\sum_{i=1}^n\text{card}\{y:xR^i y\}\), which first counts the number of states below \(x\) for individual \(i\) then adds across all individuals. The Borda rule is \(xR_B y\Leftrightarrow B(x)\ge B(y)\). Since \(\ge\) on the real line satisfies transitivity and completeness, the social preference \(R_B\) always satisfies them, so the Borda rule is a social preference relation.</span></p>
+<p>[!important] Example 9.2
+<span class="lang zh">在 Example 9.1 中改用 Borda 计数则无矛盾，Borda 规则确为社会偏好关系：\(B(x)=20\times3+35\times1+45\times2=185\)；\(B(y)=20\times2+35\times3+45\times1=190\)；\(B(z)=20\times1+35\times2+45\times3=225\)，故 \(zP_B yP_B x\)。</span><span class="lang en">Using the Borda count in Example 9.1, there is no contradiction and the Borda rule is indeed a social preference relation: \(B(x)=20\times3+35\times1+45\times2=185\); \(B(y)=20\times2+35\times3+45\times1=190\); \(B(z)=20\times1+35\times2+45\times3=225\), so \(zP_B yP_B x\).</span></p></div>
+<div class="lang zh">
+<h4>9.1.3 Social Welfare Function</h4>
+<p>关键问题：是否存在从个体偏好 \((R^1,\dots,R^N)\) 到具有良好性质的社会偏好关系 \(R\) 的映射？正式定义这一映射。</p>
+</div>
+<div class="lang en">
+<h4>9.1.3 Social Welfare Function</h4>
+<p>The key question: do we have a mapping from individuals' preferences \((R^1,\dots,R^N)\) to a social preference relation \(R\) with good properties? Let's formally define that mapping.</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.2（Social Welfare Function）
+<span class="lang zh">给定子域 \(\mathcal{D}\subseteq\mathcal{R}\)，称 \(f:\mathcal{D}^N\to\mathcal{R}\) 为 \(\mathcal{D}\) 上的社会福利函数：\(R=f(R^1,R^2,\dots,R^N)\)。\(\mathcal{D}\) 与 \(\mathcal{R}\) 均为偏好关系之集，故 \(f\) 把个体偏好关系映为社会偏好关系。</span><span class="lang en">Given a subdomain \(\mathcal{D}\subseteq\mathcal{R}\), \(f:\mathcal{D}^N\to\mathcal{R}\) is a social welfare function on \(\mathcal{D}\): \(R=f(R^1,R^2,\dots,R^N)\). Both \(\mathcal{D}\) and \(\mathcal{R}\) are sets of preference relations, so \(f\) maps individuals' preference relations to a social preference relation.</span></p>
+<p>[!important] Arrow 的四个条件 / Arrow's four conditions
+<span class="lang zh"><strong>1. (U) 无限制定义域</strong>：\(f\) 的定义域应包含 \(X\) 上个体的任意可能偏好，即 \(\mathcal{D}=\mathcal{R}\)，\(f:\mathcal{R}^N\to\mathcal{R}\)。<br><strong>2. (WP) 弱 Pareto</strong>：当所有个体都严格偏好 \(x\) 胜 \(y\) 时，社会偏好也应严格偏好 \(x\) 胜 \(y\)。\(\forall x,y\in X,\forall(R^1,\dots,R^N)\in\mathcal{R}^N\)，\([xP^i y,\forall i]\Rightarrow[xPy]\)。<br><strong>3. (IIA) 无关方案独立性</strong>：设 \(R=f(R^1,\dots,R^N)\)、\(\tilde R=f(\tilde R^1,\dots,\tilde R^N)\)。若每个个体在 \(R^i\) 下对 \(\forall x,y\) 的排序与 \(\tilde R^i\) 下相同，则 \(R\) 与 \(\tilde R\) 对 \(x,y\) 排序也相同：\([xR^i y\Leftrightarrow x\tilde R^i y,\forall i]\Rightarrow[xRy\Leftrightarrow x\tilde Ry]\)。（IIA 意味着比较 \(x,y\) 只需个体对 \(x,y\) 的偏好，其他状态 \(k,w,z\dots\) 不应影响。）<br><strong>4. (D) 非独裁</strong>：不存在个体 \(i\) 使若 \(i\) 偏好 \(x\) 胜 \(y\) 则社会无视他人偏好也偏好 \(x\) 胜 \(y\)：\(\nexists i:xP^i y\Rightarrow xPy,\forall(R^1,\dots,R^N)\in\mathcal{R}^N\)。</span><span class="lang en"><strong>1. (U) Unrestricted domain</strong>: the domain of \(f\) should include any possible preferences on \(X\), i.e. \(\mathcal{D}=\mathcal{R}\), \(f:\mathcal{R}^N\to\mathcal{R}\).<br><strong>2. (WP) Weak Pareto</strong>: when all individuals strictly prefer \(x\) to \(y\), the social preference should too. \(\forall x,y\in X,\forall(R^1,\dots,R^N)\in\mathcal{R}^N\), \([xP^i y,\forall i]\Rightarrow[xPy]\).<br><strong>3. (IIA) Independence of Irrelevant Alternatives</strong>: let \(R=f(R^1,\dots,R^N)\), \(\tilde R=f(\tilde R^1,\dots,\tilde R^N)\). If every individual ranks \(\forall x,y\) under \(R^i\) the same as under \(\tilde R^i\), then \(R\) and \(\tilde R\) rank \(x,y\) the same: \([xR^i y\Leftrightarrow x\tilde R^i y,\forall i]\Rightarrow[xRy\Leftrightarrow x\tilde Ry]\). (IIA means ranking \(x,y\) only needs individuals' preferences over \(x,y\); other states \(k,w,z\dots\) should not impact it.)<br><strong>4. (D) Non-dictatorship</strong>: no individual \(i\) such that if \(i\) prefers \(x\) to \(y\) then society prefers \(x\) to \(y\) regardless of others: \(\nexists i:xP^i y\Rightarrow xPy,\forall(R^1,\dots,R^N)\in\mathcal{R}^N\).</span></p></div>
+<div class="lang zh">
+<p>注意 IIA 要求比较任意一对状态不应牵涉其他状态。但 Borda 计数严重依赖于下方其他状态的数量及赋分，故违反 IIA。见下例。</p>
+</div>
+<div class="lang en">
+<p>Note IIA requires that comparing any pair of states should not involve any other states. But Borda counts heavily depend on the number of other states below and the assigned numbers, so it fails IIA. See the example below.</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>Example 9.3（Borda rule fails IIA）
+<span class="lang zh">考虑下表，Borda 分 \(B(x)=3\times3+2\times2=13\)、\(B(y)=3\times2+2\times3=12\)、\(B(z)=3\times1+2\times1=5\)，故 \(xP_B yP_B z\)。</span><span class="lang en">Consider the table; Borda scores \(B(x)=3\times3+2\times2=13\), \(B(y)=3\times2+2\times3=12\), \(B(z)=3\times1+2\times1=5\), so \(xP_B yP_B z\).</span></p></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Ranking</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">\(x\)</td>
+<td style="text-align: center;">\(y\)</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">\(y\)</td>
+<td style="text-align: center;">\(x\)</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">\(z\)</td>
+<td style="text-align: center;">\(z\)</td>
+</tr>
+</tbody>
+</table>
+<div class="lang zh">
+<p>现改变各社会状态的排序，使 \(y\) 与 \(x\) 的次序不变。若 IIA 成立，此类改变不应影响社会对 \(x,y\) 的排序。考虑下表：Borda 分 \(B(x)=3\times3+2\times1=11\)、\(B(y)=3\times2+2\times3=12\)、\(B(z)=3\times1+2\times2=7\)，故 \(yP_B xP_B z\)。\(x,y\) 次序被颠倒，故 Borda 规则不满足 IIA。</p>
+</div>
+<div class="lang en">
+<p>Now change the ranking of each social state so the ordering of \(y\) and \(x\) remains unchanged. If IIA holds, such changes should not affect society's ranking of \(x,y\). Consider the table: Borda scores \(B(x)=3\times3+2\times1=11\), \(B(y)=3\times2+2\times3=12\), \(B(z)=3\times1+2\times2=7\), so \(yP_B xP_B z\). The order of \(x,y\) is reversed, so the Borda rule does not satisfy IIA.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Ranking</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">\(x\)</td>
+<td style="text-align: center;">\(y\)</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">\(y\)</td>
+<td style="text-align: center;">\(z\)</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">\(z\)</td>
+<td style="text-align: center;">\(x\)</td>
+</tr>
+</tbody>
+</table>
+<div class="lang zh">
+<h4>9.1.4 Arrow's impossibility theorem</h4>
+</div>
+<div class="lang en">
+<h4>9.1.4 Arrow's impossibility theorem</h4>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>Theorem 9.1（Arrow's Impossibility Theorem）
+<span class="lang zh">若 \(X\) 中至少有三个社会状态（\(\text{card}(X)\ge3\)），则不存在同时满足条件 U、WP、IIA、D 的社会福利函数 \(f\)。</span><span class="lang en">If there are at least three social states in \(X\) (\(\text{card}(X)\ge3\)), then there is no social welfare function \(f\) satisfying conditions U, WP, IIA, and D.</span></p>
+<p>[!note]- 证明 / Proof (Theorem 9.1)
+<div class="lang zh" markdown="1">
+思路：证 U、WP、IIA 合起来蕴含独裁者存在。设 \(X\) 有限。<br><strong>第 1 步</strong>：由 U，\(f\) 适用于所有偏好剖面，故可考虑：让每个个体把 \(c\) 排在最底。由 WP，\(c\) 也在社会排序 \(R\) 的最底（图 A.0：每个 \(R^i\) 与 \(R\) 都把 \(c\) 置底）。<br><strong>第 2 步</strong>：对个体 \(1\) 到 \(N\) 逐个把 \(c\) 从底移到顶。全部移完后，由 WP，\(c\) 在 \(R\) 的顶。故必有某时刻——当对个体 \(n\) 移动 \(c\) 时——\(R\) 中 \(c\) 首次上移：移动 \(n\) 之前（图 A.1：个体 \(1..m-1\) 已把 \(c\) 置顶、\(m..N\) 仍置底，\(R\) 中 \(c\) 在底）与移动 \(n\) 之后（图 A.2：\(R\) 中 \(c\) 移到顶）。<br><strong>Claim</strong>：当对个体 \(n\) 移动排序使 \(c\) 在 \(R\) 中首次上移时，\(c\) 直接从底跳到顶，即对社会严格排在最顶。<br><strong>Claim 证明</strong>：反证。设不然，则对个体 \(n\) 移动后，并非对 \(\forall x\ne c\) 都有 \(cPx\)。于是存在不同的 \(\alpha,\beta\in X\)（\(\alpha,\beta\ne c\)）使 \(\alpha Rc R\beta\)（如 \(\beta=\min_R X\setminus\{c\}\)、\(\alpha=\max_R X\setminus\{c,\beta\}\)）。改变图 A.2 中各 \(R^i\) 使 \(\beta P^i\alpha\)（\(\forall i\)），由 WP，\(\beta P\alpha\)。但此改变不改变各 \(i\) 对 \(\alpha\) vs \(c\) 的排序（因只动了 \(\alpha,\beta\) 相对位置而 \(c\) 对每个 agent 在极端），由 IIA 社会对 \(\alpha\) vs \(c\) 排序不变，仍 \(\alpha Rc\)；同理 \(cR\beta\)。由 \(R\) 的传递性 \(\alpha R\beta\)，与 \(\beta P\alpha\) 矛盾。\(\blacksquare\)<br>故图 A.2 正确：\(c\) 直接从底跳到 \(R\) 的顶。<br><strong>第 3 步</strong>：任取不同的 \(a,b\ne c\)，把图 A.2 中 \(R^n\) 调整为（图 A.3：个体 \(n\) 把 \(a\) 置顶（在 \(c\) 上）、然后 \(c\)、再 \(b\)）。要证 \(R\) 与 \(R^n\) 有同样变化。证 \(aPc\)：比较图 A.1 与 A.3，\(a\) vs \(c\) 对各 \(i\) 相同，由 IIA，因 A.1 中 \(aPc\)，A.3 中也 \(aPc\)。证 \(cPb\)：比较图 A.2 与 A.3，\(c\) vs \(b\) 对各 \(i\) 相同，由 IIA，因 A.2 中 \(cPb\)，A.3 中也 \(cPb\)。故 \(aPcPb\)，得 \(aPb\)。<br>现让所有 \(i\ne n\) 在图 A.3 中任意改变 \(a\) vs \(b\) 排序而保持 \(n\) 不变。无论他人如何改变，他们对 \(a\) vs \(c\)、\(c\) vs \(b\) 的排序都不变（\(c\) 对他们在极端），由 IIA 社会对 \(a\) vs \(c\)、\(c\) vs \(b\) 排序不变，仍 \(aPcPb\)。故无论 \(i\ne n\) 如何排 \(a\) vs \(b\)，图 A.3 中都有 \(aPb\)。<br><strong>第 4 步</strong>：在 \(i\ne n\) 改变 \(a\) vs \(b\) 后，让 \(n\) 任意改变其 \(a\) vs \(b\) 排序而保持 \(a\) vs \(c\) 不变，由 IIA 社会对 \(a\) vs \(b\) 排序不变（按此顺序进行不失一般性，因让所有 agent 同时改变 \(a\) vs \(b\) 的任何结果都可由此顺序实现）。故 \(n\) 是所有不同对 \(a,b\ne c\) 的独裁者。<br>现得到排除 \(c\) 的独裁。关于对 \(a,c\)（\(\forall a\ne c\)）？取 \(b\notin\{a,c\}\)，把上面论证中的 \(c\) 换成 \(b\)，得 \(\exists n'\) 为对 \(a,c\) 的独裁者。但前面证明中，从图 A.1 到 A.2，\(n\) 的偏好从 \(aP^n c\) 切换为 \(cP^n a\)、社会偏好从 \(aPc\) 切换为 \(cPa\)，而此时无其他 agent 对 \(a\) vs \(c\) 的排序改变，故必 \(n=n'\)。因此存在对所有对都成立的独裁者 \(n\)。\(\blacksquare\)
+</div>
+<div class="lang en" markdown="1">
+Idea: show U, WP, IIA combined imply the existence of a dictator. Assume \(X\) finite.<br><strong>Step 1</strong>: by U, \(f\) applies to all preference profiles, so consider: let every individual rank \(c\) at the bottom. By WP, \(c\) is at the bottom of the social ranking \(R\) (Figure A.0: each \(R^i\) and \(R\) has \(c\) at bottom).<br><strong>Step 2</strong>: move \(c\) from bottom to top one by one for individuals \(1\) to \(N\). Once finished for all, by WP \(c\) is at the top of \(R\). So there is a moment — when moving \(c\) for individual \(n\) — when \(c\) first moves up in \(R\): before moving for \(n\) (Figure A.1: individuals \(1..m-1\) have \(c\) at top, \(m..N\) at bottom, \(R\) has \(c\) at bottom) and after moving for \(n\) (Figure A.2: \(R\) has \(c\) at top).<br><strong>Claim</strong>: when \(c\) first moves up in \(R\) as we move the ranking for individual \(n\), \(c\) moves directly from bottom to top, i.e. ranked strictly at the top for society.<br><strong>Proof of Claim</strong>: by contradiction. Suppose not; then after moving for \(n\), it is not true that \(cPx\) for \(\forall x\ne c\). So there exist distinct \(\alpha,\beta\in X\) (\(\alpha,\beta\ne c\)) with \(\alpha Rc R\beta\) (e.g. \(\beta=\min_R X\setminus\{c\}\), \(\alpha=\max_R X\setminus\{c,\beta\}\)). Change the \(R^i\) in Figure A.2 so that \(\beta P^i\alpha\) (\(\forall i\)); by WP, \(\beta P\alpha\). But this change does not change anyone's ranking of \(\alpha\) vs \(c\) (we only moved \(\alpha,\beta\)'s relative positions while \(c\) is at an extreme for each agent), so by IIA the social ranking of \(\alpha\) vs \(c\) cannot change, still \(\alpha Rc\); same for \(cR\beta\). By transitivity of \(R\), \(\alpha R\beta\), contradicting \(\beta P\alpha\). \(\blacksquare\)<br>So Figure A.2 is correct: \(c\) moves directly from bottom to the top of \(R\).<br><strong>Step 3</strong>: choose any distinct \(a,b\ne c\), and adjust \(R^n\) in Figure A.2 as (Figure A.3: individual \(n\) has \(a\) at top (above \(c\)), then \(c\), then \(b\)). We want \(R\) to have the same change as \(R^n\). To prove \(aPc\): compare Figures A.1 and A.3, \(a\) vs \(c\) is the same for each \(i\), so by IIA, since A.1 has \(aPc\), A.3 has \(aPc\). To prove \(cPb\): compare Figures A.2 and A.3, \(c\) vs \(b\) is the same for each \(i\), so by IIA, since A.2 has \(cPb\), A.3 has \(cPb\). So \(aPcPb\), giving \(aPb\).<br>Now let all \(i\ne n\) change the \(a\) vs \(b\) ranking in Figure A.3 arbitrarily while keeping \(n\) unchanged. No matter how others change, their rankings of \(a\) vs \(c\) and \(c\) vs \(b\) don't change (\(c\) at an extreme for them), so by IIA society's ranking of \(a\) vs \(c\) and \(c\) vs \(b\) don't change, still \(aPcPb\). So \(aPb\) in Figure A.3 no matter how \(i\ne n\) rank \(a\) vs \(b\).<br><strong>Step 4</strong>: after \(i\ne n\) change \(a\) vs \(b\), let \(n\) change his \(a\) vs \(b\) ranking arbitrarily while keeping \(a\) vs \(c\) unchanged; by IIA society's ranking of \(a\) vs \(b\) remains unchanged (doing this in order is WLOG, since any result of all agents changing \(a\) vs \(b\) simultaneously can be achieved in this order). So \(n\) is a dictator for all distinct pairs \(a,b\ne c\).<br>Now we have dictatorship excluding \(c\). What about pairs \(a,c\) (\(\forall a\ne c\))? Take \(b\notin\{a,c\}\), replace \(c\) with \(b\) in the argument above to conclude \(\exists n'\) a dictator for the pair \(a,c\). But in the previous proof, when moving from Figure A.1 to A.2, \(n\)'s preferences switched from \(aP^n c\) to \(cP^n a\) and society's from \(aPc\) to \(cPa\), while no other agent's ranking of \(a\) vs \(c\) changed at that time, so it must be \(n=n'\). Therefore there is a dictator \(n\) for all pairs. \(\blacksquare\)
+</div></p></div>
+<div class="lang zh">
+<h2 id="9-2-social-choice">9.2 Social Choice</h2>
+<p>上一部分已证：把个体偏好关系映为具某些性质的社会偏好关系是不可能的。现考虑一个更易的任务——把个体偏好映为只挑出 \(R\) 顶端的<strong>社会选择函数</strong>。本节只关注选择问题：如何作为个体偏好的函数从 \(X\) 中选取，并关注个体是否有动机如实报告偏好。</p>
+<h4>9.2.1 Social choice function</h4>
+</div>
+<div class="lang en">
+<h2 id="9-2-social-choice">9.2 Social Choice</h2>
+<p>The previous part showed mapping individual preference relations to a social preference relation with certain properties is impossible. Now consider an easier task — mapping individual preferences to a <strong>social choice function</strong> that picks only the top of \(R\). This section focuses only on the choice problem: how to choose from \(X\) as a function of individual preferences, and whether individuals have incentives to truthfully report preferences.</p>
+<h4>9.2.1 Social choice function</h4>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>Definitions 9.3–9.4
+<span class="lang zh"><strong>Def 9.3（社会选择函数）</strong>：社会选择函数是映射 \(c:\mathcal{R}^N\to X\)，且是满射（onto，即 \(\forall x\in X\)，\(\exists(R^1,\dots,R^N)\) 使 \(c(\cdots)=x\)；合理，因可丢弃从不被选的状态）。<br><strong>Def 9.4（独裁的）</strong>：\(c:\mathcal{R}^N\to X\) 独裁，当且仅当 \(\exists i\) 使 \(c(R^1,\dots,R^N)R^i y\) 对 \(\forall y\in X\) 与 \(\forall(R^1,\dots,R^N)\in\mathcal{R}^N\)。</span><span class="lang en"><strong>Def 9.3 (Social choice function)</strong>: a mapping \(c:\mathcal{R}^N\to X\) that is onto (\(\forall x\in X\), \(\exists(R^1,\dots,R^N)\) s.t. \(c(\cdots)=x\); reasonable since we can drop a state never picked).<br><strong>Def 9.4 (Dictatorial)</strong>: \(c:\mathcal{R}^N\to X\) is dictatorial iff \(\exists i\) s.t. \(c(R^1,\dots,R^N)R^i y\) for \(\forall y\in X\) and \(\forall(R^1,\dots,R^N)\in\mathcal{R}^N\).</span></p></div>
+<div class="lang zh">
+<h4>9.2.2 Strategy-proof social choice function</h4>
+<p>我们希望 agent 如实报告其偏好 \(R^i\)，再把真实偏好代入社会选择函数得社会选择。但 agent 可能有动机撒谎（策略性报告）以获更好结果。定义一类不给任何 agent 撒谎动机的社会选择函数。</p>
+</div>
+<div class="lang en">
+<h4>9.2.2 Strategy-proof social choice function</h4>
+<p>We want agents to report their preferences \(R^i\) honestly, then plug the true preferences into the social choice function. But agents may have incentives to lie (strategic reporting) for a better outcome. Define a type of social choice function that gives no agent the incentive to lie.</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>Definition 9.5（Strategy-proof）
+<span class="lang zh">社会选择函数 \(c:\mathcal{R}^N\to X\) 防策略，当且仅当 \(\forall i\)、\(\forall R^i,\tilde R^i\in\mathcal{R}\)、\(\forall R^{-i}=(R^1,\dots,R^{i-1},R^{i+1},\dots,R^N)\in\mathcal{R}^{N-1}\)、\(\forall x,y\in X\)：\([c(R^i,R^{-i})=x\text{ and }c(\tilde R^i,R^{-i})=y]\Rightarrow xR^i y\)。其中 \(R^i\) 为 \(i\) 的真实偏好、\(\tilde R^i\) 为他可报告的任何其他偏好。直觉：无论他人如何报告，你都不能比如实报告偏好做得更好。</span><span class="lang en">A social choice function \(c:\mathcal{R}^N\to X\) is strategy-proof iff \(\forall i\), \(\forall R^i,\tilde R^i\in\mathcal{R}\), \(\forall R^{-i}=(R^1,\dots,R^{i-1},R^{i+1},\dots,R^N)\in\mathcal{R}^{N-1}\), \(\forall x,y\in X\): \([c(R^i,R^{-i})=x\text{ and }c(\tilde R^i,R^{-i})=y]\Rightarrow xR^i y\). Here \(R^i\) is \(i\)'s true preferences and \(\tilde R^i\) any other preferences he could report. Intuition: no matter what others report, you cannot do any better than reporting honestly.</span></p></div>
+<div class="lang zh">
+<h4>9.2.3 Gibbard-Satterthwaite Theorem</h4>
+</div>
+<div class="lang en">
+<h4>9.2.3 Gibbard-Satterthwaite Theorem</h4>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>Theorem 9.2（Gibbard-Satterthwaite Theorem）
+<span class="lang zh">若 \(\text{card}(X)\ge3\)，则每个防策略社会选择函数都是独裁的。</span><span class="lang en">If \(\text{card}(X)\ge3\), then every strategy-proof social choice function is dictatorial.</span></p>
+<p>[!important] Definitions 9.6–9.7（Pareto efficient &amp; monotonic）
+<span class="lang zh"><strong>Def 9.6（Pareto 有效）</strong>：\(c:\mathcal{R}^N\to X\) Pareto 有效，当且仅当 \(\forall(R^1,\dots,R^N)\)、\(\forall x\)：\([xP^i y,\forall y\in X\setminus\{x\},\forall i]\Rightarrow c(R^1,\dots,R^N)=x\)。<br><strong>Def 9.7（单调）</strong>：\(c\) 单调，当且仅当 \(\forall(R^1,\dots,R^N),(\tilde R^1,\dots,\tilde R^N)\)、\(\forall x\)：\([c(R^1,\dots,R^N)=x]\) 且 \([xR^i y\Rightarrow x\tilde R^i y,\forall y\in X\setminus\{x\},\forall i]\Rightarrow c(\tilde R^1,\dots,\tilde R^N)=x\)。<br>Pareto 效率：若人人严格偏好某状态胜过其余，社会选择函数应选该状态。单调性：若人人对 \(x\) 的排序变高（至少不变差），则先前选 \(x\) 蕴含现在仍选 \(x\)。</span><span class="lang en"><strong>Def 9.6 (Pareto efficient)</strong>: \(c:\mathcal{R}^N\to X\) is Pareto efficient iff \(\forall(R^1,\dots,R^N)\), \(\forall x\): \([xP^i y,\forall y\in X\setminus\{x\},\forall i]\Rightarrow c(R^1,\dots,R^N)=x\).<br><strong>Def 9.7 (Monotonic)</strong>: \(c\) is monotonic iff \(\forall(R^1,\dots,R^N),(\tilde R^1,\dots,\tilde R^N)\), \(\forall x\): \([c(R^1,\dots,R^N)=x]\) and \([xR^i y\Rightarrow x\tilde R^i y,\forall y\in X\setminus\{x\},\forall i]\Rightarrow c(\tilde R^1,\dots,\tilde R^N)=x\).<br>Pareto efficiency: if everyone strictly prefers a state to all others, \(c\) should choose it. Monotonicity: if everyone's ranking of \(x\) becomes higher (at least not worse), then \(x\) being chosen before implies \(x\) being chosen now.</span></p>
+<p>[!important] Proposition 9.1
+<span class="lang zh">若 \(c:\mathcal{R}^N\to X\) 防策略，则它 Pareto 有效且单调。</span><span class="lang en">If \(c:\mathcal{R}^N\to X\) is strategy-proof, then it is Pareto efficient and monotonic.</span></p>
+<p>[!note]- 证明 / Proof (Proposition 9.1)
+<div class="lang zh" markdown="1">
+<strong>(1) 单调性</strong>：设 \(c\) 防策略，\((R^1,\dots,R^N)\) 任意剖面且 \(c(R^1,\dots,R^N)=x\)。对任一 \(i\)，取 \(\tilde R^i\) 使 \(\forall y\ne x\)，\(xR^i y\Rightarrow x\tilde R^i y\)（保持所有排序不变、把与 \(x\) 的并列打破为严格低于 \(x\) 即可）。先证 \(c(\tilde R^i,R^{-i})=x\)。反证设 \(c(\tilde R^i,R^{-i})=y\ne x\)。给定他人报 \(R^{-i}\)，\(i\) 真实偏好为 \(R^i\) 时可如实报得 \(x\)、或报 \(\tilde R^i\) 得 \(y\)；防策略蕴含撒谎不能使 \(i\) 严格更优，故 \(xR^i y\)，由构造 \(x\tilde P^i y\)。再考虑 \(i\) 真实偏好为 \(\tilde R^i\) 时仍有 \(x\tilde P^i y\)，否则 \(i\) 会偏好撒谎（报 \(R^i\) 得 \(x\)）胜过如实（报 \(\tilde R^i\) 得 \(y\)），使 \(c\) 对真实偏好 \(\tilde R^i\) 的 \(i\) 不防策略，矛盾。故 \(c(\tilde R^i,R^{-i})=x\)。逐个对所有 agent 应用此论证：设 \(c(R^1,\dots,R^N)=x\) 且 \(\forall i,\forall y\ne x\)，\(xR^i y\Rightarrow x\tilde R^i y\)。要证 \(c(\tilde R^1,\dots,\tilde R^N)=x\)。由刚证结果 \(c(\tilde R^1,R^2,\dots,R^N)=x\)，再每次切换一个 agent，每次切换都不改变社会选择 \(x\)，故 \(c\) 单调。<br><strong>(2) Pareto 效率</strong>：设 \(x\) 任意社会状态，\((\tilde R^1,\dots,\tilde R^N)\) 把 \(x\) 严格置于各 agent 排序之顶。要证 \(c(\tilde R^1,\dots,\tilde R^N)=x\)。因 \(c\) 满射，其值域为 \(X\) 全体，故存在某剖面 \((R^1,\dots,R^N)\) 使 \(c(R^1,\dots,R^N)=x\)。从此剖面把 \(x\) 在每个 agent 排序中移到严格顶、其余不变，达 \((\hat R^1,\dots,\hat R^N)\)，由刚证单调性 \(c(\hat R^1,\dots,\hat R^N)=x\)。再比较 \((\hat R^1,\dots,\hat R^N)\) 与 \((\tilde R^1,\dots,\tilde R^N)\)：因后者把 \(x\) 严格置顶，故 \(x\hat R^i y\)（\(\forall i,\forall y\ne x\)），又 \(c(\hat R^1,\dots,\hat R^N)=x\)，由单调性再得 \(c(\tilde R^1,\dots,\tilde R^N)=x\)，即 \(c\) Pareto 有效。\(\blacksquare\)
+</div>
+<div class="lang en" markdown="1">
+<strong>(1) Monotonicity</strong>: suppose \(c\) strategy-proof, \((R^1,\dots,R^N)\) arbitrary with \(c(R^1,\dots,R^N)=x\). For any \(i\), take \(\tilde R^i\) such that \(\forall y\ne x\), \(xR^i y\Rightarrow x\tilde R^i y\) (keep all rankings, break ties with \(x\) to strictly lower than \(x\)). First show \(c(\tilde R^i,R^{-i})=x\). By contradiction, suppose \(c(\tilde R^i,R^{-i})=y\ne x\). Given others report \(R^{-i}\), when \(i\)'s true preferences are \(R^i\) he can report truthfully and get \(x\), or report \(\tilde R^i\) and get \(y\); strategy-proofness implies lying cannot make \(i\) strictly better off, so \(xR^i y\), and by construction \(x\tilde P^i y\). Now when \(i\)'s true preferences are \(\tilde R^i\), we still have \(x\tilde P^i y\), otherwise \(i\) would prefer lying (report \(R^i\), get \(x\)) to truth (report \(\tilde R^i\), get \(y\)), making \(c\) not strategy-proof to \(i\) with true \(\tilde R^i\) — contradiction. So \(c(\tilde R^i,R^{-i})=x\). Apply this to all agents one by one: suppose \(c(R^1,\dots,R^N)=x\) and \(\forall i,\forall y\ne x\), \(xR^i y\Rightarrow x\tilde R^i y\). To prove \(c(\tilde R^1,\dots,\tilde R^N)=x\): from the result just proved \(c(\tilde R^1,R^2,\dots,R^N)=x\), then switch one agent at a time, each switch leaving the social choice \(x\) unchanged, so \(c\) is monotonic.<br><strong>(2) Pareto efficiency</strong>: let \(x\) be arbitrary and \((\tilde R^1,\dots,\tilde R^N)\) place \(x\) strictly at the top of each agent's ranking. To show \(c(\tilde R^1,\dots,\tilde R^N)=x\): since \(c\) is onto, its range is all of \(X\), so there is some profile \((R^1,\dots,R^N)\) with \(c(R^1,\dots,R^N)=x\). From it, move \(x\) strictly to the top in every agent's ranking keeping the rest unchanged, reaching \((\hat R^1,\dots,\hat R^N)\); by the monotonicity just proved \(c(\hat R^1,\dots,\hat R^N)=x\). Compare \((\hat R^1,\dots,\hat R^N)\) with \((\tilde R^1,\dots,\tilde R^N)\): since the latter places \(x\) strictly at the top, \(x\hat R^i y\) (\(\forall i,\forall y\ne x\)), and \(c(\hat R^1,\dots,\hat R^N)=x\), so by monotonicity \(c(\tilde R^1,\dots,\tilde R^N)=x\), i.e. \(c\) is Pareto efficient. \(\blacksquare\)
+</div></p>
+<p>[!note]- 证明 / Proof (Theorem 9.2, Gibbard-Satterthwaite)
+<div class="lang zh" markdown="1">
+由 Prop 9.1，只需证：\(\text{card}(X)\ge3\) + Pareto 有效 + 单调 \(\Rightarrow\) 独裁。设 \(\text{card}(X)\ge3\)，\(c\) Pareto 有效且单调。任取 \(x\ne y\)，对所有人把 \(x\) 严格置顶、\(y\) 严格置底（图 P.0.0），由 Pareto 效率社会选择 \(\text{sc}=x\)。把 \(y\) 移到个体 1 中 \(x\) 正下方、其余不变（图 P.0.1），由单调性 \(\text{sc}=x\)。再把 \(y\) 移到个体 1 中 \(x\) 之上、其余不变（图 P.0.2），则 \(\text{sc}\in\{x,y\}\)（反证：若 \(\text{sc}=z\notin\{x,y\}\)，由 P.0.2 回到 P.0.1，因 \(z\) 排序对任何人未变，由单调性 P.0.1 中 \(\text{sc}=z\)，与 P.0.1 中 \(\text{sc}=x\) 矛盾）。<br>故从 P.0.0 到 P.0.2，\(\text{sc}\) 为 \(x\) 或 \(y\)。若 P.0.2 中 \(\text{sc}=x\)，对个体 2 重复，逐个进行。由 Pareto 效率，当人人最终把 \(y\) 严格置顶时 \(\text{sc}=y\)，故必有某时刻 \(\text{sc}\) 从 \(x\) 切换到 \(y\)。设 \(n\) 为使社会选择从 \(x\) 切到 \(y\) 的 agent，给出图 P.1 与 P.2；由单调性，切换只在 \(n\) 把 \(y\) 置于 \(x\) 之上后发生。<br>从图 P.1，对除 \(n\) 外所有 agent 在保持 \(x\) 在 \(y\) 之上的前提下把 \(x\) 尽量下移，得图 P.3；在图 P.3 中对 \(n\) 把 \(y\) 移到 \(x\) 之上得图 P.4。要证图 P.4 中 \(\text{sc}=y\)、图 P.3 中 \(\text{sc}=x\)。比较 P.4 与 P.2，\(y\) 相对其他状态的排序对任何 agent 未变，因 P.2 中 \(\text{sc}=y\)，由单调性 P.4 中 \(\text{sc}=y\)。再从 P.4 到 P.3（同 P.0 逻辑），P.3 中 \(\text{sc}=x\) 或 \(y\)；若 P.3 中 \(\text{sc}=y\)，比较 P.3 与 P.1，\(y\) 相对其他状态排序未变，由单调性 P.3 的 \(\text{sc}=y\) 蕴含 P.1 的 \(\text{sc}=y\)，不真，故 P.3 中 \(\text{sc}=x\)。<br>用 \(\text{card}(X)\ge3\) 取 \(z\ne x,y\)。从图 P.3，对 \(n\) 把 \(z\) 置于 \(x,y\) 之间；对 \(1..n-1\) 把 \(y\) 下移到 \(x\) 正上方、\(z\) 置于 \(y\) 正上方；对 \(n+1..N\) 把 \(z\) 置于 \(x\) 正上方，得图 P.5。再从 P.5 对除 \(n\) 外所有 agent 把 \(x\) 置底，得图 P.6。要证 P.5 与 P.6 中 \(\text{sc}=x\)。比较 P.3 与 P.5，\(x\) 相对其他状态排序对任何 agent 未变，由单调性 P.3 的 \(\text{sc}=x\) 蕴含 P.5 的 \(\text{sc}=x\)。从 P.5 到 P.6，对 \(n+1,\dots,N\) 逐个把 \(x\) 移到 \(y\) 之上，\(\text{sc}\) 要么仍 \(x\)、要么切到 \(y\)（同 P.0 逻辑）。反证：若 P.6 中 \(\text{sc}=y\)，对每个 agent（含 \(n\)）把 \(z\) 升到顶，由单调性 \(\text{sc}=y\) 不应变，与 Pareto 效率（\(z\) 对人人在顶则 \(\text{sc}=z\)）矛盾。故 P.6 中 \(\text{sc}=x\)。<br>对任何排序，只要对 \(n\) 把 \(x\) 置顶，都可从图 P.6 出发、不降低任何 agent 的 \(x\) 而达到该排序（记为 \(R\)）；由单调性与 P.6 的 \(\text{sc}\)，\(R\) 中 \(\text{sc}=x\)。故 \(n\) 是状态 \(x\) 的独裁者。同理任何状态都有独裁者；但不能有多个独裁者（由独裁者定义），故只有一个对所有状态的独裁者，社会选择函数独裁。\(\blacksquare\)
+</div>
+<div class="lang en" markdown="1">
+By Prop 9.1, it suffices to show: \(\text{card}(X)\ge3\) + Pareto efficiency + monotonicity \(\Rightarrow\) dictatorial. Suppose \(\text{card}(X)\ge3\), \(c\) Pareto efficient and monotonic. Choose any \(x\ne y\), rank \(x\) strictly top and \(y\) strictly bottom for everyone (Figure P.0.0); by Pareto efficiency \(\text{sc}=x\). Move \(y\) just below \(x\) for individual 1, others unchanged (Figure P.0.1); by monotonicity \(\text{sc}=x\). Move \(y\) above \(x\) for individual 1, others unchanged (Figure P.0.2); then \(\text{sc}\in\{x,y\}\) (by contradiction: if \(\text{sc}=z\notin\{x,y\}\), go back from P.0.2 to P.0.1; since \(z\)'s ranking is unchanged for anyone, monotonicity gives \(\text{sc}=z\) in P.0.1, contradicting \(\text{sc}=x\) there).<br>So from P.0.0 to P.0.2, \(\text{sc}\) is \(x\) or \(y\). If \(\text{sc}=x\) in P.0.2, repeat for individual 2, one by one. By Pareto efficiency, when everyone finally ranks \(y\) strictly at top \(\text{sc}=y\), so there is a moment when \(\text{sc}\) switches from \(x\) to \(y\). Let \(n\) be the agent for which it switches, giving Figures P.1 and P.2; by monotonicity the switch only happens after \(n\) puts \(y\) over \(x\).<br>From Figure P.1, for all agents except \(n\), move \(x\) down as far as possible keeping \(x\) over \(y\), to get Figure P.3; in P.3 move \(y\) over \(x\) for \(n\) to get Figure P.4. We show \(\text{sc}=y\) in P.4 and \(\text{sc}=x\) in P.3. Compare P.4 and P.2: \(y\)'s ranking relative to others is unchanged for any agent, so since \(\text{sc}=y\) in P.2, monotonicity gives \(\text{sc}=y\) in P.4. From P.4 to P.3 (same logic as P.0's), \(\text{sc}=x\) or \(y\) in P.3; if \(\text{sc}=y\) in P.3, comparing P.3 with P.1 (\(y\)'s relative ranking unchanged), monotonicity gives \(\text{sc}=y\) in P.1, which is false, so \(\text{sc}=x\) in P.3.<br>Use \(\text{card}(X)\ge3\) to take \(z\ne x,y\). From Figure P.3, for \(n\) put \(z\) between \(x,y\); for \(1..n-1\) move \(y\) down just above \(x\) and put \(z\) just above \(y\); for \(n+1..N\) put \(z\) just above \(x\), getting Figure P.5. From P.5, put \(x\) at the bottom for all agents except \(n\) to get Figure P.6. We show \(\text{sc}=x\) in P.5 and P.6. Compare P.3 and P.5: \(x\)'s ranking relative to others is unchanged for any agent, so monotonicity gives \(\text{sc}=x\) in P.5 from P.3. From P.5 to P.6, switch \(x\) over \(y\) for \(n+1,\dots,N\) one at a time; either \(\text{sc}=x\) stays or switches to \(y\) (same logic as P.0's). By contradiction: if \(\text{sc}=y\) in P.6, move \(z\) to the top for every agent (including \(n\)); by monotonicity \(\text{sc}=y\) should not change, contradicting Pareto efficiency (if \(z\) is at top for everyone, \(\text{sc}=z\)). So \(\text{sc}=x\) in P.6.<br>For any ranking, as long as \(x\) is at top for \(n\), we can reach it from Figure P.6 by never lowering \(x\) for any agent (call it \(R\)); by monotonicity and the \(\text{sc}\) in P.6, \(\text{sc}=x\) in \(R\). So \(n\) is a dictator for state \(x\). By the same logic, every state has a dictator; but there can't be multiple dictators (by definition), so there is one dictator for all states, and the social choice function is dictatorial. \(\blacksquare\)
+</div></p></div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#9-1-arrow-s-impossibility-theorem">9.1 Arrow's Impossibility Theorem</a></li>
+        <li><a href="#9-1-arrow-s-impossibility-theorem">9.1 Arrow's Impossibility Theorem</a></li>
+        <li><a href="#9-2-social-choice">9.2 Social Choice</a></li>
+        <li><a href="#9-2-social-choice">9.2 Social Choice</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

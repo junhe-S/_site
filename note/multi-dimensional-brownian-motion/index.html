@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9. Multi-Dimensional Brownian Motion – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>9. Multi-Dimensional Brownian Motion</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">多维布朗运动</span><span class="lang en">Multi-Dim BM</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Dirichlet 问题</span><span class="lang en">Dirichlet Problem</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">常返与暂留</span><span class="lang en">Recurrence vs Transience</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Green 函数</span><span class="lang en">Green's Function</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">热方程</span><span class="lang en">Heat Equation</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>9. Multi-Dimensional Brownian Motion</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+本章把布朗运动推广到 \(d\) 维。§9.1 定义（Def 9.1 由 \(d\) 个独立一维 BM 拼成 \(\mathbf B_t\)；Def 9.2 等价四条件定义；Fact 9.1 密度；Def 9.3 带漂移多维 BM）。§9.2 <strong>Dirichlet 问题</strong>（Def 9.4/9.5 调和函数的两个定义——球面均值性质 = Laplace 方程 \(\Delta f=0\)；Thm 9.1 最大值原理；Dirichlet 问题及 Prop 9.1 解的唯一性）。§9.3 <strong>常返 vs 暂留</strong>：9.3.1 退出概率（球壳上首达外球的概率 \(f\) 是 Dirichlet 问题的唯一解，球对称假设 \(\varphi(|\mathbf x|^2)\)，解 ODE 得三维情形公式 (9.4)）；9.3.2 定义（Def 9.6 点常返、Def 9.7 邻域常返、Def 9.8 暂留）；9.3.3 一维=点常返（Thm 9.2）；9.3.4 二维=邻域常返但非点常返（Thm 9.3）；9.3.5 三维及以上=暂留（Thm 9.4）。§9.4 <strong>Green 函数</strong>：9.4.1 转移密度 \(P_t(\mathbf x,\mathbf y)\) (9.8)；9.4.2 热方程（Def 9.9、Prop 9.2）；9.4.3 Green 函数 \(G(\mathbf x,\mathbf y)=\int_0^\infty P_t\,dt=C_d|\mathbf x-\mathbf y|^{2-d}\) (9.10)；9.4.4 条件 Green 函数（嵌入停时，(9.11)）。无图。</p></div>
+</div>
+<div class="lang en">
+<h1>9. Multi-Dimensional Brownian Motion</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+This chapter extends Brownian motion to \(d\) dimensions. §9.1 definitions (Def 9.1 \(\mathbf B_t\) assembled from \(d\) independent one-dimensional BMs; Def 9.2 the equivalent four-condition definition; Fact 9.1 density; Def 9.3 multi-dimensional BM with drift). §9.2 <strong>Dirichlet problem</strong> (Def 9.4/9.5 two definitions of a harmonic function — the spherical mean-value property $=$ Laplace's equation \(\Delta f=0\); Thm 9.1 maximum principle; the Dirichlet problem and Prop 9.1 uniqueness of its solution). §9.3 <strong>recurrence vs transience</strong>: 9.3.1 exit probability (the probability \(f\) of hitting the outer sphere first on a spherical shell is the unique Dirichlet solution; under the spherical-symmetry ansatz \(\varphi(|\mathbf x|^2)\), solving the ODE gives the dimension-dependent formula (9.4)); 9.3.2 definitions (Def 9.6 point recurrent, Def 9.7 neighborhood recurrent, Def 9.8 transient); 9.3.3 1-D is point recurrent (Thm 9.2); 9.3.4 2-D is neighborhood- but not point-recurrent (Thm 9.3); 9.3.5 3-D and higher are transient (Thm 9.4). §9.4 <strong>Green's function</strong>: 9.4.1 transition density \(P_t(\mathbf x,\mathbf y)\) (9.8); 9.4.2 heat equation (Def 9.9, Prop 9.2); 9.4.3 Green's function \(G(\mathbf x,\mathbf y)=\int_0^\infty P_t\,dt=C_d|\mathbf x-\mathbf y|^{2-d}\) (9.10); 9.4.4 conditional Green's function (embedding a stopping time, (9.11)). No figures.</p></div>
+</div>
+<div class="lang zh">
+<h2 id="9-1-definitions">9.1 定义 / Definitions</h2>
+</div>
+<div class="lang en">
+<h2 id="9-1-definitions">9.1 Definitions</h2>
+</div>
+<div class="lang zh">
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.1、9.2（多维布朗运动）/ Definitions 9.1, 9.2
+<span class="lang zh"><strong>定义 9.1（多维布朗运动）</strong>：设 \(\{B_{1,t}\},\{B_{2,t}\},\dots,\{B_{d,t}\}\) 是 \(d\) 个独立的标准一维布朗运动，则定义 \(\{\mathbf B_t\}\)（\(\forall t\)，\(\mathbf B_t=(B_{1,t},B_{2,t},\dots,B_{d,t})\)）为 <strong>\(d\) 维标准布朗运动</strong>。<strong>定义 9.2（等价定义）</strong>：设 \(\{\mathbf B_t\}\)，\(\mathbf B_t\) 是 \(\mathbb R^d\) 中 \(d\) 维向量，满足：(1) 从原点出发 \(\mathbf B_0=\mathbf 0\)；(2) 增量独立：\(r<s\) 时 \(\mathbf B_s-\mathbf B_r\) 独立于 \(\sigma\{\mathbf B_t:t\le r\}\)；(3) 增量同正态分布：\(s<t\) 时 \(\mathbf B_t-\mathbf B_s\) 与 \(\mathbf B_{t-s}\) 同分布，即 \(\mathbf B_t-\mathbf B_s\sim\mathcal N(\mathbf 0,(t-s)\mathbb I)\)（\(\mathbb I\) 为 \(d\times d\) 单位阵）；(4) 连续性：以概率 1，\(t\mapsto\mathbf B_t\) 连续，\(\mathbb P\{\omega\in\Omega:\mathbf B_t(\omega)\text{ continuous in }t\}=1\)。则 \(\{\mathbf B_t\}\) 是 \(d\) 维标准布朗运动。</span><span class="lang en"><strong>Definition 9.1 (Multi-dimensional Brownian motion)</strong>: let \(\{B_{1,t}\},\{B_{2,t}\},\dots,\{B_{d,t}\}\) be \(d\) independent standard one-dimensional Brownian motions; then define \(\{\mathbf B_t\}\) (for all \(t\), \(\mathbf B_t=(B_{1,t},B_{2,t},\dots,B_{d,t})\)) to be a <strong>\(d\)-dimensional standard Brownian motion</strong>. <strong>Definition 9.2 (Alternative definition)</strong>: suppose \(\{\mathbf B_t\}\) with \(\mathbf B_t\) a \(d\)-dimensional vector in \(\mathbb R^d\) satisfies: (1) starts from the origin \(\mathbf B_0=\mathbf 0\); (2) independent increments: for \(r<s\), \(\mathbf B_s-\mathbf B_r\) is independent of \(\sigma\{\mathbf B_t:t\le r\}\); (3) identical increment normal distribution: for \(s<t\), \(\mathbf B_t-\mathbf B_s\) has the same distribution as \(\mathbf B_{t-s}\), i.e. \(\mathbf B_t-\mathbf B_s\sim\mathcal N(\mathbf 0,(t-s)\mathbb I)\) (\(\mathbb I\) the \(d\times d\) identity); (4) continuity: with probability one \(t\mapsto\mathbf B_t\) is continuous, \(\mathbb P\{\omega\in\Omega:\mathbf B_t(\omega)\text{ continuous in }t\}=1\). Then \(\{\mathbf B_t\}\) is a \(d\)-dimensional standard Brownian motion.</span></p>
+<p>[!important] 事实 9.1（密度）与定义 9.3（带漂移）/ Fact 9.1 (density) and Definition 9.3 (with drift)
+<span class="lang zh"><strong>事实 9.1</strong>：标准 \(d\) 维布朗运动的增量 \(\mathbf B_t-\mathbf B_s\) 的密度为（\(\mathbf x=(x_1,\dots,x_d)\in\mathbb R^d\)）</span><span class="lang en"><strong>Fact 9.1</strong>: the density of the increment \(\mathbf B_t-\mathbf B_s\) of a standard \(d\)-dimensional Brownian motion is (for \(\mathbf x=(x_1,\dots,x_d)\in\mathbb R^d\))</span></p>
+<p>$$f(\mathbf x)=\prod_{j=1}^d\frac1{\sqrt{2\pi(t-s)}}e^{-\frac{x_j^2}{2(t-s)}}=\frac1{[2\pi(t-s)]^{\frac d2}}e^{-\frac{|\mathbf x|^2}{2(t-s)}}.$$</p>
+<p><span class="lang zh"><strong>定义 9.3（带漂移的多维布朗运动）</strong>：设 \(\{\mathbf B_t\}\) 是标准 \(d\) 维布朗运动，若 \(\mathbf Y_t=\mathbf A\mathbf B_t+t\boldsymbol\mu\)（\(\mathbf A\) 是 \(k\times d\) 矩阵，\(\boldsymbol\mu\) 是 \(k\) 维向量），则 \(\{\mathbf Y_t\}\) 是 \(k\) 维带漂移布朗运动，\(\forall t\)，\(\mathbf Y_t\sim\mathcal N(t\boldsymbol\mu,\mathbf A\mathbf A')\)。</span><span class="lang en"><strong>Definition 9.3 (Multi-dimensional Brownian motion with drift)</strong>: let \(\{\mathbf B_t\}\) be a standard \(d\)-dimensional Brownian motion; if \(\mathbf Y_t=\mathbf A\mathbf B_t+t\boldsymbol\mu\) (\(\mathbf A\) a \(k\times d\) matrix, \(\boldsymbol\mu\) a \(k\)-dimensional vector), then \(\{\mathbf Y_t\}\) is a \(k\)-dimensional Brownian motion with drift, and for all \(t\), \(\mathbf Y_t\sim\mathcal N(t\boldsymbol\mu,\mathbf A\mathbf A')\).</span></p></div>
+<h2 id="9-2-dirichlet-dirichlet-problem">9.2 Dirichlet 问题 / Dirichlet Problem</h2>
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.4、9.5（调和函数）/ Definitions 9.4, 9.5 (Harmonic function)
+<span class="lang zh"><strong>定义 9.4（调和函数·球面均值性质）</strong>：函数 \(f:D\to\mathbb R\) 是<strong>调和的</strong>，若它局部可积（脚注 9.1：\(f\) 局部可积指 \(\forall\mathbf x\in D\)，\(\exists\varepsilon>0\) 使 \(\int_{|\mathbf y-\mathbf x|<\varepsilon}f(\mathbf y)\,d\mathbf y<\infty\)）且满足<strong>球面均值性质</strong>（脚注 9.2：任意极小球面上所有点的均值等于其球心处的值）：当 \(\mathbf x\in D\) 且 \(\varepsilon<\mathrm{distance}(\mathbf x,\partial D)\) 时，\(f(\mathbf x)=MV(f;\mathbf x,\varepsilon)=\int_{|\mathbf y-\mathbf x|<\varepsilon}f(\mathbf y)\,ds_\varepsilon(\mathbf y)\)，其中 \(s_\varepsilon(\cdot)\) 是归一化的表面测度（脚注 9.3），\(\int_{|\mathbf y-\mathbf x|<\varepsilon}ds_\varepsilon(\mathbf y)=1\)。<strong>定义 9.5（调和函数·Laplace 方程）</strong>：\(f:D\to\mathbb R\)（\(D\) 是 \(\mathbb R^d\) 的开子集）是调和的，若它满足 <strong>Laplace 方程</strong>，即 \(\forall(x_1,\dots,x_d)\in D\)，\(\Delta f\equiv\dfrac{\partial^2 f}{(\partial x_1)^2}+\dfrac{\partial^2 f}{(\partial x_2)^2}+\dots+\dfrac{\partial^2 f}{(\partial x_d)^2}=0\)。</span><span class="lang en"><strong>Definition 9.4 (Harmonic function, mean-value form)</strong>: a function \(f:D\to\mathbb R\) is <strong>harmonic</strong> if it is locally integrable (footnote 9.1: \(f\) is locally integrable if for all \(\mathbf x\in D\) there is \(\varepsilon>0\) with \(\int_{|\mathbf y-\mathbf x|<\varepsilon}f(\mathbf y)\,d\mathbf y<\infty\)) and satisfies the <strong>spherical mean-value property</strong> (footnote 9.2: the mean of all points on the surface of any extremely small ball equals the value at its center): when \(\mathbf x\in D\) and \(\varepsilon<\mathrm{distance}(\mathbf x,\partial D)\), \(f(\mathbf x)=MV(f;\mathbf x,\varepsilon)=\int_{|\mathbf y-\mathbf x|<\varepsilon}f(\mathbf y)\,ds_\varepsilon(\mathbf y)\), where \(s_\varepsilon(\cdot)\) is the normalized surface measure (footnote 9.3), \(\int_{|\mathbf y-\mathbf x|<\varepsilon}ds_\varepsilon(\mathbf y)=1\). <strong>Definition 9.5 (Harmonic function, Laplace form)</strong>: \(f:D\to\mathbb R\) (\(D\) an open subset of \(\mathbb R^d\)) is harmonic if it satisfies <strong>Laplace's equation</strong>, i.e. for all \((x_1,\dots,x_d)\in D\), \(\Delta f\equiv\dfrac{\partial^2 f}{(\partial x_1)^2}+\dfrac{\partial^2 f}{(\partial x_2)^2}+\dots+\dfrac{\partial^2 f}{(\partial x_d)^2}=0\).</span></p>
+<p>[!important] 定理 9.1（最大值原理）/ Theorem 9.1 (Maximum principle on a bounded domain \(D\))
+<span class="lang zh">若 \(f\) 是调和函数，则 \(f\) 没有局部极大值，除非 \(f\) 是常数。</span><span class="lang en">If \(f\) is a harmonic function, then \(f\) has no local maximum unless \(f\) is constant.</span></p>
+<p>[!note]- 定理 9.1 证明 / Proof of Theorem 9.1
+<span class="lang zh">反证：若不然，存在 \(\mathbf x_0\in D\) 使得对某 \(\varepsilon>0\)，\(f(\mathbf x_0)\ge f(\mathbf x)\) 对 \(\forall\mathbf x:|\mathbf x-\mathbf x_0|<\varepsilon\) 成立且至少在某处严格大于。则 \(f(\mathbf x_0)>\int_{|\mathbf x-\mathbf x_0|<\varepsilon}f(\mathbf x)\,ds_\varepsilon(\mathbf x)=MV(f;\mathbf x_0,\varepsilon)\)，与球面均值性质矛盾。\(\blacksquare\)</span><span class="lang en">By contradiction: if not, there is \(\mathbf x_0\in D\) such that for some \(\varepsilon>0\), \(f(\mathbf x_0)\ge f(\mathbf x)\) for all \(\mathbf x:|\mathbf x-\mathbf x_0|<\varepsilon\) with strict inequality at least somewhere. Then \(f(\mathbf x_0)>\int_{|\mathbf x-\mathbf x_0|<\varepsilon}f(\mathbf x)\,ds_\varepsilon(\mathbf x)=MV(f;\mathbf x_0,\varepsilon)\), contradicting the mean-value property. \(\blacksquare\)</span></p>
+<p>[!important] Dirichlet 问题与命题 9.1（唯一性）/ The Dirichlet problem and Proposition 9.1 (uniqueness)
+<span class="lang zh"><strong>Dirichlet 问题</strong>：设 \(D\subset\mathbb R^d\) 是定义域（开且连通），\(F:\partial D\to\mathbb R\) 连续且有界。求一个有界函数 \(f:\bar D\to\mathbb R\)（脚注 9.4：\(\bar D=D\cup\partial D\) 是 \(D\) 的闭包）使得：\(f\) 在 \(\bar D\) 上连续；\(f(\mathbf x)=F(\mathbf x)\) 对 \(\forall\mathbf x\in\partial D\)；\(f\) 在 \(D\) 上调和。<strong>命题 9.1</strong>：Dirichlet 问题的解 \(f\) 是唯一的。</span><span class="lang en"><strong>The Dirichlet problem</strong>: let \(D\subset\mathbb R^d\) be the domain (open and connected) and \(F:\partial D\to\mathbb R\) continuous and bounded. Find a bounded function \(f:\bar D\to\mathbb R\) (footnote 9.4: \(\bar D=D\cup\partial D\) is the closure of \(D\)) such that: \(f\) is continuous on \(\bar D\); \(f(\mathbf x)=F(\mathbf x)\) for all \(\mathbf x\in\partial D\); \(f\) is harmonic on \(D\). <strong>Proposition 9.1</strong>: the solution \(f\) to the Dirichlet problem is unique.</span></p>
+<p>[!note]- 命题 9.1 证明 / Proof of Proposition 9.1
+<span class="lang zh">先证：若 \(F(\mathbf x)=0\) 对 \(\forall\mathbf x\in\partial D\)，则 \(f(\mathbf x)=0\) 对 \(\forall\mathbf x\in\bar D\)。这是因为：由调和性、连续性与零边界条件，\(f\) 在 \(\bar D\) 上不能取严格单调（沿任意路径），故 \(f\) 在 \(\bar D\) 内部有局部极大值；由最大值原理（Thm 9.1）\(f\) 是常数，即 \(f(\mathbf x)=0\)。再设有两个解 \(f,g\) 满足 \(f(\mathbf x)=F(\mathbf x)=g(\mathbf x)\) 于 \(\partial D\)，则 \(h(\mathbf x)\equiv f(\mathbf x)-g(\mathbf x)=0\) 于 \(\partial D\)；\(h\) 是调和函数的线性组合，故也调和；由上半部分，\(h(\mathbf x)=0\) 对 \(\forall\mathbf x\in\bar D\)，即 \(f,g\) 处处相同。\(\blacksquare\)</span><span class="lang en">First: if \(F(\mathbf x)=0\) for all \(\mathbf x\in\partial D\), then \(f(\mathbf x)=0\) for all \(\mathbf x\in\bar D\). This is because, by harmonicity, continuity and the zero boundary condition, \(f\) cannot be strictly monotonic along any path in \(\bar D\), so \(f\) has a local maximum in the interior of \(\bar D\); by the maximum principle (Thm 9.1), \(f\) is constant, i.e. \(f(\mathbf x)=0\). Now suppose there exist two solutions \(f,g\) satisfying \(f(\mathbf x)=F(\mathbf x)=g(\mathbf x)\) on \(\partial D\); then \(h(\mathbf x)\equiv f(\mathbf x)-g(\mathbf x)=0\) on \(\partial D\); \(h\) is a linear combination of harmonic functions, hence also harmonic; by the first half, \(h(\mathbf x)=0\) for all \(\mathbf x\in\bar D\), i.e. \(f\) and \(g\) are the same everywhere. \(\blacksquare\)</span></p></div>
+<h2 id="9-3-vs-properties-recurrence-vs-transience">9.3 性质：常返 vs 暂留 / Properties: Recurrence vs Transience</h2>
+<h3 id="9-3-1-exit-probability">9.3.1 退出概率 / Exit Probability</h3>
+<div class="callout"><div class="callout-title">Important</div><p>球壳上的退出概率 / Exit probability on a spherical shell
+<span class="lang zh">\(\{\mathbf B_t\}\) 是标准 \(d\) 维布朗运动。设 \(D=\{\mathbf x\in\mathbb R^d:r<|\mathbf x|<R\}\)（\(r,R>0\)），即以原点为心的两个球面之间的<strong>球壳</strong>。设 \(\{\mathbf B_t\}\) 从壳内某点出发，\(\mathbf B_0=\mathbf x_0\in D\)。令停时 \(T=\inf\{t:\mathbf B_t=\partial D\}\)，即首次到达边界（\(|\mathbf B_T|=r\) 或 \(|\mathbf B_T|=R\)）的时刻。要研究<strong>先到外球面</strong>的概率 \(f(\mathbf x_0)=\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}\)。</span><span class="lang en">Let \(\{\mathbf B_t\}\) be a standard \(d\)-dimensional Brownian motion. Let \(D=\{\mathbf x\in\mathbb R^d:r<|\mathbf x|<R\}\) (\(r,R>0\)), the <strong>spherical shell</strong> between two spheres centered at the origin. Let \(\{\mathbf B_t\}\) start at some point \(\mathbf B_0=\mathbf x_0\in D\). Let the stopping time \(T=\inf\{t:\mathbf B_t=\partial D\}\) be the first time it reaches the boundary (either \(|\mathbf B_T|=r\) or \(|\mathbf B_T|=R\)). We study the probability of <strong>reaching the outer sphere first</strong>, \(f(\mathbf x_0)=\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}\).</span></p>
+<p>[!tip] \(f\) 是 Dirichlet 问题的唯一解 / \(f\) is the unique Dirichlet solution
+<span class="lang zh">\(f(\mathbf x_0)\) 自然是连续的调和函数（最终可验证）。它是如下 Dirichlet 问题的解：\(D=\{r<|\mathbf x|<R\}\)，\(\partial D=\{|\mathbf x|=r\text{ or }|\mathbf x|=R\}\)，边界函数 \(F(\mathbf x)=1\)（若 \(|\mathbf x|=R\)）、$=0$（若 \(|\mathbf x|=r\)），连续有界。由命题 9.1，\(f\) 是唯一解，故只需算出 \(f\) 并验证其连续、调和。合理假设 \(f\) <strong>球对称</strong>，记 \(\varphi(|\mathbf x|^2)\equiv f(\mathbf x)\)。</span><span class="lang en">\(f(\mathbf x_0)\) is naturally a continuous and harmonic function (verifiable in the end). It solves the Dirichlet problem with \(D=\{r<|\mathbf x|<R\}\), \(\partial D=\{|\mathbf x|=r\text{ or }|\mathbf x|=R\}\), boundary function \(F(\mathbf x)=1\) (if \(|\mathbf x|=R\)), $=0$ (if \(|\mathbf x|=r\)), continuous and bounded. By Proposition 9.1, \(f\) is the unique solution, so we only need to compute \(f\) and verify it is continuous and harmonic. We reasonably assume \(f\) is <strong>spherically symmetric</strong> and write \(\varphi(|\mathbf x|^2)\equiv f(\mathbf x)\).</span></p>
+<p>[!note]- 求解 \(\varphi\)：化为 ODE 并代入边界条件 / Solving \(\varphi\): reducing to an ODE and applying boundary conditions
+<span class="lang zh">由 \(f\) 调和，\(\Delta f=\sum_{i}\partial^2 f/(\partial x_i)^2=0\)，即 \(\Delta\varphi(|\mathbf x|^2)=0\) (9.1)。对 \(j=1,\dots,d\)：\(\dfrac{\partial\varphi(|\mathbf x|^2)}{\partial x_j}=2x_j\varphi'(|\mathbf x|^2)\)，\(\dfrac{\partial^2\varphi(|\mathbf x|^2)}{(\partial x_j)^2}=4x_j^2\varphi''(|\mathbf x|^2)+2\varphi'(|\mathbf x|^2)\) (9.2)。代入 (9.1)：</span><span class="lang en">Since \(f\) is harmonic, \(\Delta f=\sum_i\partial^2 f/(\partial x_i)^2=0\), i.e. \(\Delta\varphi(|\mathbf x|^2)=0\) (9.1). For \(j=1,\dots,d\): \(\dfrac{\partial\varphi(|\mathbf x|^2)}{\partial x_j}=2x_j\varphi'(|\mathbf x|^2)\), \(\dfrac{\partial^2\varphi(|\mathbf x|^2)}{(\partial x_j)^2}=4x_j^2\varphi''(|\mathbf x|^2)+2\varphi'(|\mathbf x|^2)\) (9.2). Substituting into (9.1):</span></p>
+<p>$$\sum_{j=1}^d\!\left(4x_j^2\varphi''+2\varphi'\right)=4|\mathbf x|^2\varphi''+2d\varphi'=0\;\Rightarrow\;4y\varphi''(y)+2d\varphi'(y)=0\;\Rightarrow\;\varphi''(y)=-\frac d{2y}\varphi'(y)\quad(y=|\mathbf x|^2).$$</p>
+<p><span class="lang zh">该 ODE 关于 \(\varphi'\) 的解为 \(\varphi'(y)=Cy^{-d/2}\)。分维数积分并代入边界 \(\varphi(R^2)=1\)、\(\varphi(r^2)=0\)：</span><span class="lang en">This ODE in \(\varphi'\) has solution \(\varphi'(y)=Cy^{-d/2}\). Integrating per dimension and applying the boundaries \(\varphi(R^2)=1\), \(\varphi(r^2)=0\):</span></p>
+<ul>
+<li><span class="lang zh">\(d=1\)：\(\varphi(y)=C_1|\mathbf x|+D_1\)，\(C_1=\dfrac1{R-r}\)，\(D_1=\dfrac{-r}{R-r}\)，故 \(f(\mathbf x)=\dfrac{|\mathbf x|-r}{R-r}\)。</span><span class="lang en">\(d=1\): \(\varphi(y)=C_1|\mathbf x|+D_1\), \(C_1=\dfrac1{R-r}\), \(D_1=\dfrac{-r}{R-r}\), so \(f(\mathbf x)=\dfrac{|\mathbf x|-r}{R-r}\).</span></li>
+<li><span class="lang zh">\(d=2\)：\(\varphi(y)=2C_2\ln|\mathbf x|+D_2\)，\(2C_2=\dfrac1{\ln R-\ln r}\)，\(D_2=\dfrac{-\ln r}{\ln R-\ln r}\)，故 \(f(\mathbf x)=\dfrac{\ln|\mathbf x|-\ln r}{\ln R-\ln r}\)。</span><span class="lang en">\(d=2\): \(\varphi(y)=2C_2\ln|\mathbf x|+D_2\), \(2C_2=\dfrac1{\ln R-\ln r}\), \(D_2=\dfrac{-\ln r}{\ln R-\ln r}\), so \(f(\mathbf x)=\dfrac{\ln|\mathbf x|-\ln r}{\ln R-\ln r}\).</span></li>
+<li><span class="lang zh">\(d\ge3\)：\(\varphi(y)=C_3|\mathbf x|^{2-d}+D_3\)，\(C_3=\dfrac1{R^{2-d}-r^{2-d}}\)，\(D_3=\dfrac{-r^{2-d}}{R^{2-d}-r^{2-d}}\)，故 \(f(\mathbf x)=\dfrac{|\mathbf x|^{2-d}-r^{2-d}}{R^{2-d}-r^{2-d}}\)。\(\blacksquare\)</span><span class="lang en">\(d\ge3\): \(\varphi(y)=C_3|\mathbf x|^{2-d}+D_3\), \(C_3=\dfrac1{R^{2-d}-r^{2-d}}\), \(D_3=\dfrac{-r^{2-d}}{R^{2-d}-r^{2-d}}\), so \(f(\mathbf x)=\dfrac{|\mathbf x|^{2-d}-r^{2-d}}{R^{2-d}-r^{2-d}}\). \(\blacksquare\)</span></li>
+</ul>
+<p>[!important] 退出概率公式 (9.4) / Exit probability formula (9.4)
+<span class="lang zh">综上，对 \(\mathbf x_0\in D=\{r<|\mathbf x|<R\}\)，</span><span class="lang en">In conclusion, for \(\mathbf x_0\in D=\{r<|\mathbf x|<R\}\),</span></p>
+<p>$$f(\mathbf x_0)=\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}=\begin{cases}\dfrac{|\mathbf x_0|-r}{R-r}&\text{if }d=1\\[2mm]\dfrac{\ln|\mathbf x_0|-\ln r}{\ln R-\ln r}&\text{if }d=2\\[2mm]\dfrac{|\mathbf x_0|^{2-d}-r^{2-d}}{R^{2-d}-r^{2-d}}&\text{if }d\ge3\end{cases}\tag{9.4}$$</p>
+<p><span class="lang zh">它确实球对称、连续、调和（脚注 9.5：调和性来自我们在求解 \(f\) 时施加了 \(f\) 调和的限制）。</span><span class="lang en">which is indeed spherically symmetric, continuous, and harmonic (footnote 9.5: harmonicity follows as we imposed the restriction of \(f\) being harmonic when solving for \(f\)).</span></p></div>
+<h3 id="9-3-2-definitions-of-recurrent-and-transient">9.3.2 常返与暂留的定义 / Definitions of Recurrent and Transient</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.6–9.8 / Definitions 9.6–9.8
+<span class="lang zh"><strong>定义 9.6（点常返）</strong>：\(\{\mathbf B_t\}\) <strong>点常返</strong>，若 \(\forall\mathbf x\in\mathbb R^d\)，存在随机序列 \(t_n\uparrow\infty\) 使得以概率 1，\(\mathbf B_{t_n}=\mathbf x\) 对 \(\forall n\in\mathbb N_+\)。<strong>定义 9.7（邻域常返）</strong>：\(\{\mathbf B_t\}\) <strong>邻域常返</strong>，若 \(\forall\mathbf x\in\mathbb R^d\)、\(\forall\varepsilon>0\)，存在随机序列 \(t_n\uparrow\infty\) 使得以概率 1，\(|\mathbf B_{t_n}-\mathbf x|<\varepsilon\) 对 \(\forall n\in\mathbb N_+\)。<strong>定义 9.8（暂留）</strong>：\(\{\mathbf B_t\}\) <strong>暂留</strong>，若以概率 1，\(\lim_{t\to\infty}|\mathbf B_t|=\infty\)。</span><span class="lang en"><strong>Definition 9.6 (Point recurrent)</strong>: \(\{\mathbf B_t\}\) is <strong>point recurrent</strong> if for all \(\mathbf x\in\mathbb R^d\) there is a random sequence \(t_n\uparrow\infty\) such that with probability 1, \(\mathbf B_{t_n}=\mathbf x\) for all \(n\in\mathbb N_+\). <strong>Definition 9.7 (Neighborhood recurrent)</strong>: \(\{\mathbf B_t\}\) is <strong>neighborhood recurrent</strong> if for all \(\mathbf x\in\mathbb R^d\) and all \(\varepsilon>0\) there is a random sequence \(t_n\uparrow\infty\) such that with probability 1, \(|\mathbf B_{t_n}-\mathbf x|<\varepsilon\) for all \(n\in\mathbb N_+\). <strong>Definition 9.8 (Transient)</strong>: \(\{\mathbf B_t\}\) is <strong>transient</strong> if with probability 1, \(\lim_{t\to\infty}|\mathbf B_t|=\infty\).</span></p></div>
+<h3 id="9-3-3-one-dimensional-bm-point-recurrent">9.3.3 一维布朗运动：点常返 / One-Dimensional BM: Point Recurrent</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定理 9.2 / Theorem 9.2
+<span class="lang zh">\(\{B_t\}\) 是标准一维布朗运动，则它是<strong>点常返</strong>的。</span><span class="lang en">\(\{B_t\}\) is a standard one-dimensional Brownian motion; then it is <strong>point recurrent</strong>.</span></p>
+<p>[!note]- 定理 9.2 证明 / Proof of Theorem 9.2
+<span class="lang zh">对 \(0<r<R\)，由 (9.4)，\(\mathbb P\{|B_T|=R\mid B_0=x_0\}=\dfrac{|x_0|-r}{R-r}\)，而 \(\lim_{R\to\infty}\dfrac{|x_0|-r}{R-r}=0\)，故 \(\lim_{R\to\infty}\mathbb P\{|B_T|=r\mid B_0=x_0\}=1\) (9.5)。即从任意点出发，以概率 1，\(\{B_t\}\) 在跑向无穷前会先访问 \(r\) 或 \(-r\)；对任意 \(r\)、任意起点成立。对任意 \(a\)，记起点为 \(x_0\)。<strong>Step 1</strong>：若 \(x_0=a\)，则起点即访问 \(a\)。<strong>Step 2</strong>：在某 \(t_1>0\) 使 \(B_{t_1}\neq a\)，把原点重设为 \(a\) 在 \(B_{t_1}\) 另一侧、距 \(a\) 为 \(\varepsilon>0\) 的点（如 \(B_{t_1}<a\) 则设原点为 \(a+\varepsilon\)），令 \(r=\varepsilon/2\)。<strong>Step 3</strong>：由 (9.5)，以概率 1 \(\{B_t\}\) 在跑向无穷前会访问新原点下的 \(r\) 或 \(-r\)；但在新原点下 \(r\) 与 \(-r\) 从 \(B_{t_1}\) 看都在 \(a\) 的另一侧，由 \(B_t\) 连续性，\(B_t\) 必以概率 1 在某 \(t_2>t_1\) 再次穿过 \(a\)。<strong>Step 4</strong>：此过程不断重复，得到无穷序列 \(t_n\) 使 \(B_{t_n}=a\)。若 \(x_0\neq a\)，从 Step 2 起论证依旧成立。\(\blacksquare\)</span><span class="lang en">For \(0<r<R\), by (9.4), \(\mathbb P\{|B_T|=R\mid B_0=x_0\}=\dfrac{|x_0|-r}{R-r}\), and \(\lim_{R\to\infty}\dfrac{|x_0|-r}{R-r}=0\), so \(\lim_{R\to\infty}\mathbb P\{|B_T|=r\mid B_0=x_0\}=1\) (9.5). So starting at any point, with probability 1, \(\{B_t\}\) visits \(r\) or \(-r\) before going to infinity; true for any \(r\) and any start. For any \(a\), denote the start by \(x_0\). <strong>Step 1</strong>: if \(x_0=a\), then \(a\) is visited at the start. <strong>Step 2</strong>: at some \(t_1>0\) with \(B_{t_1}\neq a\), redefine the origin to be a point at distance \(\varepsilon>0\) from \(a\) on the other side of \(B_{t_1}\) (e.g. if \(B_{t_1}<a\) set origin to \(a+\varepsilon\)), and let \(r=\varepsilon/2\). <strong>Step 3</strong>: by (9.5), with probability 1 \(\{B_t\}\) visits \(r\) or \(-r\) (under the new origin) before going to infinity; but under the new origin both \(r\) and \(-r\) are on the other side of \(a\) from \(B_{t_1}\), so by continuity \(B_t\) must cross \(a\) again with probability 1 at some \(t_2>t_1\). <strong>Step 4</strong>: this repeats, giving an infinite sequence \(t_n\) with \(B_{t_n}=a\). If \(x_0\neq a\), the argument still holds from Step 2. \(\blacksquare\)</span></p></div>
+<h3 id="9-3-4-two-dimensional-bm-neighborhood-recurrent-but-not-point-recurrent">9.3.4 二维布朗运动：邻域常返但非点常返 / Two-Dimensional BM: Neighborhood Recurrent But Not Point Recurrent</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定理 9.3 / Theorem 9.3
+<span class="lang zh">\(\{\mathbf B_t\}\) 是标准二维布朗运动，则它是<strong>邻域常返但非点常返</strong>的。</span><span class="lang en">\(\{\mathbf B_t\}\) is a standard two-dimensional Brownian motion; then it is <strong>neighborhood recurrent but not point recurrent</strong>.</span></p>
+<p>[!note]- 定理 9.3 证明 / Proof of Theorem 9.3
+<span class="lang zh"><strong>邻域常返</strong>：对 \(0<r<R\)，由 (9.4)，\(\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}=\dfrac{\ln|\mathbf x_0|-\ln r}{\ln R-\ln r}\)，\(\lim_{R\to\infty}=0\)，故 \(\lim_{R\to\infty}\mathbb P\{|\mathbf B_T|=r\mid\mathbf B_0=\mathbf x_0\}=1\) (9.6)。即从任意点出发，以概率 1 \(\{\mathbf B_t\}\) 在跑向无穷前会访问半径为 \(r\) 的圆，对任意 \(r\)、任意起点成立。沿用 Thm 9.2 的论证（原点总设在任意点 \(\mathbf a\)、\(r\) 总设为 \(c\)），即得邻域常返。<strong>非点常返</strong>：直觉上 \(\{\mathbf B_t\}\) 能以概率 1 无穷多次进入以 \(\mathbf a\) 为心、半径 \(r=\varepsilon\) 的球，但每次（以概率 1）经由不同路径，故任一具体点从不重访。严格地，令任意点 \(\mathbf a\) 为原点，令 \(r\to0\) 以求恰好到达 \(\mathbf a\) 的概率：\(\lim_{r\to0}\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}=\lim_{r\to0}\dfrac{\ln|\mathbf x_0|-\ln r}{\ln R-\ln r}=1\)，故 \(\lim_{r\to0}\mathbb P\{|\mathbf B_T|=r\mid\mathbf B_0=\mathbf x_0\}=0\)。即 \(\{\mathbf B_t\}\) 从不访问具体点 \(\mathbf a\)，故非点常返。\(\blacksquare\)</span><span class="lang en"><strong>Neighborhood recurrent</strong>: for \(0<r<R\), by (9.4), \(\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}=\dfrac{\ln|\mathbf x_0|-\ln r}{\ln R-\ln r}\), \(\lim_{R\to\infty}=0\), so \(\lim_{R\to\infty}\mathbb P\{|\mathbf B_T|=r\mid\mathbf B_0=\mathbf x_0\}=1\) (9.6). So starting at any point, with probability 1 \(\{\mathbf B_t\}\) visits a circle of radius \(r\) before going to infinity, for any \(r\) and any start. Following the argument of Thm 9.2 (origin always set at an arbitrary point \(\mathbf a\), \(r\) always set to \(c\)) gives neighborhood recurrence. <strong>Not point recurrent</strong>: intuitively \(\{\mathbf B_t\}\) enters the ball centered at \(\mathbf a\) of radius \(r=\varepsilon\) infinitely often with probability 1, but always (with probability 1) via different paths, so no individual point is ever revisited. Rigorously, let an arbitrary point \(\mathbf a\) be the origin and \(r\to0\) to obtain the probability of reaching exactly \(\mathbf a\): \(\lim_{r\to0}\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}=\lim_{r\to0}\dfrac{\ln|\mathbf x_0|-\ln r}{\ln R-\ln r}=1\), so \(\lim_{r\to0}\mathbb P\{|\mathbf B_T|=r\mid\mathbf B_0=\mathbf x_0\}=0\). So \(\{\mathbf B_t\}\) never visits the particular point \(\mathbf a\), making it not point recurrent. \(\blacksquare\)</span></p></div>
+<h3 id="9-3-5-three-or-higher-dimensional-bm-transient">9.3.5 三维及以上：暂留 / Three or Higher Dimensional BM: Transient</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定理 9.4 / Theorem 9.4
+<span class="lang zh">\(\{\mathbf B_t\}\) 是标准三维或更高维布朗运动，则它是<strong>暂留</strong>的。</span><span class="lang en">\(\{\mathbf B_t\}\) is a standard three- or higher-dimensional Brownian motion; then it is <strong>transient</strong>.</span></p>
+<p>[!note]- 定理 9.4 证明 / Proof of Theorem 9.4
+<span class="lang zh">对 \(0<r<R\)，由 (9.4)，\(\lim_{R\to\infty}\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}=\lim_{R\to\infty}\dfrac{|\mathbf x_0|^{2-d}-r^{2-d}}{R^{2-d}-r^{2-d}}=1-\left(\dfrac r{|\mathbf x_0|}\right)^{d-2}\)，故</span><span class="lang en">For \(0<r<R\), by (9.4), \(\lim_{R\to\infty}\mathbb P\{|\mathbf B_T|=R\mid\mathbf B_0=\mathbf x_0\}=\lim_{R\to\infty}\dfrac{|\mathbf x_0|^{2-d}-r^{2-d}}{R^{2-d}-r^{2-d}}=1-\left(\dfrac r{|\mathbf x_0|}\right)^{d-2}\), so</span></p>
+<p>$$\lim_{R\to\infty}\mathbb P\{|\mathbf B_T|=r\mid\mathbf B_0=\mathbf x_0\}=\left(\frac r{|\mathbf x_0|}\right)^{d-2}.\tag{9.7}$$</p>
+<p><span class="lang zh">故 \(\{\mathbf B_t\}\) 以概率 \(\left(r/|\mathbf x_0|\right)^{d-2}\) 在跑向无穷前到达半径 \(r\) 的小球。一旦到达，由定理 8.1，以概率 1 \(\{\mathbf B_t\}\) 会在足够大的 \(t\) 回到某 \(\mathbf x_1\)（\(|\mathbf x_1|=|\mathbf x_0|\)）；再由增量独立性，第二次到达小球的概率仍为 \(\left(r/|\mathbf x_0|\right)^{d-2}\)。记在跑向无穷前到达小球 \(N\) 次的事件为 \(A_N\)，概率 \(p_N=\left(r/|\mathbf x_0|\right)^{N(d-2)}\)，则 \(\lim_{N\to\infty}p_N=0\)。故其补事件 \(A_N^c\)（在到达 \(N\) 次小球前就偏离到无穷）概率为 1（\(\lim_{N\to\infty}1-p_N=1\)）。这对任意 \(r\) 成立。故对足够大的 \(t\)，\(\{\mathbf B_t\}\) 以概率 1 偏离到无穷，即 \(\{\mathbf B_t\}\) 暂留。\(\blacksquare\)</span><span class="lang en">So \(\{\mathbf B_t\}\) has probability \(\left(r/|\mathbf x_0|\right)^{d-2}\) of reaching the small ball of radius \(r\) before going to infinity. Once it reaches that ball, by Theorem 8.1, with probability 1 \(\{\mathbf B_t\}\) returns to some \(\mathbf x_1\) with \(|\mathbf x_1|=|\mathbf x_0|\) at sufficiently large \(t\); then by increment independence, the second time it has probability \(\left(r/|\mathbf x_0|\right)^{d-2}\) of reaching the ball. Denoting by \(A_N\) the event of reaching the small ball \(N\) times before going to infinity, with probability \(p_N=\left(r/|\mathbf x_0|\right)^{N(d-2)}\), we have \(\lim_{N\to\infty}p_N=0\). So its complement \(A_N^c\) (deviating to infinity before reaching the ball \(N\) times) has probability 1 (\(\lim_{N\to\infty}1-p_N=1\)). This is true for any \(r\). So for large enough \(t\), \(\{\mathbf B_t\}\) deviates to infinity with probability 1, i.e. \(\{\mathbf B_t\}\) is transient. \(\blacksquare\)</span></p></div>
+<h2 id="9-4-green-green-s-function">9.4 Green 函数 / Green's Function</h2>
+<h3 id="9-4-1-transition-density">9.4.1 转移密度 / Transition Density</h3>
+<div class="callout"><div class="callout-title">Important</div><p>转移密度 \(P_t(\mathbf x,\mathbf y)\) (9.8) 与注 9.1 / Transition density and Remark 9.1
+<span class="lang zh">由事实 9.1，标准 \(d\) 维 BM 增量 \(\mathbf B_t-\mathbf B_s\) 的密度为 \(f(\mathbf x)=\dfrac1{[2\pi(t-s)]^{d/2}}e^{-\frac{|\mathbf x|^2}{2(t-s)}}\)。可等价地定义<strong>转移密度</strong> \(P_t(\mathbf x,\mathbf y)\)：\(\mathbf x\) 是起点（\(\mathbf B_0=\mathbf x\)），\(P_t(\mathbf x,\mathbf y)\) 是时刻 \(t\) 处 \(\mathbf y\) 的密度，即</span><span class="lang en">By Fact 9.1, the density of the increment \(\mathbf B_t-\mathbf B_s\) of a standard \(d\)-dimensional BM is \(f(\mathbf x)=\dfrac1{[2\pi(t-s)]^{d/2}}e^{-\frac{|\mathbf x|^2}{2(t-s)}}\). We can equivalently define the <strong>transition density</strong> \(P_t(\mathbf x,\mathbf y)\): \(\mathbf x\) is the start (\(\mathbf B_0=\mathbf x\)) and \(P_t(\mathbf x,\mathbf y)\) is the density of \(\mathbf y\) at time \(t\), i.e.</span></p>
+<p>$$P_t(\mathbf x,\mathbf y)=\frac1{(2\pi t)^{d/2}}e^{-\frac{|\mathbf x-\mathbf y|^2}{2t}}.\tag{9.8}$$</p>
+<p><span class="lang zh"><strong>注 9.1</strong>：\(P_t(\mathbf x,\mathbf y)\) 可直觉理解为 \(\{\mathbf B_t\}\) 从 \(\mathbf x\) 出发、于时刻 \(t\) 到达 \(\mathbf y\) 的概率。</span><span class="lang en"><strong>Remark 9.1</strong>: \(P_t(\mathbf x,\mathbf y)\) can be intuitively interpreted as the probability of \(\{\mathbf B_t\}\) starting at \(\mathbf x\) and reaching \(\mathbf y\) at time \(t\).</span></p></div>
+<h3 id="9-4-2-heat-equation">9.4.2 热方程 / Heat Equation</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.9（热方程）与命题 9.2 / Definition 9.9 (Heat equation) and Proposition 9.2
+<span class="lang zh"><strong>定义 9.9（热方程）</strong>：函数 \(f(\mathbf x,\mathbf y,t)\) 满足<strong>热方程</strong>，若 \(\dfrac\partial{\partial t}f(\mathbf x,\mathbf y,t)=\alpha\big(\Delta_{\mathbf x,\mathbf y}f(\mathbf x,\mathbf y,t)\big)\)，其中 \(\Delta_{\mathbf x,\mathbf y}\) 是关于 \(\mathbf x,\mathbf y\) 的 Laplace 算子。<strong>命题 9.2</strong>：(9.8) 中的转移密度满足热方程，即 \(\dfrac\partial{\partial t}P_t(\mathbf x,\mathbf y)=\dfrac12\Delta_{\mathbf x}P_t(\mathbf x,\mathbf y)=\dfrac12\Delta_{\mathbf y}P_t(\mathbf x,\mathbf y)\)。</span><span class="lang en"><strong>Definition 9.9 (Heat equation)</strong>: a function \(f(\mathbf x,\mathbf y,t)\) satisfies the <strong>heat equation</strong> if \(\dfrac\partial{\partial t}f(\mathbf x,\mathbf y,t)=\alpha\big(\Delta_{\mathbf x,\mathbf y}f(\mathbf x,\mathbf y,t)\big)\), where \(\Delta_{\mathbf x,\mathbf y}\) is the Laplace operator w.r.t. \(\mathbf x,\mathbf y\). <strong>Proposition 9.2</strong>: the transition density in (9.8) satisfies the heat equation, i.e. \(\dfrac\partial{\partial t}P_t(\mathbf x,\mathbf y)=\dfrac12\Delta_{\mathbf x}P_t(\mathbf x,\mathbf y)=\dfrac12\Delta_{\mathbf y}P_t(\mathbf x,\mathbf y)\).</span></p>
+<p>[!note]- 命题 9.2 证明 / Proof of Proposition 9.2
+<span class="lang zh">对 (9.8) 关于 \(t\) 求导：\(\dfrac\partial{\partial t}P_t(\mathbf x,\mathbf y)=\left(\dfrac{|\mathbf x-\mathbf y|^2}{2t^2}-\dfrac d{2t}\right)\dfrac1{(2\pi t)^{d/2}}e^{-\frac{|\mathbf x-\mathbf y|^2}{2t}}\)。对 \(\mathbf x\) 中 \(x_i\) 求二阶导：\(\dfrac{\partial^2}{\partial x_i^2}P_t(\mathbf x,\mathbf y)=\left(\dfrac{(x_i-y_i)^2}{t^2}-\dfrac1t\right)\dfrac1{(2\pi t)^{d/2}}e^{-\frac{|\mathbf x-\mathbf y|^2}{2t}}\)。对 \(i\) 求和：</span><span class="lang en">Differentiate (9.8) w.r.t. \(t\): \(\dfrac\partial{\partial t}P_t(\mathbf x,\mathbf y)=\left(\dfrac{|\mathbf x-\mathbf y|^2}{2t^2}-\dfrac d{2t}\right)\dfrac1{(2\pi t)^{d/2}}e^{-\frac{|\mathbf x-\mathbf y|^2}{2t}}\). The second derivative w.r.t. \(x_i\) in \(\mathbf x\): \(\dfrac{\partial^2}{\partial x_i^2}P_t(\mathbf x,\mathbf y)=\left(\dfrac{(x_i-y_i)^2}{t^2}-\dfrac1t\right)\dfrac1{(2\pi t)^{d/2}}e^{-\frac{|\mathbf x-\mathbf y|^2}{2t}}\). Summing over \(i\):</span></p>
+<p>$$\Delta_{\mathbf x}P_t(\mathbf x,\mathbf y)=\sum_{i=1}^d\frac{\partial^2}{\partial x_i^2}P_t=\frac1{(2\pi t)^{d/2}}e^{-\frac{|\mathbf x-\mathbf y|^2}{2t}}\left(\frac{|\mathbf x-\mathbf y|^2}{t^2}-\frac dt\right)\;\Rightarrow\;\frac12\Delta_{\mathbf x}P_t=\frac\partial{\partial t}P_t.$$</p>
+<p><span class="lang zh">由 \(\mathbf x,\mathbf y\) 的对称性，同样有 \(\dfrac12\Delta_{\mathbf y}P_t(\mathbf x,\mathbf y)=\dfrac\partial{\partial t}P_t(\mathbf x,\mathbf y)\)。\(\blacksquare\)</span><span class="lang en">By the symmetry of \(\mathbf x,\mathbf y\), likewise \(\dfrac12\Delta_{\mathbf y}P_t(\mathbf x,\mathbf y)=\dfrac\partial{\partial t}P_t(\mathbf x,\mathbf y)\). \(\blacksquare\)</span></p></div>
+<h3 id="9-4-3-green-green-s-function">9.4.3 Green 函数 / Green's Function</h3>
+<div class="callout"><div class="callout-title">Important</div><p>定义 9.10（Green 函数）与事实 9.2 / Definition 9.10 (Green's function) and Fact 9.2
+<span class="lang zh"><strong>定义 9.10（Green 函数）</strong>：Green 函数 \(G(\mathbf x,\mathbf y)\) 定义为从 \(\mathbf x\) 出发、在整个未来访问 \(\mathbf y\) 的期望次数，即 \(G(\mathbf x,\mathbf y)=\int_0^\infty P_t(\mathbf x,\mathbf y)\,dt\)。<strong>事实 9.2</strong>：由 \(P_t(\mathbf x,\mathbf y)\) 中 \(\mathbf x,\mathbf y\) 的对称性，\(G(\mathbf x,\mathbf y)=G(\mathbf y,\mathbf x)\)；由 \(P_t\) 的平移性质，\(G(\mathbf x,\mathbf y)=G(\mathbf y-\mathbf x)=G(\mathbf x-\mathbf y)\)；特别地 \(G(\mathbf x)=G(\mathbf 0,\mathbf x)\)。</span><span class="lang en"><strong>Definition 9.10 (Green's function)</strong>: the Green's function \(G(\mathbf x,\mathbf y)\) is defined by the expected number of visits to \(\mathbf y\) in the entire future starting from \(\mathbf x\), i.e. \(G(\mathbf x,\mathbf y)=\int_0^\infty P_t(\mathbf x,\mathbf y)\,dt\). <strong>Fact 9.2</strong>: by the symmetry of \(\mathbf x,\mathbf y\) in \(P_t(\mathbf x,\mathbf y)\), \(G(\mathbf x,\mathbf y)=G(\mathbf y,\mathbf x)\); by the translation property of \(P_t\), \(G(\mathbf x,\mathbf y)=G(\mathbf y-\mathbf x)=G(\mathbf x-\mathbf y)\); in particular \(G(\mathbf x)=G(\mathbf 0,\mathbf x)\).</span></p>
+<p>[!note]- 计算 \(G(\mathbf x)\)：化为 Gamma 积分 / Computing \(G(\mathbf x)\): reduction to a Gamma integral
+<span class="lang zh">\(G(\mathbf x)=G(\mathbf 0,\mathbf x)=\displaystyle\int_0^\infty P_t(\mathbf 0,\mathbf x)\,dt=\int_0^\infty\dfrac1{(2\pi t)^{d/2}}e^{-\frac{|\mathbf x|^2}{2t}}\,dt\) (9.9)。令 \(u=\dfrac{|\mathbf x|^2}{2t}\)，则 \(t=\dfrac{|\mathbf x|^2}{2u}\)、\(dt=-\dfrac{|\mathbf x|^2}{2u^2}\,du\)，(9.9) 化为</span><span class="lang en">\(G(\mathbf x)=G(\mathbf 0,\mathbf x)=\displaystyle\int_0^\infty P_t(\mathbf 0,\mathbf x)\,dt=\int_0^\infty\dfrac1{(2\pi t)^{d/2}}e^{-\frac{|\mathbf x|^2}{2t}}\,dt\) (9.9). Let \(u=\dfrac{|\mathbf x|^2}{2t}\), then \(t=\dfrac{|\mathbf x|^2}{2u}\), \(dt=-\dfrac{|\mathbf x|^2}{2u^2}\,du\), and (9.9) becomes</span></p>
+<p>$$G(\mathbf x)=\int_0^\infty\frac1{2\pi^{d/2}}|\mathbf x|^{-d}\,u^{\frac d2-1}e^{-u}\,du\,|\mathbf x|^{2}=|\mathbf x|^{2-d}\frac1{2\pi^{d/2}}\int_0^\infty u^{\frac d2-1-1}e^{-u}\,du=|\mathbf x|^{2-d}\frac{\Gamma\!\left(\frac d2-1\right)}{2\pi^{d/2}},\tag{9.10}$$</p>
+<p><span class="lang zh">末式由 Gamma 函数定义 \(\Gamma(z)\equiv\int_0^\infty u^{z-1}e^{-u}\,du\)。故一般地 \(G(\mathbf x,\mathbf y)=C_d|\mathbf x-\mathbf y|^{2-d}\)，常数 \(C_d=\dfrac{\Gamma\!\left(\frac d2-1\right)}{2\pi^{d/2}}\) 与维数 \(d\) 有关。\(\blacksquare\)</span><span class="lang en">where the last line uses the Gamma function definition \(\Gamma(z)\equiv\int_0^\infty u^{z-1}e^{-u}\,du\). So in general \(G(\mathbf x,\mathbf y)=C_d|\mathbf x-\mathbf y|^{2-d}\) with the dimension-dependent constant \(C_d=\dfrac{\Gamma\!\left(\frac d2-1\right)}{2\pi^{d/2}}\). \(\blacksquare\)</span></p></div>
+<h3 id="9-4-4-green-conditional-green-s-function">9.4.4 条件 Green 函数 / Conditional Green's Function</h3>
+<div class="callout"><div class="callout-title">Important</div><p>条件转移概率 \(P_t^D\) 及其性质 / Conditional transition probability \(P_t^D\) and its properties
+<span class="lang zh">把停时嵌入转移概率与 Green 函数。设 \(D\) 是定义域，标准 \(d\) 维 BM \(\{\mathbf B_t\}\) 从 \(\mathbf B_0=\mathbf x\in D\) 出发，停时 \(\tau=\inf\{t:\mathbf B_t\notin D\}\)。定义<strong>条件转移概率</strong> \(P_t^D(\mathbf x,\mathbf y)\) 为 \(\{\mathbf B_t\}\) 从 \(\mathbf x\) 出发、在<strong>离开 \(D\) 之前</strong>于时刻 \(t\) 到达 \(\mathbf y\) 的概率。由定义 \(\mathbb P\{t<\tau\mid\mathbf B_0=\mathbf x\in D\}=\int_D P_t^D(\mathbf x,\mathbf y)\,d\mathbf y\)。其性质：(i) <strong>与无条件的关系</strong> \(P_t^D(\mathbf x,\mathbf y)=P_t(\mathbf x,\mathbf y)-\mathbb E[P_{t-\tau}(\mathbf B_\tau,\mathbf y)\mid t>\tau\text{ and }\mathbf B_0=\mathbf x\in D]\)（直觉：从总路径中减去"先离开再返回"的不合格路径）；(ii) <strong>对称性</strong> \(P_t^D(\mathbf x,\mathbf y)=P_t^D(\mathbf y,\mathbf x)\)；(iii) <strong>热方程</strong> \(\dfrac\partial{\partial t}P_t^D(\mathbf x,\mathbf y)=\dfrac12\Delta_{\mathbf x}P_t^D(\mathbf x,\mathbf y)=\dfrac12\Delta_{\mathbf y}P_t^D(\mathbf x,\mathbf y)\)。</span><span class="lang en">Embed a stopping time into the transition probability and Green's function. Let \(D\) be the domain, a standard \(d\)-dimensional BM \(\{\mathbf B_t\}\) start at \(\mathbf B_0=\mathbf x\in D\), and \(\tau=\inf\{t:\mathbf B_t\notin D\}\). Define the <strong>conditional transition probability</strong> \(P_t^D(\mathbf x,\mathbf y)\) as the probability of \(\{\mathbf B_t\}\) starting at \(\mathbf x\) and reaching \(\mathbf y\) at time \(t\) <strong>before ever leaving \(D\)</strong>. By definition \(\mathbb P\{t<\tau\mid\mathbf B_0=\mathbf x\in D\}=\int_D P_t^D(\mathbf x,\mathbf y)\,d\mathbf y\). Properties: (i) <strong>relation to the unconditional</strong> \(P_t^D(\mathbf x,\mathbf y)=P_t(\mathbf x,\mathbf y)-\mathbb E[P_{t-\tau}(\mathbf B_\tau,\mathbf y)\mid t>\tau\text{ and }\mathbf B_0=\mathbf x\in D]\) (intuitively: subtract the "leave then return" unqualified paths from the total); (ii) <strong>symmetry</strong> \(P_t^D(\mathbf x,\mathbf y)=P_t^D(\mathbf y,\mathbf x)\); (iii) <strong>heat equation</strong> \(\dfrac\partial{\partial t}P_t^D(\mathbf x,\mathbf y)=\dfrac12\Delta_{\mathbf x}P_t^D(\mathbf x,\mathbf y)=\dfrac12\Delta_{\mathbf y}P_t^D(\mathbf x,\mathbf y)\).</span></p>
+<p>[!important] 条件 Green 函数 (9.11) / Conditional Green's function (9.11)
+<span class="lang zh"><strong>条件 Green 函数</strong> \(G^D(\mathbf x,\mathbf y)\) 是从 \(\mathbf x\) 出发、在离开 \(D\) 之前于整个未来访问 \(\mathbf y\) 的期望次数：</span><span class="lang en">The <strong>conditional Green's function</strong> \(G^D(\mathbf x,\mathbf y)\) is the expected number of visits to \(\mathbf y\) in the entire future starting from \(\mathbf x\) before ever leaving \(D\):</span></p>
+<p>$$G^D(\mathbf x,\mathbf y)=\int_0^\infty P_t^D(\mathbf x,\mathbf y)\,dt=G(\mathbf x,\mathbf y)-\mathbb E[G(\mathbf B_\tau,\mathbf y)\mid\mathbf B_0=\mathbf x\in D].\tag{9.11}$$</p>
+<p><span class="lang zh">直觉：条件 Green 函数 = 期望总访问次数 \(G(\mathbf x,\mathbf y)\) 减去不合格（先离开再返回）的期望访问次数 \(\mathbb E[G(\mathbf B_\tau,\mathbf y)\mid\mathbf B_0=\mathbf x\in D]\)。</span><span class="lang en">Intuitively: the conditional Green's function $=$ the expected total visits \(G(\mathbf x,\mathbf y)\) minus the expected unqualified (leave-and-return) visits \(\mathbb E[G(\mathbf B_\tau,\mathbf y)\mid\mathbf B_0=\mathbf x\in D]\).</span></p></div>
+</div>
+<div class="lang en"></div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#9-1-definitions">9.1 定义 / Definitions</a></li>
+        <li><a href="#9-1-definitions">9.1 Definitions</a></li>
+        <li><a href="#9-2-dirichlet-dirichlet-problem">9.2 Dirichlet 问题 / Dirichlet Problem</a></li>
+        <li><a href="#9-3-vs-properties-recurrence-vs-transience">9.3 性质：常返 vs 暂留 / Properties: Recurrence vs Transience</a></li>
+          <li><a href="#9-3-1-exit-probability">9.3.1 退出概率 / Exit Probability</a></li>
+          <li><a href="#9-3-2-definitions-of-recurrent-and-transient">9.3.2 常返与暂留的定义 / Definitions of Recurrent and Transient</a></li>
+          <li><a href="#9-3-3-one-dimensional-bm-point-recurrent">9.3.3 一维布朗运动：点常返 / One-Dimensional BM: Point Recurrent</a></li>
+          <li><a href="#9-3-4-two-dimensional-bm-neighborhood-recurrent-but-not-point-recurrent">9.3.4 二维布朗运动：邻域常返但非点常返 / Two-Dimensional BM: Neighborhood Recurrent But Not Point Recurrent</a></li>
+          <li><a href="#9-3-5-three-or-higher-dimensional-bm-transient">9.3.5 三维及以上：暂留 / Three or Higher Dimensional BM: Transient</a></li>
+        <li><a href="#9-4-green-green-s-function">9.4 Green 函数 / Green's Function</a></li>
+          <li><a href="#9-4-1-transition-density">9.4.1 转移密度 / Transition Density</a></li>
+          <li><a href="#9-4-2-heat-equation">9.4.2 热方程 / Heat Equation</a></li>
+          <li><a href="#9-4-3-green-green-s-function">9.4.3 Green 函数 / Green's Function</a></li>
+          <li><a href="#9-4-4-green-conditional-green-s-function">9.4.4 条件 Green 函数 / Conditional Green's Function</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

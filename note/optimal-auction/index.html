@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>27. Optimal Auction – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>27. Optimal Auction</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">拍卖</span><span class="lang en">Auctions</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">最优拍卖</span><span class="lang en">Optimal Auction</span></span>
+        
+        
+        
+        
+        <span class="tag">Myerson 1981</span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">虚拟类型</span><span class="lang en">Virtual Type</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">保留价</span><span class="lang en">Reserve Price</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<h1>27. Optimal Auction</h1>
+<div class="callout"><div class="callout-title">Note</div><p>本章导读
+本章寻找使拍卖人期望收入（剩余）最大化的<strong>最优拍卖</strong>，沿用 §25 记号、经由对应直接机制 \(\{\hat\phi_i(\theta_i),\hat t_i(\theta_i)\}\) 比较期望收入。§27.1 拍卖人问题（保留价值 \(\theta_0\)，目标化为 \(\max\mathbb{E}[\sum(\hat\phi_i(\theta_i)(\theta_i-\theta_0)-U_i(\theta_i))]+\theta_0\)）。§27.2 求解：五步法引入<strong>虚拟类型</strong> \(J_i(\theta_i)=\theta_i-\frac{1-F_i(\theta_i)}{f_i(\theta_i)}\)，<strong>定理 27.1（Myerson 1981 最优拍卖）</strong>：把物品给 \(J_i\) 最高且 \(\ge\theta_0\) 的人、\(U_i(\underline\theta_i)=0\)；\(J_i\) 解读为<strong>边际收入</strong>；正则性（命题 27.1：\(1-F\) 对数凹 ⟺ 单调风险率 ⟹ \(J_i\) 递增）与<strong>保留类型</strong> \(r_i^\star\)（\(J_i(r_i^\star)=\theta_0\)）；<strong>命题 27.2</strong>：对称分布下设对保留价 \(r^\star\) 则一价/二价拍卖最优；<strong>两种自然扭曲</strong>（卖太少、错的人得标，例 27.1 + 图 29）。§27.3 其他设定（一般效用、共同价值 Myerson 扩展、风险厌恶买家 + 例 27.2 六问）。§27.4 <strong>额外买家的价值</strong>（Bulow–Klemperer 1996，定理 27.2：\(n+1\) 人无保留价二价拍卖 \(\ge\) \(n\) 人最优拍卖）。图 29 已转述。</p></div>
+</div>
+<div class="lang en">
+<h1>27. Optimal Auction</h1>
+<div class="callout"><div class="callout-title">Note</div><p>Overview
+This chapter finds the <strong>optimal auction</strong> maximizing the auctioneer's expected revenue (surplus), using §25 notation and comparing expected revenue via the corresponding direct mechanism \(\{\hat\phi_i(\theta_i),\hat t_i(\theta_i)\}\). §27.1 the auctioneer's problem (reservation value \(\theta_0\), objective rewritten as \(\max\mathbb{E}[\sum(\hat\phi_i(\theta_i)(\theta_i-\theta_0)-U_i(\theta_i))]+\theta_0\)). §27.2 solution: the 5-step method introduces the <strong>virtual type</strong> \(J_i(\theta_i)=\theta_i-\frac{1-F_i(\theta_i)}{f_i(\theta_i)}\), <strong>Theorem 27.1 (Myerson 1981 optimal auction)</strong>: give the good to the agent with the highest \(J_i\) that is \(\ge\theta_0\), \(U_i(\underline\theta_i)=0\); \(J_i\) interpreted as <strong>marginal revenue</strong>; regularity (Proposition 27.1: log-concavity of \(1-F\) ⟺ monotone hazard rate ⟹ \(J_i\) increasing) and the <strong>reserve type</strong> \(r_i^\star\) (\(J_i(r_i^\star)=\theta_0\)); <strong>Proposition 27.2</strong>: under symmetric distribution, the first-/second-price auction is optimal with the right reserve \(r^\star\); <strong>two natural distortions</strong> (too little sold, wrong bidder wins, Example 27.1 + Figure 29). §27.3 other settings (general utility, common value Myerson extension, risk-averse bidders + Example 27.2's six parts). §27.4 the <strong>value of an additional bidder</strong> (Bulow–Klemperer 1996, Theorem 27.2: an \(n+1\)-bidder second-price auction with no reserve \(\ge\) the \(n\)-bidder optimal auction). Figure 29 is paraphrased.</p></div>
+</div>
+<div class="lang zh">
+<p>前面已建立显示原理与收入等价定理。现在思考能为拍卖人带来最高期望收入（剩余）的最优拍卖。沿用 §25 记号，经由对应（且等价）的直接机制拍卖 \(\{\hat\phi_i(\theta_i),\hat t_i(\theta_i)\}_{i=1}^n\) 比较期望收入。</p>
+<h2 id="27-1-the-auctioneer-s-problem">27.1 拍卖人的问题 / The auctioneer's problem</h2>
+<p>记拍卖人对物品的保留价值为 \(\theta_0\)（出售的机会成本）。拍卖人在收入不低于 \(\theta_0\) 的约束下最大化期望收入：</p>
+</div>
+<div class="lang en">
+<p>We have established the revelation principle and revenue equivalence. Now we move on to the optimal auction that generates the highest expected revenue (surplus) for the auctioneer. We use the §25 notation and compare expected revenue via the corresponding (and equivalent) direct mechanism auction \(\{\hat\phi_i(\theta_i),\hat t_i(\theta_i)\}_{i=1}^n\).</p>
+<h2 id="27-1-the-auctioneer-s-problem">27.1 The auctioneer's problem</h2>
+<p>Denote the auctioneer's reservation value of the good by \(\theta_0\) (the opportunity cost to sell). The auctioneer maximizes expected revenue subject to the revenue being no less than \(\theta_0\):</p>
+</div>
+<p>$$
+\max_{\{\hat\phi_i,\hat t_i\}}\mathbb{E}\!\left[\sum_{i=1}^n\hat t_i(\theta_i)\right]\Leftrightarrow\max\mathbb{E}\!\left[\sum_{i=1}^n\big(\hat\phi_i(\theta_i)(\theta_i-\theta_0)-U_i(\theta_i)\big)\right]+\theta_0
+$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>推导说明 / Derivation note
+<span class="lang zh">上式倒数第二步用 \(\hat t_i(\theta_i)=\hat\phi_i(\theta_i)\theta_i-U_i(\theta_i)\)；最后一步假设 \(\sum_i\hat\phi_i(\theta_i)=1\)。若 \(\sum_i\hat\phi_i(\theta_i)=p<1\)（如卖家不售时为 0），则需再减一项 \((1-p)\theta_0\)；因 \(p\) 由卖家选定、为常数，不出现在最大化决策中，可忽略。</span><span class="lang en">In the above, the second-to-last step uses \(\hat t_i(\theta_i)=\hat\phi_i(\theta_i)\theta_i-U_i(\theta_i)\); the last step assumes \(\sum_i\hat\phi_i(\theta_i)=1\). If \(\sum_i\hat\phi_i(\theta_i)=p<1\) (e.g. 0 when the seller doesn't sell), then we subtract one more term \((1-p)\theta_0\); since \(p\) is picked by the seller and is a constant, it won't appear in the maximization decisions, so it can be ignored.</span></p></div>
+<div class="lang zh">
+<h2 id="27-2-characterize-the-solution">27.2 刻画解 / Characterize the solution</h2>
+<h3 id="27-2-1-rewrite-the-maximization-problem">27.2.1 重写最大化问题 / Rewrite the maximization problem</h3>
+<p><strong>步骤 1</strong>：用 §25.2.3 的充要条件刻画 IC/可实施直接机制拍卖：(1) \(\hat\phi_i(\theta_i)\) 关于 \(\theta_i\) 非降，对 \(\forall i\)；(2) \(U_i(\theta_i)=U_i(\underline\theta_i)+\int_{\underline\theta_i}^{\theta_i}\hat\phi_i(s)\,ds\)。</p>
+<p><strong>步骤 2</strong>：用 (2) 化简 \(\mathbb{E}_{\theta_i}[U_i(\theta_i)]\)（分部积分）：</p>
+</div>
+<div class="lang en">
+<h2 id="27-2-characterize-the-solution">27.2 Characterize the solution</h2>
+<h3 id="27-2-1-rewrite-the-maximization-problem">27.2.1 Rewrite the maximization problem</h3>
+<p><strong>Step 1</strong>: use the necessary-sufficient conditions of §25.2.3 to characterize the IC/implementable direct-mechanism auction: (1) \(\hat\phi_i(\theta_i)\) non-decreasing in \(\theta_i\) for \(\forall i\); (2) \(U_i(\theta_i)=U_i(\underline\theta_i)+\int_{\underline\theta_i}^{\theta_i}\hat\phi_i(s)\,ds\).</p>
+<p><strong>Step 2</strong>: simplify \(\mathbb{E}_{\theta_i}[U_i(\theta_i)]\) using (2) (integration by parts):</p>
+</div>
+<p>$$
+\mathbb{E}_{\theta_i}[U_i(\theta_i)]=U_i(\underline\theta_i)+\mathbb{E}_{\theta_i}\!\left[\hat\phi_i(\theta_i)\frac{1-F_i(\theta_i)}{f_i(\theta_i)}\right]
+$$</p>
+<div class="lang zh">
+<p><strong>步骤 3</strong>：代入卖家目标，定义<strong>虚拟类型</strong> \(J_i(\theta_i)\equiv\theta_i-\frac{1-F_i(\theta_i)}{f_i(\theta_i)}\)（拍卖人视角下主体 \(i\) 的有效类型），得 (27.1)：</p>
+</div>
+<div class="lang en">
+<p><strong>Step 3</strong>: incorporate into the seller's objective and define the <strong>virtual type</strong> \(J_i(\theta_i)\equiv\theta_i-\frac{1-F_i(\theta_i)}{f_i(\theta_i)}\) (the effective type of agent \(i\) in the auctioneer's perspective), giving (27.1):</p>
+</div>
+<p>$$
+\max_{\{\phi_i(\theta_i,\theta_{-i})\}_{i=1}^n}\ \mathbb{E}_{\{\theta_i\}_{i=1}^n}\!\left[\sum_{i=1}^n\Big(\phi_i(\theta_i,\theta_{-i})\big(J_i(\theta_i)-\theta_0\big)-U_i(\underline\theta_i)\Big)+\theta_0\right] \tag{27.1}
+$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>最优分配 / The optimal allocation
+<span class="lang zh">由 (27.1)，拍卖人最优地把概率 1（即 \(\phi_i(\theta_i,\theta_{-i})=1\)）放在 \(J_i(\theta_i)-\theta_0\) 最高且 \(\ge0\) 的主体 \(i\) 上、其余主体放 0（\(\phi_j=0,j\ne i\)）。同时最优拍卖中 \(U_i(\underline\theta_i)=0\) 对 \(\forall i\)。</span><span class="lang en">By (27.1), the auctioneer optimally puts probability 1 (i.e. \(\phi_i(\theta_i,\theta_{-i})=1\)) on the agent \(i\) whose \(J_i(\theta_i)-\theta_0\) is highest and \(\ge0\), and 0 on everyone else (\(\phi_j=0,j\ne i\)). Also, in the optimal auction \(U_i(\underline\theta_i)=0\) for \(\forall i\).</span></p>
+<p>[!important] 定理 27.1（最优拍卖，Myerson 1981）/ Theorem 27.1 (Optimal auction, Myerson 1981)
+<span class="lang zh">最优拍卖满足：(1) \(U_i(\underline\theta_i)=0\) 对 \(\forall i\)；(2) 当 \(J_i(\theta_i)>\max_{j\ne i}J_j(\theta_j)\) 且 \(J_i(\theta_i)\ge\theta_0\) 时 \(\phi_i=1\)；当 \(J_i(\theta_i)<\max_{j\ne i}J_j(\theta_j)\) 或 \(J_i(\theta_i)<\theta_0\) 时 \(\phi_i=0\)；当 \(J_i(\theta_i)=\max_{j\ne i}J_j(\theta_j)\ge\theta_0\) 且最高虚拟类型有 \(K\) 个平局时 \(\phi_i=\tfrac1K\)。证明直接由 (27.1) 得出：事前 \(J_i(\theta_i)\) 拍卖人不知，但仍可写下总把物品给 \(J_i(\theta_i)\) 最高（且不低于 \(\theta_0\)）者的最优机制，使期望收入最大。\(\blacksquare\)</span><span class="lang en">An optimal auction satisfies: (1) \(U_i(\underline\theta_i)=0\) for \(\forall i\); (2) \(\phi_i(\theta_i,\theta_{-i})=\begin{cases}1 & J_i(\theta_i)>\max_{j\ne i}J_j(\theta_j)\text{ and }J_i(\theta_i)\ge\theta_0\\ 0 & J_i(\theta_i)<\max_{j\ne i}J_j(\theta_j)\text{ or }J_i(\theta_i)<\theta_0\\ \tfrac1K & J_i(\theta_i)=\max_{j\ne i}J_j(\theta_j)\ge\theta_0\text{, and there are }K\text{ ties in highest virtual types}\end{cases}\). The proof is directly by (27.1): ex-ante \(J_i(\theta_i)\) is not known by the auctioneer, but he can still write down the optimal mechanism that always awards the good to the agent whose \(J_i(\theta_i)\) is maximum (and no less than \(\theta_0\)), maximizing the expected revenue. \(\blacksquare\)</span></p></div>
+<div class="lang zh">
+<h3 id="27-2-3-j-i-theta-i-i-interpret-j-i-theta-i-as-marginal-revenue">27.2.3 把 \(J_i(\theta_i)\) 解读为从主体 \(i\) 收取的边际收入 / Interpret \(J_i(\theta_i)\) as marginal revenue</h3>
+<p>考虑垄断定价情形：卖家以价格 \(p\) 出售，收入函数 \(R(p)=p(1-F(p))\)，\(1-F(p)\) 是买家购买的概率（脚注 27.1：买家估值 \(\theta\sim F(\cdot)\)），对应常规垄断定价中的需求量 \(q=D(p)\)。则 \(\frac{dq}{dp}=\frac{d(1-F(p))}{dp}=-f(p)\)，边际收入 \(MR\) 为：</p>
+</div>
+<div class="lang en">
+<h3 id="27-2-3-interpret-j-i-theta-i-as-the-marginal-revenue-collected-from-agent-i">27.2.3 Interpret \(J_i(\theta_i)\) as the marginal revenue collected from agent \(i\)</h3>
+<p>Consider a monopolistic pricing setting: the seller sells at price \(p\), with revenue function \(R(p)=p(1-F(p))\), where \(1-F(p)\) is the probability the buyer will buy (footnote 27.1: the buyer has valuation \(\theta\sim F(\cdot)\)), corresponding to the quantity \(q=D(p)\) in the regular monopolistic pricing problem. Then \(\frac{dq}{dp}=\frac{d(1-F(p))}{dp}=-f(p)\), and the marginal revenue \(MR\) is:</p>
+</div>
+<p>$$
+MR(p)=\frac{dR(p)}{dq}=\frac{dR(p)}{dp}\frac{1}{\,dq/dp\,}=(1-F(p)-pf(p))\frac{1}{-f(p)}=p-\frac{1-F(p)}{f(p)}
+$$</p>
+<div class="callout"><div class="callout-title">Tip</div><p>\(MR_i(\theta_i)=J_i(\theta_i)\) / Marginal revenue equals virtual type
+<span class="lang zh">在价格 \(p=\theta_i\) 处求边际收入即得 \(MR_i(\theta_i)=J_i(\theta_i)\)。它表示把 \(q\) 从 0 增到 1（以概率 1 把物品卖给类型 \(\theta_i\) 的主体 \(i\)）所产生的收入；该 \(MR\) 低于 \(\theta_i\)，因为是价格 \(\theta_i\) 减去"对那些实际类型更高的情形把价格降到 \(\theta_i\) 所造成的损失"。要让拍卖人确定地把物品卖给 \(i\)，其产生的边际收入至少应达到边际成本 \(\theta_0\)；又因只有一件物品，拍卖人会卖给产生最高边际收入的人。</span><span class="lang en">Evaluating the marginal revenue at price \(p=\theta_i\) gives \(MR_i(\theta_i)=J_i(\theta_i)\). It is the revenue generated by increasing \(q\) from 0 to 1 (selling the good to agent \(i\) with type \(\theta_i\) with probability 1); this \(MR\) is lower than \(\theta_i\) because it is the price \(\theta_i\) minus the loss from reducing the price to \(\theta_i\) for cases where agent \(i\) actually has a higher type. To make the auctioneer sell to agent \(i\) for sure, the marginal revenue generated should be at least the marginal cost \(\theta_0\); and since there is only one unit, the auctioneer sells to the agent generating the highest marginal revenue.</span></p></div>
+<div class="lang zh">
+<h3 id="27-2-4-regularity-assumption-and-reserve-type">27.2.4 正则性假设与保留类型 / Regularity assumption and reserve type</h3>
+<p><strong>正则性假设</strong>：假设 \(J_i(\theta_i)=\theta_i-\frac{1-F_i(\theta_i)}{f_i(\theta_i)}\) 关于 \(\theta_i\) 递增。</p>
+</div>
+<div class="lang en">
+<h3 id="27-2-4-regularity-assumption-and-reserve-type">27.2.4 Regularity assumption and reserve type</h3>
+<p><strong>Regularity assumption</strong>: assume \(J_i(\theta_i)=\theta_i-\frac{1-F_i(\theta_i)}{f_i(\theta_i)}\) is increasing in \(\theta_i\).</p>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>命题 27.1 / Proposition 27.1
+<span class="lang zh">\(1-F_i(\theta_i)\) 的对数凹性（即 \(\ln(1-F_i(\theta_i))\) 凹）等价于单调风险率条件，二者都蕴含正则性条件 \(J_i(\theta_i)\) 关于 \(\theta_i\) 递增。</span><span class="lang en">Log-concavity of \(1-F_i(\theta_i)\) (i.e. concavity of \(\ln(1-F_i(\theta_i))\)) is equivalent to the monotone hazard rate condition, both of which imply the regularity condition that \(J_i(\theta_i)\) increases in \(\theta_i\).</span></p>
+<p>[!note]- 证明 / Proof
+<span class="lang zh">\(\ln(1-F_i(\theta_i))\) 的二阶导：\(\frac{d}{d\theta_i}\ln(1-F_i)=\frac{-f_i}{1-F_i}\)，\(\frac{d^2}{d\theta_i^2}\ln(1-F_i)=\frac{d}{d\theta_i}\frac{-f_i}{1-F_i}\)。对数凹性蕴含 \(\frac{d}{d\theta_i}\frac{-f_i}{1-F_i}<0\Leftrightarrow\frac{d}{d\theta_i}\frac{f_i}{1-F_i}>0\Leftrightarrow\frac{d}{d\theta_i}\frac{1-F_i}{f_i}<0\)，恰为单调风险率条件。又 \(J_i'(\theta_i)=1-\frac{d}{d\theta_i}\frac{1-F_i}{f_i}\)，由对数凹（或 MHRC）\(\frac{d}{d\theta_i}\frac{1-F_i}{f_i}<0\)，故 \(J_i'(\theta_i)>0\)。\(\blacksquare\)</span><span class="lang en">The second derivative of \(\ln(1-F_i(\theta_i))\): \(\frac{d}{d\theta_i}\ln(1-F_i)=\frac{-f_i}{1-F_i}\), \(\frac{d^2}{d\theta_i^2}\ln(1-F_i)=\frac{d}{d\theta_i}\frac{-f_i}{1-F_i}\). Log-concavity implies \(\frac{d}{d\theta_i}\frac{-f_i}{1-F_i}<0\Leftrightarrow\frac{d}{d\theta_i}\frac{f_i}{1-F_i}>0\Leftrightarrow\frac{d}{d\theta_i}\frac{1-F_i}{f_i}<0\), exactly the monotone hazard rate condition. And \(J_i'(\theta_i)=1-\frac{d}{d\theta_i}\frac{1-F_i}{f_i}\); by log-concavity (or MHRC) \(\frac{d}{d\theta_i}\frac{1-F_i}{f_i}<0\), so \(J_i'(\theta_i)>0\). \(\blacksquare\)</span></p>
+<p>[!tip] 保留类型 / Reserve type
+<span class="lang zh">拍卖人的保留价（成本）\(\theta_0\) 对应每个主体 \(i\) 的一个<strong>保留类型</strong> \(r_i^\star\)，满足 \(J_i(r_i^\star)=\theta_0\)。由正则性 \(J_i'(\theta_i)>0\)，\(J_i(\theta_i)\ge\theta_0\Leftrightarrow\theta_i\ge r_i^\star\)。于是中标概率函数可重写为：当 \(\theta_i>\max_{j\ne i}\theta_j\) 且 \(\theta_i\ge r_i^\star\) 时 \(\phi_i=1\)；当 \(\theta_i<\max_{j\ne i}\theta_j\) 或 \(\theta_i<r_i^\star\) 时 \(\phi_i=0\)；当 \(\theta_i=\max_{j\ne i}\theta_j\)、\(\theta_i\ge r_i^\star\) 且最高类型有 \(K\) 个平局时 \(\phi_i=\tfrac1K\)。</span><span class="lang en">The auctioneer's reserve price (cost) \(\theta_0\) corresponds to a <strong>reserve type</strong> \(r_i^\star\) for each agent \(i\), satisfying \(J_i(r_i^\star)=\theta_0\). By regularity \(J_i'(\theta_i)>0\), \(J_i(\theta_i)\ge\theta_0\Leftrightarrow\theta_i\ge r_i^\star\). So the winning-probability function can be rewritten as: \(\phi_i=1\) when \(\theta_i>\max_{j\ne i}\theta_j\) and \(\theta_i\ge r_i^\star\); \(\phi_i=0\) when \(\theta_i<\max_{j\ne i}\theta_j\) or \(\theta_i<r_i^\star\); \(\phi_i=\tfrac1K\) when \(\theta_i=\max_{j\ne i}\theta_j\), \(\theta_i\ge r_i^\star\), and there are \(K\) ties in the highest types.</span></p></div>
+<div class="lang zh">
+<h3 id="27-2-5-optimality-of-first-price-and-second-price-auction">27.2.5 一价拍卖与二价拍卖的最优性 / Optimality of first-price and second-price auction</h3>
+</div>
+<div class="lang en">
+<h3 id="27-2-5-optimality-of-first-price-auction-and-second-price-auction">27.2.5 Optimality of first-price auction and second-price auction</h3>
+</div>
+<div class="callout"><div class="callout-title">Important</div><p>命题 27.2 / Proposition 27.2
+<span class="lang zh">在正则性 \(J_i'(\theta_i)>0\)（\(\forall i\)）与对称分布 \(F_i=F_j\) 下，记拍卖人保留价（成本）\(\theta_0\)，则只要正确设定保留类型 \(r^\star\) 使 \(J(r^\star)=r^\star-\frac{1-F(r^\star)}{f(r^\star)}=\theta_0\)，一价拍卖与二价拍卖都是最优的。</span><span class="lang en">Under regularity \(J_i'(\theta_i)>0\) (\(\forall i\)) and symmetric distribution \(F_i=F_j\), denoting the auctioneer's reserve price (cost) \(\theta_0\), both the first-price and second-price auction are optimal if the reserve type \(r^\star\) is set correctly such that \(J(r^\star)=r^\star-\frac{1-F(r^\star)}{f(r^\star)}=\theta_0\).</span></p>
+<p>[!note]- 证明 / Proof
+<span class="lang zh">§24.3 证均衡竞价 \(\bar b(\theta)=\theta-\int_0^\theta(F(x)/F(\theta))^{n-1}dx\) 关于 \(\theta\) 严格递增，故对称一价拍卖以概率 1 把物品分给最高类型、其余 0；§24.4 二价拍卖出真实类型也严格递增，同样把物品给最高类型。两者（讲真话）中最低类型剩余 \(U(\underline\theta)=0\)、中标概率为零、不付款。只要 \(r^\star\) 正确设为 \(J(r^\star)=\theta_0\)，由定理 27.1 二者皆最优。\(\blacksquare\)</span><span class="lang en">§24.3 showed the equilibrium bid \(\bar b(\theta)=\theta-\int_0^\theta(F(x)/F(\theta))^{n-1}dx\) is strictly increasing in \(\theta\), so the symmetric first-price auction awards the good to the highest type with probability 1 and 0 to others; §24.4 the second-price auction with truthful bidding is also strictly increasing, awarding the good to the highest type. In both (truth-telling), the lowest type's surplus \(U(\underline\theta)=0\), with zero winning probability and no payment. As long as \(r^\star\) is set correctly as \(J(r^\star)=\theta_0\), by Theorem 27.1 both are optimal. \(\blacksquare\)</span></p></div>
+<div class="lang zh">
+<h3 id="27-2-6-natural-distortions-of-optimal-auctions">27.2.6 最优拍卖的自然扭曲 / Natural distortions of optimal auctions</h3>
+<p>最优拍卖有两类主要扭曲，定义为相对于"最高类型（买家加拍卖人）享用物品"这一<strong>第一最优</strong>的社会剩余损失，而非拍卖人的损失。最优拍卖对拍卖人最优，但未必对社会最优，故"最优拍卖具非最优社会剩余"并不矛盾。</p>
+<p><strong>第一类扭曲：卖出的物品不够多。</strong> 社会最优时，只要某买家估值高于拍卖人自己（\(\theta_i>\theta_0\)）就应售出，但拍卖人实际不这么做。由保留类型 \(J_i(r_i^\star)=\theta_0\Leftrightarrow r_i^\star-\theta_0=\frac{1-F_i(r_i^\star)}{f_i(r_i^\star)}>0\)，故对某些 \(\theta_i\in(\theta_0,r_i^\star)\) 的类型（低于保留价）甚至不会出价、得不到物品。若 \(i\) 是唯一估值高于拍卖人者，社会最优应得物品却在最优拍卖中得不到。</p>
+<p><strong>第二类扭曲：错的买家得标。</strong> 社会最优时最高类型（估值）者应得物品，但最优拍卖中有时并非如此——因一般而言 \(\theta_i>\max_{j\ne i}\theta_j\nRightarrow J_i(\theta_i)>\max_{j\ne i}J_j(\theta_j)\)。故最优拍卖的赢家有最高虚拟类型 \(J_i(\theta_i)\) 但未必有最高估值 \(\theta_i\)。即便在正则性 \(J_i'(\theta_i)>0\) 下，只要分布不对称 \(F_i(\cdot)\ne F_j(\cdot)\)，此扭曲仍存在。</p>
+</div>
+<div class="lang en">
+<h3 id="27-2-6-natural-distortions-of-optimal-auctions">27.2.6 Natural distortions of optimal auctions</h3>
+<p>The optimal auction has two major distortions, defined as the loss of social surplus from the <strong>first best</strong> where the highest type (bidders plus auctioneer) enjoys the good, not the loss of the auctioneer. The optimal auction is optimal for the auctioneer but not necessarily for society, so there is no conflict in the optimal auction having non-optimal social surplus.</p>
+<p><strong>First distortion: not enough good sold.</strong> Socially optimally, the auctioneer should sell whenever some bidder has a higher valuation than the auctioneer himself (\(\theta_i>\theta_0\)), but he actually doesn't. From the reserve type \(J_i(r_i^\star)=\theta_0\Leftrightarrow r_i^\star-\theta_0=\frac{1-F_i(r_i^\star)}{f_i(r_i^\star)}>0\), so some types \(\theta_i\in(\theta_0,r_i^\star)\) (below the reserve price) won't even bid and won't get the good. If \(i\) is the only one whose valuation is higher than the auctioneer's, socially optimally he should get the good but doesn't in the optimal auction.</p>
+<p><strong>Second distortion: wrong bidder gets the good.</strong> Socially optimally the bidder with the highest type (valuation) should get the good, but in the optimal auction sometimes this is not the case — because in general \(\theta_i>\max_{j\ne i}\theta_j\nRightarrow J_i(\theta_i)>\max_{j\ne i}J_j(\theta_j)\). So the winner in the optimal auction has the maximum virtual type \(J_i(\theta_i)\) but not necessarily the maximum valuation \(\theta_i\). This is true even under regularity \(J_i'(\theta_i)>0\) as long as the distributions are not symmetric, \(F_i(\cdot)\ne F_j(\cdot)\).</p>
+</div>
+<div class="callout"><div class="callout-title">Tip</div><p>例 27.1（最优拍卖的自然扭曲）/ Example 27.1 (Natural distortion)
+<span class="lang zh">两买家，\(\theta_1\sim\text{Unif}[0,2]\)、\(\theta_2\sim\text{Unif}[1,3]\)，拍卖人保留价 \(\theta_0=0\)。<strong>社会最优</strong>：卖家总售出（\(\theta_1\ge\theta_0\)、\(\theta_2>\theta_0\) 概率 1）；\(\theta_1>\theta_2\) 时卖给买家 1、\(\theta_1<\theta_2\) 时卖给买家 2。<strong>最优拍卖</strong>：\(J_1(\theta_1)=\theta_1-\frac{1-\theta_1/2}{1/2}=2\theta_1-2\)，\(r_1^\star\)：\(J_1(r_1^\star)=0\Rightarrow r_1^\star=1\)；\(J_2(\theta_2)=\theta_2-\frac{1-(\theta_2-1)/2}{1/2}=2\theta_2-3\)，\(r_2^\star\)：\(J_2(r_2^\star)=0\Rightarrow r_2^\star=3/2\)。故 \(0<\theta_1<1\) 且 \(1<\theta_2<3/2\) 时两者都比拍卖人更想要物品，但拍卖人不售（第一类扭曲）。卖给买家 1 当 \(J_1>J_2\)：\(2\theta_1-2>2\theta_2-3\Leftrightarrow\theta_1+\tfrac12>\theta_2\)，不等价于社会最优（\(\theta_1>\theta_2\)）；对 \(\theta_1<\theta_2<\theta_1+\tfrac12\)，社会最优应给买家 2，但最优拍卖给买家 1（第二类扭曲）。</span><span class="lang en">Two bidders, \(\theta_1\sim\text{Unif}[0,2]\), \(\theta_2\sim\text{Unif}[1,3]\), auctioneer reserve \(\theta_0=0\). <strong>Socially optimal</strong>: the seller always sells (\(\theta_1\ge\theta_0\), \(\theta_2>\theta_0\) with probability 1); sell to bidder 1 if \(\theta_1>\theta_2\), to bidder 2 if \(\theta_1<\theta_2\). <strong>Optimal auction</strong>: \(J_1(\theta_1)=\theta_1-\frac{1-\theta_1/2}{1/2}=2\theta_1-2\), \(r_1^\star\): \(J_1(r_1^\star)=0\Rightarrow r_1^\star=1\); \(J_2(\theta_2)=\theta_2-\frac{1-(\theta_2-1)/2}{1/2}=2\theta_2-3\), \(r_2^\star\): \(J_2(r_2^\star)=0\Rightarrow r_2^\star=3/2\). So when \(0<\theta_1<1\) and \(1<\theta_2<3/2\), both want the good more than the auctioneer, but the auctioneer won't sell (first distortion). Sell to bidder 1 when \(J_1>J_2\): \(2\theta_1-2>2\theta_2-3\Leftrightarrow\theta_1+\tfrac12>\theta_2\), not equivalent to socially optimal (\(\theta_1>\theta_2\)); for \(\theta_1<\theta_2<\theta_1+\tfrac12\), socially optimally bidder 2 should get the good, but the optimal auction awards it to bidder 1 (second distortion).</span></p>
+<p>[!note] 图 29 / Figure 29（社会最优与最优拍卖结果的分歧，已转述 / Divergence, paraphrased）
+<span class="lang zh">在 \(\theta_1\)（横轴 $[0,2]$）–\(\theta_2\)（纵轴 $[1,3]$）平面上，两条直线 \(\theta_2=\theta_1+\tfrac12\)（红）与 \(\theta_2=\theta_1\)（黑）及虚线 \(\theta_1=1\)、\(\theta_2=\tfrac32\) 把区域分为 A、B、C、D。<strong>社会最优</strong>：所有区域都应售出、按 \(\theta_1\) 与 \(\theta_2\) 大小分配；<strong>最优拍卖</strong>：在区域 B（\(\theta_1<1\) 且 \(\theta_2<\tfrac32\)）不售；社会最优在区域 D 卖给买家 1、在 A/B/C 卖给买家 2，而最优拍卖在 C、D 卖给买家 1、在 A 卖给买家 2。</span><span class="lang en">In the \(\theta_1\) (horizontal $[0,2]$)–\(\theta_2\) (vertical $[1,3]\() plane, the two lines \)\theta_2=\theta_1+\tfrac12$ (red) and \(\theta_2=\theta_1\) (black), and the dashed lines \(\theta_1=1\), \(\theta_2=\tfrac32\), partition the area into A, B, C, D. <strong>Socially optimal</strong>: sell in all regions, allocated by the comparison of \(\theta_1\) and \(\theta_2\); <strong>optimal auction</strong>: doesn't sell in region B (\(\theta_1<1\) and \(\theta_2<\tfrac32\)); socially optimally sell to bidder 1 in region D and to bidder 2 in A/B/C, but the optimal auction sells to bidder 1 in C, D and to bidder 2 in A.</span></p></div>
+<div class="lang zh">
+<h2 id="27-3-other-settings">27.3 其他设定 / Other settings</h2>
+<p>可在以下方向推广模型：</p>
+<ul>
+<li><strong>一般效用</strong>：把效用推广为非 \(u(q,\theta)=\theta q\)、但仍准线性且 \(u_{q\theta}>0\)、\(u_\theta\ge0\) 的形式，沿同样逻辑可得类似结果。</li>
+<li><strong>共同价值（Myerson 扩展）</strong>：每个主体 \(i\) 的估值 \(V_i(\theta_i)=\theta_i+\sum_{j\ne i}e_j(\theta_j)\)，其中信息调整项 \(e_j(\theta_j)\) 满足 \(\mathbb{E}[e_j(\theta_j)]=0\)；卖家估值 \(V_0(\theta_0)=\theta_0+\sum_{j=1}^n e_j(\theta_j)\)。沿同样逻辑得 \(J_i(\theta_i)=\theta_i-\frac{1-F_i(\theta_i)}{f_i(\theta_i)}-e_i(\theta_i)\)。<strong>矿权模型</strong>：各企业竞标矿田权利，估值为所有企业信号之均值 \(V_i(\theta_i)=\frac1n\sum_{j=1}^n\theta_j\)，其中 \(\theta_i=v+\varepsilon_i\)，\(v\) 为所有企业共同观察的变量，\(\varepsilon_i\sim\mathcal{N}(0,\sigma^2)\) i.i.d.。</li>
+<li><strong>风险厌恶买家</strong>：买家风险厌恶时，沿同样逻辑可证二价拍卖中出真实类型仍为占优策略；一价拍卖中买家出价高于风险中性情形，因更高出价（自下方更接近真实类型）提高中标概率，但只以递减速率提高效用成本，故最优地略微提高出价（见例 27.2）。</li>
+</ul>
+</div>
+<div class="lang en">
+<h2 id="27-3-other-settings">27.3 Other settings</h2>
+<p>We can generalize the model in the following directions:</p>
+<ul>
+<li><strong>General utility</strong>: generalize utility to functional forms other than \(u(q,\theta)=\theta q\) but still quasi-linear with \(u_{q\theta}>0\), \(u_\theta\ge0\); similar results follow the same logic.</li>
+<li><strong>Common value (Myerson extension)</strong>: the valuation of each agent \(i\) is \(V_i(\theta_i)=\theta_i+\sum_{j\ne i}e_j(\theta_j)\), where the information-adjustment terms \(e_j(\theta_j)\) satisfy \(\mathbb{E}[e_j(\theta_j)]=0\); the seller's valuation \(V_0(\theta_0)=\theta_0+\sum_{j=1}^n e_j(\theta_j)\). Following the same logic, \(J_i(\theta_i)=\theta_i-\frac{1-F_i(\theta_i)}{f_i(\theta_i)}-e_i(\theta_i)\). <strong>Mineral rights model</strong>: each firm bids for the right of a mineral field, with valuation the average of all firms' signals \(V_i(\theta_i)=\frac1n\sum_{j=1}^n\theta_j\), where \(\theta_i=v+\varepsilon_i\), \(v\) a variable commonly observed by all firms, \(\varepsilon_i\sim\mathcal{N}(0,\sigma^2)\) i.i.d.</li>
+<li><strong>Risk-averse bidders</strong>: when bidders are risk-averse, following the same logic one can show that bidding the true type is still a dominant strategy in the second-price auction; in the first-price auction bidders bid higher than in the risk-neutral case, because bidding higher (closer to the true type from below) increases the winning probability while only increasing the utility cost at a decreasing rate, so it is optimal to bid slightly higher (see Example 27.2).</li>
+</ul>
+</div>
+<div class="callout"><div class="callout-title">Tip</div><p>例 27.2（风险厌恶买家的一价/二价拍卖，JR 习题 9.4）/ Example 27.2 (FPA and SPA with risk-averse bidders, JR Exercise 9.4)
+<span class="lang zh">\(n\) 个买家参与一价拍卖，估值独立抽自 $[0,1]$、连续严格正密度 \(f\)，vNM 效用 \((\theta_i-b_i)^{1/\alpha}\)（\(\alpha\ge1\) 共同常数，\(\alpha=1\) 风险中性、\(\alpha>1\) 风险厌恶）。记对称均衡 \(\bar b_\alpha(\theta)\)。<strong>(a)</strong> 记报告 \(\hat\theta\)、真实 \(\theta\) 的期望效用 \(U(\hat\theta\mid\theta)=F(\hat\theta)^{n-1}(\theta-\bar b_\alpha(\hat\theta))^{1/\alpha}\)（中标概率 \(F(\hat\theta)^{n-1}\) 由独立性），由 IC 须在 \(\hat\theta=\theta\) 处最大。<strong>(b)</strong> 因 \(\alpha\ge1\)，\(U(\hat\theta\mid\theta)^\alpha=F(\hat\theta)^{\alpha(n-1)}(\theta-\bar b_\alpha(\hat\theta))\) 是 \(U\) 的严格增变换，也在 \(\hat\theta=\theta\) 处最大。<strong>(c)</strong> 故"\(n\) 个风险厌恶买家、估值分布 \(F\)"的一价拍卖等价于"\(n\) 个风险中性买家、估值分布 \(\hat F=F^\alpha\)"的一价拍卖；用 §24.3 风险中性解得 \(\bar b_\alpha(\theta)=\theta-\int_0^\theta(F(x)/F(\theta))^{\alpha(n-1)}\,dx\)。<strong>(d)</strong> \(\frac{\partial\bar b_\alpha(\theta)}{\partial\alpha}=\int_0^\theta(n-1)(F(x)/F(\theta))^{\alpha(n-1)}(-\ln(F(x)/F(\theta)))\,dx>0\)，故 \(\bar b_\alpha\) 关于 \(\alpha\) 严格递增——买家越风险厌恶越偏好"更确定但价值更低"的结果（提高中标概率、降低中标剩余），卖家一价收入随风险厌恶上升。<strong>(e)</strong> 二价拍卖中讲真话仍占优，故 \(ER^{II}_{ra}=ER^{II}_{rn}\)；由 §24.4 \(ER^{II}_{rn}=ER^{I}_{rn}\)，又由 (d) \(ER^{I}_{ra}>ER^{I}_{rn}\)，故 \(ER^{I}_{ra}>ER^{II}_{ra}\)——风险厌恶下一价拍卖收入高于二价，两标准拍卖不再等收入。<strong>(f)</strong> \(\alpha\to\infty\)（无限风险厌恶）时 \(\lim_{\alpha\to\infty}\bar b_\alpha(\theta)=\theta\)，所有人出真实类型、赢家付自己出价，期望收入 \(\mathbb{E}[\max\{\theta_1,\dots,\theta_n\}]\)——第一最优，估值最高者得物品、付出全部估值、零剩余。</span><span class="lang en">\(n\) bidders in a first-price auction, values independently drawn from $[0,1]$ with continuous strictly positive density \(f\), vNM utility \((\theta_i-b_i)^{1/\alpha}\) (\(\alpha\ge1\) a common constant, \(\alpha=1\) risk-neutral, \(\alpha>1\) risk-averse). Denote the symmetric equilibrium \(\bar b_\alpha(\theta)\). <strong>(a)</strong> The expected utility of reporting \(\hat\theta\) at true \(\theta\) is \(U(\hat\theta\mid\theta)=F(\hat\theta)^{n-1}(\theta-\bar b_\alpha(\hat\theta))^{1/\alpha}\) (winning probability \(F(\hat\theta)^{n-1}\) by independence), maximized at \(\hat\theta=\theta\) by IC. <strong>(b)</strong> Since \(\alpha\ge1\), \(U(\hat\theta\mid\theta)^\alpha=F(\hat\theta)^{\alpha(n-1)}(\theta-\bar b_\alpha(\hat\theta))\) is a strictly increasing transformation of \(U\), also maximized at \(\hat\theta=\theta\). <strong>(c)</strong> So a first-price auction with \(n\) risk-averse bidders whose values are distributed \(F\) is equivalent to one with \(n\) risk-neutral bidders distributed \(\hat F=F^\alpha\); using the §24.3 risk-neutral solution, \(\bar b_\alpha(\theta)=\theta-\int_0^\theta(F(x)/F(\theta))^{\alpha(n-1)}\,dx\). <strong>(d)</strong> \(\frac{\partial\bar b_\alpha(\theta)}{\partial\alpha}=\int_0^\theta(n-1)(F(x)/F(\theta))^{\alpha(n-1)}(-\ln(F(x)/F(\theta)))\,dx>0\), so \(\bar b_\alpha\) is strictly increasing in \(\alpha\) — more risk-averse bidders prefer a "more certain but lower-value" outcome (higher winning probability, lower surplus if winning), and the seller's first-price revenue rises with risk aversion. <strong>(e)</strong> Truth-telling remains dominant in the second-price auction, so \(ER^{II}_{ra}=ER^{II}_{rn}\); by §24.4 \(ER^{II}_{rn}=ER^{I}_{rn}\), and by (d) \(ER^{I}_{ra}>ER^{I}_{rn}\), so \(ER^{I}_{ra}>ER^{II}_{ra}\) — under risk aversion the first-price auction raises more than the second-price, and the two standard auctions no longer generate the same revenue. <strong>(f)</strong> As \(\alpha\to\infty\) (infinite risk aversion), \(\lim_{\alpha\to\infty}\bar b_\alpha(\theta)=\theta\), all bid the true type and the winner pays his own bid, with expected revenue \(\mathbb{E}[\max\{\theta_1,\dots,\theta_n\}]\) — the first best, where the agent valuing the good most gets it, pays his entire valuation, and is left with zero surplus.</span></p></div>
+<div class="lang zh">
+<h2 id="27-4-the-value-of-an-additional-bidder-in-an-optimal-auction">27.4 最优拍卖中额外买家的价值 / The value of an additional bidder in an optimal auction</h2>
+<p>本节遵循 Bulow–Klemperer (1996)：从 \(n\) 个买家的最优拍卖出发，若多进入一个买家并做二价拍卖，则期望收入会增加，即便我们不知道新的 \(n+1\) 人二价拍卖中正确的保留价 \(\{r_i^\star\}_{i=1}^n\)。</p>
+<h3 id="27-4-1-set-up">27.4.1 设定 / Set-up</h3>
+<p>IPV 环境（§24.2），对称分布 \(F_i=F_j\)、支撑 \([\underline\theta,\overline\theta]\)，效用 \(U(\theta_i)=\hat\phi_i(\theta_i)\theta_i-\hat t_i(\theta_i)\)。把虚拟类型换记为 \(MR(\theta_i)\equiv J_i(\theta_i)=\theta_i-\frac{1-F(\theta_i)}{f(\theta_i)}\)。假设 \(\underline\theta\ge\theta_0\)（第一最优世界里拍卖人不应留下物品）。</p>
+<h3 id="27-4-2-definitions-of-the-expected-revenues">27.4.2 两种拍卖中拍卖人期望收入的定义 / Definitions of the expected revenues</h3>
+<p>\(n\) 个买家的最优拍卖，期望收入 \(ER^\star_n\)，由定理 27.1：</p>
+</div>
+<div class="lang en">
+<h2 id="27-4-the-value-of-an-additional-bidder-in-an-optimal-auction">27.4 The value of an additional bidder in an optimal auction</h2>
+<p>This section follows Bulow–Klemperer (1996): starting from an optimal auction with \(n\) bidders, if one more extra bidder enters and we do a second-price auction, then the expected revenue increases, even though we don't know the correct reserve prices \(\{r_i^\star\}_{i=1}^n\) in the new \(n+1\)-bidder second-price auction.</p>
+<h3 id="27-4-1-set-up">27.4.1 Set-up</h3>
+<p>IPV environment (§24.2), symmetric distribution \(F_i=F_j\) on \([\underline\theta,\overline\theta]\), utility \(U(\theta_i)=\hat\phi_i(\theta_i)\theta_i-\hat t_i(\theta_i)\). Switch the notation of the virtual type to \(MR(\theta_i)\equiv J_i(\theta_i)=\theta_i-\frac{1-F(\theta_i)}{f(\theta_i)}\). Assume \(\underline\theta\ge\theta_0\) (in the first-best world the auctioneer should never keep the good).</p>
+<h3 id="27-4-2-definitions-of-the-expected-revenues-to-the-auctioneer-in-the-two-auctions">27.4.2 Definitions of the expected revenues to the auctioneer in the two auctions</h3>
+<p>The optimal auction with \(n\) bidders has expected revenue \(ER^\star_n\), by Theorem 27.1:</p>
+</div>
+<p>$$
+ER^\star_n=\mathbb{E}_{\{\theta_i\}_{i=1}^n}\!\left[\max\{MR(\theta_1),MR(\theta_2),\dots,MR(\theta_n),\theta_0\}\right]
+$$</p>
+<div class="lang zh">
+<p>\(n+1\) 个买家、无保留价的二价拍卖，按定义在 \(\phi(\theta_i,\theta_{-i})=1\) 给最高 \(MR(\theta_i)\) 者、其余 0、\(U(\underline\theta)=0\) 的意义上最优设计，期望收入 \(ER^{SPA}_{n+1}\) (27.2)：</p>
+</div>
+<div class="lang en">
+<p>The second-price auction with \(n+1\) bidders and no reserve price is optimally designed in the sense that \(\phi(\theta_i,\theta_{-i})=1\) for the bidder with the highest \(MR(\theta_i)\) and 0 for others, with \(U(\underline\theta)=0\); its expected revenue \(ER^{SPA}_{n+1}\) (27.2):</p>
+</div>
+<p>$$
+ER^{SPA}_{n+1}=\mathbb{E}_{\{\theta_i\}_{i=1}^{n+1}}\!\left[\max\{MR(\theta_1),MR(\theta_2),\dots,MR(\theta_n),MR(\theta_{n+1})\}\right] \tag{27.2}
+$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>定理 27.2 / Theorem 27.2
+<span class="lang zh">\(n+1\) 个买家、无保留价二价拍卖的期望收入不小于 \(n\) 个买家的最优拍卖，即 \(ER^{SPA}_{n+1}\ge ER^\star_n\)。</span><span class="lang en">The expected revenue in a second-price auction without reserve prices with \(n+1\) bidders is larger than or equal to that of the optimal auction with \(n\) bidders, i.e. \(ER^{SPA}_{n+1}\ge ER^\star_n\).</span></p>
+<p>[!note]- 证明 / Proof
+<span class="lang zh">\(\max\{MR(\theta_1),\dots,MR(\theta_n),MR(\theta_{n+1})\}\) 关于 \(MR(\theta_{n+1})\) 凸，由 Jensen 不等式 \(\mathbb{E}_{\theta_{n+1}}[\max\{\cdots,MR(\theta_{n+1})\}]\ge\max\{\cdots,\mathbb{E}_{\theta_{n+1}}[MR(\theta_{n+1})]\}\) (27.3)。又 \(\mathbb{E}_{\theta_i}[MR(\theta_i)]=\underline\theta\)，因为：</span><span class="lang en">\(\max\{MR(\theta_1),\dots,MR(\theta_n),MR(\theta_{n+1})\}\) is convex in \(MR(\theta_{n+1})\), so by Jensen's inequality \(\mathbb{E}_{\theta_{n+1}}[\max\{\cdots,MR(\theta_{n+1})\}]\ge\max\{\cdots,\mathbb{E}_{\theta_{n+1}}[MR(\theta_{n+1})]\}\) (27.3). And \(\mathbb{E}_{\theta_i}[MR(\theta_i)]=\underline\theta\), because:</span></p>
+<p>$$\mathbb{E}_{\theta_i}[MR(\theta_i)]=\int_{\underline\theta}^{\overline\theta}\Big(\theta_i f(\theta_i)-(1-F(\theta_i))\Big)d\theta_i=-\theta_i(1-F(\theta_i))\Big|_{\underline\theta}^{\overline\theta}=-\overline\theta\cdot0+\underline\theta\cdot1=\underline\theta$$</p>
+<p><span class="lang zh">代入 (27.3)：\(ER^{SPA}_{n+1}\ge\mathbb{E}_{\{\theta_i\}_{i=1}^n}[\max\{MR(\theta_1),\dots,MR(\theta_n),\underline\theta\}]\ge\mathbb{E}_{\{\theta_i\}_{i=1}^n}[\max\{MR(\theta_1),\dots,MR(\theta_n),\theta_0\}]=ER^\star_n\)，最后一步由假设 \(\underline\theta\ge\theta_0\)。\(\blacksquare\)</span><span class="lang en">Plug into (27.3): \(ER^{SPA}_{n+1}\ge\mathbb{E}_{\{\theta_i\}_{i=1}^n}[\max\{MR(\theta_1),\dots,MR(\theta_n),\underline\theta\}]\ge\mathbb{E}_{\{\theta_i\}_{i=1}^n}[\max\{MR(\theta_1),\dots,MR(\theta_n),\theta_0\}]=ER^\star_n\), the last step by the assumption \(\underline\theta\ge\theta_0\). \(\blacksquare\)</span></p>
+<p>[!tip] 注 27.1、27.2 与 §27.4.4 简单含义 / Remarks 27.1, 27.2 and the simple implication (§27.4.4)
+<span class="lang zh"><strong>注 27.1</strong>：定理 27.2 表明，多一个买家能帮拍卖人正确设定最优保留价，使期望收入不低于"无该买家但保留价最优"的情形——这便是额外买家带来的价值。<strong>§27.4.4 简单含义</strong>：只有一个买家（\(n=1\)）时，拍卖人知道保留价值 \(\theta_0\) 却不知如何设最优保留价 \(r^\star\)（\(J(r^\star)=\theta_0\)），因只观察到某另一买家事前真实报告的一个数据点 \(\hat\theta\)、无法恢复分布 \(F\)。但拍卖人可用一种"古怪二价拍卖"（两买家 Bob、Alice 都讲真话；Bob 出价更高则得物品付 Alice 的出价，Alice 更高则谁都不卖）保证至少一半的最优收入：该古怪二价等价于一个买家问题（\(ER=\tfrac12 ER^{SPA}_2\)），而由定理 27.2 \(ER^{SPA}_2\ge ER^\star_1\)，故 \(ER=\tfrac12 ER^{SPA}_2\ge\tfrac12 ER^\star_1\)。<strong>注 27.2</strong>：把保留价设为唯一可观察类型 \(\hat\theta\) 保证一半最优收入，仅在事前期望意义上成立。</span><span class="lang en"><strong>Remark 27.1</strong>: Theorem 27.2 implies an additional bidder can help the auctioneer correctly set up the optimal reserve prices such that the expected revenue is no less than the case without that bidder but with optimal reserve prices — the value brought by the additional bidder. <strong>§27.4.4 simple implication</strong>: with one bidder (\(n=1\)), the auctioneer knows the reservation value \(\theta_0\) but doesn't know how to set the optimal reserve \(r^\star\) (\(J(r^\star)=\theta_0\)), since he only observes one data point \(\hat\theta\) truthfully reported by some other bidder and cannot recover the distribution \(F\). But the auctioneer can use a "weird second-price auction" (two bidders Bob and Alice both bid truthfully; if Bob bids higher he gets the good and pays Alice's bid, if Alice is higher nobody gets it) to guarantee at least one-half of the optimal revenue: this weird second-price auction is equivalent to the one-bidder problem (\(ER=\tfrac12 ER^{SPA}_2\)), and by Theorem 27.2 \(ER^{SPA}_2\ge ER^\star_1\), so \(ER=\tfrac12 ER^{SPA}_2\ge\tfrac12 ER^\star_1\). <strong>Remark 27.2</strong>: setting the reserve price to the only observable type \(\hat\theta\) guarantees one-half of the optimal revenue only in expectation ex-ante.</span></p></div>
+<div class="lang zh">
+<h2 id="references">参考文献 / References</h2>
+<ul>
+<li>Myerson, R. (1981). Optimal Auction Design.（最优拍卖与虚拟类型）</li>
+<li>Bulow, J., &amp; Klemperer, P. (1996). Auctions Versus Negotiations. <em>American Economic Review</em>, 86(1), 180-194.（额外买家的价值）</li>
+<li>本章建立在 [[four-standard-auctions]]（Ch 24）、[[revenue-equivalence]]（Ch 25）之上。</li>
+</ul>
+</div>
+<div class="lang en">
+<h2 id="references">References</h2>
+<ul>
+<li>Myerson, R. (1981). Optimal Auction Design. (optimal auctions and the virtual type)</li>
+<li>Bulow, J., &amp; Klemperer, P. (1996). Auctions Versus Negotiations. <em>American Economic Review</em>, 86(1), 180-194. (the value of an additional bidder)</li>
+<li>This chapter builds on [[four-standard-auctions]] (Ch 24) and [[revenue-equivalence]] (Ch 25).</li>
+</ul>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#27-1-the-auctioneer-s-problem">27.1 拍卖人的问题 / The auctioneer's problem</a></li>
+        <li><a href="#27-1-the-auctioneer-s-problem">27.1 The auctioneer's problem</a></li>
+        <li><a href="#27-2-characterize-the-solution">27.2 刻画解 / Characterize the solution</a></li>
+          <li><a href="#27-2-1-rewrite-the-maximization-problem">27.2.1 重写最大化问题 / Rewrite the maximization problem</a></li>
+        <li><a href="#27-2-characterize-the-solution">27.2 Characterize the solution</a></li>
+          <li><a href="#27-2-1-rewrite-the-maximization-problem">27.2.1 Rewrite the maximization problem</a></li>
+          <li><a href="#27-2-3-j-i-theta-i-i-interpret-j-i-theta-i-as-marginal-revenue">27.2.3 把 \(J_i(\theta_i)\) 解读为从主体 \(i\) 收取的边际收入 / Interpret \(J_i(\theta_i)\) as marginal revenue</a></li>
+          <li><a href="#27-2-3-interpret-j-i-theta-i-as-the-marginal-revenue-collected-from-agent-i">27.2.3 Interpret \(J_i(\theta_i)\) as the marginal revenue collected from agent \(i\)</a></li>
+          <li><a href="#27-2-4-regularity-assumption-and-reserve-type">27.2.4 正则性假设与保留类型 / Regularity assumption and reserve type</a></li>
+          <li><a href="#27-2-4-regularity-assumption-and-reserve-type">27.2.4 Regularity assumption and reserve type</a></li>
+          <li><a href="#27-2-5-optimality-of-first-price-and-second-price-auction">27.2.5 一价拍卖与二价拍卖的最优性 / Optimality of first-price and second-price auction</a></li>
+          <li><a href="#27-2-5-optimality-of-first-price-auction-and-second-price-auction">27.2.5 Optimality of first-price auction and second-price auction</a></li>
+          <li><a href="#27-2-6-natural-distortions-of-optimal-auctions">27.2.6 最优拍卖的自然扭曲 / Natural distortions of optimal auctions</a></li>
+          <li><a href="#27-2-6-natural-distortions-of-optimal-auctions">27.2.6 Natural distortions of optimal auctions</a></li>
+        <li><a href="#27-3-other-settings">27.3 其他设定 / Other settings</a></li>
+        <li><a href="#27-3-other-settings">27.3 Other settings</a></li>
+        <li><a href="#27-4-the-value-of-an-additional-bidder-in-an-optimal-auction">27.4 最优拍卖中额外买家的价值 / The value of an additional bidder in an optimal auction</a></li>
+          <li><a href="#27-4-1-set-up">27.4.1 设定 / Set-up</a></li>
+          <li><a href="#27-4-2-definitions-of-the-expected-revenues">27.4.2 两种拍卖中拍卖人期望收入的定义 / Definitions of the expected revenues</a></li>
+        <li><a href="#27-4-the-value-of-an-additional-bidder-in-an-optimal-auction">27.4 The value of an additional bidder in an optimal auction</a></li>
+          <li><a href="#27-4-1-set-up">27.4.1 Set-up</a></li>
+          <li><a href="#27-4-2-definitions-of-the-expected-revenues-to-the-auctioneer-in-the-two-auctions">27.4.2 Definitions of the expected revenues to the auctioneer in the two auctions</a></li>
+        <li><a href="#references">参考文献 / References</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

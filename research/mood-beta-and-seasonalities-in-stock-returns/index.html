@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>股市的「四季」，藏在一条叫情绪 beta 的曲线里 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>股市的「四季」，藏在一条叫情绪 beta 的曲线里</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2020 JFE]</span> Mood Beta and Seasonalities in Stock Returns</div>
+        <div class="paper-source-authors"><a href="/research/author/david-hirshleifer/">David Hirshleifer</a>, <a href="/research/author/danling-jiang/">Danling Jiang</a>, <a href="/research/author/yuting-meng-digiovanni/">Yuting Meng DiGiovanni</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">投资者情绪</span>
+        
+        
+        
+        
+        <span class="tag">季节性</span>
+        
+        
+        
+        
+        <span class="tag">异象</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Hirshleifer, Jiang &amp; DiGiovanni (2020, <em>Journal of Financial Economics</em>)</strong>：股票收益里那些反复出现的「日历季节性」——某些股票偏偏在一月、在周五跑赢——背后是同一只手在拨动，即投资者情绪 (mood)。作者用一个新指标「情绪 beta (mood beta)」把这只手量化出来，并证明它能稳健地预测股票在「情绪上升期」跑赢、在「情绪下降期」跑输，一个对冲组合的 Fama-French 五因子 alpha 高达每月 1.5% 以上。</p></div>
+<h2 id="1">1 一个让人不安的「巧合」</h2>
+<p>先说一个早就被记录在案、却一直没人能解释的怪现象。</p>
+<p>Heston 和 Sadka 在 2008 年发现：把美股按「过去某个一月份的相对表现」排个序，这个排序会<strong>顽固地重复</strong>——今年一月跑赢的那批股票，明年一月、后年一月、乃至十年后的一月，还是倾向于跑赢。同样地，Keloharju、Linnainmaa 和 Nyberg（下称 KLN）在 2016 年发现：周五跑赢的股票，往后许多个周五还是跑赢。</p>
+<p>这是个让效率市场信徒很不舒服的事实。它不是「一月效应」那种<strong>市场整体</strong>的季节性（那个还能用税收、小公司之类的故事搪塞），而是<strong>横截面</strong>的季节性——是 A 股票相对 B 股票的相对强弱，年复一年地在同一个日历月里复现。Heston-Sadka 试遍了成交量、波动率、行业、盈利、分红，一个都解释不了；KLN 干脆把它归结为「季节性的因子溢价 (seasonal factor premia)」，但对这溢价<strong>从哪来</strong>避而不谈。</p>
+<p>于是一个自然的问题是：这些散落在不同频率（月度、周度）、不同日历位置（一月 vs. 周五）上的季节性，到底是一堆互不相干的巧合，还是同一个机制的不同切片？</p>
+<p>本文的回答是后者。而那个机制，叫<strong>情绪</strong>。</p>
+<h2 id="2">2 把「情绪」请上桌：核心假说</h2>
+<p>作者提出的故事——他们称之为<strong>情绪季节性假说 (mood seasonality hypothesis)</strong>——逻辑链条干净得近乎优雅：</p>
+<p><strong>第一步</strong>，投资者情绪本身有可预测的季节性。这不是拍脑袋，而是心理学和金融学早有积累：新年带来的乐观（Thaler, 1987；Bergsma and Jiang, 2016），让一月份情绪高涨；季节性情感障碍 (seasonal affective disorder, SAD) 在初秋日照变短时发作最猛（Kamstra et al., 2003, 2017），让九、十月情绪低落；而「周五的雀跃、周一的沮丧」更是问卷里反复出现的常识（Birru, 2018；Stone et al., 2012）。</p>
+<p><strong>第二步</strong>，情绪一变，投资者对<strong>共同因子 (common factors)</strong> 的定价就跟着偏。心情好的时候，人们对未来因子收益过度乐观，于是把因子整体定高了；心情差则反之。这是<strong>因子层面的错误定价 (factor mispricing)</strong>。</p>
+<p><strong>但真正关键的一步在于第三步</strong>：这个因子层面的错价，会顺着每只股票在该因子上的<strong>载荷 (factor loading)</strong>，被「分摊」到横截面上。载荷高的股票，继承的错价就多；载荷低的，继承的就少。</p>
+<p>把三步连起来，结论就呼之欲出了：<strong>一只股票对季节性情绪的敏感度，恰恰等于它在那些被情绪定错价的因子上的载荷之和。</strong> 而这个「对情绪的敏感度」，正是本文要造的新尺子。</p>
+<p>作者据此提出两个可检验的假说，我把原文照搬过来：</p>
+<div class="callout"><div class="callout-title">Note</div><p><strong>假说 1（情绪复现与反转效应）</strong>：横截面上，一只证券的历史季节收益，与它在<strong>情绪一致 (congruent-mood)</strong> 期的未来季节收益正相关，与它在<strong>情绪不一致 (noncongruent-mood)</strong> 期的未来季节收益负相关。</p>
+<p><strong>假说 2（情绪 beta 效应）</strong>：情绪 beta 在情绪上升期正向预测横截面收益，在情绪下降期负向预测。</p></div>
+<p>注意假说 1 那个「反转」——它是整篇文章最反直觉、也最有杀伤力的地方：如果一月和三月是高情绪月、九月和十月是低情绪月，那么在一月跑赢的股票，不仅会在未来的一月<strong>复现</strong>跑赢，还会在未来的九、十月<strong>反转</strong>为跑输。同一段历史，根据未来情绪与它「合不合拍」，能预测出方向<strong>相反</strong>的收益。这是任何「风险溢价」或「行业惯性」故事都很难配出来的指纹。</p>
+<h2 id="3">3 怎么给月份和星期「贴情绪标签」</h2>
+<p>要检验上面的假说，先得说清楚哪些日历期是「高情绪」、哪些是「低情绪」。作者的做法很朴素：看全样本里哪个月、哪个星期的等权市场收益最高/最低。</p>
+<p>在 1963–2016 的样本里，等权市场超额收益（CRSP 等权指数减无风险利率）一月最高，达 <code>5.06%</code>，三月次之 <code>1.26%</code>；十月最低 <code>−0.84%</code>，九月次低 <code>−0.29%</code>。于是主检验里，<strong>一月、三月</strong>当作高情绪月，<strong>九月、十月</strong>当作低情绪月；周度上，<strong>周五</strong>高情绪、<strong>周一</strong>低情绪。</p>
+<div class="article-image"><img alt="Table 1: reports the seasonal returns summary statistics. t 4.88). The return responses represent significant eco-" src="assets/table-1.png" /></div>
+<p><em>Table 1: reports the seasonal returns summary statistics. t 4.88). The return responses represent significant eco-</em></p>
+<p>这些数字本身就在替心理学背书：一月的高、三月的回暖（SAD 随日照恢复而缓解）、九十月的低谷（SAD 发作高峰），和情绪季节性的方向严丝合缝。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>作者很清楚「用全样本均值挑情绪月」有<strong>事后偏差 (in-sample bias)</strong> 的嫌疑。所以他们做了稳健性检查：改用「截至上一年的历史均值」或「只在奇数/偶数年里」来<strong>样本外</strong>地划定高低情绪期，结论依旧。这一步处理得相当诚实。</p></div>
+<h2 id="4">4 第一记重拳：复现与反转</h2>
+<p>先看假说 1。作者跑的是 Heston-Sadka 式的 Fama-MacBeth 横截面回归，但把「同一个日历月」放宽成了「情绪一致的月份」。核心回归形如：</p>
+<p>$$RET_{high(Low),\,t} = \gamma_{0,t} + \gamma_{k,t}\,\overline{RET}_{high(Low),\,t-k} + \varepsilon_{i,t}$$</p>
+<p>这里 \(RET_{high(Low),\,t}\) 是第 \(t\) 年当期高（或低）情绪月的个股收益，\(\overline{RET}_{high(Low),\,t-k}\) 是同一只股票在第 \(t-k\) 年<strong>情绪一致</strong>期的历史平均收益，年度滞后 \(k = 1,\,2\text{–}5,\,6\text{–}10\)。例如预测今年一月，自变量就是去年「一月与三月」的平均收益；预测今年九月，自变量是去年「九月与十月」的平均。斜率 \(\gamma_k\) 在全样本上取平均，作者沿用 Heston-Sadka 的叫法，称之为<strong>收益响应 (return response)</strong>。</p>
+<p>结果如何？对个股，滞后 1 年不显著，但滞后 2–5 年的收益响应是 <code>1.82%</code>（t = 2.65），滞后 6–10 年更升到 <code>4.37%</code>（t = 4.88）。换算成经济意义：历史情绪月收益每上升一个标准差（<code>7.86%</code>），未来每个情绪一致月的收益就抬高约 <code>14</code> 个基点，相当于该月均值收益（<code>1.64%</code>）的 8.7%。换到 BW（94 个组合）和 KLN（79 个组合）上，收益响应一律为正，落在 <code>19.20%</code> 到 <code>48.75%</code> 之间，三组滞后全显著，t 值从 4.23 到 7.09——一个标准差的历史收益，能拉动后续每个情绪一致月高出均值 60%–86% 的收益。</p>
+<div class="article-image"><img alt="Table 2" src="assets/table-2.png" /></div>
+<p><em>Table 2</em></p>
+<p>而把「情绪不一致」期接上去，符号就翻了过来：在高情绪月跑赢的股票，到低情绪月系统性地跑输。一个同时利用复现与反转的多空组合，月度风险调整收益在 <code>0.33%</code> 到 <code>1.80%</code> 之间，日度则是 <code>2</code> 到 <code>10</code> 个基点。第一记重拳，落地。</p>
+<h2 id="5-beta">5 真正的主角：情绪 beta</h2>
+<p>复现与反转固然漂亮，但它本质上还是「用历史季节收益预测未来」。本文更野心的一步，是把那个看不见的「对情绪的敏感度」直接<strong>估计</strong>出来，做成一个可交易的 beta。</p>
+<p>定义很自然。把一只股票在最近一段时间里、所有<strong>高情绪与低情绪期</strong>的收益，对同期<strong>等权市场收益</strong>做一个回归，那个斜率就是它的<strong>情绪 beta</strong>：</p>
+<p>$$R_{i,\tau} = \alpha_i + \beta_i^{\,mood}\,R^{ew}_{m,\tau} + \varepsilon_{i,\tau}$$</p>
+<p>其中 \(\tau\) 只取最近的高、低情绪期（月度用最近十年的一、三、九、十月加上每年涨跌最极端的两个月；周度用最近六个月的周一、周五加每周最极端的工作日），\(R^{ew}_{m,\tau}\) 是等权市场收益。作者之所以只挑极端情绪期来估计，是因为这些时点情绪本身波动最大，<strong>信噪比</strong>最高。他们还构造了一个「复合情绪 beta」，取月度与周度两个 beta 的第一主成分。</p>
+<p>直觉上，情绪 beta 高的股票，就是那些「随大盘心情起落而剧烈摆动」的股票。假说 2 预测：它们在情绪上升期（一月、三月、周五）跑赢，在情绪下降期（九月、十月、周一）跑输。数据给出了强一致的证据。</p>
+<p>更妙的是，情绪 beta 和公司特征的关系<strong>符合理论预期</strong>：难估值 (hard-to-value)、对情绪/情感敏感的股票和行业，情绪 beta 高；易估值、不受情绪左右的资产，情绪 beta 低。这正是 Baker-Wurgler (2006) 那套「高估值不确定性、高套利成本的股票更容易被情绪推动」的逻辑在情绪 beta 上的回声。</p>
+<div class="article-image"><img alt="Figure 1: Mood betas of characteristics-sorted portfolios" src="assets/figure-1.png" /></div>
+<p><em>Figure 1: Mood betas of characteristics-sorted portfolios</em></p>
+<p>为了量出经济意义，作者做了个对冲组合：在情绪预期上升时做多最高情绪 beta 十分位、做空最低十分位；情绪预期下降时则<strong>多空互换</strong>，把空头翻成多头。这个组合在涨、跌两种情绪里都赚取正的价差，Fama-French 五因子 alpha 达到每月 <code>1.5%</code> 以上、每日 <code>12</code> 个基点以上。而且——这是个漂亮的收尾——一旦控制住情绪 beta，原先那些历史季节收益的预测力<strong>大幅萎缩，甚至变号</strong>。换句话说，情绪 beta 把零散的复现/反转效应<strong>一网打尽</strong>，它才是底层那个统一的解释变量。</p>
+<h2 id="6-beta">6 三种 beta 的「赛马」</h2>
+<p>聪明的读者立刻会反问：情绪 beta 会不会只是市场 beta 或情绪 beta 的「马甲」？毕竟高 beta 股票本来就随大盘起落，Baker-Wurgler (2007) 的情绪 beta (sentiment beta) 也在测类似的东西。</p>
+<p>作者于是安排了一场三方赛马 (horse race)，把情绪 beta、市场 beta、Baker-Wurgler 情绪 beta 一起塞进 Fama-MacBeth 回归。结论干脆：情绪 beta 在控制另两个 beta 和一堆公司特征后，<strong>依然</strong>是强劲的收益预测变量。而另两个 beta 都不会像情绪 beta 那样、在未来高低情绪期里以<strong>相反的符号</strong>预测收益——这正是情绪 beta 的独门指纹。</p>
+<div class="article-image"><img alt="Figure 2: High-minus-low portfolios across high and low mood periods: mood beta versus market beta and sentiment beta" src="assets/figure-2.png" /></div>
+<p><em>Figure 2: High-minus-low portfolios across high and low mood periods: mood beta versus market beta and sentiment beta</em></p>
+<p>一个有趣的副产品：在这些回归里，<strong>市场 beta 反而负向预测收益</strong>，与有据可查的「低风险异象 (low-risk anomaly)」（Baker et al., 2011；Frazzini and Pedersen, 2014）相符。也就是说，本文不仅没被低风险异象绊倒，反而在自己的框架里复现了它。（关于高 beta 为何反而低收益，可参见<a href="/research/a-unified-model-of-distress-risk-puzzles/">《高 beta、低收益：困境股票里那根会「看天」的杠杆》</a>与<a href="/research/the-volatility-puzzle-of-the-beta-anomaly/">《波动率之谜，藏在 beta 异象的「时机」里》</a>。）</p>
+<div class="callout"><div class="callout-title">Note</div><p>这里有一处方法论上的开明值得记一笔：作者明说，<strong>即便这些效应并非源自投资者情绪</strong>——哪怕你不信「心情」这个机制——它们也构成了一组全新的、有条件的收益季节性，本身就值得关注。情绪只是目前<strong>唯一</strong>能把它们统一起来的解释。这种「先把事实钉死、机制留作最优解释」的姿态，比硬塞一个行为故事要稳健得多。</p></div>
+<h2 id="7">7 文献脉络</h2>
+<p>把这条线索捋一遍，会看到一个从「市场整体」走向「横截面」、再走向「统一机制」的过程。</p>
+<p>最早是<strong>市场层面</strong>的日历异象：French (1980) 的周末效应、Keim (1983) 的一月小公司效应、Lakonishok 和 Smidt (1988) 对季节异象真伪的世纪回顾。这些都在问「市场整体何时涨何时跌」。</p>
+<p>接着，行为金融给情绪找到了<strong>生理与心理的锚</strong>：Kamstra、Kramer 和 Levi (2003) 的「冬季忧郁」把 SAD 写进了市场周期；Baker 和 Wurgler (2006, 2007) 则把「投资者情绪」做成了能解释横截面的系统变量——哪些股票更易被情绪推动，第一次有了刻画。</p>
+<p>然后，季节性研究转向<strong>横截面</strong>：Heston 和 Sadka (2008) 发现相对强弱在同一日历月复现，Keloharju 等 (2016) 把它推广到星期，Birru (2018) 发现众多异象在周一与周五呈相反的收益模式。但这三篇都停在「记录事实」或「季节性因子溢价」，没人追问溢价从哪来。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>本文站在这条线的<strong>汇合点</strong>：它接过 Heston-Sadka 和 KLN 的事实，借用 Baker-Wurgler 的「情绪定价因子」和 Kamstra 的「季节性情绪」，提出情绪 beta，把月度/周度、聚合/横截面、复现/反转这些原本散落的拼图，第一次拼成了一张完整的图。</p>
+<h2>8 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：用全样本均值来挑「高低情绪月」，这不是典型的「看着答案出题」吗？</strong></p>
+<blockquote>
+<p>这是本文最该被盯住的点，作者自己也清楚。他们的防守是样本外重新划期：改用「截至上一年」的历史均值，或「只用奇数/偶数年」来定情绪期，再去预测另一部分样本，结论依旧。这把纯粹的事后拟合排除了大半，但「为什么偏偏是这几个月对应这几种心理」仍带有事后叙事的成分——心理学证据是支撑，不是铁证。</p>
+</blockquote>
+<p><strong>Q：情绪 beta 和市场 beta、Baker-Wurgler 情绪 beta 到底差在哪？</strong></p>
+<blockquote>
+<p>差在「符号会翻」。市场 beta 和情绪 beta 都是单调的风险敞口，不会在不同日历期里反向预测收益。情绪 beta 的独特之处是它<strong>随情绪方向择时</strong>：上升期正向、下降期负向。赛马回归显示，控制另两个 beta 后情绪 beta 依然显著，且只有它具备这种「变号」预测力。</p>
+</blockquote>
+<p><strong>Q：那个「反转」会不会只是均值回复或短期反转 (short-term reversal) 的伪装？</strong></p>
+<blockquote>
+<p>不太像。短期反转作用在月度内、且不区分日历位置；这里的反转是<strong>跨情绪期、按日历对齐</strong>的——一月跑赢者在九/十月跑输，且这种模式在条件日之后能持续数年。一个不挑日历的均值回复故事，配不出「在高情绪月复现、在低情绪月反转」这种方向依赖。</p>
+</blockquote>
+<p><strong>Q：情绪真能在「日度」这么高的频率上影响风险容忍度吗？</strong></p>
+<blockquote>
+<p>作者在脚注里坦白：情绪未必能在周一/周五这种高频上改变<strong>风险容忍度</strong>，所以他们把重心放在「乐观/悲观」这条偏好/信念通道，而非风险偏好通道。这是个克制而诚实的边界声明。</p>
+</blockquote>
+<p><strong>Q：这套效应在交易成本面前还剩多少？</strong></p>
+<blockquote>
+<p>文中报告的是风险调整后的纸面 alpha（月 1.5%+、日 12bp+），但对冲组合需要频繁在多空之间<strong>翻面</strong>，且重仓难估值、高情绪 beta 的小盘股——这些恰恰是交易成本和套利成本最高的角落。净收益会被侵蚀多少，文章着墨不多，是留给后人的实证空白。</p>
+</blockquote>
+<p><strong>Q：把九月、十月当低情绪月，会不会其实是在捕捉宏观风险（如年末税收抛售、流动性季节性）？</strong></p>
+<blockquote>
+<p>有这个担忧。但作者的横截面设计在很大程度上把<strong>市场整体</strong>的季节性差掉了——他们看的是同一情绪期内股票之间的相对强弱，而非市场何时涨跌。加上对市场 beta、情绪 beta、公司特征的控制，纯宏观风险的解释空间被压缩了不少。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 情绪 beta 在公司债/信用市场存在吗？</strong></p>
+<blockquote>
+<p>【经济故事】如果情绪定错的是「因子」，那信用利差里那些情绪敏感的成分（高收益、长久期、低评级）应当也有自己的情绪 beta：情绪上升期利差收窄、下降期走阔。这能把本文从股票延伸到一个独立的资产类别。</p>
+<p>【可行性】中。数据用 TRACE + Mergent FISD 构造债券月度收益，按 Heston-Sadka 式 FMB 估计情绪 beta；难点是公司债收益的季节性信噪比远低于股票，且流动性季节性会污染估计，需要用成交量加权或剔除非活跃券。识别上可借本文的样本外划期法。</p>
+</blockquote>
+<p><strong>2. 外资持有人会放大还是熨平情绪季节性？</strong></p>
+<blockquote>
+<p>【经济故事】SAD、新年乐观这些情绪季节是<strong>地域/文化特定</strong>的（北半球的九十月低谷在南半球应当反相）。如果一只股票的边际定价者越来越是跨时区、跨半球的外资，本地情绪季节性是否会被稀释、甚至错位？</p>
+<p>【可行性】中。用 FactSet/13F 跨境持股或各国托管数据度量外资份额，看情绪 beta 效应是否随外资占比下降。识别可借 MSCI 纳入这类准外生的外资冲击做 DiD，但情绪季节性的测度噪声大，需要长样本。</p>
+</blockquote>
+<p><strong>3. 把情绪 beta 接到流动性上：情绪下降期，高情绪 beta 股票是否也更「难卖」？</strong></p>
+<blockquote>
+<p>【经济故事】情绪恶化既压价格也压流动性。若高情绪 beta 股票在低情绪期同时承受收益与流动性的双杀，那本文的对冲收益里可能混着一块<strong>流动性溢价</strong>，而非纯错价。把两者拆开，对理解机制至关重要。</p>
+<p>【可行性】高。用 Amihud 非流动性或买卖价差，按情绪期做面板回归，检验流动性是否随情绪 beta×情绪方向系统变化。数据现成，识别清晰。（与流动性、异象多空组合的关系，可参见<a href="/research/liquidity-characteristics-of-market-anomalies-and/">《流动性的方向感：异象多空组合，其实并不「流动性中性」》</a>。）</p>
+</blockquote>
+<p><strong>4. 情绪 beta 与「盈利公告日 beta 溢价」是同一回事吗？</strong></p>
+<blockquote>
+<p>【经济故事】已有研究指出 beta 只在少数高信息日（如盈利公告日）才真正获得补偿。情绪 beta 也强调「只在特定日历期值钱」。两者是不同机制，还是同一种「条件 beta 定价」的两个切面？</p>
+<p>【可行性】中。把盈利公告日 beta 与情绪 beta 同时放进 FMB 赛马，看谁吸收谁。数据可得，难在两个 beta 的估计窗口与频率不一致，需谨慎对齐。（关于 beta 只在特定日子值钱，见<a href="/research/asset-pricing-on-earnings-announcement-days/">《一年只有那么几天，beta 才真正值钱》</a>。）</p>
+</blockquote>
+<h3 id="">我的判断</h3>
+<p>这篇文章的贡献，不在于又发现了一个异象，而在于它把<strong>一堆</strong>异象收进了一个机制。Heston-Sadka 的月度复现、KLN 的周度复现、Birru 的周一/周五反转，外加市场层面的一月效应与 SAD 效应——本文用「情绪 beta」一根线把它们串了起来，并造出了一个可交易、可证伪、能在赛马里击败市场 beta 和情绪 beta 的新指标。这种「化零为整」的统一力，是它配得上 JFE 的真正原因。</p>
+<p>要担心的地方也清楚。其一，「高低情绪月」的划定终究带着事后叙事的味道，样本外检验缓解了统计偏差，却没法证明「九十月低落 = SAD」这个因果链——机制是借来的，不是这篇自己识别出来的。其二，对冲组合重仓小盘、难估值、高换手的角落，纸面 alpha 在真实交易成本下能剩多少，文中交代得太轻。其三，整套故事建立在「情绪→因子错价→按载荷分摊」的三段论上，但中间那一环——情绪究竟错价了<strong>哪些</strong>因子——始终是黑箱，作者用「情绪 beta = 被错价因子载荷之和」一笔带过，没有把因子拆给你看。</p>
+<p>我接下来最想看到的，是有人把这个黑箱撬开：用一组明确的因子（价值、动量、低风险……）去分解情绪 beta，看它到底由哪几个因子的季节性错价构成。如果能做到，这套「情绪季节性」就从一个统计上漂亮的整合，变成一个有微观结构的、真正可被攻击也可被捍卫的资产定价机制。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Baker, M., Bradley, B., Wurgler, J. (2011). Benchmarks as limits to arbitrage: understanding the low-volatility anomaly. <em>Financial Analysts Journal</em> 67, 1–15.</li>
+<li>Baker, M., Wurgler, J. (2006). Investor sentiment and the cross-section of stock returns. <em>Journal of Finance</em> 61, 1645–1680.</li>
+<li>Baker, M., Wurgler, J. (2007). Investor sentiment in the stock market. <em>Journal of Economic Perspectives</em> 21, 129–152.</li>
+<li>Bergsma, K., Jiang, D. (2016). Cultural new year holidays and stock returns around the world. <em>Financial Management</em> 45, 3–35.</li>
+<li>Birru, J. (2018). Day of the week and the cross-section of returns. <em>Journal of Financial Economics</em> 130, 182–214.</li>
+<li>Frazzini, A., Pedersen, L.H. (2014). Betting against beta. <em>Journal of Financial Economics</em> 111, 1–25.</li>
+<li>French, K. (1980). Stock returns and the weekend effect. <em>Journal of Financial Economics</em> 8, 55–69.</li>
+<li>Heston, S.L., Sadka, R. (2008). Seasonality in the cross-section of stock returns. <em>Journal of Financial Economics</em> 87, 418–445.</li>
+<li>Heston, S.L., Sadka, R. (2010). Seasonality in the cross-section of stock returns: the international evidence. <em>Journal of Financial and Quantitative Analysis</em> 45, 1133–1160.</li>
+<li>Hirshleifer, D., Jiang, D., DiGiovanni, Y.M. (2020). Mood beta and seasonalities in stock returns. <em>Journal of Financial Economics</em> 137, 272–295.</li>
+<li>Kamstra, M.J., Kramer, L.A., Levi, M.D. (2003). Winter blues: a SAD stock market cycle. <em>American Economic Review</em> 93, 324–343.</li>
+<li>Kamstra, M.J., Kramer, L.A., Levi, M.D., Wermers, R. (2017). Seasonal asset allocation: evidence from mutual fund flows. <em>Journal of Financial and Quantitative Analysis</em> 52, 71–109.</li>
+<li>Keim, D.B. (1983). Size-related anomalies and stock return seasonality: further empirical evidence. <em>Journal of Financial Economics</em> 12, 13–32.</li>
+<li>Keloharju, M., Linnainmaa, J.T., Nyberg, P. (2016). Return seasonalities. <em>Journal of Finance</em> 71, 1557–1590.</li>
+<li>Lakonishok, J., Smidt, S. (1988). Are seasonal anomalies real? A ninety-year perspective. <em>Review of Financial Studies</em> 1, 403–425.</li>
+<li>Thaler, R.H. (1987). Anomalies: the January effect. <em>Journal of Economic Perspectives</em> 1, 197–201.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个让人不安的「巧合」</a></li>
+        <li><a href="#2">2 把「情绪」请上桌：核心假说</a></li>
+        <li><a href="#3">3 怎么给月份和星期「贴情绪标签」</a></li>
+        <li><a href="#4">4 第一记重拳：复现与反转</a></li>
+        <li><a href="#5-beta">5 真正的主角：情绪 beta</a></li>
+        <li><a href="#6-beta">6 三种 beta 的「赛马」</a></li>
+        <li><a href="#7">7 文献脉络</a></li>
+        <li><a href="#8-q-a">8 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+          <li><a href="#">我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

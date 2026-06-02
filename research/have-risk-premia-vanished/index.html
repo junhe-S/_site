@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>风险溢价，是「消失」了，还是「断」掉了？ – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>风险溢价，是「消失」了，还是「断」掉了？</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2022 JFE]</span> Have Risk Premia Vanished?</div>
+        <div class="paper-source-authors"><a href="/research/author/simon-c-smith/">Simon C. Smith</a>, <a href="/research/author/allan-timmermann/">Allan Timmermann</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">结构突变</span>
+        
+        
+        
+        
+        <span class="tag">贝叶斯方法</span>
+        
+        
+        
+        
+        <span class="tag">因子模型</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Smith &amp; Timmermann (2022, <em>Journal of Financial Economics</em>)</strong>：用一种新的贝叶斯面板突变方法，在 1950–2018 年两万多只美股的横截面里找「断点」，结论是——规模、价值、投资三个风险溢价到样本末期已经<strong>统计上与零无异</strong>；市场、动量、盈利能力溢价虽然也在下行，但仍显著为正。作者还把「风险溢价会断」这件事本身做成了一个能定价的新因子。</p></div>
+<h2 id="1">1 一个让基金经理睡不着的问题</h2>
+<p>先讲一个让无数「价值基金」和「小盘基金」夜不能寐的事实。</p>
+<p>过去三十年，华尔街围绕几个股票特征（characteristics）盖起了一整座产业：账面市值比（book-to-market）、市值规模（size）、动量（momentum）、投资（investment）、盈利能力（profitability）。每一个特征背后，都曾对应着一个「白捡的」风险溢价（risk premium），于是有了小盘基金、成长基金、价值基金、动量基金——countless mutual funds。这些策略好不好，取决于两件事：溢价<strong>有多大</strong>，以及它<strong>稳不稳</strong>。</p>
+<p>可问题恰恰出在「稳」上。一个高配价值股的基金，如果价值溢价这些年早就缩水甚至归零了，那它的「信仰」就成了一笔糊涂账。于是一个尖锐的问题浮出水面：</p>
+<p><strong>这些经典的风险溢价，是不是已经「消失」了？</strong></p>
+<p>这并不是个新问题。早在 1993 年，Blanchard 就写过一篇题目直白得近乎挑衅的文章——<em>The vanishing equity premium</em>（消失的股权溢价）。而到了 2021 年，连 Fama 和 French 自己都在 <em>The value premium</em> 里承认：价值溢价确实大幅下滑了。</p>
+<p>但 Fama-French (2021) 给出的结论是「打了折」的。他们用的是<strong>一小撮组合</strong>（a handful of portfolios），在 1992 年这个<strong>事先指定</strong>的日期把样本切成两半，然后做检验。结果有点尴尬：他们既<strong>无法拒绝</strong>「价值溢价在 1992 前后保持不变」，也<strong>无法拒绝</strong>「1992 年之后价值溢价为零」。换句话说，数据噪声太大，他们手里的检验<strong>功效（power）太低</strong>，问不出一个干脆的答案。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>这里藏着三个隐患：(1) 只用少数组合，丢掉了个股横截面里的海量信息；(2) 用组合本身可能掩盖了底层个股真正的风险—收益关系（Lewellen et al., 2010 早就警告过这件事）；(3) 断点日期 1992 是<strong>人为拍脑袋</strong>定的，没人验证它到底是不是数据支持的那个断点，更没人问「会不会不止一个断点」。</p></div>
+<p>这篇论文要做的，就是把这三个隐患一次性补上。</p>
+<h2 id="2">2 核心一招：让「整个横截面」一起告诉你断点在哪</h2>
+<p>理解这篇文章，只需要抓住<strong>一个核心</strong>：<strong>用大横截面的力量，把模糊的断点估计变清晰。</strong></p>
+<p>月度的风险溢价本身噪声极大——这正是 Fama-French (2021) 功效不足的根源。但作者的想法很巧：假如某次风险溢价的跳变是<strong>普遍的（pervasive）</strong>，即它同时砸向横截面里成千上万只股票，那么我们就可以<strong>同时用全体股票的信息</strong>去定位这一次跳变。噪声会在横截面上互相抵消，而真正的「断点」信号会被反复确认、变得无比清晰。</p>
+<p>这就是为什么作者刻意只盯住「普遍且离散」的突变（breaks），而不是去追那些零碎的、局部的小波动——前者才能调动整个横截面的火力。</p>
+<h3 id="2-1-fama-french-2020">2.1 从 Fama-French (2020) 借来的一块「积木」</h3>
+<p>那怎么把个股横截面和「因子」联系起来？这里用到了 Fama 和 French (2020) 的一个漂亮洞见：<strong>把 Fama-MacBeth 截面回归一期一期地「摞」起来（stacking），本身就等价于一个因子模型</strong>。</p>
+<p>具体地，考虑对个股超额收益 \(r_{it}\) 做如下回归：</p>
+<p>$$
+r_{it} = \alpha_i + r_{zt} + \lambda_t' X_{it-1} + \varepsilon_{it}, \quad \varepsilon_{it} \sim N(0, \sigma_i^2).
+$$</p>
+<p>这里 \(X_{it-1}\) 是公司 \(i\) 在 \(t-1\) 时点的特征向量（市值、账面市值比……），\(\lambda_t\) 是第 \(t\) 期截面回归的<strong>斜率</strong>。Fama-French (2020) 指出：这些斜率估计值 \(\lambda_t\) 其实就是<strong>因子收益</strong>——它对应着一组「事先指定的、随时间变化的因子载荷（即特征本身）」的多空组合收益。而 \(r_{zt}\) 是当所有特征都取零时、对所有股票都共同的那部分收益（用 Pesaran (2006) 的共同相关效应框架从截面均值里提取）；\(\alpha_i\) 则捕捉个股 \(i\) 的错误定价（mispricing）。</p>
+<p>接着，一个自然的问题是：如果风险溢价 \(\lambda\) 在某些「时段（regime）」内是常数、但会在 regime 之间跳变呢？那我们就不该用整段样本去算一个平均的 \(\lambda\)，而应该<strong>在每个 regime 内部分别</strong>估计。于是作者把上式推广成允许突变的版本——这是全文真正的发动机：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+r_{it} = \cssId{a1}{\alpha_{ik}} + \cssId{a2}{r_{zt}} + \cssId{a3}{\lambda_k'\, X_{it-1}} + \varepsilon_{it}, \quad \cssId{a4}{\varepsilon_{it} \sim N(0,\sigma_{ik}^2)}, \quad \cssId{a5}{t = \tau_{k-1}+1,\dots,\tau_k}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>第 k 个 regime 里个股 i 的错误定价（alpha），衡量定价模型的「刚性」程度，可随 regime 变化</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>对所有股票共同的收益成分，吸收市场层面的共同波动</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>真正的主角：第 k 个 regime 里恒定的风险溢价向量，载荷是滞后特征 X</div><div class="mathanno-card" data-target="a4"><span class="mathanno-num">4</span>残差方差也允许随 regime 变化——波动率本身也会「断」</div><div class="mathanno-card" data-target="a5"><span class="mathanno-num">5</span>第 k 个 regime 的时间区间，由未知断点 τ_{k-1}、τ_k 切出来</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>注意这里的关键设计：不只是溢价 \(\lambda_k\) 可以断，<strong>截距 \(\alpha_{ik}\)（错误定价）和波动率 \(\sigma_{ik}\)（特异波动）也都允许在断点处跳变</strong>。所以「断点」是个三位一体的事件：溢价变、定价偏误变、风险水平也变。</p>
+<h3 id="2-2">2.2 断点的个数和位置，都交给数据去定</h3>
+<p>最妙的是，断点的<strong>个数 \(K\)</strong> 和<strong>位置 \(\tau = (\tau_1,\dots,\tau_K)\)</strong> 都不是事先指定的，而是用<strong>贝叶斯面板突变方法</strong>从数据里推断出来的（建立在 Smith and Timmermann (2021)「Break risk」的框架上）。这一刀，正好切中了 Fama-French (2021) 把断点钉死在 1992 年的软肋。</p>
+<p>先验（prior）的选择也很有讲究，处处透着「经济上要合理」的克制：
+- 斜率系数 \(\lambda_k\) 用高斯先验，收缩超参数 \(\sigma_\lambda = 0.08\)（中等收缩，跟随 Wachter and Warusawitharana, 2009）；
+- 错误定价 \(\alpha_{ik}\) 先验地居中于零、\(\sigma_\alpha = 5\%\)，体现「怀疑但不排除」错误定价的存在；并且把截距和残差波动<strong>绑定</strong>起来，避免出现「高 alpha + 低波动」这种隐含天文数字夏普比率的近似套利机会（Shanken, 1992; Pástor and Stambaugh, 1999）；
+- 断点平均每<strong>二十年</strong>发生一次（也试了十年的先验）。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>这里和资产定价「贴现率」的大叙事是相通的：风险溢价说到底就是贴现率，而贴现率会随时间漂移正是现代资产定价的中心议题（关于这一点，可参见<a href="/research/presidential-address-discount-rates/">《贴现率：资产定价的中心议题》</a>）。本文的贡献，是把「漂移」具体化成了几次<strong>可定位、可检验</strong>的离散跳变。</p></div>
+<h2 id="3">3 数据与那四次「断点」</h2>
+<p>数据是结结实实的：<code>23,664</code> 只美股，覆盖 NYSE、AMEX、NASDAQ，月度，区间 <code>1950 年 1 月</code>到 <code>2018 年 6 月</code>，来自 <code>CRSP</code>、<code>Compustat</code> 和 <code>I/B/E/S</code>。基准的六因子模型（six-factor model）回归用了六个滞后特征：市场 beta、规模、账面市值比、动量、投资、盈利能力，全部按 Green et al. (2017) 的口径测量。</p>
+<p>那么，数据到底找到了几次断点？</p>
+<p>答案是<strong>四次</strong>。大约 <code>75%</code> 的后验权重落在「四个断点」的模型上，剩下的 <code>25%</code> 大致均匀地分给了三个和五个断点的模型。四个断点的位置分别是：</p>
+<ul>
+<li><strong>1972 年 7 月</strong>——对应 1970 年代初的石油价格冲击；</li>
+<li><strong>1981 年 10 月</strong>——对应美联储货币政策机制的转变；</li>
+<li><strong>2001 年 6 月</strong>——对应互联网泡沫（dot-com bubble）的破灭；</li>
+<li><strong>2008 年 10 月</strong>——对应全球金融危机（GFC）。</li>
+</ul>
+<div class="article-image"><img alt="Figure 1: Posterior estimates of the number and timing of breaks" src="assets/figure-1.png" /></div>
+<p><em>Figure 1: Posterior estimates of the number and timing of breaks</em></p>
+<p>这四个日期没有一个是事先输入的，全部是数据自己「认领」的——而它们却精准地落在了几次最重大的宏观事件上。作者还指出，这些断点同时伴随着市场组合股息价格比（dividend-price ratio）的大幅移动；从资产定价的角度看，<strong>估值比率的剧烈变动，恰恰正是风险溢价跳变时该出现的现象</strong>。这是对「这些断点是真的」的一个强有力的旁证。</p>
+<h2 id="4">4 于是反转出现：哪些溢价「断没了」，哪些还活着</h2>
+<p>把溢价在四个断点切出的五个 regime 里分别估出来，画成一条随时间演变的轨迹，故事一下子就清楚了。</p>
+<div class="article-image"><img alt="Figure 2: Posterior estimates of risk premia" src="assets/figure-2.png" /></div>
+<p><em>Figure 2: Posterior estimates of risk premia</em></p>
+<p>结论可以分成两组，泾渭分明：</p>
+<p><strong>第一组——已经「消失」的：</strong> 市场、价值、规模三个溢价都随时间<strong>系统性地下行</strong>，其中规模和价值的跌幅尤其触目。在最后一个（2008 年后）regime 上做检验，<strong>无法拒绝</strong>「规模、价值、投资三个风险溢价已经跌到零」的原假设。更进一步，作者<strong>也无法拒绝</strong>规模和价值溢价在过去近七十年里是<strong>单调递减（monotonically declining）</strong>的。换句话说，对这三个特征而言，「溢价消失了」不是危言耸听，而是数据支持的结论。</p>
+<p><strong>第二组——还活着的：</strong> 市场溢价虽然也在长期下行，但<strong>仍然显著为正</strong>；动量溢价在 1970 年代初短暂回落后又<strong>恢复</strong>了，如今回到了接近 1950 年代的水平；盈利能力溢价亦然。对市场、动量、盈利能力，作者<strong>强烈拒绝</strong>「它们在最后 regime 为零」以及「它们随时间均匀下降」的假设。</p>
+<p>这就把 Fama-French (2021) 那个含糊的「无法拒绝」磨利成了一把手术刀：价值和规模溢价的确<strong>实质性地、可能单调地</strong>走向了零；但并非所有溢价都死了——动量和盈利能力反而相当顽强。</p>
+<div class="callout"><div class="callout-title">Note</div><p>这与「异象在被发现后逐渐衰减」的大讨论直接相关，但视角不同：本文说的不是「异象被套利者吃掉了」，而是溢价在几个<strong>离散的宏观断点</strong>处被重置。关于异象衰减究竟源于套利还是基本面，可参见<a href="/research/can-the-changes-in-fundamentals-explain-the-attenuation-of/">《异象的消退，是被「套利」吃掉了，还是基本面自己缩水了？》</a>。</p></div>
+<p>值得一提的是，波动率也在「断」：作者发现，错误定价（mispricing）的证据在样本前半段强得多，2001 年后显著减弱，且在流动性差的微型股（microcaps）里远比大股票严重。这呼应了「市场随时间变得更有效」的直觉。</p>
+<h2 id="5">5 真正的升华：把「会断」本身做成一个因子</h2>
+<p>到这里，文章其实已经可以收尾了。但真正关键的一步在于——作者没有停在「描述溢价怎么变」，而是追问：<strong>「风险溢价会不稳定」这件事本身，是不是一种被市场定价的风险？</strong></p>
+<p>逻辑链条是这样的：不同特征的股票，对「溢价跳变」的暴露程度不一样；那么它们对「溢价不稳定」这一风险的脆弱性也该不一样。如果<strong>不稳定性风险（instability risk）在横截面上被定价</strong>，那么对它暴露更大的股票，就该赚取更高的溢价。</p>
+<p>于是作者构造了一个<strong>断点风险因子（break risk factor）</strong>：用「有断点的模型」和「没有断点的模型」对个股收益预测之差，来度量每只股票对断点的敏感度，再据此排序分组。结果非常干净：</p>
+<ul>
+<li>按断点敏感度排序的组合，收益<strong>单调递增</strong>；最高敏感度的那一档（quintile）比最低档每年多赚 <strong><code>3.4%</code></strong>，且统计显著。</li>
+<li>在控制了市场 beta、规模、价值、动量、投资、盈利能力等特征的 Fama-MacBeth 回归里，这个「断点特征」获得的显著性<strong>与投资特征相当</strong>，并且<strong>比规模、账面市值比、动量、盈利能力都更显著</strong>。</li>
+</ul>
+<p>换句话说，这个白手起家的「不稳定性」因子，其溢价<strong>可以和那些教科书因子相提并论</strong>。这是全文最漂亮的升华：它把一个关于「时变」的实证发现，反手做成了一个关于「定价」的资产定价命题。</p>
+<p>那么，谁最怕断点？作者用行业和风格组合做了细致的解剖：电信、公用事业、石油、商业设备、金融业的股票断点敏感度最高；批发、纺织、采矿、出版、餐饮则最低。小公司比大公司敏感；同等规模下价值股比成长股敏感；保守投资、稳健盈利的公司比激进投资、盈利疲弱的公司更敏感；输家股票比赢家股票敏感。</p>
+<div class="article-image"><img alt="Figure 5: Posterior estimates of breaks from 30 industry-sorted portfolios" src="assets/figure-5.png" /></div>
+<p><em>Figure 5: Posterior estimates of breaks from 30 industry-sorted portfolios</em></p>
+<p>更有意思的是「谁先被波及」的<strong>领先—滞后（lead-lag）</strong>关系：金融、电信、零售、服务、钢铁、化工、石油、建筑往往是最先被断点击中的行业；而且这个领先角色还会随事件切换——金融业在 1929 年股灾和 GFC 里领先，电信在互联网泡沫破灭时领先，石油在 1973 年领先。一个时代的注脚是：信息扩散的速度在加快——从「第一个被波及的行业」到「最后一个」之间的时滞，随时间明显缩短了。</p>
+<h2 id="6">6 文献脉络</h2>
+<p>把这条线索捋一捋，能看清这篇文章站在哪里。</p>
+<p>最早的源头有两支。一支是<strong>「股权溢价会变」</strong>的宏观叙事：Blanchard (1993) 喊出「消失的股权溢价」，Fama and French (2002) 用股息和盈利增长重估股权溢价。另一支是<strong>「结构突变」的计量工具</strong>：Bai and Perron (1998) 奠定了估计和检验多重结构突变的经典方法。</p>
+<p>把这两支接上的，是 Pástor and Stambaugh (2001)——他们在长达约 150 年的美股数据里识别出<strong>多达 15 个</strong>股权溢价的结构突变，并用过渡 regime 把相邻 regime 连起来。Bekaert et al. (2002) 则在收益模型里找共同断点，并把它们和全球股市一体化挂钩。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>到了横截面这一侧，故事的基石是 Fama and French (1993) 的三因子模型，以及后来一长串「特征定价」的工作（Berk et al., 1999；Novy-Marx, 2013；Zhang, 2005……）。而把横截面回归和因子模型在形式上打通的，是 Fama and French (2020)——这正是本文的方法论起点。同时，Gagliardini et al. (2016)、Freyberger et al. (2020)、Gu et al. (2020)、Adrian et al. (2015) 等近年的研究，都从不同角度记录了风险溢价随时间剧烈变化的事实。</p>
+<p>这篇文章的直接前身，是作者自己的 Smith and Timmermann (2021)「Break risk」——那篇在现值（present value）框架下研究断点如何影响收益的<strong>时间序列</strong>可预测性。而本文的转身在于：把同一套断点思想，从时间序列搬到了<strong>大横截面</strong>，既磨利了 Fama-French (2021) 关于价值溢价的模糊结论，又催生出一个能定价的不稳定性因子。它处在「结构突变计量 × 横截面因子定价」两条河流的交汇处。</p>
+<h2>7 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：「风险溢价消失」会不会只是把样本切碎之后、每段都没功效的统计假象？</strong></p>
+<blockquote>
+<p>恰恰相反，本文的整个设计就是为了<strong>提高</strong>功效。它不是事先把样本切碎，而是用全体个股横截面同时定位断点，让噪声互相抵消；四个断点拿到约 75% 的后验权重，且都落在重大宏观事件上。正因为功效更高，它才敢给出 Fama-French (2021) 给不出的「拒绝/不拒绝」判断。</p>
+</blockquote>
+<p><strong>Q：断点日期是不是「事后诸葛亮」——先知道有石油危机、GFC，再去凑日期？</strong></p>
+<blockquote>
+<p>断点的个数和位置完全由数据和先验决定，没有把任何事件日期喂进模型。它们<strong>自发地</strong>落在 1972、1981、2001、2008，并且伴随股息价格比的大幅移动——这是独立的旁证，而非循环论证。</p>
+</blockquote>
+<p><strong>Q：「普遍断点（pervasive breaks）」这个假设是不是太强了？</strong></p>
+<blockquote>
+<p>它确实强，但作者做了两手准备：基准模型加入共同成分 \(r_{zt}\) 吸收共同波动，并用 Pesaran (2006) 的潜在共同因子 \(f_t\) 吸收残余相关；数据也支持「条件于共同因子后残差不相关」。此外正文后半还把框架推广到<strong>非共同断点（noncommon breaks）</strong>，允许断点只命中横截面的某个子集。</p>
+</blockquote>
+<p><strong>Q：这和「时变 beta」的文献有什么区别？</strong></p>
+<blockquote>
+<p>时变 beta（如条件 CAPM）通常让<strong>载荷</strong>平滑地随时间变；本文让<strong>溢价 \(\lambda_k\)</strong> 在少数几个时点<strong>离散地</strong>跳变，而把载荷（特征）当作给定。两者互补：前者刻画连续漂移，后者刻画 regime 重置。关于时变载荷被长期低估的风险，可参见<a href="/research/conditional-risk/">《时变的 beta，被低估了二十年的风险》</a>。</p>
+</blockquote>
+<p><strong>Q：「断点风险因子」会不会只是规模或价值因子换了个马甲？</strong></p>
+<blockquote>
+<p>在控制了市场、规模、价值、动量、投资、盈利能力之后，断点特征在 Fama-MacBeth 回归里仍获得显著性，且比规模、账面市值比、动量、盈利能力<strong>更</strong>显著——说明它携带了这些经典特征之外的增量信息，不是简单的重新打包。</p>
+</blockquote>
+<p><strong>Q：既然规模、价值溢价都「消失」了，是不是说这些异象本来就是数据挖掘？</strong></p>
+<blockquote>
+<p>本文不下这个结论。它说的是溢价在几个宏观断点处被<strong>重置乃至归零</strong>，而非「从来不存在」——毕竟早期 regime 里溢价是实打实显著的。这区别于「异象从一开始就是 p-hacking」的叙事。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把这套断点方法搬到公司债横截面</strong>
+【经济故事】公司债的信用利差里同样含有规模、流动性、久期等特征溢价，而这些溢价在 2008、2020 等危机点很可能经历了离散重置。把「会断」做成一个公司债因子，能直接检验信用市场的不稳定性是否被定价。
+【可行性】中。数据可用（TRACE 成交 + Mergent FISD），但公司债横截面更稀疏、成交不连续，需先处理<a href="/research/size-adapted-bond-liquidity-measures-and-their-asset/">流动性度量</a>的口径问题；面板突变方法可直接迁移。</p>
+<p><strong>2. 外资持有人与风险溢价断点的关联</strong>
+【经济故事】若某些断点（如 2008）是由跨境资本的撤离/重配触发的，那么外资持有比例高的股票/债券，其溢价断点应来得更早、更剧烈。这能把「断点的经济驱动」从宏观事件细化到<strong>持有人结构</strong>。
+【可行性】中。需要 13F、TIC 或个券层面的外资持有数据；识别上可用断点的领先—滞后结构做证据，但「外资驱动」与「外资跟随」的因果分离较难。</p>
+<p><strong>3. 断点风险因子的可交易性与交易成本</strong>
+【经济故事】3.4% 的年化利差听起来诱人，但断点敏感度高的多是小盘、低流动性股票，扣掉冲击成本后还剩多少？这关系到这个因子是「纸面 alpha」还是「真金白银」。
+【可行性】高。用 Novy-Marx and Velikov (2015) 式的交易成本框架对断点敏感度组合做净收益核算即可，数据现成。</p>
+<p><strong>4. 把「断点平均每 20 年一次」的先验换成宏观状态变量驱动</strong>
+【经济故事】本文用固定的时间间隔先验。但断点更可能由货币政策机制、波动率水平等宏观状态触发。让断点强度随这些状态变量变化，能把「何时会断」也内生化。
+【可行性】中。需要在贝叶斯面板框架里引入状态依赖的断点 hazard，计算量上升，但方法论上是 Smith and Timmermann (2021) 的自然延伸。</p>
+<p><strong>5. 跨国检验：风险溢价的「消失」是美国独有的吗？</strong>
+【经济故事】若价值、规模溢价在欧洲、日本、新兴市场也同步归零，则指向全球性的（如套利资本流入），否则指向美国市场结构的特殊变化。
+【可行性】中。数据可得（如 Hou-Xue-Zhang 的国际样本），但各国个股横截面深度差异大，断点定位的功效会参差不齐。</p>
+<h2 id="8">8 我的判断</h2>
+<p>这篇文章最让我欣赏的，是它把一个<strong>看似只能含糊作答</strong>的问题，靠方法论的升级问出了清晰的答案。Fama-French (2021) 受困于少数组合和指定断点，只能说「无法拒绝」；本文用整个个股横截面 + 数据驱动的断点定位，把同一个问题变成了可以干脆拒绝或不拒绝的检验。而「把不稳定性本身做成定价因子」这一手，则把一篇本可以止步于「描述性」的论文，提升成了「有资产定价含义」的论文——这是真正的贡献所在。</p>
+<p>对识别，我有两点保留。其一，<strong>「普遍断点」假设</strong>虽有共同因子托底，但风险溢价的变化未必都是离散跳变，也可能是平滑漂移；如果真实过程是连续的，「四个断点」就只是对一条光滑曲线的分段近似，断点日期的「精准命中」也可能部分是事后解读。其二，<strong>断点风险因子的经济内涵</strong>还略显黑箱：它用「有断点模型 vs 无断点模型」的预测之差来定义，这更像一个统计构造而非有清晰风险来源的因子；3.4% 的利差能否在扣除交易成本后存活、它到底补偿了什么宏观风险，文章并未完全讲透。</p>
+<p>后续我最想看到的，是把这套方法搬到<strong>信用市场</strong>：公司债的特征溢价在危机点的离散重置，几乎是为这套方法量身定做的检验场。如果「断点会被定价」在债市同样成立，那这篇文章的方法论价值，就远不止于回答「股票风险溢价是否消失」这一个问题了。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Bai, J., &amp; Perron, P. (1998). Estimating and testing linear models with multiple structural changes. <em>Econometrica</em> 66(1), 47–78.</li>
+<li>Bekaert, G., Harvey, C. R., &amp; Lumsdaine, R. L. (2002). Dating the integration of world equity markets. <em>Journal of Financial Economics</em> 65(2), 203–247.</li>
+<li>Blanchard, O. J. (1993). The vanishing equity premium. <em>Finance and the International Economy</em>.</li>
+<li>Fama, E. F., &amp; French, K. R. (1993). Common risk factors in the returns on stocks and bonds. <em>Journal of Financial Economics</em> 33(1), 3–56.</li>
+<li>Fama, E. F., &amp; French, K. R. (2002). The equity premium. <em>Journal of Finance</em> 57(2), 637–659.</li>
+<li>Fama, E. F., &amp; French, K. R. (2020). Comparing cross-section and time-series factor models. <em>Review of Financial Studies</em> 33(5), 1891–1926.</li>
+<li>Fama, E. F., &amp; French, K. R. (2021). The value premium. <em>Review of Asset Pricing Studies</em> 11(1), 105–121.</li>
+<li>Gagliardini, P., Ossola, E., &amp; Scaillet, O. (2016). Time-varying risk premium in large cross-sectional equity data sets. <em>Econometrica</em> 84(3), 985–1046.</li>
+<li>Green, J., Hand, J. R., &amp; Zhang, X. F. (2017). The characteristics that provide independent information about average US monthly stock returns. <em>Review of Financial Studies</em> 30(12), 4389–4436.</li>
+<li>Lewellen, J., Nagel, S., &amp; Shanken, J. (2010). A skeptical appraisal of asset pricing tests. <em>Journal of Financial Economics</em> 96(2), 175–194.</li>
+<li>Pástor, L., &amp; Stambaugh, R. F. (1999). Costs of equity capital and model mispricing. <em>Journal of Finance</em> 54(1), 67–121.</li>
+<li>Pástor, L., &amp; Stambaugh, R. F. (2001). The equity premium and structural breaks. <em>Journal of Finance</em> 56(4), 1207–1239.</li>
+<li>Pesaran, M. H. (2006). Estimation and inference in large heterogeneous panels with a multifactor error structure. <em>Econometrica</em> 74(4), 967–1012.</li>
+<li>Shanken, J. (1992). The current state of the arbitrage pricing theory. <em>Journal of Financial Economics</em> 47(4), 1569–1574.</li>
+<li>Smith, S. C., &amp; Timmermann, A. (2021). Break risk. <em>Review of Financial Studies</em> 34(4), 2045–2100.</li>
+<li>Smith, S. C., &amp; Timmermann, A. (2022). Have risk premia vanished? <em>Journal of Financial Economics</em> 145(2), 553–576.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个让基金经理睡不着的问题</a></li>
+        <li><a href="#2">2 核心一招：让「整个横截面」一起告诉你断点在哪</a></li>
+          <li><a href="#2-1-fama-french-2020">2.1 从 Fama-French (2020) 借来的一块「积木」</a></li>
+          <li><a href="#2-2">2.2 断点的个数和位置，都交给数据去定</a></li>
+        <li><a href="#3">3 数据与那四次「断点」</a></li>
+        <li><a href="#4">4 于是反转出现：哪些溢价「断没了」，哪些还活着</a></li>
+        <li><a href="#5">5 真正的升华：把「会断」本身做成一个因子</a></li>
+        <li><a href="#6">6 文献脉络</a></li>
+        <li><a href="#7-q-a">7 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#8">8 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

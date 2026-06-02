@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一个「成功」的模型，为什么经不起逐年对账？——重估投资基础资产定价 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>一个「成功」的模型，为什么经不起逐年对账？——重估投资基础资产定价</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2024 JFE]</span> Estimating and Testing Investment-based Asset Pricing Models</div>
+        <div class="paper-source-authors"><a href="/research/author/frederico-belo/">Frederico Belo</a>, <a href="/research/author/yao-deng/">Yao Deng</a>, <a href="/research/author/juliana-salomao/">Juliana Salomao</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">结构估计</span>
+        
+        
+        
+        
+        <span class="tag">新古典投资模型</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Belo, Deng &amp; Salomao (2024, JFE)</strong>：新古典投资基础模型（investment-based asset pricing model）有一个很强的预测——一家公司的股票收益率在<strong>每一个时点</strong>都应等于它的（带杠杆）投资收益率；可过去二十年的结构估计文献，几乎只检验了它「平均成立」这一弱版本，并大获成功。作者把「逐年成立」的强预测写进 GMM 的矩条件，结果发现：那个把横截面拟合到 <code>XS-R² = 71%</code> 的标准模型，在时间序列上的 <code>TS-R²</code> 是 <strong>−93%</strong>；更糟的是，横截面拟合与时间序列拟合之间存在一个<strong>此消彼长</strong>的权衡，鱼与熊掌不可兼得。</p></div>
+<h2 id="1">1 一个看上去很「成功」的模型</h2>
+<p>先讲一个让很多人安心了二十年的故事。</p>
+<p>新古典投资基础模型的核心思想，朴素得近乎优雅：一家公司值多少钱、它的股票该有多高的预期收益，归根结底取决于它<strong>手上的实物资本能再榨出多少利润</strong>，以及<strong>再多投一块钱要付出多大代价</strong>。Cochrane (1991) 把这条思路点亮，Liu, Whited &amp; Zhang (2009)（下称 LWZ）则把它推到了实证的高峰：他们用一个只有<strong>一种（实物）资本投入</strong>、技术为<strong>一阶齐次</strong>（homogeneous of degree one）的标准模型，去匹配若干组合排序的平均收益，结果好得出奇——投资率高的公司、产出比高的公司，模型几乎能把它们平均收益的横截面差异解释个八九不离十。</p>
+<p>于是，「投资基础模型能解释股票收益的横截面」几乎成了一条共识。这条共识背后是一个看似无关紧要、实则要命的细节：<strong>LWZ 检验的，是模型的「弱」版本</strong>。</p>
+<p>模型真正说的是什么？它说，在<strong>每一个时点 <code>t</code></strong>，一家公司实现的股票收益率都应当等于它由特征（投资率、产出、杠杆）算出来的投资收益率——这是一条<strong>逐期成立</strong>的等式。而 LWZ 以及后来的绝大多数结构工作，检验的只是「这两者<strong>在样本期内平均</strong>相等」。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>打个比方：模型承诺「我每个月的账都对得上」，而过去的检验只核对了「这一年下来收支总账是平的」。总账平，不代表每个月都没记错。</p></div>
+<p>这就引出了本文真正想问的那个问题。</p>
+<h2 id="2">2 研究问题：把「逐年对账」写进检验</h2>
+<blockquote>
+<p><strong>如果我们要求模型不仅平均对得上，还要在每个时点都尽量对得上，它还站得住吗？</strong></p>
+</blockquote>
+<p>这正是 Belo, Deng &amp; Salomao 的切入点。他们的做法，说穿了非常自然：在用<strong>广义矩估计</strong>（generalized method of moments, GMM）估计模型时，除了沿用前人那套「平均相等」的<strong>横截面矩</strong>（cross-sectional moments），再添上一组全新的<strong>时间序列矩</strong>（time-series moments）——直接度量「逐期对账」的偏差。</p>
+<p>为什么这是一个更高的栏？因为时间序列矩盯住的是模型在<strong>每个时点</strong>的拟合，而不只是把误差在时间上抹平后的那个均值。一个模型可以靠正负误差相互抵消、把平均误差做得很漂亮；可一旦你逐期去看，那些被抵消掉的误差就无所遁形了。</p>
+<p>要把这一步讲清楚，得先把模型本身摊开来看。</p>
+<h2 id="3">3 模型：从「再投一块钱」到「股票收益等于投资收益」</h2>
+<p>这是一篇有完整理论模型的论文，下面一步步把它的骨架搭出来。沿用 LWZ 的记号。</p>
+<p><strong>第一块积木：生产与资本。</strong> 公司 <code>i</code> 在 <code>t</code> 期的经营利润为 \(\Pi(K_{it}, X_{it})\)，其中 \(K_{it}\) 是实物资本，\(X_{it}\) 是外生的总量与公司层面冲击。技术为<strong>规模报酬不变</strong>（constant returns to scale），即 \(\Pi(K_{it},X_{it}) = K_{it}\,\partial\Pi(K_{it},X_{it})/\partial K_{it}\)，且生产函数为 Cobb–Douglas，资本的边际产出为</p>
+<p>$$
+\frac{\partial \Pi(K_{it},X_{it})}{\partial K_{it}} = \alpha \frac{Y_{it}}{K_{it}},
+$$</p>
+<p>其中 \(0<\alpha\le 1\) 是资本在产出中的份额，\(Y_{it}\) 是销售。资本以一个<strong>公司特定、随时间变化</strong>的折旧率 \(\delta_{it}\) 衰减，并靠投资 \(I_{it}\) 累积：</p>
+<p>$$
+K_{it+1} = I_{it} + (1-\delta_{it})K_{it}. \tag{1}
+$$</p>
+<p><strong>第二块积木：调整成本。</strong> 投资不是免费的搬运——投得越猛越贵。调整成本取标准的二次型，在 \(I_{it}\) 上递增且凸、在 \(I_{it}\) 与 \(K_{it}\) 上规模报酬不变：</p>
+<p>$$
+\Phi(I_{it}, K_{it}) = \frac{c}{2}\left(\frac{I_{it}}{K_{it}}\right)^2 K_{it}, \tag{2}
+$$</p>
+<p>其中 \(c>0\) 是调整成本的斜率参数。注意：整个模型最终要估计的参数，<strong>只有两个</strong>——\(\theta \equiv (\alpha, c)\)，一个管「赚钱能力」，一个管「投资有多贵」。</p>
+<p><strong>第三块积木：估值与最优化。</strong> 公司用一期债务融资，在随机贴现因子 \(M_{t+1}\) 下，选择投资与债务以最大化股权的含息市值：</p>
+<p>$$
+V_{it} \equiv \max_{\{I_{it+s},\,K_{it+s+1},\,B_{it+s+1}\}_{s=0}^{\infty}} \; \mathbb{E}_t \sum_{s=0}^{\infty} M_{t+s}\, D_{it+s}, \tag{4}
+$$</p>
+<p>其中 \(D_{it}\) 是当期派现。对 (4) 关于资本投资求一阶条件，得到投资基础模型的核心——<strong>投资欧拉方程</strong> \(\mathbb{E}_t[M_{t+1}\,r^{I}_{it+1}] = 1\)，其中投资收益率 \(r^{I}_{it+1}\) 是 <code>t+1</code> 期投资边际收益与 <code>t</code> 期投资边际成本之比：</p>
+<p>$$
+r^{I}_{it+1} \equiv \frac{(1-\tau_{t+1})\!\left[\alpha\frac{Y_{it+1}}{K_{it+1}} + \frac{c}{2}\!\left(\frac{I_{it+1}}{K_{it+1}}\right)^{2}\right] + \tau_{t+1}\delta_{it+1} + (1-\delta_{it+1})\!\left[1+(1-\tau_{t+1})c\frac{I_{it+1}}{K_{it+1}}\right]}{1+(1-\tau_t)\,c\frac{I_{it}}{K_{it}}}. \tag{5}
+$$</p>
+<p>直觉上：分母是「今天多投一块钱的边际代价」（一块钱本金，外加调整成本的边际增量）；分子是「明天这一块钱带来的好处」（多出的边际产出、折旧税盾，再加上没折旧掉的那部分资本连同它省下的调整成本）。两者一比，就是这笔投资的「收益率」。</p>
+<p><strong>关键的一跃。</strong> 对债务求一阶条件，可得 \(\mathbb{E}_t[M_{t+1}\,r^{Ba}_{it+1}]=1\)，其中 \(r^{Ba}\) 是税后公司债收益率。在 Hayashi (1982) 的规模报酬不变条件下，投资收益率恰好等于股票收益率与税后债务收益率按市场杠杆 \(w_{it}\) 的加权平均：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{a1}{r^{I}_{it+1}} = \cssId{a2}{w_{it}\,r^{Ba}_{it+1}} + \cssId{a3}{(1-w_{it})\,r^{S}_{it+1}}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>投资收益率：完全由公司特征（投资率、产出、折旧、税率）决定，不含任何误差项</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>债务这条腿：市场杠杆 w 乘以税后公司债收益率</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>股权这条腿：股权份额 (1−w) 乘以股票收益率</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>把它解出来，就得到本文反复盯着的那条等式——<strong>股票收益率等于带杠杆的投资收益率</strong>：</p>
+<p>$$
+r^{S}_{it+1} = r^{Iw}_{it+1} \equiv \frac{r^{I}_{it+1} - w_{it}\,r^{Ba}_{it+1}}{1-w_{it}}. \tag{7}
+$$</p>
+<div class="callout"><div class="callout-title">Warning</div><p>请注意 (7) 式右边：它<strong>没有任何误差项</strong>。模型不是说「股票收益率平均等于投资收益率」，而是说它们在<strong>每一个时点都精确相等</strong>。这正是「强预测」的全部分量所在——也是过去的检验绕开了的地方。</p></div>
+<h2 id="4">4 识别策略：把强预测翻译成一个矩</h2>
+<p>有了 (7) 式，剩下的就是计量上怎么「逼问」模型了。</p>
+<p><strong>首先</strong>，沿用前人的弱版本。横截面矩要求股票收益率<strong>平均</strong>等于带杠杆投资收益率：</p>
+<p>$$
+g^{XS}_i = \mathbb{E}_T\!\left[r^{S}_{it+1} - r^{Iw}_{it+1}\right] = 0. \tag{8}
+$$</p>
+<p><strong>接着，一个自然的问题是</strong>：怎样把「逐期相等」也写成一个可估计的矩？作者的答案干净利落——用非线性最小二乘的思路，把每个组合<strong>逐期偏差的平方在时间上取均值</strong>作为目标：</p>
+<p>$$
+g^{TS}_i = \mathbb{E}_T\!\left(r^{S}_{it+1} - r^{Iw}_{it+1}\right)^2 = 0. \tag{9}
+$$</p>
+<p>(8) 与 (9) 的差别，正是「总账」与「月月对账」的差别：(8) 先在时间上求和再看是否为零，正负可以抵消；(9) 先平方再求和，任何一期的失配都会留下痕迹。作者把每个组合的矩堆成向量 \(g^{XS}\)、\(g^{TS}\)，再合成 \(g \equiv [g^{XS}; g^{TS}]\)，用一步 GMM 最小化加权组合：</p>
+<p>$$
+\min_{\theta}\; g_T'\, W\, g_T. \tag{10}
+$$</p>
+<p><strong>然后，真正巧妙的一步在于那个权重矩阵 \(W\)。</strong> 作者并不固定它，而是让它在「只看横截面」和「只看时间序列」之间连续滑动：\(W=[I,0]\) 是 <strong>Only XS</strong>（等价于 LWZ 的原始估计），\(W=[0,I]\) 是 <strong>Only TS</strong>，\(W=[I,Z]\) 则是两者兼顾、\(Z\) 越大越偏向时间序列。沿用 LWZ，他们在<strong>十个账面市值比（book-to-market）组合</strong>上估计，共 20 个矩：10 个横截面 + 10 个时间序列。</p>
+<p>衡量拟合好坏的两把尺子也很直白：横截面看平均股票收益对平均投资收益散点图的 <code>XS-R²</code>；时间序列则看一条「逐期股票收益对逐期投资收益」线性投影的 <code>TS-R²</code>：</p>
+<p>$$
+TS\text{-}R^2 = 1 - \frac{\sum_{i=1}^{N}\sum_{t=1}^{T}\left(r^{S}_{it+1} - r^{Iw}_{it+1}\right)^2}{\sum_{i=1}^{N}\sum_{t=1}^{T}\left(r^{S}_{it+1} - \overline{r^{S}}\right)^2}. \tag{12}
+$$</p>
+<p>\(R^2\) 可以为负，这一点下面会变得至关重要——它意味着模型的逐期预测，比「干脆用样本均值去猜」还要差。</p>
+<h2 id="5">5 主要结果：成功的横截面，与崩塌的时间序列</h2>
+<p><strong>于是，反转出现了。</strong></p>
+<p><strong>第一，</strong> 当只用横截面矩（Only XS，即 LWZ 的做法）时，一切如旧的美好：横截面定价误差极低（约每年 <code>1.4%</code>），<code>XS-R² = 71%</code>。可一旦回头逐期对账，<code>TS-R² = −93%</code>。换句话说，那个被奉为「成功解释了横截面」的模型，在时间序列上<strong>连样本均值都不如</strong>。横截面拟合得越漂亮，越掩盖了它逐期的全面失灵。</p>
+<p><strong>第二——也是全文最锋利的发现——是一个此消彼长的权衡。</strong> 作者把权重 \(Z\) 一点点往时间序列那边调，于是：</p>
+<ul>
+<li>随着时间序列权重上升，模型的时序拟合确实在改善；</li>
+<li>但与此同时，横截面拟合<strong>急剧恶化</strong>：<code>XS-R²</code> 从只用横截面矩时的 <code>71%</code>，一路跌到只用时间序列矩时的 <strong>−134%</strong>。</li>
+</ul>
+<p>鱼与熊掌，这个标准模型一个都抓不住。</p>
+<p><strong>第三，最反直觉的一击：</strong> 即便把估计<strong>完全押在时间序列</strong>上（Only TS，专门为最大化时序拟合而设计），模型的 <code>TS-R²</code> 仍然只有 <strong>−4%</strong>。也就是说，<strong>哪怕你拼尽全力让它去拟合逐期收益，它依然拟合不了</strong>。这把「也许只是估计没对准方向」这条退路也堵死了。</p>
+<p>这呼应了 LWZ 自己当年记下、却未深究的一个「相关性之谜」：模型隐含的股票收益与投资收益相关性低得可怜。本文证明，<strong>这个谜在估计被设计成最大化时序拟合时依然顽固存在</strong>，不是调参能消解的。</p>
+<h2 id="6">6 排除两个嫌疑人</h2>
+<p>一个负责任的实证工作者，此刻会立刻反问：会不会是数据或方法的毛病，而非模型本身的问题？作者老老实实地审了两个最大的嫌疑人。</p>
+<p><strong>嫌疑人一：组合加权偏差（aggregation bias）。</strong> 如 Belo et al. (2022)（BGSV）与 Gonçalves et al. (2020)（GXZ）所指出，LWZ 在组合层面构造投资收益的方式存在加权偏差。作者先用校准模型的模拟数据确认：<strong>只要把组合层面的投资收益正确加权，理论上 <code>TS-R²</code> 应当近乎完美</strong>，而 LWZ 的有偏加权确实会把它压得很低——看起来嫌疑很大。可是，当他们改用<strong>无偏的组合加权</strong>在真实数据上重新估计后，时序拟合依然惨不忍睹：<code>TS-R² = −17%</code>，即便只用时间序列矩去最大化时序拟合也是如此。<strong>嫌疑人一，排除。</strong></p>
+<p><strong>嫌疑人二：价量错配（data misalignment）。</strong> 一个合理的担心是：股价（及股票收益）会对总量冲击<strong>瞬时</strong>反应，而投资要花时间才调得动，于是投资收益滞后于股票收益（Lamont 2000 对此有更正式的分析）。如果这种错配是短命的，那么把数据「抹平」——用（年化的）5 年复合收益——理应缓解失配。理论上，模拟数据确实显示长周期下 <code>TS-R²</code> 会明显提高；可真实数据里，用 5 年复合的股票与投资收益算出来的 <code>TS-R²</code> 仍是 <strong>−11%</strong>。<strong>嫌疑人二，也排除。</strong></p>
+<p>两个最自然的「数据背锅」假说都站不住，剩下的结论便冷峻而清晰：<strong>问题出在模型本身。</strong></p>
+<h2 id="7">7 推广：错的不是「等式」，是「缺了变量」</h2>
+<p>到这里，一个谨慎的读者会担心：你这套检验是不是太依赖 (7) 式那个「股票收益恰等于投资收益」的强假设了？万一这个等式本身不成立的模型，反而没问题呢？</p>
+<p>作者于是把方法推广到<strong>一大类</strong>投资收益—股票收益等式<strong>未必成立</strong>的模型：只需在模拟数据里跑「股票收益对公司特征」的简单时序与横截面回归，估出这条联系的强度，再拿去和真实数据里同样的回归比。他们把它用在两个一种（实物）资本投入、但不满足 (7) 式的模型上——Lin &amp; Zhang (2013) 的递减规模报酬、非凸非对称调整成本加固定经营成本模型，以及 Kogan &amp; Papanikolaou (2013) 的无调整成本、带投资专属冲击模型。</p>
+<p>结果是一记漂亮的对照：在<strong>模拟数据</strong>里，这些模型同样隐含股票收益与公司特征（资本边际产出、公司规模、当期与滞后的投资率）之间强烈的线性关系——横截面 <code>XS-R² &gt; 96%</code>、时间序列 <code>TS-R² &gt; 84%</code>。可一旦搬到<strong>真实数据</strong>，同一组特征对实现股票收益的解释力骤降到 <code>TS-R²</code> 约 <strong>5%</strong>。这说明：<strong>模型里驱动股票收益的那组公司特征，和真实世界里驱动股票收益的特征，根本不是同一组</strong>——有重要的公司特征，被这些只含一种实物资本的模型漏掉了。</p>
+<p>这是一个建设性的结论：失败不在「投资基础」这条大思路，而在「只用一种实物资本」这个过于单薄的设定。出路或许在多投入（如无形资本）模型——这一点下面文献脉络里会再提。</p>
+<h2 id="8">8 文献脉络</h2>
+<p>把这条线索捋一捋，故事其实很连贯。</p>
+<p><strong>起点</strong>是 Cochrane (1991) 的生产基础资产定价，与 Restoy &amp; Rockinger (1994)——他们点明，股票收益与「投资收益」之间存在深刻联系。<strong>真正把它做成实证主力</strong>的是 Liu, Whited &amp; Zhang (2009)：用一种实物资本、一阶齐次技术的标准模型，把横截面平均收益拟合得令人信服，奠定了「投资基础模型有效」的范式；他们也顺手记下了那个被搁置的相关性之谜。Zhang (2017) 后来把这条思路总结为「投资 CAPM」。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p><strong>接着，对 LWZ 的反思</strong>从两个方向涌来。一支盯方法：Belo et al. (2022)（BGSV）要求模型匹配估值比的时间序列，Gonçalves et al. (2020)（GXZ）则点破了 LWZ 组合加权的偏差。另一支盯设定：Lin &amp; Zhang (2013) 放松一阶齐次、引入递减规模报酬与更丰富的调整成本；Kogan &amp; Papanikolaou (2013) 干脆抛开调整成本、改用投资专属冲击；Li et al. (2021) 用两种资本投入、贝叶斯方法、甚至允许技术参数随行业与时间变化，显著改善了对异象组合收益的解释。还有一支盯联检：Delikouras &amp; Dittmar (2021) 把横截面矩与投资欧拉方程一起检验，同样发现基准模型难以兼顾两组矩——但他们需要设定随机贴现因子，因而背上了联合假设的包袱。</p>
+<p><strong>本文</strong>所处的位置因此格外清晰：它既不另起炉灶设定贴现因子（从而避开联合假设难题），也不止步于「平均相等」，而是把<strong>逐期相等</strong>这条最强的时序预测，直接焊进 GMM 的矩条件里，第一次系统性地量出了「横截面成功」与「时间序列崩塌」之间的那道裂缝。关于「贴现率才是资产定价中心议题」的大背景，可参见<a href="/research/presidential-address-discount-rates/">《贴现率：资产定价的中心议题》</a>；而这类「把结构模型严肃地拿去和数据对账」的方法论旨趣，也与<a href="/research/deep-surrogates-for-finance-with-an-application-to-option/">《把结构模型「蒸馏」成一张查找表》</a>一脉相承。</p>
+<h2>评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：横截面矩和时间序列矩到底差在哪，为什么前者好拟合、后者那么难？</strong></p>
+<blockquote>
+<p>差在「先求和」还是「先平方」。横截面矩 (8) 是先把逐期偏差在时间上求平均再看是否为零，正负误差可以相互抵消，因此一个时序上漂浮不定、但均值碰巧对得上的模型也能过关；时间序列矩 (9) 先把每期偏差平方再求和，任何一期的失配都会被记账。论文明确指出，方差类矩之所以仍不够，是因为它<strong>忽略了股票收益与投资收益之间的时序相关性</strong>——而 <code>TS-R²</code> 恰恰盯住了这个相关性。</p>
+</blockquote>
+<p><strong>Q：<code>R²</code> 怎么会是 −93% 甚至 −134%？这是不是算错了？</strong></p>
+<blockquote>
+<p>没算错。(12) 式的 <code>TS-R²</code> 是相对于「用样本均值去预测」的基准定义的，分子是模型残差平方和、分母是对均值的离差平方和。当模型逐期预测比「干脆猜均值」还差时，分子大于分母，<code>R²</code> 就为负。−93% 的直白含义是：模型隐含的投资收益作为股票收益的逐期预测，比一条水平的均值线还要糟。</p>
+</blockquote>
+<p><strong>Q：会不会只是十个 BM 组合太少、test assets 选得不好？</strong></p>
+<blockquote>
+<p>作者沿用 LWZ 在十个账面市值比组合上估计，主要是为了压低估计噪声、并与既有文献可比；论文也提到在附录里考虑了其他 test assets。更关键的是，结论的稳健性不是靠组合数量撑起来的，而是靠两个「嫌疑人」被逐一排除（无偏加权后仍为 −17%、5 年复合后仍为 −11%）以及推广检验里真实数据 <code>TS-R²</code> 仅约 5% 这几个独立证据共同支撑的。</p>
+</blockquote>
+<p><strong>Q：既然只用时间序列矩估计也只有 −4%，那是不是说模型「调不动」？</strong></p>
+<blockquote>
+<p>正是这个意思，而且这才是最致命的。如果只用横截面矩时时序拟合差、改用时序矩后大幅改善，那还能说是「之前没对准目标」。但 Only TS 把全部火力都压在时序上，<code>TS-R²</code> 仍然只有 −4%——说明在这个只有 \((\alpha,c)\) 两个参数、一种实物资本的设定里，<strong>根本不存在一组参数能同时让逐期股票收益对得上</strong>。问题是结构性的，不是估计策略的。</p>
+</blockquote>
+<p><strong>Q：这是不是等于宣判投资基础模型「死刑」？</strong></p>
+<blockquote>
+<p>不是。作者的推广检验给出了建设性的诊断：失败的不是「股票收益由实物投资决定」这条大思路，而是「只用一种实物资本」这个过窄的设定——模型里驱动收益的特征（资本边际产出、规模、投资率）和真实数据里驱动收益的特征对不上，说明<strong>漏了重要变量</strong>（如无形资本、多种投入）。这是给后续研究指路，而非关门。</p>
+</blockquote>
+<p><strong>Q：和 Delikouras &amp; Dittmar (2021) 同样发现「两组矩难兼顾」，本文新在哪？</strong></p>
+<blockquote>
+<p>两点。其一，DD 需要设定随机贴现因子来写投资欧拉方程，因而检验的是「技术 + 贴现因子」的联合假设；本文（至少在基准模型的估计中）不设定贴现因子，把检验<strong>收窄到公司技术本身</strong>，从而能干净地把「设定哪里出了问题」归到技术上。其二，本文提出的是逐期对账的<strong>时间序列矩</strong>这一具体、可操作、易解读的工具，并量出了横截面—时序之间明确的权衡曲线。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把无形资本投入加进来，能否同时救活横截面与时间序列？</strong></p>
+<blockquote>
+<p>【经济故事】本文诊断「缺了重要变量」，而 Peters &amp; Taylor (2017) 已证明无形资本对投资—q 关系至关重要、Li et al. (2021) 也靠两种资本投入改善了异象拟合。一个自然的猜想是：把无形资本作为第二种投入后，逐期股票收益的失配会大幅收窄。
+【可行性】高。数据上可用 Peters &amp; Taylor 的无形资本存量度量加 <code>Compustat</code>；识别上沿用本文的双矩 GMM 框架，直接对比一种投入与两种投入模型的 <code>TS-R²</code> 权衡曲线即可，doable。</p>
+</blockquote>
+<p><strong>2. 把这套「逐期对账」检验搬到公司债与信用市场。</strong></p>
+<blockquote>
+<p>【经济故事】(6) 式里 \(r^{Ba}\)（税后公司债收益率）本就是投资收益的一条腿，却几乎没人检验过模型对<strong>债券收益时间序列</strong>的逐期预测。信用利差与投资、杠杆的逐期联系，可能比股票那条腿更紧或更松，本身就是有信息量的诊断。
+【可行性】中。需要 <code>TRACE</code> 的公司债成交价构造逐期债券收益，并把组合按信用评级/久期排序；识别上把 (9) 式的目标从股票收益换成债券收益。挑战在债券收益的测量噪声更大，但正因如此，时序矩的诊断价值也更高。</p>
+</blockquote>
+<p><strong>3. 外资持有人结构是否就是那个「漏掉的变量」？</strong></p>
+<blockquote>
+<p>【经济故事】本文说真实数据里驱动收益的特征和模型里的对不上。如果一家公司的边际投资者结构（如外资持有比例）系统性地影响其贴现率，那么忽略它的纯技术模型自然会在时序上失配。把持有人结构作为附加特征放进推广检验的回归，看真实数据 <code>TS-R²</code> 能否从 5% 抬升，会很有意思。
+【可行性】中。数据上可用 <code>13F</code> 与外资持有数据库；识别上嵌入本文第 7 节的「模拟—真实数据回归对照」框架。难点是持有人结构与公司特征内生，需要额外的工具或事件冲击来佐证。</p>
+</blockquote>
+<p><strong>4. 横截面—时间序列权衡曲线，能否当作模型「体检」的标准刻度？</strong></p>
+<blockquote>
+<p>【经济故事】本文最优美的产物，是那条随权重 \(Z\) 移动、<code>XS-R²</code> 与 <code>TS-R²</code> 此消彼长的权衡曲线。它其实是一张刻画「模型张力」的诊断图——曲线越靠右上、越平坦，模型越接近真实。可以把它制度化，作为评判任意投资基础模型的统一标尺。
+【可行性】高。无需新数据，只需把现有的多类模型（LWZ、Lin-Zhang、Kogan-Papanikolaou、两资本模型）放进同一 GMM 框架，画出各自的权衡前沿来横向比较，纯方法论工作，doable。</p>
+</blockquote>
+<h2 id="">我的判断</h2>
+<p><strong>贡献。</strong> 这篇论文最大的价值，不在于又拒绝了一个模型，而在于它<strong>改变了「检验投资基础模型」这件事的标准</strong>。过去二十年，文献默契地停在「平均相等」这个弱版本上享受成功，本文用一个极简、可解读、不依赖随机贴现因子设定的时间序列矩，把模型真正承诺的「逐期相等」拎到台前，并量出了一条清晰的横截面—时序权衡曲线。<code>XS-R²=71%</code> 与 <code>TS-R²=−93%</code> 的强烈反差、以及 Only TS 下仍仅 −4% 的顽固失配，是那种一旦看见就再也无法忽视的事实。更可贵的是它的诚实：把加权偏差与价量错配两个最自然的「数据背锅」假说亲手排除，才敢把矛头指向模型设定。</p>
+<p><strong>对识别的担忧。</strong> 我有两点保留。其一，所有结论都建在<strong>十个 BM 组合</strong>上，组合层面的聚合虽降低了噪声，却也可能抹掉了真正能让模型在时序上发力的公司层面异质性——尽管作者用无偏加权回应了一部分，我仍想看到在更多、更细的 test assets（尤其是动量、盈利等其他异象排序）上的权衡曲线。其二，时间序列矩用的是 NLLS 残差平方，作者自己也坦言测量误差会让这个矩在零附近随机偏离，从而影响卡方检验的解读；本文重经济解读、轻统计检验是务实的，但这也意味着「−93% vs −4%」这类数字的<strong>统计显著性</strong>还需要更正式的处理。</p>
+<p><strong>后续想看到什么。</strong> 我最想看到的是把这套逐期对账框架推向<strong>两种或多种资本投入</strong>（尤其是无形资本）的模型——本文已经把病灶定位在「缺变量」，下一步自然是验证补上变量能否同时救活横截面与时间序列，并在那条权衡曲线上看到肉眼可见的改善。其次，我很期待有人把它搬到<strong>公司债与信用市场</strong>：(6) 式里的债券腿一直被冷落，而那恰恰可能是检验「技术 vs 贴现率」分工的最佳战场。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Belo, F., Gala, V. D., Salomao, J., Vitorino, M. A. (2022). Decomposing firm value. <em>Journal of Financial Economics</em> 143(2), 619–639.</li>
+<li>Cochrane, J. H. (1991). Production-based asset pricing and the link between stock returns and economic fluctuations. <em>Journal of Finance</em> 46(1), 209–237.</li>
+<li>Cochrane, J. H. (2009). <em>Asset Pricing: Revised Edition</em>. Princeton University Press.</li>
+<li>Delikouras, S., Dittmar, R. (2021). Estimating and testing investment-based asset pricing models. (Working paper / as cited in Belo, Deng &amp; Salomao 2024.)</li>
+<li>Hayashi, F. (1982). Tobin's marginal q and average q: A neoclassical interpretation. (As cited for the homogeneity conditions.)</li>
+<li>Kogan, L., Papanikolaou, D. (2014). Growth opportunities, technology shocks, and asset prices. <em>Journal of Finance</em> 69(2), 675–718.</li>
+<li>Lamont, O. A. (2000). Investment plans and stock returns. <em>Journal of Finance</em> 55(6), 2719–2745.</li>
+<li>Li, E. X., Ma, G., Wang, S., Yu, C. (2021). Fundamental anomalies. <em>SSRN Working Paper</em> 3783526.</li>
+<li>Lin, X., Zhang, L. (2013). The investment manifesto. <em>Journal of Monetary Economics</em> 60(3), 351–366.</li>
+<li>Liu, L. X., Whited, T. M., Zhang, L. (2009). Investment-based expected stock returns. <em>Journal of Political Economy</em> 117(6), 1105–1139.</li>
+<li>Peters, R. H., Taylor, L. A. (2017). Intangible capital and the investment-q relation. <em>Journal of Financial Economics</em> 123(2), 251–272.</li>
+<li>Restoy, F., Rockinger, G. M. (1994). On stock market returns and returns on investment. <em>Journal of Finance</em> 49(2), 543–556.</li>
+<li>Zhang, L. (2017). The investment CAPM. <em>European Financial Management</em> 23(4), 545–603.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个看上去很「成功」的模型</a></li>
+        <li><a href="#2">2 研究问题：把「逐年对账」写进检验</a></li>
+        <li><a href="#3">3 模型：从「再投一块钱」到「股票收益等于投资收益」</a></li>
+        <li><a href="#4">4 识别策略：把强预测翻译成一个矩</a></li>
+        <li><a href="#5">5 主要结果：成功的横截面，与崩塌的时间序列</a></li>
+        <li><a href="#6">6 排除两个嫌疑人</a></li>
+        <li><a href="#7">7 推广：错的不是「等式」，是「缺了变量」</a></li>
+        <li><a href="#8">8 文献脉络</a></li>
+        <li><a href="#q-a">评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#">我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

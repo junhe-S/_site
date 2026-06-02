@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>工具变量「洗掉」的，恰恰是 CFO 最需要的那部分因果 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>工具变量「洗掉」的，恰恰是 CFO 最需要的那部分因果</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2022 JFE]</span> Signaling, Instrumentation, and CFO Decision-making</div>
+        <div class="paper-source-authors"><a href="/research/author/christopher-a-hennessy/">Christopher A. Hennessy</a>, <a href="/research/author/gilles-chemla/">Gilles Chemla</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">因果推断</span>
+        
+        
+        
+        
+        <span class="tag">工具变量</span>
+        
+        
+        
+        
+        <span class="tag">公司金融</span>
+        
+        
+        
+        
+        <span class="tag">信号理论</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Hennessy &amp; Chemla (2022, <em>Journal of Financial Economics</em>)</strong>：他们用三个「寓言经济（parable economy）」把计量经济学家、掌握私有信息的 CFO 和外部投资者一起塞进同一个模型，得出一个让人不太舒服的结论——工具变量 (instrumental variables, IV)、模糊断点 (fuzzy regression discontinuity, fuzzy RD)、自然实验这些「可信」的识别技术，在为 CFO 这类决策者提供决策依据时，往往会把答案算反。原因是：制造外生随机化的同时，也把「相机抉择本身携带的信号」一并洗掉了。</p></div>
+<h2 id="1">1 一个让人不安的开场</h2>
+<p>先讲一个量级上很扎眼的事实。Molina (2005) 研究杠杆对债券评级的影响，他怀疑普通最小二乘 (ordinary least squares, OLS) 因为杠杆的内生性而低估了效应，于是用公司税率作为杠杆的工具变量。结果：IV 估计出的效应是不做内生性处理时的<strong>三倍还多</strong>。</p>
+<p>按照过去二十年公司金融实证的「行规」，故事到这里就该收尾了——OLS 有内生性偏误，IV 给出了「干净」的因果效应，发表。Bowen, Frésard &amp; Taillard (2017) 数过，顶级三大金融期刊里用「识别技术」的实证公司金融论文，占比从 1980 年代末的近乎 <code>0%</code> 一路涨到 2012 年的 <code>50%</code> 以上。识别，识别，还是识别。</p>
+<p>但本文的两位作者偏要追问一句：<strong>这个被 IV「修正」出来的、漂亮的因果系数，对一个真正要做决策的 CFO 来说，到底有没有用？</strong></p>
+<div class="callout"><div class="callout-title">Warning</div><p>这不是又一篇「你的工具变量不够外生」的方法论批评。本文里的工具变量是作者<strong>亲手造的、完美满足排他性约束（exclusion restriction）的理想工具</strong>。问题恰恰出在 IV 一切都对的时候——它依然会把 CFO 引向错误的决策。</p></div>
+<h2 id="2">2 两种因果效应：本文的「一个核心」</h2>
+<p>要把这件事讲透，先得接受作者提出的一组区分。这是全文的枢纽，请记住它。</p>
+<ul>
+<li><strong>偏因果效应（partial causal effect）</strong>：保持各方的<strong>信念（beliefs）不变</strong>，仅由驱动变量（forcing variable）的外生变动引起的结果变化。作者证明，这正是标准 IV 所恢复的东西。</li>
+<li><strong>总因果效应（total causal effect）</strong>：当决策者<strong>相机抉择地</strong>改变驱动变量时，<strong>允许各方信念随之内生调整</strong>所带来的结果变化。</li>
+</ul>
+<p>这两者的差，就是<strong>信号效应（signaling effect）</strong>。</p>
+<p>接着，一个自然的问题是：CFO 到底需要哪一个？作者的回答干脆——在掌握私有信息的决策环境里，<strong>总因果效应才是 CFO 最优决策的充分统计量（sufficient statistic）</strong>。而 IV 给的是偏因果效应。于是矛盾出现了：你越是费尽心机找一个完美的工具，你恢复出的那个数，就越偏离 CFO 真正该看的那个数。</p>
+<p>为什么？因为工具变量为了实现「准随机化」，是以一种<strong>所有人都看得见</strong>的方式去搅动驱动变量的。当债务的变动来自一个外部投资者也能观察到的工具（税率），这个变动就<strong>不携带任何关于公司私有信息的信号</strong>。可现实里，CFO 不是被工具「逼」着加杠杆的——她是<strong>主动</strong>加的。而一旦是主动的相机抉择，市场就会去解读：「他为什么要这么做？」信号效应就成了 CFO 必须纳入考量的因果链的一环。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>一句话记住本文：<strong>IV 衡量的是「被迫/误操作之后会发生什么」，CFO 想知道的却是「我主动这么做会发生什么」。</strong> 前者把信号洗掉了，后者离不开信号。</p></div>
+<h2 id="3-iv">3 把计量经济学家写进模型：IV 那个寓言经济</h2>
+<p>本文不写学术八股，而是造「寓言经济」——用最小的结构去逼近被实证利用的真实数据生成过程，连结构估计的数值分析都不需要，作者说在 Excel 里摇随机数就能跑出来。下面这个经济，是为复刻 Molina (2005) 而造的。</p>
+<p><strong>设定。</strong> 两期 \(t\in\{0,1\}\)，所有人风险中性、不贴现。\(t=0\) 时一大批私募股权投资人把手里公司打包出售。公司 \(j\) 在 \(t=1\) 的税后现金流 \(\tilde c\) 服从 \([0,\Theta_j]\) 上的均匀分布，\(\Theta_j\) 是该公司的<strong>质量（quality）</strong>。打包成债是有税收优惠的（Gourio, 2013 式），政府给公司 \(j\) 一笔正比于税盾参数 \(\tau_j\) 的返还；若到期现金流不足以偿付面值 \(B\)，原赞助人承担声誉成本 \(LB\)。</p>
+<p>关键的信息结构：债务 \(b_j\equiv\ln B_j\) 和评级 \(\lambda_j\) 是公开的，但<strong>公司质量 \(\theta_j\equiv\ln\Theta_j\) 谁也看不见</strong>——包括计量经济学家、评级机构和投资者。</p>
+<p>计量经济学家担心杠杆内生（私募赞助人会根据私有的 \(\theta_j\) 去选债务），于是她写下一个她以为对的评级方程。由于现金流均匀分布，违约概率 \(\Pr(\tilde c\le B_j)=B_j/\Theta_j\)，取对数：</p>
+<p>$$\ln \Pr\!\left(\tilde{c} \le B_j\right) = \ln\!\left[\frac{1}{\Theta_j}\int_0^{B_j} dc\right] = \underbrace{\beta_1}_{=1}\, b_j + \underbrace{\beta_2}_{=-1}\,\theta_j .$$</p>
+<p>也就是 \(\lambda_j = b_j - \theta_j\)：债越多评级越差（\(\beta_1=1\)），质量越高评级越好（\(\beta_2=-1\)）。\(\theta_j\) 看不见，正是内生性的来源。</p>
+<p>为了找工具，她又写下一个私募赞助人的资本结构优化问题：</p>
+<p>$$B_j^* \in \arg\max_B \; \frac{\Theta_j}{2} + \tau_j B - LB \times \underbrace{\Pr(\tilde{c}\le B_j)}_{=\,B/\Theta_j}.$$</p>
+<p>一阶条件解出：</p>
+<p>$$\tau_j = \frac{2LB_j^*}{\Theta_j} \;\Rightarrow\; B_j^* = \frac{\tau_j \Theta_j}{2L} \;\Rightarrow\; b_j^* = \theta_j + \ln(\tau_j) - \ln(2L).$$</p>
+<p>到这里，\(\tau_j\) 是一个<strong>教科书级别的理想工具</strong>：税盾越高、债越多（相关性满足）；税盾只通过改变 \(b_j^*\) 来影响违约风险（排他性满足）；而且税盾是随机分配的。无可挑剔。</p>
+<p><strong>模拟。</strong> 作者按 Molina (2005) 取样本量 <code>2678</code> 个模拟公司，\(\tau_j\) 是 $[0,1/2]$ 上的 i.i.d. 均匀抽样，声誉损失 \(L=1/2\)，质量参数均匀分布在 $[0,1]$。跑出来的结果（表 1）正是 Molina 故事的完美复刻：</p>
+<ul>
+<li><strong>OLS（Panel A）</strong>：把 \(\lambda_j\) 直接对 \(b_j\) 回归，斜率 <code>0.0101</code>（t = <code>5.43</code>），小到可以忽略——天真地看，CFO 加杠杆似乎对评级毫无影响。</li>
+<li><strong>IV（Panel B）</strong>：第一阶段税盾系数 <code>0.747</code>（t = <code>5.42</code>）很强；第二阶段杠杆系数 <code>0.929</code>（t = <code>5.42</code>），逼近理论值 1。计量经济学家于是「确信」：加杠杆会让评级急剧恶化，OLS 严重低估了，IV 才对。</li>
+</ul>
+<div class="article-image"><img alt="Table 1" src="assets/table-1.png" /></div>
+<p><em>Table 1</em></p>
+<p>故事眼看又要在 IV 的胜利中收尾。但真正关键的一步在于下面这个问题：<strong>在这个经济里，如果一个 CFO 真的去多发债，他的评级究竟会怎么变？</strong></p>
+<h2 id="4-iv">4 反转：被 IV 洗掉的，正是因果链本身</h2>
+<p>作者指出，计量经济学家在写下私募赞助人的决策问题（上面那个 \(\arg\max\)）时，<strong>偷偷违反了理性预期</strong>——她隐含地假设公司外部的投资者、评级机构能看见那个本该看不见的 \(\theta_j\)。可正是「\(\theta_j\) 看不见」这件事，最早触发了她对遗漏变量偏误的担忧、催生了她的 IV 策略。<strong>她自己的工具变量动机，和她写下的结构方程，自相矛盾。</strong></p>
+<p>正确的设定是：评级机构面对和计量经济学家<strong>同样的潜变量问题</strong>。它看不见 \(\theta_j\)，只能像 Ross (1977) 的信号模型那样，用市场对类型的<strong>推断</strong> \(\hat\Theta_\tau\) 去估违约概率。于是均衡里观察到的评级是：</p>
+<p>$$\lambda_j = b_j - \ln\hat\Theta_\tau\!\big(\tau(B_j)\big) = -\ln\!\left(\frac{\sqrt{\tau_j^2 + 4L} - \tau_j}{2}\right).$$</p>
+<p>请盯住这个式子的结局：\(b_j\) <strong>被消掉了</strong>。也就是说，<strong>在给定可观测的税盾 \(\tau_j\) 之后，公司的评级根本不随它选择的债务水平变化。</strong> 这正是 Panel C 的 OLS 输出在讲的事——把 \(\lambda_j\) 对 \(b_j\) 和税盾五分位虚拟变量一起回归，\(b_j\) 的系数是 <code>−0.0004485</code>（t = <code>−1.2</code>，不显著），而 \(R^2\) 高达 <code>0.96</code>，近乎完美拟合。在每个税盾分位内部，评级对债务水平<strong>纹丝不动</strong>。</p>
+<p>直觉是什么？评级机构和投资者面对的潜变量问题，和计量经济学家是<strong>同一个</strong>。因此 IV 想要消掉的那个内生性，<strong>本身就是 CFO 所面对的因果链的一部分</strong>。市场不会傻看着你加杠杆——它会从你的相机抉择里反推你的类型。CFO 心里真正该装的那句话是：「如果我改变公司的杠杆率，它的债券评级其实不会变。」给他这句话的，不是被奉为圭臬的 IV，而是「有偏的」OLS。</p>
+<p>现在可以把 OLS 和 IV 的关系一锤定音了。真实关系是 \(\lambda=b-\hat\theta\)，IV 恢复的是 \(\partial\lambda/\partial b=1\)，而 OLS 把 \(\lambda\) 对 \(b\) 回归得到：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\cssId{a1}{\beta^{OLS}_{\lambda b}} = \frac{Cov(b - \hat\theta,\, b)}{Var(b)} = \cssId{a2}{1} - \beta^{OLS}_{\hat\theta b} \approx \beta^{IV}_{\lambda b} - \cssId{a3}{\beta^{OLS}_{\hat\theta b}}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>OLS 把评级 λ 直接对债务 b 回归得到的斜率——这恰是 CFO 需要的总因果效应</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>IV 恢复的偏因果效应，等于 ∂λ/∂b = 1（保持信念不变时债务对评级的偏效应）</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>信号项：均衡里市场对公司类型的推断 θ̂ 如何随债务 b 变化，正是被 IV 洗掉的那部分</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这个等式把全文压缩成了一行：<strong>OLS = IV − 信号效应</strong>。IV 给你 <code>1</code>，信号项 \(\beta^{OLS}_{\hat\theta b}\) 也接近 <code>1</code>，两者相减，OLS 接近 <code>0</code>。被 IV「修正」掉的那个内生性，不是污染，而是 CFO 决策时必须扣除的、来自市场重新定价的真实因果通道。换句话说，OLS 的「偏误」在这里<strong>就是答案</strong>。</p>
+<h2 id="5-iv">5 不止 IV：模糊断点与财政冲击的同一个病</h2>
+<p>作者没有止步于一个例子。他们又造了两个寓言经济，把同一把刀架在不同的识别技术上。</p>
+<p><strong>模糊断点（重访 Dittmar, Duchin &amp; Zhang, 2020）。</strong> DDZ 用模糊 RD 给增发（seasoned equity offering, SEO）提供了「迄今最干净的因果估计之一」。作者复刻其设计：期初同质的公司在中期遭遇一个落在 $[0,1]$ 上的可观测冲击，冲击高于（低于）$1/2$ 的公司以较高（较低）概率获得董事会放行 SEO 流程。在这个经济里，模糊 RD 确实显示增发对股价有正的因果效应，股价在阈值处向上跳。但这个证据对<strong>真正决定发多少股</strong>的 CFO 用处有限——CFO 在尽职调查中获得私有信息后，仍然面对一条<strong>向下倾斜</strong>的股价函数，而条件事件研究（conditional event study）能揭示这一点。模糊 RD 的证据对<strong>董事会</strong>（在私有信息到达<strong>之前</strong>做放行决策）有用，对<strong>CFO</strong>（在之后做发行决策）则不然。<strong>证据有没有用，取决于谁在什么信息节点上做什么决策。</strong></p>
+<p><strong>财政冲击（重访 Romer &amp; Romer, 2010）。</strong> 把 CFO 换成政府，结论照样成立：对外生冲击的反应能识别出「有正偏因果效应」的潜在刺激政策，但相机抉择的刺激的真实效果，要由<strong>政府真的动手之后</strong>可直接观测的总因果效应来衡量。</p>
+<p>三个例子，一个核心：<strong>评估和使用实证证据，取决于决策者、投资者、计量经济学家三方信息集的细颗粒假设——这远比排他性约束本身更要命，却长期被忽视。</strong></p>
+<h2 id="6">6 文献脉络</h2>
+<p>这条线要从信号说起。Ross (1977) 把资本结构当作向市场传递私有信息的信号，Leland (1994) 给出了内生违约的资本结构定价框架，Myers &amp; Majluf (1984) 则点明了 CFO 相对外部投资者的信息优势——本文整个「CFO 掌握私有信息」的前提，就立在这三块基石上。</p>
+<p>接着，实证公司金融走上了「识别技术」这条路。Molina (2005) 用税率作工具估杠杆对评级的影响，是本文头号靶子；Dittmar, Duchin &amp; Zhang (2020) 用模糊 RD 估增发效应，是第二个；Romer &amp; Romer (2010) 用立法史隔离财政冲击，是第三个。Bowen, Frésard &amp; Taillard (2017) 则用数据记录了这股「识别浪潮」的崛起。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>然后，方法论的另一支早有伏笔。Prabhala (1997) 用理性预期范式比较标准事件研究与条件事件研究，本文自承「与之神似」，只是把比较对象换成了 IV 对 OLS/事件研究。Angrist &amp; Pischke (2008) 那句「常用估计量几乎总有一个不太依赖模型的简单解释」，恰是本文要正面顶撞的命题。更晚近，Fudenberg &amp; Levine (2019) 证明贝叶斯学习会让 RD 估计偏离真实偏因果效应——但他们不质疑偏因果效应对决策的价值，本文则<strong>正是</strong>在质疑这一点。</p>
+<p>于是本文的位置清楚了：它不在「找更好的工具」这条主路上，而是横插一刀，问「这条主路通向的那个数，对决策者到底有没有用」。这与近年实证里对「直接问当事人」的兴趣相通——关于让 CFO 自己开口的思路，可参见<a href="/research/market-feedback-evidence-from-the-horses-mouth/">《从马嘴里掏答案：直接问 4641 家公司》</a>；而关于事件研究的因果推断本身有多脆弱，可参见<a href="/research/past-is-prologue-inference-from-the-cross-section-of/">《事件研究里的「假阳性」》</a>。</p>
+<h2>7 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：这是不是又一篇「你的工具不够外生」的老调？</strong></p>
+<blockquote>
+<p>不是，而且恰恰相反。作者亲手把工具造得完美——相关性、排他性、随机分配全满足。批评不针对工具的有效性，而针对工具变量这个<strong>目标</strong>：当目标是给掌握私有信息的决策者提供决策依据时，即便工具完美，IV 恢复的偏因果效应也不是决策者要的总因果效应。</p>
+</blockquote>
+<p><strong>Q：信号效应和我们熟悉的选择偏误（selection bias）是一回事吗？</strong></p>
+<blockquote>
+<p>相关但不同。作者用 Angrist-Pischke 的「住院」例子说明：病人不能靠「不去住院」来改善健康，这里观测证据确实有选择偏误。但所有公司（包括差公司）都能靠模仿强公司的政策来抬升股价——这是信号。此时观测证据反而能给出动作因果含义的无偏估计。差别在于决策者能否通过模仿去「制造」那个结果。</p>
+</blockquote>
+<p><strong>Q：那是不是说 IV 一无是处、回去用 OLS 就行？</strong></p>
+<blockquote>
+<p>没那么绝对。作者的主张是「视目标而定」：若目标是预测被迫或误操作之后的结果，IV 合适；若目标是为相机抉择提供依据，则 OLS、事件研究、条件事件研究可能就够了，甚至更好。在模糊 RD 那个例子里，RD 证据对<strong>董事会</strong>的事前放行决策是有用的，只是对<strong>CFO</strong>的事后发行决策没用。</p>
+</blockquote>
+<p><strong>Q：模型里 OLS 的 \(R^2\) 高到 0.96，是不是太巧了？</strong></p>
+<blockquote>
+<p>是作者刻意构造的极端情形，目的是把机制放到最清楚。\(R^2=0.96\) 说明在每个税盾分位内，评级几乎完全由可观测的 \(\tau\) 决定、与债务水平 \(b\) 无关——这正是「条件于可观测信息后，评级对相机抉择的杠杆不敏感」的数值化。现实里不会这么干净，但方向性的洞见不依赖这个具体数字。</p>
+</blockquote>
+<p><strong>Q：作者到底给实证研究者的可操作建议是什么？</strong></p>
+<blockquote>
+<p>一句话：<strong>先做寓言经济估计，再做现实世界的 IV 估计。</strong> 即在选估计量、解释估计值之前，先写一个能粗略复刻被利用的数据生成过程（含三方信息集）的极简模型，哪怕只是在 Excel 里摇随机数。模型会告诉你，你手里的那个系数到底在回答哪个问题。</p>
+</blockquote>
+<p><strong>Q：这套批评在真实文献里覆盖面有多广？</strong></p>
+<blockquote>
+<p>作者重读了 BFT 样本里 <code>253</code> 篇用 IV/RD/实验的顶刊论文，筛出 <code>185</code> 篇（<code>73%</code>）真正倚重这些识别策略的；再逐篇判定其批评是否适用——前提是存在一条理论上合理的信号通道、且识别策略恰好把信号那段因果链剔除了。结论是适用于 <code>130</code> 篇，占最终样本的 <code>70%</code>。不是边角案例。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 公司债发行的「信号 vs. 工具」分解。</strong>
+【经济故事】本文的靶子是评级，但公司债<strong>一级市场定价</strong>里同样充满信号：主动增发债券携带的私有信息，会被投资者重新定价进利差。能否在真实数据里把利差对杠杆的反应，分解成「偏因果效应」与「信号效应」两段？
+【可行性】中。需 <code>Mergent FISD</code> 发行数据 + <code>TRACE</code> 二级成交，识别上可借企业税率/州税变动作工具对照 OLS，按本文逻辑比较两者差额。难点在于真实世界没有「理想工具」，分解会含噪声——但这恰恰是本文「先建寓言经济再估计」建议的用武之地。</p>
+<p><strong>2. 外资持有人作为「信息节点」的事件研究。</strong>
+【经济故事】当一家公司被纳入某指数、吸引大量外资被动持有，其后续融资动作的信号含义会不会改变？外资与本地投资者信息集不同，意味着同一个相机抉择对不同持有人结构的公司，总因果效应可能不同。
+【可行性】中。需指数纳入事件 + 持有人结构（<code>FactSet</code>/<code>13F</code>）。识别可用指数重构断点，但要小心本文的警告：断点证据回答的是「事前决策者」的问题，未必是发行公司 CFO 的问题。</p>
+<p><strong>3. 流动性冲击下的「被迫 vs. 主动」抛售。</strong>
+【经济故事】本文区分「被迫/误操作」与「相机抉择」恰好对应债市里的<strong>被迫抛售（fire sale）</strong>与<strong>主动调仓</strong>。同样是卖出，前者不携带信号、后者携带——价格冲击的因果解读应当不同。
+【可行性】高。共同基金赎回（Coval-Stafford 式流量工具）天然提供「被迫」变异，可与基金主动减持对照，检验二者对债券利差的冲击是否如本文预测地系统不同。数据与识别都成熟。</p>
+<p><strong>4. 把「寓言经济估计」做成标准稳健性栏。</strong>
+【经济故事】本文方法论主张能否制度化？即要求每篇 IV/RD 论文附一个极简模拟经济，展示在三方信息集的合理假设下，所估系数对应的是偏还是总因果效应。
+【可行性】高（作为方法贡献）。无需新数据，门槛是说服力而非技术——本文已证明 Excel 级随机数就够，关键是建立一套可复制的「最小结构」模板。</p>
+<h2 id="8">8 参考文献与我的判断</h2>
+<p><strong>我的判断。</strong> 本文最大的贡献，是把一个一直被当作「技术问题」的东西，重新框定成「目的问题」：识别技术的价值，不取决于工具有多外生，而取决于<strong>谁、在什么信息节点、用这个证据做什么决策</strong>。把计量经济学家显式地写进模型、与决策者和投资者共享一个信息结构，这个动作本身就极有启发性——它逼你说清自己到底在估计哪个对象。OLS = IV − 信号 这一行，会长久地留在我脑子里。</p>
+<p>但要诚实地说担忧。其一，这是<strong>寓言经济</strong>，不是对真实数据的检验；\(R^2=0.96\) 这种近乎完美的拟合是设定出来的，机制虽真，现实里信号效应与偏因果效应的相对大小是个<strong>实证问题</strong>，本文没回答。其二，「批评适用于 <code>70%</code> 的论文」这个数字依赖作者逐篇的主观判定（是否存在「理论上合理的信号通道」），可复制性存疑。其三，本文给出的是「IV 可能误导」的存在性证明，却没给出一个<strong>可操作的判据</strong>告诉研究者：面对手里这篇具体的论文，信号通道到底有多重要、值不值得放弃 IV。</p>
+<p>后续我最想看到的，是有人把这套「先建寓言经济、再比对 OLS/IV」的流程，真刀真枪地用到一个公司债或信用市场的实证问题上，给出信号效应的<strong>量级估计</strong>——而不止停留在「原则上它可能很大」。本文负责把问题问对，剩下的，是把它量出来。</p>
+<h3 id="">参考文献</h3>
+<p>Angrist, J.D. &amp; Pischke, J.-S. (2008). <em>Mostly Harmless Econometrics: An Empiricist's Companion.</em> Princeton University Press.</p>
+<p>Bowen, D.E., Frésard, L. &amp; Taillard, J.P. (2017). What's your identification strategy? Innovation in corporate finance research. <em>Management Science</em> 63(8), 2529–2548.</p>
+<p>Dittmar, A., Duchin, R. &amp; Zhang, S. (2020). The timing and consequences of seasoned equity offerings: a regression discontinuity approach. <em>Journal of Financial Economics</em> 138(1), 254–276.</p>
+<p>Fudenberg, D. &amp; Levine, D. (2019). Learning in games and the interpretation of natural experiments. <em>American Economic Journal: Microeconomics</em>, forthcoming.</p>
+<p>Gourio, F. (2013). Credit risk and disaster risk. <em>American Economic Journal: Macroeconomics</em> 5(3), 1–34.</p>
+<p>Hennessy, C.A. &amp; Chemla, G. (2022). Signaling, instrumentation, and CFO decision-making. <em>Journal of Financial Economics</em> 144(3), 849–863.</p>
+<p>Leland, H.E. (1994). Corporate debt value, bond covenants, and optimal capital structure. <em>Journal of Finance</em> 49(4), 1213–1252.</p>
+<p>Molina, C.A. (2005). Are firms underleveraged? An examination of the effect of leverage on default probabilities. <em>Journal of Finance</em> 60(3), 1427–1459.</p>
+<p>Myers, S.C. &amp; Majluf, N.S. (1984). Corporate financing and investment decisions when firms have information that investors do not have. <em>Journal of Financial Economics</em> 13(2), 187–221.</p>
+<p>Prabhala, N.R. (1997). Conditional methods in event studies and an equilibrium justification for standard event-study procedures. <em>Review of Financial Studies</em> 10(1), 1–38.</p>
+<p>Romer, C.D. &amp; Romer, D.H. (2010). The macroeconomic effects of tax changes: estimates based on a new measure of fiscal shocks. <em>American Economic Review</em> 100(3), 763–801.</p>
+<p>Ross, S.A. (1977). The determination of financial structure: the incentive-signalling approach. <em>Bell Journal of Economics</em> 8(1), 23–40.</p>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一个让人不安的开场</a></li>
+        <li><a href="#2">2 两种因果效应：本文的「一个核心」</a></li>
+        <li><a href="#3-iv">3 把计量经济学家写进模型：IV 那个寓言经济</a></li>
+        <li><a href="#4-iv">4 反转：被 IV 洗掉的，正是因果链本身</a></li>
+        <li><a href="#5-iv">5 不止 IV：模糊断点与财政冲击的同一个病</a></li>
+        <li><a href="#6">6 文献脉络</a></li>
+        <li><a href="#7-q-a">7 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#8">8 参考文献与我的判断</a></li>
+          <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

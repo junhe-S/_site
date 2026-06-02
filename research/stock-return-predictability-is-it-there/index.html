@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>股利收益率真能预测收益吗？——一桩被「标准误」改写的旧公案 – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>股利收益率真能预测收益吗？——一桩被「标准误」改写的旧公案</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2007 RFS]</span> Stock Return Predictability: Is it There?</div>
+        <div class="paper-source-authors"><a href="/research/author/andrew-ang/">Andrew Ang</a>, <a href="/research/author/geert-bekaert/">Geert Bekaert</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">可预测性</span>
+        
+        
+        
+        
+        <span class="tag">时间序列</span>
+        
+        
+        
+        
+        <span class="tag">计量方法</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Ang &amp; Bekaert (2007, Review of Financial Studies)</strong>：长期以来人们相信股利收益率（dividend yield）能强烈、且随期限越长越强地预测股票超额收益。本文把这条「常识」拆开来看，发现它在很大程度上是<strong>标准误用错了</strong>的产物——一旦改用 Hodrick (1992) 标准误，长期可预测性几乎消失；真正稳健的预测变量其实是<strong>短期利率</strong>，而且只在短期有效。</p></div>
+<h2 id="1">1 一条「人人都信」的预测</h2>
+<p>做资产定价的人，大概没有谁没在某门课、某篇论文里见过这样一张图：把股利收益率（dividend yield）放进回归，去预测未来的股票超额收益，斜率为正、而且<strong>期限越长、R² 越高、t 值越大</strong>。于是教科书般的结论就立住了：股价里那个会上下浮动的「分母」——预期收益——是可以被股利收益率读出来的，而且读得越远越准。</p>
+<p>这就是 Ang 和 Bekaert 在文章开头所说的「传统智慧」（conventional wisdom）。它的逻辑链条其实很优雅。从一个无泡沫的理性定价模型出发，价格–股利比（price-dividend ratio）等于未来现金流用<strong>时变贴现率</strong>折现后的期望值。既然价格–股利比（或者它的倒数，股利收益率）会随时间波动，这个波动就只能来自三个源头之一：预期现金流增长在变、预期无风险利率在变、或者风险溢价在变。而大量文献（Campbell, 1991；Cochrane, 1992）发现，股利收益率几乎预测不了未来的股利增长——于是顺理成章地，它波动的「绝大部分」就被归给了<strong>预期收益的变化</strong>。换句话说：股利收益率高，是市场在告诉你「未来收益会高」。</p>
+<p>这套说法太顺了，顺到几乎没人停下来问一句：<strong>那张「期限越长越显著」的图，会不会本身就是个假象？</strong></p>
+<div class="callout"><div class="callout-title">Note</div><p>这正是本文的切口。它不是要推翻可预测性，而是要先问一个更基础的问题——我们用来判定「显著」的那把尺子，本身准不准？</p></div>
+<h2 id="2">2 同一组数据，两种读数</h2>
+<p>事情的张力，从一组对照里就能看出来。</p>
+<p>作者用美国 S&amp;P 综合指数 1935–2001 的季度数据，跑了最经典的单变量回归：用股利收益率预测未来 k 个季度的年化超额收益。<strong>如果把样本截到 1990 年</strong>（也就是大多数早期文献所用的窗口），结果漂亮得无可挑剔：一期系数高达 <code>0.2203</code>（t = <code>2.416</code>），四期 <code>0.2383</code>（t = <code>3.097</code>），二十期 <code>0.1787</code>（t = <code>2.819</code>）——<strong>无论哪个期限，t 值都在 2.4 以上</strong>，跨期限的联合检验 p 值只有 <code>0.014</code>。这正是 Campbell &amp; Shiller (1988a,b) 一代人确立的「强可预测性」。</p>
+<p>可是,<strong>只要把 1990 年代的十年加回去</strong>,同一个回归就垮了一半:一期系数掉到 <code>0.1028</code>(t = <code>1.824</code>),四期 <code>0.1128</code>(t = <code>2.030</code>),二十期 <code>0.1028</code>(t = <code>1.364</code>)——除了一年期勉强擦到 5% 边缘,其余都不显著;跨期限联合检验的 p 值,从 <code>0.014</code> 一路飙到 <code>0.587</code>。</p>
+<p>很容易把锅甩给 1990 年代那场大牛市（股利收益率被压到历史低位）。但作者提醒：他们的数据一直延伸到 2001 年底，已经把随后那段熊市的一部分也吃进去了。所以这不只是「牛市惹的祸」。</p>
+<p>接着,一个自然的问题是:那 1935–1990 那张「全期限显著」的图,显著性到底从哪来?<strong>这里就埋着本文最关键的一步</strong>——它取决于你用的是哪一种标准误。</p>
+<h2 id="3-hodrick">3 识别与推断：回归、重叠，与 Hodrick 标准误</h2>
+<p>要讲清楚这一步，得先把回归本身摆出来。本文的核心回归是：</p>
+<p>$$\tilde{y}_{t+k} = \alpha_k + \beta_k' z_t + \varepsilon_{t+k,k}$$</p>
+<p>其中被解释变量是累加并年化的 k 期超额收益：</p>
+<p>$$\tilde{y}_{t+k} = \frac{\phi}{k}\big[(y_{t+1}-r_t) + \cdots + (y_{t+k}-r_{t+k-1})\big]$$</p>
+<p>这里 \(y_{t+1}=\log(Y_{t+1})\) 是连续复利的总收益，\(r_t\) 是无风险利率，\(\phi=12\)（月度）或 \(\phi=4\)（季度）。解释变量 \(z_t\) 是对数股利收益率、无风险利率，或两者一起。</p>
+<p>问题出在这个被解释变量身上。当 \(k>1\) 时，相邻几期的 \(\tilde{y}_{t+k}\) 用到了<strong>重叠</strong>（overlapping）的收益区间——比如二十期回归里，今天和下季度的「未来二十期收益」共享了十九期的数据。在「无可预测性」的原假设（\(\beta_k=0\)）下，这会让误差项 \(\varepsilon_{t+k,k}\) 服从一个 \(MA(k-1)\) 过程。<strong>重叠观测制造了强烈的序列相关</strong>，期限越长越严重。</p>
+<p>于是问题变成了：怎么算标准误，才能在重叠的误差结构下不被骗？文献里的常规做法是 Hansen–Hodrick (1980) 或 Newey–West (1987)——它们的思路都是「把未来的误差往前加总」去估计协方差。Hodrick (1992) 则提供了一个反过来的、更聪明的办法：利用协方差平稳性，<strong>把回归元往过去加总</strong>，从而绕开重叠误差。具体地，参数 \(\theta=(\alpha_k,\beta_k')'\) 用 GMM 估计，其渐近分布为：</p>
+<p>$$\sqrt{T}(\hat{\theta}-\theta) \xrightarrow{a} N(0,\Omega), \qquad \Omega = Z^{-1} S_0 Z^{-1}, \quad Z = E(x_t x_t'), \quad x_t = (1\;\; z_t')'$$</p>
+<p>关键就在中间那块 \(S_0\) 怎么估。Hodrick 的做法是：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\hat{S}_0 = \frac{1}{T}\sum_{t=k}^{T} w^k_t {w^k_t}', \qquad \cssId{a1}{w^k_t} = \cssId{a2}{\varepsilon_{t+1,1}} \cssId{a3}{\sum_{i=0}^{k-1} x_{t-i}}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>构造单期残差的「加权得分」，用它来估计 GMM 谱密度的核心项 S_0</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>只用一期（非重叠）的残差，从根上避开了长区间收益带来的 MA(k-1) 结构</div><div class="mathanno-card" data-target="a3"><span class="mathanno-num">3</span>把回归元向「过去」加总 k 期——这正是与 NW / HH「向未来加总误差」相反的关键技巧</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这个反转看起来只是技术细节，却是全文的命门。<strong>因为它直接决定了那个 t 值有多大。</strong> 作者发现：在同一份美国数据上，Newey–West 和稳健 Hansen–Hodrick 的 t 值几乎一致地高于 Hodrick t 值。用 Newey–West，1935–2001 全样本里可预测性能一路「显著」到八个季度；而用 Hodrick，全样本里 t 值过 2 的只有 2–4 季度这一小段，一期和长期都不显著。</p>
+<div class="callout"><div class="callout-title">Warning</div><p>也就是说,早期文献里那张「期限越长越显著」的漂亮图,很大程度上是 NW/HH 标准误<strong>在长期系统性低估了真实抽样误差</strong>所造出来的幻觉。把尺子换成 Hodrick,长期可预测性就蒸发了。</p></div>
+<p>那凭什么相信 Hodrick 这把尺子更准，而不是另一种偏见？这就要靠下一节的蒙特卡洛体检。</p>
+<h2 id="4">4 数据</h2>
+<p>在进入体检之前，先交代数据。作者用了两套：</p>
+<ul>
+<li><strong>长样本</strong>：美国（S&amp;P 综合指数，1935 年 6 月–2001 年 12 月）、英国（FT Actuaries 指数）、德国（CDAX 指数），英德两国从 1953 年 6 月起，均为<strong>季度</strong>频率，短期利率用三个月期国库券。</li>
+<li><strong>短样本（MSCI）</strong>：美、英、法、德四国，<strong>月度</strong>频率，1975 年 2 月–2001 年 12 月，短期利率用一个月期 EURO 利率。</li>
+</ul>
+<p>观测单位是「国家 × 时点」，股利与盈利收益率都按<strong>过去一年</strong>加总的股利/盈利构造（季度或月度数据反而被季节性主导，不能直接用）。一个贯穿全文的事实是：这些工具变量都<strong>高度持续</strong>——美国股利收益率的一阶自相关 <code>0.9504</code>、短期利率 <code>0.9548</code>（见 Table 1 Panel A）。这种近单位根的持续性，正是小样本里检验统计量「失真」的温床，也是本文要小心处理的核心摩擦。</p>
+<h2 id="5">5 主要结果：真正稳健的，是短期利率</h2>
+<p>把尺子校准好之后，图景就清晰了。作者只报告 Hodrick t 值，得到三条结论。</p>
+<p><strong>第一，股利收益率单变量预测超额收益，并不稳健。</strong> 全样本下基本不显著（见上文），换到 1975–2001 的 MSCI 月度数据更彻底失效：一期系数仅 <code>0.0274</code>（t = <code>0.405</code>）。它的「强可预测性」只在剔除 1990 年代、或截至早期样本时才出现。</p>
+<p><strong>第二，最稳健的预测变量其实是短期利率,而且它强烈地、负向地预测收益——但只在短期。</strong> 在 1952–2001 样本里,一期回归中短期利率系数为 <code>−2.1623</code>(t = <code>−2.912</code>),高度显著;到四期就掉到边缘,二十期完全失效。短期利率高 → 未来短期超额收益低,这条关系干净、稳定,且经得起换样本。</p>
+<p><strong>第三,也是最有意思的反转:股利收益率「单独」不行,但和短期利率「搭伙」就行了。</strong> 在双变量回归里,1952–2001 一期的股利收益率系数从单变量的 t = <code>1.541</code> 抬升到 <code>0.1362</code>(t = <code>2.152</code>),两者联合为零的 χ² 检验 p 值仅 <code>0.003</code>。也就是说,股利收益率的预测力<strong>需要短期利率来「净化」</strong>——一旦控制住利率水平,它在短期才显出独立的信息。</p>
+<p>为了缓解只盯美国数据带来的「数据窥探」（data snooping）担忧，作者把英、法、德三国拉进来做<strong>混合估计</strong>（pooled estimation），结论一致：短期可预测、长期不可预测的格局，在国际数据里同样成立。</p>
+<h2 id="6">6 这不是「检验没力气」：一场尺子的体检</h2>
+<p>读到这里，一个尖锐的质疑会冒出来：<strong>长期不显著，会不会只是因为长期回归的样本太少、检验根本没有力气（power）？</strong> 「不显著」和「确实没有」是两回事。</p>
+<p>作者用第 4 节那个能匹配数据的现值模型作数据生成过程,跑了一场严格的规模(size)与功效(power)蒙特卡洛实验。结论分两层。</p>
+<p>其一，<strong>小样本偏误</strong>确实存在——在近单位根的持续解释变量下，预测回归系数会有系统性偏差（这正是 Stambaugh, 1999 那条经典警告）。</p>
+<div class="article-image"><img alt="Table 9: reports the small sample bias in several regressions based on" src="assets/table-9.png" /></div>
+<p><em>Table 9: reports the small sample bias in several regressions based on</em></p>
+<p>其二,也是更关键的一层:<strong>NW 和 HH 标准误在长期会严重「过度拒绝」原假设</strong>(名义 5% 的检验,实际拒绝率远高于 5%),而 Hodrick 标准误在小样本里能基本守住正确的规模。如表 10 所示,三种标准误在「真实拒绝率」上的差距,正是第 2 节那场幻觉的计量根源。</p>
+<div class="article-image"><img alt="Table 10: reports empirical sizes for tests of a 5% nominal (asymptotic)" src="assets/table-10.png" /></div>
+<p><em>Table 10: reports empirical sizes for tests of a 5% nominal (asymptotic)</em></p>
+<p>更重要的是功效那一边:Hodrick t 检验在本文最长样本上,5% 检验的功效<strong>超过 0.60</strong>;一旦把多国数据混合起来,即便最短样本的功效也升到 <strong>74%</strong>。这就堵死了「检验没力气」这条退路——既然功效不低,长期还是测不出可预测性,那就说明它<strong>本来就很弱或不存在</strong>,而非被噪声淹没。</p>
+<p>（关于持续解释变量如何在长期回归里凭空「制造」出可预测性，可参见<a href="/research/biases-in-long-horizon-predictive-regressions/">《用更多的数据，买来更大的偏差》</a>。）</p>
+<h2 id="7">7 现值模型：股利收益率到底在反映什么？</h2>
+<p>既然股利收益率波动的大头不是预期收益，那是什么？作者构建了一个带<strong>随机贴现率、短期利率与股利增长</strong>的非线性现值模型，让它去匹配上面的实证证据，然后做方差分解。</p>
+<p>这个模型的精神，仍是 Campbell–Shiller 式的现值恒等：股利收益率的变动可以拆给「未来贴现率变动」「未来短期利率变动」「未来股利增长变动」三块，外加它们之间的协方差项。分解结果是：</p>
+<ul>
+<li><strong>超额贴现率（风险溢价）</strong> 仍占大头：约 <code>61%</code>；</li>
+<li><strong>短期利率变动</strong> 占到 <code>22%</code>——远比传统叙事给它的份额大；</li>
+<li><strong>股利增长</strong> 只占约 <code>7%</code>。</li>
+</ul>
+<p>换句话说，传统智慧对了一半：风险溢价确实主导了股利收益率的波动；但它漏掉了<strong>短期利率这条暗线</strong>——而这恰好解释了为什么把短期利率加进回归后，股利收益率才「活」过来。模型还复现了数据里一个反直觉的事实：<strong>高股利收益率伴随的是未来更高的利率</strong>，而非更低的股利增长。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>这一节也给组合选择文献提了个醒：很多研究（如 Campbell &amp; Viceira, 1999）直接用<strong>单变量</strong>股利收益率回归来估「预期收益」。作者用模型证明，这种代理与真实预期收益的吻合度相当差；但<strong>同时放入短期利率和股利收益率</strong>，拟合就大幅改善——尤其在短期。</p></div>
+<p>最后，作者还顺手回应了 Lamont (1998) 的一个主张：盈利收益率（earnings yield）对超额收益是否有独立预测力？答案是——对<strong>收益</strong>只有微弱证据，但对<strong>未来现金流</strong>有显著预测力。这与 Bansal &amp; Lundblad (2002)、Bansal &amp; Yaron (2004) 强调「现金流本身遵循复杂 ARMA 过程、需要不止一个因子」的观点呼应：把信息集从股利扩到盈利，确实能更好地捕捉未来的价值相关现金流。</p>
+<h2 id="8">8 文献脉络</h2>
+<p>把这条线索摊开看，会发现本文站在两股潮流的交汇处。</p>
+<p><strong>第一股是「可预测性」本身的潮流。</strong> 它从 Fama &amp; French (1988)、Campbell &amp; Shiller (1988a,b) 确立股利收益率的预测力开始，经 Campbell (1991)、Cochrane (1992) 用方差分解把「股利收益率波动≈预期收益波动」做成共识；同时另一支（Fama &amp; Schwert, 1977；Campbell, 1987；Breen, Glosten &amp; Jagannathan, 1989）一直在论证<strong>短期利率</strong>才是稳健的预测变量。到了 Lettau &amp; Ludvigson (2001)、Goyal &amp; Welch (2003) 这一代，「加上 1990 年代后预测力消失」的质疑开始集中爆发。</p>
+<p><strong>第二股是「怎么做推断」的计量潮流。</strong> Hansen &amp; Hodrick (1980)、Newey &amp; West (1987) 给了重叠数据的稳健标准误，Richardson &amp; Smith (1991)、Boudoukh &amp; Richardson (1993) 警告长期回归的统计陷阱，Stambaugh (1999) 点破持续解释变量的小样本偏误，而 Hodrick (1992) 提供了那把「向过去加总」的更准的尺子。本文的贡献，正是把这两股潮流拧在一起：用 Hodrick 的尺子，重新审判可预测性的旧公案，并给出一个能自洽匹配证据的现值模型。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<p>它所处的位置，也预示了此后 Campbell &amp; Yogo (2006)、Lewellen (2004)、Torous, Valkanov &amp; Yan (2004) 等一批用「近单位根/局部到单位根」框架重做推断的工作。作者特意说明：他们不依赖这些单位根型方法，因为 Hodrick 标准误的一大优势是能直接处理<strong>多元回归元</strong>，而单位根型推断几乎只能对付单变量。</p>
+<p>（这条「贴现率/预期收益」主线的来龙去脉，亦可参见<a href="/research/presidential-address-discount-rates/">《贴现率：资产定价的中心议题》</a>；关于「风险溢价是否已消失」的后续争论，见<a href="/research/have-risk-premia-vanished/">《风险溢价，是「消失」了，还是「断」掉了？》</a>。）</p>
+<h2>评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：本文是不是在说股票收益「完全不可预测」？</strong></p>
+<blockquote>
+<p>不是。它的论点要精细得多：股利收益率的<strong>长期</strong>可预测性多半是标准误造的幻觉；但<strong>短期</strong>仍有可预测性，且最稳健的预测变量是短期利率，股利收益率需与利率搭配才显出独立信息。可预测性「在」，只是不在人们以为的那个地方、那个期限上。</p>
+</blockquote>
+<p><strong>Q：Hodrick 标准误凭什么比 Newey–West、Hansen–Hodrick 更可信？</strong></p>
+<blockquote>
+<p>不是靠「看起来更保守」，而是靠蒙特卡洛体检。在能匹配数据的 DGP 下，NW/HH 在长期严重过度拒绝（名义 5% 的检验实际拒绝率远超 5%），而 Hodrick 在小样本里基本守住正确规模；同时 Hodrick 的功效并不低（最长样本超 0.60，多国混合达 74%）。规模对、功效够，才让人敢信它的「不显著」。</p>
+</blockquote>
+<p><strong>Q：长期测不出，会不会就是样本太短、功效不足？</strong></p>
+<blockquote>
+<p>这正是作者最用力堵的退路。功效分析显示检验有足够力气；既然有力气还测不出，就更像「本来就弱/没有」，而非被噪声淹没。这是本文比单纯换标准误更扎实的地方。</p>
+</blockquote>
+<p><strong>Q：为什么单看股利收益率不行，加上短期利率就行了？</strong></p>
+<blockquote>
+<p>因为股利收益率同时混杂了风险溢价和利率两条信息。现值模型的方差分解显示，短期利率变动占股利收益率波动的约 22%。控制住利率水平后，股利收益率剩下的那部分才更干净地对应预期超额收益——这也解释了双变量回归里它的 t 值为何被「净化」抬升。</p>
+</blockquote>
+<p><strong>Q：跨国数据真能缓解数据窥探吗，还是只是把同一个故事重复四遍？</strong></p>
+<blockquote>
+<p>部分能。各国超额收益的相关性只有 0.47–0.63，并不算高，因此混合估计在原假设下能提升效率、降低「只盯美国」的过拟合风险。但它不能完全排除全球共同的贴现率冲击带来的相关性——这是混合检验天然的局限。</p>
+</blockquote>
+<p><strong>Q：这与「股利收益率近似单位根」的争论是一回事吗？</strong></p>
+<blockquote>
+<p>高度相关但不等同。持续性（近单位根）正是小样本偏误和检验失真的来源；但本文选择用 Hodrick 标准误直接应对，而非走单位根/局部到单位根那条路，理由是后者几乎只能处理单变量，而本文的核心恰恰是<strong>双变量</strong>（利率 + 股利收益率）。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把「短期利率主导」搬到公司债超额收益上</strong></p>
+<blockquote>
+<p>【经济故事】本文发现短期利率是股票超额收益最稳健的短期预测变量。信用利差（credit spread）的可预测性研究里，通常更看重违约因子和流动性，短期利率/期限结构的角色相对被弱化。一个自然的问题是：在公司债超额收益里，短期利率是否同样是「最稳健、但只在短期」的那个变量？</p>
+<p>【可行性】中。数据用 TRACE + Mergent FISD 构造公司债超额收益，宏观变量用三个月国库券与期限利差。识别上直接套用本文的 Hodrick 标准误 + 跨期限联合检验框架，难点在公司债收益的非交易日与流动性噪声需要先净化。doable，但需要谨慎处理流动性混杂。</p>
+</blockquote>
+<p><strong>2. 用 Hodrick 标准误重审「外资持有比例」对收益的长期预测</strong></p>
+<blockquote>
+<p>【经济故事】关于外资持有人与本地市场，有不少回归声称外资流入/持有比例能预测未来的本地收益或波动。这些持有比例同样高度持续，长期回归极可能落入本文揭示的标准误陷阱。</p>
+<p>【可行性】中高。数据用各国托管/持仓面板（如 EPFR、各国央行的国际投资头寸），按本文方法做跨期限 Hodrick 检验与功效分析。识别清晰，主要工作量在持仓数据的清洗与频率对齐。</p>
+</blockquote>
+<p><strong>3. 现值方差分解里「短期利率那 22%」的跨国异质性</strong></p>
+<blockquote>
+<p>【经济故事】本文在合并/平均意义上给出贴现率 61%、利率 22%、股利增长 7% 的分解。但货币政策框架不同的国家，利率那一块的份额应当差异很大——通胀目标制国家 vs. 汇率盯住国家。</p>
+<p>【可行性】中。需要逐国估计现值模型并做方差分解，数据可得（MSCI + 各国短期利率），识别靠模型设定。难点是模型在小样本国家的估计稳定性，结论需配合稳健性检验。</p>
+</blockquote>
+<p><strong>4. 「预测力随期限的形状」本身能不能当成模型检验工具</strong></p>
+<blockquote>
+<p>【经济故事】不同的预期收益过程（AR(1) vs. 多因子）会在「系数–期限曲线」上留下不同形状。本文已证明这条曲线在不同标准误下读数迥异。可以反过来，把（用正确标准误测出的）系数–期限曲线当作一个矩，去识别/拒绝竞争性的贴现率模型。</p>
+<p>【可行性】中低。这是偏方法论的工作，需要把若干结构化预期收益模型映射到可观测的回归系数曲线上，再做矩匹配。理论部分不轻，但数据要求不高，适合作为一篇方法论文。</p>
+</blockquote>
+<h2 id="">我的判断</h2>
+<p>这篇文章的贡献，不在于发现了某个新变量，而在于<strong>把「显著性」这件事本身做成了研究对象</strong>。它最漂亮的一笔，是没有停在「换个标准误、结论就变了」的层面——那样很容易被反驳为「你只是挑了对自己有利的尺子」；它继续用蒙特卡洛把规模和功效都摆上台面，证明 Hodrick 这把尺子规模正确、功效充足，从而把「长期不可预测」从一个「可能是没力气」的猜测，钉成了一个有据的结论。再叠加跨国数据和一个能自洽匹配证据的现值模型，整篇文章的说服力是层层加固的。</p>
+<p>要说对识别的担忧，主要有两点。其一，整个功效论证依赖那个现值模型作为数据生成过程——如果真实世界的预期收益过程与模型设定有系统性偏离（比如存在结构突变，Timmermann &amp; Paye, 2006 就强调过预测模型的不稳定性），那么「功效足够」这个结论本身也会打折扣。其二，跨国混合检验把效率的提升建立在「各国收益相关性不高」上，但这忽略了全球共同贴现率冲击可能带来的隐性相关——这会让混合检验的有效样本量被高估。</p>
+<p>后续我最想看到的，是把这套「先校准尺子、再下结论」的纪律，系统地推广到信用市场和外资持有人的可预测性研究上——这两个领域的解释变量同样高度持续，同样充斥着长期回归，却很少有人认真做过本文这样的规模–功效体检。在那里，「Is it there?」这个问题，很可能还远没有答案。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Ang, A., &amp; Bekaert, G. (2007). Stock Return Predictability: Is It There? <em>Review of Financial Studies</em> 20(3), 651–707.</li>
+<li>Bansal, R., &amp; Lundblad, C. (2002). Market Efficiency, Fundamental Values and Asset Returns in Global Equity Markets. <em>Journal of Econometrics</em> 109, 195–237.</li>
+<li>Bansal, R., &amp; Yaron, A. (2004). Risks for the Long Run: A Potential Resolution of Asset Pricing Puzzles. <em>Journal of Finance</em> 59(4), 1481–1509.</li>
+<li>Boudoukh, J., &amp; Richardson, M. (1993). The Statistics of Long-Horizon Regressions. <em>Mathematical Finance</em> 4(2), 103–120.</li>
+<li>Campbell, J. Y. (1991). A Variance Decomposition for Stock Returns. <em>Economic Journal</em> 101, 157–179.</li>
+<li>Campbell, J. Y., &amp; Shiller, R. J. (1988a). Stock Prices, Earnings and Expected Dividends. <em>Journal of Finance</em> 43(3), 661–676.</li>
+<li>Campbell, J. Y., &amp; Shiller, R. J. (1988b). The Dividend-Price Ratio and Expectations of Future Dividends and Discount Factors. <em>Review of Financial Studies</em> 1(3), 195–228.</li>
+<li>Campbell, J. Y., &amp; Viceira, L. M. (1999). Consumption and Portfolio Decisions When Expected Returns are Time Varying. <em>Quarterly Journal of Economics</em> 114(2), 433–492.</li>
+<li>Campbell, J. Y., &amp; Yogo, M. (2006). Efficient Tests of Stock Return Predictability. <em>Journal of Financial Economics</em> 81(1), 27–60.</li>
+<li>Cochrane, J. H. (1992). Explaining the Variance of Price-Dividend Ratios. <em>Review of Financial Studies</em> 5, 243–280.</li>
+<li>Fama, E., &amp; French, F. (1988). Dividend Yields and Expected Stock Returns. <em>Journal of Financial Economics</em> 22, 3–26.</li>
+<li>Fama, E., &amp; Schwert, G. W. (1977). Asset Returns and Inflation. <em>Journal of Financial Economics</em> 5, 115–146.</li>
+<li>Goyal, A., &amp; Welch, I. (2003). The Myth of Predictability: Does the Dividend Yield Forecast the Equity Premium? <em>Management Science</em> 49(5), 639–654.</li>
+<li>Hansen, L., &amp; Hodrick, R. (1980). Forward Exchange Rates as Optimal Predictors of Future Spot Rates: An Econometric Analysis. <em>Journal of Political Economy</em> 88, 829–853.</li>
+<li>Hodrick, R. J. (1992). Dividend Yields and Expected Stock Returns: Alternative Procedures for Inference and Measurement. <em>Review of Financial Studies</em> 5(3), 357–386.</li>
+<li>Lamont, O. (1998). Earnings and Expected Returns. <em>Journal of Finance</em> 53(5), 1563–1587.</li>
+<li>Lettau, M., &amp; Ludvigson, S. (2001). Consumption, Aggregate Wealth and Expected Stock Returns. <em>Journal of Finance</em> 56(3), 815–849.</li>
+<li>Lewellen, J. (2004). Predicting Returns with Financial Ratios. <em>Journal of Financial Economics</em> 74, 209–235.</li>
+<li>Newey, W., &amp; West, K. (1987). A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix. <em>Econometrica</em> 55, 703–708.</li>
+<li>Richardson, M., &amp; Smith, T. (1991). Tests of Financial Models in the Presence of Overlapping Observations. <em>Review of Financial Studies</em> 4(2), 227–254.</li>
+<li>Stambaugh, R. F. (1999). Predictive Regressions. <em>Journal of Financial Economics</em> 54, 375–421.</li>
+<li>Timmermann, A., &amp; Paye, B. (2006). Instability of Return Prediction Models. <em>Journal of Empirical Finance</em> 13, 274–315.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 一条「人人都信」的预测</a></li>
+        <li><a href="#2">2 同一组数据，两种读数</a></li>
+        <li><a href="#3-hodrick">3 识别与推断：回归、重叠，与 Hodrick 标准误</a></li>
+        <li><a href="#4">4 数据</a></li>
+        <li><a href="#5">5 主要结果：真正稳健的，是短期利率</a></li>
+        <li><a href="#6">6 这不是「检验没力气」：一场尺子的体检</a></li>
+        <li><a href="#7">7 现值模型：股利收益率到底在反映什么？</a></li>
+        <li><a href="#8">8 文献脉络</a></li>
+        <li><a href="#q-a">评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#">我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

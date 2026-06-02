@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>24. RBC: Deterministic Neoclassical Growth Model – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="note">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>24. RBC: Deterministic Neoclassical Growth Model</h1>
+      
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 01, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag"><span class="lang zh">中文</span><span class="lang en">English</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">新古典增长</span><span class="lang en">Neoclassical Growth</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">实际经济周期</span><span class="lang en">RBC</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">鞍点路径</span><span class="lang en">Saddle Path</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">Kaldor 事实</span><span class="lang en">Kaldor Facts</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">对数线性化</span><span class="lang en">Log-linearization</span></span>
+        
+        
+        
+        
+        <span class="tag"><span class="lang zh">校准</span><span class="lang en">Calibration</span></span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="lang zh">
+<div class="callout"><div class="callout-title">Note</div><p>本部分导读：Part III — Theory of Income III；本组：标准经济周期模型（RBC）
+在这一部分，我们先研究<strong>不含任何不确定性</strong>的新古典增长模型，以理解：
+- 经济的<strong>稳态</strong>（即平衡增长路径，balanced growth path）；
+- 模型的<strong>校准（calibration）</strong>；
+- \(k_{t+1}\text{-}c_t\) 相平面中的<strong>鞍点路径（saddle path）</strong>，以及用于数值求解鞍点路径的<strong>打靶算法（shooting algorithm）</strong>；
+- 稳态邻域内通过<strong>对数线性化（log-linearization）</strong>得到的瞬时（转移）动态。</p>
+<p>这能帮助我们理解：当某个冲击使系统偏离稳态后，一个最优决策的经济会如何反应、从偏离稳态的任意一点出发如何演化。基本思想是：把 RBC 建模为校准模型在每次冲击实现后的<strong>确定性收敛模式</strong>。但由于模型本身是确定性的、不含任何冲击，我们不假定冲击序列的任何模式或结构（生成过程）。随后会把新古典增长模型的思想推广到一般增长模型——其中每个变量都是历史变量 \(s^t\) 的函数，从而把随机性嵌入状态变量 \(s_t\)，以研究带随机冲击的经济（可校准以刻画实际经济周期）。</p></div>
+<h1>24. RBC：确定性新古典增长模型</h1>
+<p>本节讨论确定性新古典增长模型的稳态与转移动态。此设定中，经济从偏离稳态的任意一点出发如何演化是确定性的。</p>
+<h2 id="24-1">24.1 模型</h2>
+<h3 id="24-1-1">24.1.1 社会计划者问题</h3>
+<p>社会计划者最大化无限存活的代表性家庭的可加时间可分的贴现效用：</p>
+<p>$$
+\max_{\{C_t,H_t,K_{t+1}\}_{t=0}^{\infty}}\sum_{t=0}^{\infty}\beta^t u(C_t,H_t) \tag{24.1}
+$$</p>
+<p>$$
+\text{s.t.}\quad K_{t+1}+C_t=F_t(K_t,H_t)\ \text{for }\forall t,\qquad K_0\text{ given} \tag{24.2}
+$$</p>
+<p>其中 \(C_t\) 是消费、\(H_t\) 是工作小时数、\(K_t\) 是资本，均为 \(t\) 期变量；\(\beta\in(0,1)\) 是效用贴现因子。</p>
+<p>注意 \(F_t(K_t,H_t)\) 是 \(t\) 期的产出 \(Y_t\) 加上未折旧资本，即 \(F_t(K_t,H_t)=Y_t+(1-\delta)K_t\)；从而生产函数可写为</p>
+<p>$$
+Y_t=\tilde F_t(K_t,H_t)=F_t(K_t,H_t)-(1-\delta)K_t
+$$</p>
+<p>并定义投资 \(X_t=K_{t+1}-(1-\delta)K_t\)。</p>
+<p>为保证内点一阶条件的充分性，作如下假设：</p>
+<ul>
+<li>效用 \(u(C_t,H_t)\) 关于 \(C_t\) 凹、关于 \(H_t\) 凸（因 \(H_t\) 造成负效用，可写作 \(u(C_t,1-H_t)\)，则关于 \((C_t,1-H_t)\) 联合凹），并满足 Inada 条件。</li>
+<li>生产函数 \(\tilde F_t(K_t,H_t)\) 关于 \((K_t,H_t)\) 联合凹，\(F_t(K_t,H_t)\) 亦然。</li>
+</ul>
+<h3 id="24-1-2">24.1.2 拉格朗日函数</h3>
+<p>$$
+\mathcal{L}=\sum_{t=0}^{\infty}\beta^t\big[u(C_t,H_t)+\lambda_t\big(F_t(K_t,H_t)-K_{t+1}-C_t\big)\big] \tag{24.3}
+$$</p>
+<p>其中 \(\lambda_t\) 是 \(t\) 期预算约束的拉格朗日乘子。</p>
+<h3 id="24-1-3">24.1.3 一阶条件</h3>
+<p>(24.3) 的一阶条件为：</p>
+<p>$$
+[C_t]\quad u_C(C_t,H_t)=\lambda_t \tag{24.4}
+$$</p>
+<p>$$
+[H_t]\quad -u_H(C_t,H_t)=\lambda_t F_{H,t}(K_t,H_t) \tag{24.5}
+$$</p>
+<p>$$
+[K_{t+1}]\quad \lambda_t=\beta\lambda_{t+1}F_{K,t+1}(K_{t+1},H_{t+1}) \tag{24.6}
+$$</p>
+<p>$$
+[\lambda_t]\quad K_{t+1}+C_t=F_t(K_t,H_t)
+$$</p>
+<p>由 (24.4)、(24.5) 联立，得<strong>期内无差异条件</strong>：</p>
+<p>$$
+\frac{-u_H(C_t,H_t)}{u_C(C_t,H_t)}=F_{H,t}(K_t,H_t) \tag{24.7}
+$$</p>
+<p>其中 LHS 是边际替代率（\(MRS_t\)），即为少工作一单位时间而仍保持无差异愿放弃的消费量；RHS 是劳动的边际产出（\(MPL_t\)）。</p>
+<h3 id="24-1-4">24.1.4 欧拉方程与横截性条件</h3>
+<p>由 (24.4) 与 (24.6) 得<strong>欧拉方程（EE，亦称跨期无差异条件）</strong>：</p>
+<p>$$
+\lambda_t=\beta\lambda_{t+1}F_{K,t+1}(K_{t+1},H_{t+1})\ \Rightarrow\ u_C(C_t,H_t)=\beta u_C(C_{t+1},H_{t+1})F_{K,t+1}(K_{t+1},H_{t+1}) \tag{24.8}
+$$</p>
+<p>以及<strong>横截性条件（TC）</strong>：</p>
+<p>$$
+\text{TC}:\quad \lim_{T\to\infty}\beta^T\lambda_T K_T=0
+$$</p>
+<p>横截性条件对解的最优性并非必要，但它确保资本存量不会随时间爆炸。</p>
+<h2 id="24-2-kaldor">24.2 Kaldor 事实：长期经济增长的典型事实</h2>
+<p>Kaldor 事实是 Nicholas Kaldor 在其 1957 年的著名论文中总结的长期经济增长的统计事实：</p>
+<ul>
+<li>劳动与资本所获的国民收入份额在长期内大致恒定；</li>
+<li>人均资本存量的增长率在长期内大致恒定；</li>
+<li>人均产出的增长率在长期内大致恒定；</li>
+<li>资本/产出比率在长期内大致恒定；</li>
+<li>投资回报率在长期内大致恒定；</li>
+<li>各国劳动生产率与总产出的增长率有可观差异（2% 到 5%）。</li>
+</ul>
+<p>这些典型事实对<strong>长期平均</strong>成立，但短期内不成立——增长率与劳动收入份额在经济周期内显著波动。本模型为校准，假设如下版本的 Kaldor 事实：</p>
+<ol>
+<li>劳动收入份额 \(1-\alpha\) 随时间恒定。</li>
+<li>资本 \(K_t\)、产出 \(Y_t\)、消费 \(C_t\) 都以同一恒定率 \(g\) 增长，即</li>
+</ol>
+<p>$$
+K_t(1+g)^{-t}=k,\quad Y_t(1+g)^{-t}=y,\quad C_t(1+g)^{-t}=c \tag{24.9}
+$$</p>
+<ol>
+<li>工作小时数 \(H_t\) 随时间恒定（统计上 \(H_t\) 略有下降；平均工时因性别、教育、国别而有争议；为简便假设恒定），即 \(H_t=H\) \(\forall t\)。</li>
+<li>工资率 \(w_t\equiv MRS_t=MPL_t\) 也以同一恒定率 \(g\) 增长（由事实 1、2、3 立得；或者：丢掉事实 1 与生产函数 CRS 假设，则事实 2、3 蕴含事实 1、4，见命题 24.2 的证明）。</li>
+</ol>
+<div class="callout"><div class="callout-title">Tip</div><p>为何 \(w_t\) 以 \(g\) 增长时 \(H_t\) 仍恒定？
+比较收入效应与替代效应。\(w_t\) 增长时，闲暇更昂贵，故<strong>替代效应</strong>导致更多消费、更少闲暇（更高 \(H_t\)）；而<strong>收入效应</strong>（更高 \(w_t\) 意味更高收入）导致更多消费、更多闲暇（更低 \(H_t\)）。恒定的 \(H_t\) 正源自替代效应与收入效应的精确抵消。由于这种精确抵消使平衡增长成为可能，我们称此情形下的偏好为<strong>平衡增长偏好</strong>。</p></div>
+<h2 id="24-3">24.3 校准所需的更多假设</h2>
+<p>除凹性、Inada 与 Kaldor 事实假设外，再对 \(F_t(K_t,H_t)\) 与 \(u(C_t,H_t)\) 加更多假设。</p>
+<h3 id="24-3-1-f-t-k-t-h-t">24.3.1 关于 \(F_t(K_t,H_t)\) 的更多假设</h3>
+<p>假设</p>
+<p>$$
+F_t(K_t,H_t)=\hat F\big(K_t,(1+g)^t H_t\big)=\hat F\big(K_t,(1+g)^t H\big)
+$$</p>
+<ul>
+<li>恒定的劳动供给的<strong>有效性</strong>以同一恒定率 \(g\) 增长；</li>
+<li>\(F_t(\cdot,\cdot)\) 函数形式中随时间变化的部分通过恒定劳动供给 \(H\) 的有效性增长进入；</li>
+<li>函数 \(\hat F(\cdot,\cdot)\) 时间不变。</li>
+</ul>
+<p>并假设 \(\hat F(\cdot,\cdot)\) 是规模报酬不变（CRS，即一次齐次）。更具体地，假设 <strong>Cobb-Douglas 生产函数</strong>（净生产，或写成毛生产 \(\hat F\)）：</p>
+<p>$$
+Y_t=\tilde F_t(K_t,H_t)=AK_t^{\alpha}H_t^{1-\alpha},\qquad \hat F(k,H)=Ak^{\alpha}H^{1-\alpha}+(1-\delta)k
+$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>命题 24.1
+Cobb-Douglas 生产函数蕴含劳动收入份额恒定。</p>
+<p>[!note]- 证明
+我们证明 Cobb-Douglas 生产函数本身（无须平衡增长路径假设）即蕴含劳动收入份额恒定。考虑生产 \(Y_t=\tilde F_t(K_t,H_t)=AK_t^{\alpha}H_t^{1-\alpha}\)。均衡中工资率
+$$
+> w_t=\frac{\partial\tilde F_t(K_t,H_t)}{\partial H_t}=(1-\alpha)AK_t^{\alpha}H_t^{-\alpha}
+> $$
+故劳动收入份额
+$$
+> \frac{w_t H_t}{Y_t}=\frac{(1-\alpha)AK_t^{\alpha}H_t^{1-\alpha}}{AK_t^{\alpha}H_t^{1-\alpha}}=1-\alpha
+> $$
+随时间恒定，无须任何进一步假设。\(\blacksquare\)</p>
+<p>[!important] 命题 24.2
+CRS 生产函数 \(\hat F(\cdot,\cdot)\) 蕴含平衡增长路径上劳动收入份额恒定。</p>
+<p>[!note]- 证明
+由 \(\hat F(\cdot,\cdot)\) 的 CRS 与 (24.9) 中的条件，\(\hat F_H(K_t,H_t)\) 关于其参数零次齐次。则
+$$
+> \begin{aligned}
+> w_t&=\frac{\partial Y_t}{\partial H_t}=\frac{\partial\tilde F_t(K_t,H_t)}{\partial H_t}=\frac{\partial[F_t(K_t,H_t)-(1-\delta)K_t]}{\partial H_t}=F_{H,t}(K_t,H_t)\\
+> &=(1+g)^t\hat F_H\big(K_t,(1+g)^t H_t\big)=(1+g)^t\hat F_H\big(K_t,(1+g)^t H\big)\\
+> &=(1+g)^t\hat F_H\big((1+g)^t k,(1+g)^t H\big)=(1+g)^t\hat F_H(k,H)
+> \end{aligned}
+> $$
+故工资率也以 \(g\) 增长。于是劳动收入份额
+$$
+> \frac{w_t H_t}{Y_t}=\frac{(1+g)^t\hat F_H(k,H)H}{(1+g)^t y}=\frac{\hat F_H(k,H)H}{y}
+> $$
+由于 \(k\)、\(H\)、\(y\) 都恒定，劳动收入份额 \(\frac{w_t H_t}{Y_t}\) 也随时间恒定。\(\blacksquare\)</p></div>
+<h3 id="24-3-2-u-c-t-h-t">24.3.2 关于 \(u(C_t,H_t)\) 的更多假设</h3>
+<p>假设如下特定族的效用函数：</p>
+<p>$$
+u(C_t,H_t)=\frac{\big(C_t\cdot e^{-v(H_t)}\big)^{1-\sigma}-1}{1-\sigma}
+$$</p>
+<p>其中 \(v(\cdot)\) 递增且凸。当 \(\sigma\to1\) 时，</p>
+<p>$$
+\lim_{\sigma\to1}u(C_t,H_t)=\lim_{\sigma\to1}\frac{\big(C_t e^{-v(H_t)}\big)^{1-\sigma}-1}{1-\sigma}\overset{\text{L'Hopital}}{=}\lim_{\sigma\to1}\frac{-\big(C_t e^{-v(H_t)}\big)^{1-\sigma}\ln\big(C_t e^{-v(H_t)}\big)}{-1}=\ln\big(C_t e^{-v(H_t)}\big)=\ln C_t-v(H_t)
+$$</p>
+<h2 id="24-4">24.4 三个静态方程组成的系统</h2>
+<p>稳态下经济平衡增长。在前述所有假设与性质下，可重写 (24.7) 的期内条件得</p>
+<p>$$
+v'(H_t)\,c=\hat F_H(k,H) \tag{24.10}
+$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- (24.10) 的推导
+代入效用导数到 \(\dfrac{-u_H(C_t,H_t)}{u_C(C_t,H_t)}=F_{H,t}(K_t,H_t)\)：
+$$
+> \frac{-\big[(C_t e^{-v(H_t)})^{-\sigma}\cdot(-v'(H_t)C_t e^{-v(H_t)})\big]}{(C_t e^{-v(H_t)})^{-\sigma}\cdot e^{-v(H_t)}}=(1+g)^t\hat F_H(k,H)\ \Rightarrow\ v'(H_t)C_t=(1+g)^t\hat F_H(k,H)
+> $$
+代入 \(C_t=c(1+g)^t\) 得 \(v'(H_t)c(1+g)^t=(1+g)^t\hat F_H(k,H)\Rightarrow v'(H_t)c=\hat F_H(k,H)\)。</p></div>
+<p>重写 (24.8) 的欧拉方程得</p>
+<p>$$
+(1+g)^{\sigma}=\beta\hat F_K(k,H) \tag{24.11}
+$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- (24.11) 的推导
+代入效用导数到 \(u_C(C_t,H_t)=\beta u_C(C_{t+1},H_{t+1})F_{K,t+1}\)：
+$$
+> \big(C_t e^{-v(H_t)}\big)^{-\sigma}e^{-v(H_t)}=\beta\big(C_{t+1}e^{-v(H_{t+1})}\big)^{-\sigma}e^{-v(H_{t+1})}\hat F_K(k,H)
+> $$
+代入 \(C_t=c(1+g)^t\)、\(H_t=H\)：\(\big((1+g)^t c\big)^{-\sigma}=\beta\big((1+g)^{t+1}c\big)^{-\sigma}\hat F_K(k,H)\Rightarrow 1=\beta(1+g)^{-\sigma}\hat F_K(k,H)\Rightarrow(1+g)^{\sigma}=\beta\hat F_K(k,H)\)。</p></div>
+<p>重写 (24.2) 的资源约束得</p>
+<p>$$
+(1+g)k+c=\hat F(k,H) \tag{24.12}
+$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- (24.12) 的推导
+\(K_{t+1}+C_t=F_t(K_t,H_t)=\hat F\big((1+g)^t k,(1+g)^t H\big)\overset{\text{CRS}}{=}(1+g)^t\hat F(k,H)\)，即 \((1+g)^{t+1}k+(1+g)^t c=(1+g)^t\hat F(k,H)\Rightarrow(1+g)k+c=\hat F(k,H)\)。</p></div>
+<h2 id="24-5">24.5 校准模型</h2>
+<p>有六个待校准项：\(\alpha\)、\(\beta\)、\(g\)、\(\sigma\)、\(\delta\)、\(v(H)\)。以下校准基于年度数据；一旦切换到季度数据须重做（季度流量变量取年度值的四分之一，如 \(g^Q=\frac14 g^Y\)、\(\delta^Q=\frac14\delta^Y\)）。</p>
+<ul>
+<li><strong>偏好参数 \(\sigma=1\)</strong>：不能从数据估计，故固定为 1。所有其他参数的校准都依赖 \(\sigma\) 的取值；只要 \(\sigma\) 不太大也不太小就无碍。</li>
+<li><strong>平衡增长率 \(g=0.02\)</strong>：可从数据估计。用美国南北战争后数据：产出（实际 GDP）平均增长率约 2%，既不上升也不下降趋势。</li>
+<li><strong>劳动收入份额 \(1-\alpha=0.6\)（即 \(\alpha=0.4\)）</strong>：可从数据估计。</li>
+<li><strong>折旧率 \(\delta=0.06\)</strong>：可从数据估计。通过投资率 \(\frac{X_t}{K_t}\) 数据获得：经验上 \(\frac{X_t}{K_t}=0.08\) 且无显著时间变化。重写资本运动律 \(K_{t+1}=(1-\delta)K_t+X_t\Rightarrow\frac{K_{t+1}}{K_t}=(1-\delta)+\frac{X_t}{K_t}\Rightarrow1+g=1-\delta+0.08\Rightarrow\delta=0.08-g=0.06\)。</li>
+<li><strong>效用贴现率 \(\beta=0.958\)</strong>：可从数据估计。通过资本/产出比 \(\frac{K_t}{Y_t}\) 数据获得：经验上 \(\frac{K_t}{Y_t}=3.2\) 且无显著变化。重写 (24.11)：</li>
+</ul>
+<p>$$
+\begin{aligned}
+(1+g)^{\sigma}&=\beta\hat F_K(k,H)=\beta\frac{\partial\hat F(k,H)}{\partial k}=\beta\frac{\partial[Ak^{\alpha}H^{1-\alpha}+(1-\delta)k]}{\partial k}\\
+&=\beta\big[A\alpha k^{\alpha-1}H^{1-\alpha}+(1-\delta)\big]=\beta\Big[\alpha\frac{y}{k}+(1-\delta)\Big]\ \Rightarrow\ \beta=\frac{(1+g)^{\sigma}}{\alpha\frac{y}{k}+(1-\delta)}\approx0.958
+\end{aligned}
+$$</p>
+<p>它惊人地合理，因为 0.958 是间接得到的、且恰好小于 1，这在经济上说得通。由于 \(g\) 由数据钉住，可知 \(\beta\) 随 \(\sigma\) 递增；回忆 \(\sigma\) 是任意选取的，故这表明 \(\sigma\) 不能太大，否则 \(\beta\) 会大于 1。</p>
+<ul>
+<li><strong>工作的负效用 \(v(H)\)</strong>：不能从数据估计，但 \(v'(H)\) 可由数据钉住。\(y\)、\(k\)、\(c\)、\(H\) 直接可观测；\(A\) 由 \(y=Ak^{\alpha}H^{1-\alpha}\) 钉住；\(\alpha=0.4\) 已得。重写 (24.10)：\(v'(H_t)=\dfrac{\hat F_H(k,H)}{c}=\dfrac{A(1-\alpha)k^{\alpha}H^{-\alpha}}{c}\)，代入 \(A,\alpha,k,H,c\) 即得 \(v'(H_t)\)。</li>
+</ul>
+<h2 id="24-6">24.6 转移动态</h2>
+<h3 id="24-6-1">24.6.1 唯一稳态</h3>
+<p>§24.4 得到系统 (24.10)、(24.11)、(24.12)，共同刻画均衡。代入 Cobb-Douglas（\(y_t=k_t^{\alpha}H_t^{1-\alpha}\)，TFP \(A\) 仅为常数无动态，为简便丢弃）并令 \(\sigma=1\)（效用 \(\ln C_t-v(H_t)\)），得</p>
+<p>$$
+c_t v'(H_t)=(1-\alpha)k_t^{\alpha}H_t^{-\alpha} \tag{24.13}
+$$</p>
+<p>$$
+(1+g)c_t^{-1}=\beta c_{t+1}^{-1}\big(\alpha k_{t+1}^{\alpha-1}H_{t+1}^{1-\alpha}+1-\delta\big) \tag{24.14}
+$$</p>
+<p>$$
+(1+g)k_{t+1}=k_t^{\alpha}H_t^{1-\alpha}+(1-\delta)k_t-c_t \tag{24.15}
+$$</p>
+<p>§24.4 中无 \(t\) 下标，因当时讨论的是稳态（\(c_t=c\)，\(k_t=k\)，\(H_t=H\) \(\forall t\)）。这里讨论转移动态，关心经济略偏离稳态时会发生什么，故 \(t\) 下标出现。</p>
+<div class="callout"><div class="callout-title">Important</div><p>命题 24.1（断言 24.1）
+此经济存在唯一的稳态（平衡增长路径）。</p>
+<p>[!note]- 证明
+给定 (24.13)、(24.14)、(24.15)，先唯一求解稳态的资本/工时比与消费/工时比，再在某些条件下通过唯一钉住 \(H\) 来唯一确定一切。</p>
+<p><strong>1.</strong> 平衡增长 ⟹ \(c_t=c_{t+1}=c\)，\(k_t=k_{t+1}=k\)，\(H_t=H\)。由 (24.14) 钉住去趋势资本/工时比：
+$$
+> 1+g=\beta(\alpha k^{\alpha-1}H^{1-\alpha}+1-\delta)\ \Rightarrow\ \frac{k}{H}=\left(\frac{\frac{1+g}{\beta}-(1-\delta)}{\alpha}\right)^{\frac{1}{\alpha-1}} \tag{24.16}
+> $$</p>
+<p><strong>2.</strong> 由 (24.15) 钉住消费/资本比：
+$$
+> 1+g=k^{\alpha-1}H^{1-\alpha}+(1-\delta)-\frac{c}{k}\ \Rightarrow\ \frac{c}{k}=\left(\frac{k}{H}\right)^{\alpha-1}-(g+\delta) \tag{24.17}
+> $$</p>
+<p><strong>3.</strong> 结合 (24.16)、(24.17) 得消费/工时比：
+$$
+> \frac{c}{H}=\frac{k}{H}\times\frac{c}{k}=\left(\frac{k}{H}\right)^{\alpha}-\frac{k}{H}(g+\delta) \tag{24.18}
+> $$</p>
+<p><strong>4.</strong> 由 (24.13) 与已解出的 \(\frac{c}{H}\)、\(\frac{k}{H}\) 解 \(Hv'(H)\)：
+$$
+> cv'(H)=(1-\alpha)k^{\alpha}H^{-\alpha}\ \Rightarrow\ Hv'(H)=\left(\frac{c}{H}\right)^{-1}(1-\alpha)\left(\frac{k}{H}\right)^{\alpha} \tag{24.19}
+> $$
+只需 \(v(\cdot)\) 满足 \(v'>0\)、\(v''>0\)（递增且凸，经济上合理）。在此假设下，LHS 的 \(Hv'(H)\) 关于 \(H\) 单调（递增），因 \((Hv'(H))'=v'(H)+Hv''(H)>0\)。由于 (24.19) 的 RHS 已被钉住而 LHS 关于 \(H\) 单调，故 \(H\) 被唯一钉住。\(\blacksquare\)</p>
+<p>综合所有步骤，唯一钉住平衡增长路径：\(H_t=(1+g)^t H\)，\(C_t=(1+g)^t c\)，\(K_t=(1+g)^t k\)。给定初始条件 \(K_0=k\) 及 \(c,k,H\) 之比，可前推所有变量。</p></div>
+<p>基于此，在 \(v(H)\) 的给定下存在唯一稳态。自然要问：</p>
+<ul>
+<li>从偏离稳态一点出发，系统的动态如何？</li>
+<li>系统是否总会收敛到稳态？</li>
+</ul>
+<p>接下来两小节在 \(v(H)\) 函数的两种特例下讨论转移动态。</p>
+<h3 id="24-6-2-i">24.6.2 情形 I：完全无弹性劳动供给</h3>
+<p>设 \(v(H)=\begin{cases}0 & \text{if }H\le1\\ \infty & \text{if }H>1\end{cases}\Rightarrow H_t=H=1\) \(\forall t\)。</p>
+<p>\(v(H)\) 在 \(1\) 处有折点、不可微，故须修改刻画均衡的方程系统：把 (24.13) 替换为 \(H_t=1\)。这是劳动无弹性供给的<strong>标准新古典增长模型</strong>。刻画均衡的方程为：</p>
+<p>$$
+H_t=1
+$$</p>
+<p>$$
+(1+g)c_t^{-1}=\beta c_{t+1}^{-1}\big(\alpha k_{t+1}^{\alpha-1}H_{t+1}^{1-\alpha}+1-\delta\big) \tag{24.20}
+$$</p>
+<p>$$
+(1+g)k_{t+1}=k_t^{\alpha}H_t^{1-\alpha}+(1-\delta)k_t-c_t \tag{24.21}
+$$</p>
+<p>考虑 (24.20)、(24.21) 找唯一稳态，构造两条轨迹（locus）的图，交点即唯一稳态。</p>
+<ul>
+<li><strong>(24.20)</strong> 给出使 \(c_{t+1}=c_t\) 的 \((k_{t+1},c_t)\) 值（\(c_t\) 候选稳态轨迹）。在稳态条件下并代入 \(H_t=1\)，(24.20) 化为</li>
+</ul>
+<p>$$
+1+g=\beta(\alpha k_{t+1}^{\alpha-1}+1-\delta)\ \Rightarrow\ k_{t+1}=\left[\frac{\frac{1+g}{\beta}-(1-\delta)}{\alpha}\right]^{\frac{1}{\alpha-1}} \tag{24.22}
+$$</p>
+<p>这是一条<strong>竖直线</strong>，即 steady \(c\) locus。左右区域动态：由 (24.20)，\(c_t\) 随 \(k_{t+1}\) 递增。轨迹右侧（更高 \(k_{t+1}\)）⟹ 更高 \(c_t\)，即 \(c_t>c_{t+1}\)，\(c_t\) 递减动态；左侧 ⟹ 更低 \(c_t\)，即 \(c_t<c_{t+1}\)，\(c_t\) 递增动态。</p>
+<ul>
+<li><strong>(24.21)</strong> 给出使 \(k_{t+1}=k_t\) 的 \((k_{t+1},c_t)\) 值（\(k_{t+1}\) 候选稳态轨迹）。在稳态条件下并代入 \(H_t=1\)，(24.21) 化为</li>
+</ul>
+<p>$$
+c_t=k_{t+1}^{\alpha}-(g+\delta)k_{t+1} \tag{24.23}
+$$</p>
+<p>即 steady \(k\) locus，(24.23) 是<strong>倒 U 形</strong>轨迹。外（上）区域（更高 \(c_t\)）⟹ 更高 \(k_t\)，即 \(k_t>k_{t+1}\)，\(k_{t+1}\) 递减动态；内（下）区域 ⟹ 更低 \(k_t\)，即 \(k_t<k_{t+1}\)，\(k_{t+1}\) 递增动态。</p>
+<p><strong>图 14（无弹性劳动供给的相图，已转述）</strong>：横轴 \(k_{t+1}\)、纵轴 \(c_t\)。竖直的 steady \(c\) locus（位于 \(k^*=k\)）与倒 U 形的 steady \(k\) locus 相交于稳态 \((k^*,c^*)\)。四个区域的箭头分别指示 \(c_t\)、\(k_{t+1}\) 的增减动态；穿过稳态的<strong>鞍点路径</strong>自西南向东北倾斜。</p>
+<p>最优政策应落在鞍点路径上。设从 \(k_{t+1}<k\) 出发：</p>
+<ul>
+<li>若 \(c_t\) 取在鞍点路径<strong>之上</strong>：系统 \((k_{t+1},c_t)\) 先向东北、再向西北，直到撞上纵轴 = 资本耗尽，对无限存活的主体不最优；</li>
+<li>若 \(c_t\) 取在鞍点路径<strong>之下</strong>：系统先向东北、再向东南，直到撞上横轴 = 此后永远零消费，不最优；</li>
+<li>故最优政策选择在鞍点路径上。</li>
+</ul>
+<p>如何找鞍点路径？两种算法：</p>
+<ol>
+<li><strong>前向打靶算法（Forward Shooting）</strong>：<ul>
+<li>(a) 给定 \(k_{t+1}\)，猜不同的消费水平 \(c_t\)，用 (24.20)、(24.21) 把每个候选 \(c_t\) 前向迭代。</li>
+<li>(b) 检查候选 \(c_t\) 是否使系统收敛到稳态而不落在任一轴上。<ul>
+<li>i. 鞍点路径是一维的，永远（概率 0）选不中真正的 \(c_t\) 收敛到稳态；</li>
+<li>ii. 故改为给均衡 \(c_t\) 提供足够小的区间，上界 \(\bar c_t\) 使系统收敛到纵轴、下界 \(\underline c_t\) 使系统收敛到横轴。</li>
+</ul>
+</li>
+<li>(c) 实现：i. 取 \(k_{t+1}<k\)（\(k_{t+1}>k\) 同理）；ii. 因已知鞍点路径上的 \(c_t\) 必在 steady \(k\) locus 之下，即 \(c_t<k_{t+1}^{\alpha}-(g+\delta)k_{t+1}\equiv\bar k\)，故在 \((l_0,h_0)\) 中搜索，\(l_0=0\)、\(h_0=\bar k\)；iii. 二分法：取 \((0,\bar k)\) 中点 \(m_0=\frac{\bar k}{2}\)，检查 \(c_t=m_0\) 的前向路径偏向 \(c_t\) 轴还是 \(k_{t+1}\) 轴。A. 若偏向 \(c_t\) 轴，在 \((l_0,m_0)\) 搜索并重复；B. 若偏向 \(k_{t+1}\) 轴，在 \((m_0,h_0)\) 搜索并重复。</li>
+<li>(d) 对每个 \(k_{t+1}\) 执行得鞍点路径。</li>
+<li>(e) 因机器精度，即使近似解迭代足够多步后也会偏离稳态，但偏离很小，只要容差选得好、解足够好。</li>
+</ul>
+</li>
+<li><strong>后向打靶算法（Backward Shooting）</strong>：<ul>
+<li>(a) 从稳态 \((k,c)\) 出发、偏离一小量。</li>
+<li>(b) 找鞍点路径左半部分（右半同理）：对 \(\varepsilon_n>0\)、\(\lim_{n\to\infty}\varepsilon_n=0\)：<ul>
+<li>i. 对每个 \(n\) 从 \((k-\varepsilon_n,c)\) 出发，用 (24.20)、(24.21) 反向追踪 \((k_t,c_{t-1}),(k_{t-1},c_{t-2}),\ldots\)，从上方逼近左鞍点路径；</li>
+<li>ii. 从 \((k,c-\varepsilon_n)\) 出发反向追踪，从下方逼近；</li>
+<li>iii. 设容差水平，看 \(n\) 需多大使两序列在某区域互相收敛，该区域即视为鞍点路径。</li>
+</ul>
+</li>
+<li>(c) 可快速描出鞍点路径。</li>
+<li>(d) 缺点：系统离散，指定初始 \(k_0=K_0\)，描出的离散点未必含 \(K_0\)，故需连接各离散点成连续路径以找到 \(k_0\)。</li>
+</ul>
+</li>
+</ol>
+<h3 id="24-6-3-ii">24.6.3 情形 II：弹性劳动供给</h3>
+<p>设 \(v(H)=\gamma H\)，此时劳动供给的 <strong>Frisch 弹性无穷</strong>（Frisch 弹性指给定财富的边际效用恒定时工作小时对工资率的弹性，度量工资率变化对劳动供给的（补偿）替代效应）。其无穷可见于</p>
+<p>$$
+cv'(H)=(1-\alpha)k^{\alpha}H^{-\alpha}=w\ \Rightarrow\ c\gamma=w\ \Rightarrow\ \frac{dw}{dH}=0\ \Rightarrow\ \frac{dH}{dw}=\infty\ \Rightarrow\ \varepsilon^{\text{Frisch}}=\frac{dH/H}{dw/w}=\frac{dH}{dw}\cdot\frac{w}{H}=\infty
+$$</p>
+<p>其中倒数第三步成立是因为消费水平 \(V\equiv wH\) 恒定，故 \(c=V\) 恒定。系统 (24.13)、(24.14)、(24.15) 化为</p>
+<p>$$
+c_t v'(H_t)=(1-\alpha)k_t^{\alpha}H_t^{-\alpha}\ \Rightarrow\ c_t\gamma=(1-\alpha)k_t^{\alpha}H_t^{-\alpha}\ \Rightarrow\ H_t=\left[\frac{1-\alpha}{c_t\gamma}\right]^{\frac{1}{\alpha}}k_t \tag{24.24}
+$$</p>
+<p>$$
+(1+g)c_t^{-1}=\beta\left(\alpha\left[\frac{1-\alpha}{\gamma}\right]^{\frac{1-\alpha}{\alpha}}c_{t+1}^{-\frac{1}{\alpha}}+c_{t+1}^{-1}(1-\delta)\right) \tag{24.25}
+$$</p>
+<p>$$
+(1+g)k_{t+1}=k_t\left[\frac{1-\alpha}{c_t\gamma}\right]^{\frac{1-\alpha}{\alpha}}+(1-\delta)k_t-c_t \tag{24.26}
+$$</p>
+<ul>
+<li><strong>(24.25)</strong> 在稳态条件下化为（steady \(c\) locus，<strong>水平线</strong>）</li>
+</ul>
+<p>$$
+c=\left[\frac{\frac{1+g}{\beta}-(1-\delta)}{\alpha}\right]^{\frac{\alpha}{\alpha-1}}\cdot\frac{1-\alpha}{\gamma} \tag{24.27}
+$$</p>
+<p>上下区域动态：由 (24.26)，\(k_{t+1}\) 随 \(c_t\) 递减、\(c_{t+1}\) 随 \(k_{t+1}\) 递增。上区域（更高 \(c_t\)）⟹ 更低 \(k_{t+1}\)、更低 \(c_{t+1}\)，即 \(c_t>c_{t+1}\)，递减动态；下区域 ⟹ 更高 \(k_{t+1}\)、更高 \(c_{t+1}\)，即 \(c_t<c_{t+1}\)，递增动态。</p>
+<ul>
+<li><strong>(24.26)</strong> 在稳态条件下化为（steady \(k\) locus，<strong>递增且增速递减</strong>的形状）</li>
+</ul>
+<p>$$
+k_{t+1}=\frac{1}{\left[\frac{1-\alpha}{\gamma}\right]^{\frac{1-\alpha}{\alpha}}c_t^{-\frac{1}{\alpha}}-c_t^{-1}(g+\delta)} \tag{24.28}
+$$</p>
+<p>外（上）区域（更高 \(c_t\)）⟹ 更高 \(k_t\)，\(k_t>k_{t+1}\)，递减动态；内（下）区域 ⟹ 更低 \(k_t\)，\(k_t<k_{t+1}\)，递增动态。</p>
+<p><strong>图 15（弹性劳动供给的相图，已转述）</strong>：横轴 \(k_{t+1}\)、纵轴 \(c_t\)。<strong>水平</strong>的 steady \(c\) locus 与递增的 steady \(k\) locus 相交于稳态，穿过稳态的鞍点路径自西南向东北倾斜。鞍点路径最优性的论证与两种打靶算法同情形 I。</p>
+<div class="callout"><div class="callout-title">Tip</div><p>注记 24.1
+实现前向打靶须小心：若从 \(k_t>k\) 出发，则 \(c\) 的最大可能值在上方无界，故不能用情形 I 那样的二分法；鞍点路径上对应的 \(c\) 可能位于所设区间端点之上，故需考虑任意大的 \(c\) 值方能找到鞍点路径。</p>
+<p>[!tip] 注记 24.2
+此问题的解可能含不合理的工时 \(H\) 值，因为我们没有界定 \(H\)——这是设定 \(v(H)=\gamma H\) 不可避免的特征。（情形 I 中 \(c\) 被总工时 \(H=1\) 所界，而情形 II 中 \(H\) 在上方无界。）</p></div>
+<h3 id="24-6-4">24.6.4 对数线性化</h3>
+<p>本小节希望在稳态的小邻域内<strong>线性化</strong>鞍点路径，原因有二：</p>
+<ol>
+<li>简化系统动态，且在足够小的邻域内足够精确；</li>
+<li>系统大部分时间停留在该邻域（早期收敛快、越接近稳态收敛越慢）。</li>
+</ol>
+<p>经验上对数线性化比直接线性化更精确，故聚焦对数线性化。假设</p>
+<p>$$
+v(H)=\frac{\gamma\varepsilon}{1+\varepsilon}H^{\frac{1+\varepsilon}{\varepsilon}},\quad\varepsilon>0,\qquad v'(H)=\gamma H^{\frac{1}{\varepsilon}}
+$$</p>
+<p>其中 \(\varepsilon\) 是劳动供给的 Frisch 弹性，因为 \(cv'(H)=(1-\alpha)k^{\alpha}H^{-\alpha}=w\Rightarrow c\gamma H^{1/\varepsilon}=w\)，故 \(\varepsilon^{\text{Frisch}}=\frac{dH/H}{dw/w}=\varepsilon\)。要对数线性化的系统为</p>
+<p>$$
+c_t\gamma H_t^{\frac{1}{\varepsilon}}=(1-\alpha)k_t^{\alpha}H_t^{-\alpha} \tag{24.29}
+$$</p>
+<p>$$
+(1+g)c_t^{-1}=\beta c_{t+1}^{-1}\big(\alpha k_{t+1}^{\alpha-1}H_{t+1}^{1-\alpha}+1-\delta\big) \tag{24.30}
+$$</p>
+<p>$$
+(1+g)k_{t+1}=k_t^{\alpha}H_t^{1-\alpha}+(1-\delta)k_t-c_t \tag{24.31}
+$$</p>
+<p>一阶 Taylor 近似后，按如下方式刻画转移动态：</p>
+<ul>
+<li>先定义 \(\phi_t=(\hat c_t,\hat H_t,\hat k_t)'\)，其中 \(\hat c_t\equiv\ln c_t-\ln c\)，\(\hat H_t\equiv\ln H_t-\ln H\)，\(\hat k_t\equiv\ln k_t-\ln k\)，\(c,H,k\) 为稳态值。则 (24.29)、(24.30)、(24.31) 给出</li>
+</ul>
+<p>$$
+\phi_{t+1}=\mathbf{A}\phi_t \tag{24.32}
+$$</p>
+<p>其中 \(\mathbf{A}\) 是 \(3\times3\) 矩阵。注意稳态解满足 \(\phi_t=\mathbf{0}\)。</p>
+<ul>
+<li>因我们关心鞍点路径的线性化，定义 \(\psi_t=(\hat k_t,\hat c_t)'\)。则 (24.29)、(24.30)、(24.31) 给出 \(\psi_{t+1}=\mathbf{B}\psi_t\)，\(\mathbf{B}\) 为 \(2\times2\) 矩阵。记 \(\mathbf{B}\) 的两特征值为 \(\lambda_1,\lambda_2\)、对应特征向量 \(\mathbf{v}_1,\mathbf{v}_2\)，则</li>
+</ul>
+<p>$$
+\mathbf{B}=\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}\begin{bmatrix}\lambda_1 & 0\\ 0 & \lambda_2\end{bmatrix}\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}^{-1}
+$$</p>
+<p>故给定 \(k_0\)（从而 \(\psi_0\)），\(\psi_t=\mathbf{B}^t\psi_0=\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}\begin{bmatrix}\lambda_1^t & 0\\ 0 & \lambda_2^t\end{bmatrix}\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}^{-1}\psi_0\)。记 \(\begin{bmatrix}\mu_1 & \mu_2\end{bmatrix}\equiv\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}^{-1}\psi_0\)，则</p>
+<p>$$
+\psi_t=\begin{pmatrix}\hat k_t\\ \hat c_t\end{pmatrix}=\mu_1\lambda_1^t\mathbf{v}_1+\mu_2\lambda_2^t\mathbf{v}_2
+$$</p>
+<ul>
+<li>代入数据 \(g=0.005\)，\(\beta=0.989\)，\(\alpha=0.4\)，\(\delta=0.014\)，\(\varepsilon=1\)，\(\gamma=0.00152\Rightarrow H=23\)，得</li>
+</ul>
+<p>$$
+\begin{pmatrix}\hat k_{t+1}\\ \hat c_{t+1}\end{pmatrix}=\begin{bmatrix}1.024 & -0.088\\ -0.013 & 0.989\end{bmatrix}\begin{pmatrix}\hat k_t\\ \hat c_t\end{pmatrix}
+$$</p>
+<p>两特征值为 \(\lambda_1=0.968\)、\(\lambda_2=1.044\)。为收敛到稳态必须 \(\mu_2=0\)（通过对给定 \(\hat k_0\) 选取适当的 \(\hat c_0\) 实现，这也钉住 \(\mu_1\)），否则解会随 \(\lambda_2>1\) 爆炸；亦须 \(\mu_1\mathbf{v}_1\ne0\)。由已知 \(\lambda_1,\mu_1\) 得 \(\hat k_{t+1}=0.968\hat k_t\)；由已知 \(\mathbf{v}_1\) 得</p>
+<p>$$
+\hat c_t=0.632\hat k_t \tag{24.33}
+$$</p>
+<p>代入 (24.33) 到 (24.32) 得 \(\hat H_t=0.268\hat k_t-0.714\hat c_t=-0.160\hat k_t\)——显然，劳动供给更高以抵消低于稳态的资本。代入生产函数得 \(\hat y_t=0.301\hat k_t\)——资本低时产出低，但因更高劳动供给部分抵消低资本而下降得没那么多。最后由资本运动律 \(x_t=k_{t+1}-(1-\delta)k_t\) 得 \(\hat x_t=-0.653\hat k_t\)。</p>
+<div class="callout"><div class="callout-title">Note</div><p>参考文献
+- Kaldor, Nicholas. "A model of economic growth." <em>The Economic Journal</em> 67, no. 268 (1957): 591-624.
+- King, Robert G., Charles I. Plosser, and Sergio T. Rebelo. "Production, growth and business cycles: I. The basic neoclassical model." <em>Journal of Monetary Economics</em> 21, No. 2-3 (1988): 195-232.</p></div>
+</div>
+<div class="lang en">
+<div class="callout"><div class="callout-title">Note</div><p>Part overview: Part III — Theory of Income III; this group: Canonical Business Cycle Model (RBC)
+In this part, we first look at the Neoclassical Growth Model <strong>without any uncertainty</strong> to understand:
+- the <strong>steady state</strong> (i.e. balanced growth path) of an economy;
+- <strong>calibration</strong> of the model;
+- the <strong>saddle path</strong> in the \(k_{t+1}\text{-}c_t\) phase diagram and the <strong>shooting algorithms</strong> used to numerically calculate the saddle path;
+- transitional dynamics without uncertainty per <strong>log-linearization</strong> approximation in the neighborhood of the steady state.</p>
+<p>This basically helps us understand what the optimally decided economy would behave in response to a shock that makes the system go off the steady state, i.e. how it would evolve starting from any point off the steady state. The idea is that we model the RBC as the deterministic convergence pattern of a calibrated model after each shock is realized. But since the model itself is deterministic and embeds no shocks by itself, we are not assuming any pattern or structure (generating process) of the shock series. Then, we will use the ideas in the Neoclassical Growth Model and extend them to a more general growth model where every variable is a function of the history variable \(s^t\), and can thus embed the stochastic property in the state variable \(s_t\) to study the behavior of the economy with stochastic shocks (which could be calibrated to describe real business cycles).</p></div>
+<h1>24. RBC: Deterministic Neoclassical Growth Model</h1>
+<p>In this section, we are going to discuss the steady state and transitional dynamics of a deterministic Neoclassical Growth Model. In this set-up, it is deterministic how the economy would evolve starting from any point off the steady state.</p>
+<h2 id="24-1-the-model">24.1 The model</h2>
+<h3 id="24-1-1-social-planner-s-problem">24.1.1 Social planner's problem</h3>
+<p>The social planner's problem is to maximize the additively time separable discounted utility of the infinitely living representative household, i.e.</p>
+<p>$$
+\max_{\{C_t,H_t,K_{t+1}\}_{t=0}^{\infty}}\sum_{t=0}^{\infty}\beta^t u(C_t,H_t) \tag{24.1}
+$$</p>
+<p>$$
+\text{s.t.}\quad K_{t+1}+C_t=F_t(K_t,H_t)\ \text{for }\forall t,\qquad K_0\text{ given} \tag{24.2}
+$$</p>
+<p>where \(C_t\) is the consumption, \(H_t\) is the hours worked, and \(K_t\) is the capital, all in period \(t\). Also, we have the utility discounting factor \(\beta\in(0,1)\).</p>
+<p>Note that \(F_t(K_t,H_t)\) is the output \(Y_t\) plus depreciated capital in period \(t\), i.e. \(F_t(K_t,H_t)=Y_t+(1-\delta)K_t\), and we can write the production function as</p>
+<p>$$
+Y_t=\tilde F_t(K_t,H_t)=F_t(K_t,H_t)-(1-\delta)K_t
+$$</p>
+<p>and we can define the investment \(X_t=K_{t+1}-(1-\delta)K_t\).</p>
+<p>As always, we would make the following assumptions to ensure the sufficiency of interior first order conditions:</p>
+<ul>
+<li>utility function \(u(C_t,H_t)\) is concave in \(C_t\) and convex in \(H_t\) (since \(H_t\) causes disutility, we can otherwise write the utility function as \(u(C_t,1-H_t)\), then it will be jointly concave in \((C_t,1-H_t)\)), and satisfies Inada conditions.</li>
+<li>production function \(\tilde F_t(K_t,H_t)\) is jointly concave in \((K_t,H_t)\), and so is \(F_t(K_t,H_t)\).</li>
+</ul>
+<h3 id="24-1-2-the-lagrangian">24.1.2 The Lagrangian</h3>
+<p>$$
+\mathcal{L}=\sum_{t=0}^{\infty}\beta^t\big[u(C_t,H_t)+\lambda_t\big(F_t(K_t,H_t)-K_{t+1}-C_t\big)\big] \tag{24.3}
+$$</p>
+<p>where \(\lambda_t\) is the Lagrangian multiplier for the budget constraint in period \(t\).</p>
+<h3 id="24-1-3-first-order-conditions">24.1.3 First order conditions</h3>
+<p>The f.o.c. of (24.3) are:</p>
+<p>$$
+[C_t]\quad u_C(C_t,H_t)=\lambda_t \tag{24.4}
+$$</p>
+<p>$$
+[H_t]\quad -u_H(C_t,H_t)=\lambda_t F_{H,t}(K_t,H_t) \tag{24.5}
+$$</p>
+<p>$$
+[K_{t+1}]\quad \lambda_t=\beta\lambda_{t+1}F_{K,t+1}(K_{t+1},H_{t+1}) \tag{24.6}
+$$</p>
+<p>$$
+[\lambda_t]\quad K_{t+1}+C_t=F_t(K_t,H_t)
+$$</p>
+<p>Using both (24.4) and (24.5), we can get the stacked f.o.c., which is also the <strong>intra-temporal indifference condition</strong>:</p>
+<p>$$
+\frac{-u_H(C_t,H_t)}{u_C(C_t,H_t)}=F_{H,t}(K_t,H_t) \tag{24.7}
+$$</p>
+<p>where the LHS of (24.7) is the marginal rate of substitution (\(MRS_t\)), i.e. the units of consumption to give up to stay indifferent when working one unit time less, and the RHS of (24.7) is the marginal product of labor (\(MPL_t\)).</p>
+<h3 id="24-1-4-euler-equation-and-transversality-condition">24.1.4 Euler equation and transversality condition</h3>
+<p>The Euler equation (EE, or call it <strong>inter-temporal indifference condition</strong>) can be obtained by using (24.4) and (24.6):</p>
+<p>$$
+\lambda_t=\beta\lambda_{t+1}F_{K,t+1}(K_{t+1},H_{t+1})\ \Rightarrow\ u_C(C_t,H_t)=\beta u_C(C_{t+1},H_{t+1})F_{K,t+1}(K_{t+1},H_{t+1}) \tag{24.8}
+$$</p>
+<p>And the transversality condition (TC):</p>
+<p>$$
+\text{TC}:\quad \lim_{T\to\infty}\beta^T\lambda_T K_T=0
+$$</p>
+<p>Note that the transversality condition is not necessary for optimality of the solution, but it ensures that the capital stock won't explode along time.</p>
+<h2 id="24-2-kaldor-facts-stylized-facts-of-long-run-economic-growth">24.2 Kaldor facts: stylized facts of long run economic growth</h2>
+<p>The Kaldor facts are the statistical facts of long run economic growth summarized by Nicholas Kaldor in his famous paper published in 1957:</p>
+<ul>
+<li>The shares of national income received by labor and capital are roughly constant over long periods of time.</li>
+<li>The rate of growth of the capital stock per worker is roughly constant over long periods of time.</li>
+<li>The rate of growth of output per worker is roughly constant over long periods of time.</li>
+<li>The capital/output ratio is roughly constant over long periods of time.</li>
+<li>The rate of return on investment is roughly constant over long periods of time.</li>
+<li>There are appreciable variations (2 to 5 percent) in the rate of growth of labor productivity and of total output among countries.</li>
+</ul>
+<p>These stylized facts are true for the long run average, but not true in the short run. In fact, growth rates and labor income share fluctuate significantly over business cycles. In this model, we assume the following version of Kaldor facts for model calibration:</p>
+<ol>
+<li>Labor share of income \(1-\alpha\) is constant over time.</li>
+<li>Capital \(K_t\), output \(Y_t\), and consumption \(C_t\) all grow at the same constant rate \(g\), i.e.</li>
+</ol>
+<p>$$
+K_t(1+g)^{-t}=k,\quad Y_t(1+g)^{-t}=y,\quad C_t(1+g)^{-t}=c \tag{24.9}
+$$</p>
+<ol>
+<li>Hours worked \(H_t\) is constant over time (statistically \(H_t\) is slightly decreasing; the number of average hours worked is controversial because there are significant differences by gender groups, education level groups, and by countries; for simplicity, here we just assume that the \(H_t\) is constant over time), i.e. \(H_t=H\) for \(\forall t\).</li>
+<li>Wage rate \(w_t\equiv MRS_t=MPL_t\) also grows at the same constant rate \(g\) (immediately from facts 1, 2 and 3; alternatively, we can drop fact 1 and CRS assumption on production function, then fact 2 and 3 imply fact 1 and 4; see the proof for proposition 24.2).</li>
+</ol>
+<div class="callout"><div class="callout-title">Tip</div><p>Why is \(H_t\) constant when \(w_t\) is growing at rate \(g\)?
+We can answer this by comparing income effect and substitution effect. When \(w_t\) is growing, it makes leisure more expensive, so the <strong>substitution effect</strong> leads to more consumption and less leisure (higher \(H_t\)), while the <strong>income effect</strong> (higher \(w_t\) means higher income) leads to both more consumption and more leisure (smaller \(H_t\)). So, constant \(H_t\) comes from the exact canceling out between substitution effect and income effect. Since the exact canceling out between substitution effect and income effect makes the balanced growth possible, we call the preference in that case a <strong>balanced growth preference</strong>.</p></div>
+<h2 id="24-3-more-assumptions-for-calibration">24.3 More assumptions for calibration</h2>
+<p>In addition to concavity and Inada assumptions and Kaldor facts assumptions, we are going to impose more assumptions on both \(F_t(K_t,H_t)\) and \(u(C_t,H_t)\) to more easily calibrate the model to fit the data.</p>
+<h3 id="24-3-1-more-assumptions-on-f-t-k-t-h-t">24.3.1 More assumptions on \(F_t(K_t,H_t)\)</h3>
+<p>We assume that</p>
+<p>$$
+F_t(K_t,H_t)=\hat F\big(K_t,(1+g)^t H_t\big)=\hat F\big(K_t,(1+g)^t H\big)
+$$</p>
+<ul>
+<li>The effectiveness of constant labor supply is growing at the same constant rate \(g\).</li>
+<li>The time varying part of the functional form of \(F_t(\cdot,\cdot)\) comes in through the growing effectiveness of constant labor supply \(H\).</li>
+<li>So, function \(\hat F(\cdot,\cdot)\) is time invariant.</li>
+</ul>
+<p>We also assume that function \(\hat F(\cdot,\cdot)\) is constant return to scale (CRS), i.e. h.o.d. 1. More specifically, we assume the <strong>Cobb-Douglas</strong> production function, i.e.</p>
+<p>$$
+Y_t=\tilde F_t(K_t,H_t)=AK_t^{\alpha}H_t^{1-\alpha}\quad\text{or}\quad \hat F(k,H)=Ak^{\alpha}H^{1-\alpha}+(1-\delta)k
+$$</p>
+<div class="callout"><div class="callout-title">Important</div><p>Proposition 24.1
+Cobb-Douglas production function implies constant labor share.</p>
+<p>[!note]- Proof
+We can show that Cobb-Douglas production function itself (without assumption of balanced growth path) implies that labor share of income is constant. Consider the production \(Y_t=\tilde F_t(K_t,H_t)=AK_t^{\alpha}H_t^{1-\alpha}\). The wage rate \(w_t\) in equilibrium is
+$$
+> w_t=\frac{\partial\tilde F_t(K_t,H_t)}{\partial H_t}=(1-\alpha)AK_t^{\alpha}H_t^{-\alpha}
+> $$
+So, the share of labor income is
+$$
+> \frac{w_t H_t}{Y_t}=\frac{(1-\alpha)AK_t^{\alpha}H_t^{1-\alpha}}{AK_t^{\alpha}H_t^{1-\alpha}}=1-\alpha
+> $$
+which is constant over time without using any further assumption. \(\blacksquare\)</p>
+<p>[!important] Proposition 24.2
+CRS production function \(\hat F(\cdot,\cdot)\) implies constant labor share on a balanced growth path.</p>
+<p>[!note]- Proof
+With CRS of \(\hat F(\cdot,\cdot)\) and conditions in (24.9), we know that \(F_{H,t}(K_t,H_t)\) is h.o.d. 0. Then,
+$$
+> \begin{aligned}
+> w_t&=\frac{\partial Y_t}{\partial H_t}=\frac{\partial\tilde F_t(K_t,H_t)}{\partial H_t}=\frac{\partial[F_t(K_t,H_t)-(1-\delta)K_t]}{\partial H_t}=F_{H,t}(K_t,H_t)\\
+> &=(1+g)^t\hat F_H\big(K_t,(1+g)^t H_t\big)=(1+g)^t\hat F_H\big(K_t,(1+g)^t H\big)\\
+> &=(1+g)^t\hat F_H\big((1+g)^t k,(1+g)^t H\big)=(1+g)^t\hat F_H(k,H)
+> \end{aligned}
+> $$
+So, the wage rate also grows at the same rate \(g\). Then, consider the share of labor income:
+$$
+> \frac{w_t H_t}{Y_t}=\frac{(1+g)^t\hat F_H(k,H)H}{(1+g)^t y}=\frac{\hat F_H(k,H)H}{y}
+> $$
+Since \(k\), \(H\) and \(y\) are all constant by assumption, labor share of income \(\frac{w_t H_t}{Y_t}\) is also constant over time. \(\blacksquare\)</p></div>
+<h3 id="24-3-2-more-assumptions-on-u-c-t-h-t">24.3.2 More assumptions on \(u(C_t,H_t)\)</h3>
+<p>We assume the following specific family of utility functions</p>
+<p>$$
+u(C_t,H_t)=\frac{\big(C_t\cdot e^{-v(H_t)}\big)^{1-\sigma}-1}{1-\sigma}
+$$</p>
+<p>where \(v(\cdot)\) is increasing and convex. When \(\sigma\to1\),</p>
+<p>$$
+\lim_{\sigma\to1}u(C_t,H_t)=\lim_{\sigma\to1}\frac{\big(C_t e^{-v(H_t)}\big)^{1-\sigma}-1}{1-\sigma}\overset{\text{L'Hopital}}{=}\lim_{\sigma\to1}\frac{-\big(C_t e^{-v(H_t)}\big)^{1-\sigma}\ln\big(C_t e^{-v(H_t)}\big)}{-1}=\ln\big(C_t e^{-v(H_t)}\big)=\ln C_t-v(H_t)
+$$</p>
+<h2 id="24-4-a-system-of-three-static-equations">24.4 A system of three static equations</h2>
+<p>In the steady state, we will have a balanced growth. With all the assumptions we have made and properties we have discussed so far, we can rewrite the intra-temporal condition (24.7) to obtain</p>
+<p>$$
+v'(H_t)\,c=\hat F_H(k,H) \tag{24.10}
+$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Derivation of (24.10)
+Plug the utility derivatives into \(\dfrac{-u_H(C_t,H_t)}{u_C(C_t,H_t)}=F_{H,t}(K_t,H_t)\):
+$$
+> \frac{-\big[(C_t e^{-v(H_t)})^{-\sigma}\cdot(-v'(H_t)C_t e^{-v(H_t)})\big]}{(C_t e^{-v(H_t)})^{-\sigma}\cdot e^{-v(H_t)}}=(1+g)^t\hat F_H(k,H)\ \Rightarrow\ v'(H_t)C_t=(1+g)^t\hat F_H(k,H)
+> $$
+Plug in \(C_t=c(1+g)^t\) to get \(v'(H_t)c(1+g)^t=(1+g)^t\hat F_H(k,H)\Rightarrow v'(H_t)c=\hat F_H(k,H)\).</p></div>
+<p>We can rewrite the Euler equation (24.8) to obtain</p>
+<p>$$
+(1+g)^{\sigma}=\beta\hat F_K(k,H) \tag{24.11}
+$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Derivation of (24.11)
+Plug the utility derivatives into \(u_C(C_t,H_t)=\beta u_C(C_{t+1},H_{t+1})F_{K,t+1}\):
+$$
+> \big(C_t e^{-v(H_t)}\big)^{-\sigma}e^{-v(H_t)}=\beta\big(C_{t+1}e^{-v(H_{t+1})}\big)^{-\sigma}e^{-v(H_{t+1})}\hat F_K(k,H)
+> $$
+Plug in \(C_t=c(1+g)^t\) and \(H_t=H\): \(\big((1+g)^t c\big)^{-\sigma}=\beta\big((1+g)^{t+1}c\big)^{-\sigma}\hat F_K(k,H)\Rightarrow 1=\beta(1+g)^{-\sigma}\hat F_K(k,H)\Rightarrow(1+g)^{\sigma}=\beta\hat F_K(k,H)\).</p></div>
+<p>Finally, we can rewrite the resource constraint (24.2) to obtain</p>
+<p>$$
+(1+g)k+c=\hat F(k,H) \tag{24.12}
+$$</p>
+<div class="callout"><div class="callout-title">Note</div><p>- Derivation of (24.12)
+\(K_{t+1}+C_t=F_t(K_t,H_t)=\hat F\big((1+g)^t k,(1+g)^t H\big)\overset{\text{CRS}}{=}(1+g)^t\hat F(k,H)\), i.e. \((1+g)^{t+1}k+(1+g)^t c=(1+g)^t\hat F(k,H)\Rightarrow(1+g)k+c=\hat F(k,H)\).</p></div>
+<h2 id="24-5-calibrate-the-model">24.5 Calibrate the model</h2>
+<p>We have six items to calibrate, which are \(\alpha\), \(\beta\), \(g\), \(\sigma\), \(\delta\), \(v(H)\). Below is a calibration based on yearly data. Once we switch to quarterly data, we have to redo the calibration (the flow variables on quarterly basis (with superscript \(Q\)) will take the value a quarter of that on yearly basis (with superscript \(Y\)), e.g. \(g^Q=\frac14 g^Y\) and \(\delta^Q=\frac14\delta^Y\)).</p>
+<ul>
+<li><strong>Preference parameter \(\sigma=1\)</strong>: cannot be estimated from the data, so we have to fix it as 1. The calibration of all other parameters will depend on the value of \(\sigma\). We won't get in trouble as long as \(\sigma\) is not too big nor too small.</li>
+<li><strong>Balanced growth rate \(g=0.02\)</strong>: can be estimated from data. We will use the data of the U.S. after civil war: average growth rate of output (real GDP) is approximately 2%, and there it is neither trending up nor trending down over time.</li>
+<li><strong>Labor share of income \(1-\alpha=0.6\) (i.e. \(\alpha=0.4\))</strong>: can be estimated from data.</li>
+<li><strong>Depreciation rate \(\delta=0.06\)</strong>: can be estimated from data. We obtain the estimation of \(\delta\) through the data on investment rate \(\frac{X_t}{K_t}\): empirically \(\frac{X_t}{K_t}=0.08\), and there is no significant change over time. Rewrite the law of motion of capital \(K_{t+1}=(1-\delta)K_t+X_t\Rightarrow\frac{K_{t+1}}{K_t}=(1-\delta)\frac{K_t}{K_t}+\frac{X_t}{K_t}\Rightarrow1+g=1-\delta+0.08\Rightarrow\delta=0.08-g=0.06\).</li>
+<li><strong>Utility discounting rate \(\beta=0.958\)</strong>: can be estimated from data. We obtain the estimation of \(\beta\) through the data on capital to output ratio \(\frac{K_t}{Y_t}\): empirically \(\frac{K_t}{Y_t}=3.2\), and there is no significant change over time. Rewrite (24.11):</li>
+</ul>
+<p>$$
+\begin{aligned}
+(1+g)^{\sigma}&=\beta\hat F_K(k,H)=\beta\frac{\partial\hat F(k,H)}{\partial k}=\beta\frac{\partial[Ak^{\alpha}H^{1-\alpha}+(1-\delta)k]}{\partial k}\\
+&=\beta\big[A\alpha k^{\alpha-1}H^{1-\alpha}+(1-\delta)\big]=\beta\Big[\alpha\frac{y}{k}+(1-\delta)\Big]\ \Rightarrow\ \beta=\frac{(1+g)^{\sigma}}{\alpha\frac{y}{k}+(1-\delta)}\approx0.958
+\end{aligned}
+$$</p>
+<p>It is surprisingly reasonable because 0.958 is obtained indirectly and it happens to be less than 1, which makes sense economically. Since \(g\) is pinned down by the data, we can conclude that \(\beta\) increases in \(\sigma\). Recall that \(\sigma\) is arbitrarily picked, so it shows that \(\sigma\) cannot be too big, otherwise \(\beta\) would be larger than 1.</p>
+<ul>
+<li><strong>Disutility from working \(v(H)\)</strong>: cannot be estimated from the data, but \(v'(H)\) is pinned down by the data. \(y\), \(k\), \(c\) and \(H\) are directly observable from the data; \(A\) is pinned down by \(y=Ak^{\alpha}H^{1-\alpha}\); \(\alpha=0.4\) is already obtained. Rewrite (24.10): \(v'(H_t)=\dfrac{\hat F_H(k,H)}{c}=\dfrac{A(1-\alpha)k^{\alpha}H^{-\alpha}}{c}\), then plug in \(A,\alpha,k,H\) and \(c\) to obtain \(v'(H_t)\).</li>
+</ul>
+<h2 id="24-6-transitional-dynamics">24.6 Transitional dynamics</h2>
+<h3 id="24-6-1-unique-steady-state">24.6.1 Unique steady state</h3>
+<p>In subsection 24.4 we obtained the system of three equations: (24.10), (24.11), and (24.12), which together characterized an equilibrium. If we plug in for the Cobb-Douglas production function (\(y_t=k_t^{\alpha}H_t^{1-\alpha}\), since the total factor productivity parameter \(A\) is just a constant without any dynamics, we drop it for simplicity) and for simplicity let \(\sigma=1\) in the utility function (i.e. \(\ln C_t-v(H_t)\)), then we can get that</p>
+<p>$$
+c_t v'(H_t)=(1-\alpha)k_t^{\alpha}H_t^{-\alpha} \tag{24.13}
+$$</p>
+<p>$$
+(1+g)c_t^{-1}=\beta c_{t+1}^{-1}\big(\alpha k_{t+1}^{\alpha-1}H_{t+1}^{1-\alpha}+1-\delta\big) \tag{24.14}
+$$</p>
+<p>$$
+(1+g)k_{t+1}=k_t^{\alpha}H_t^{1-\alpha}+(1-\delta)k_t-c_t \tag{24.15}
+$$</p>
+<p>Note that in subsection 24.4 there is no \(t\) subscript in all expressions because we were explicitly discussing the steady state of the economy, which is a balanced growth, and thus we have \(c_t=c\), \(k_t=k\), and \(H_t=H\) for \(\forall t\). However, in this subsection, we are discussing the transitional dynamics, which means that we are interested in what happen if the economy deviates slightly from the steady state (i.e. the balanced growth), so the time subscript comes into place.</p>
+<div class="callout"><div class="callout-title">Important</div><p>Claim 24.1
+There is a unique steady state (balanced growth path) for this economy.</p>
+<p>[!note]- Proof
+Given expressions (24.13), (24.14), and (24.15), we can uniquely solve for the steady state capital-to-hours and consumption-to-hours ratios, and then uniquely pin down everything by uniquely pinning down \(H\) under some conditions. In particular:</p>
+<p><strong>1.</strong> If we're on the balanced growth path then we will have that \(c_t=c_{t+1}=c\) and \(k_t=k_{t+1}=k\) and further that \(H_t=H\). Exploiting this, we can pin down the (detrended) capital-to-hours ratio using (24.14):
+$$
+> 1+g=\beta(\alpha k^{\alpha-1}H^{1-\alpha}+1-\delta)\ \Rightarrow\ \frac{k}{H}=\left(\frac{\frac{1+g}{\beta}-(1-\delta)}{\alpha}\right)^{\frac{1}{\alpha-1}} \tag{24.16}
+> $$</p>
+<p><strong>2.</strong> Using (24.15) we can pin down the consumption-to-capital ratio:
+$$
+> 1+g=k^{\alpha-1}H^{1-\alpha}+(1-\delta)-\frac{c}{k}\ \Rightarrow\ \frac{c}{k}=\left(\frac{k}{H}\right)^{\alpha-1}-(g+\delta) \tag{24.17}
+> $$</p>
+<p><strong>3.</strong> Combining (24.16) and (24.17) you get the ratio of consumption-to-hours:
+$$
+> \frac{c}{H}=\frac{k}{H}\times\frac{c}{k}=\left(\frac{k}{H}\right)^{\alpha}-\frac{k}{H}(g+\delta) \tag{24.18}
+> $$</p>
+<p><strong>4.</strong> Finally, we can solve for \(Hv'(H)\) using (24.13) and the quantities \(\frac{c}{H}\) and \(\frac{k}{H}\):
+$$
+> cv'(H)=(1-\alpha)k^{\alpha}H^{-\alpha}\ \Rightarrow\ Hv'(H)=\left(\frac{c}{H}\right)^{-1}(1-\alpha)\left(\frac{k}{H}\right)^{\alpha} \tag{24.19}
+> $$
+Now, we need a bit more assumptions on \(v(H)\) to pin down \(H\). In fact the only needed is \(v(\cdot)\) being known with \(v'>0\) and \(v''>0\), i.e. \(v(H)\) is increasing and convex, which is an economically reasonable assumption. Under this assumption, we know that \(Hv'(H)\) is increasing (monotone) because \((Hv'(H))'=v'(H)+Hv''(H)>0\). Then, since the RHS of (24.19) is already pinned down and the LHS of (24.19) is monotone in \(H\), we have \(H\) be uniquely pinned down. \(\blacksquare\)</p>
+<p>Combining all the steps above, we can uniquely pin down the balanced growth path. In particular, we have pinned down \(H_t=(1+g)^t H\), \(C_t=(1+g)^t c\), and \(K_t=(1+g)^t k\). Given our initial condition \(K_0=k\) and the ratios of \(c,k\), and \(H\), we can solve forward for all these variables on the balanced growth path.</p></div>
+<p>Based on this discussion, we have reached the conclusion that there is a unique steady state given that we have a specification of function \(v(H)\). Now the natural questions to ask are:</p>
+<ul>
+<li>What is the dynamics of the system starting at a point away from the steady state?</li>
+<li>Will the system always converge to steady state?</li>
+</ul>
+<p>So, in the next two subsections, we will be discussing the transitional dynamics of the economy starting away from steady state under two special cases of \(v(H)\) function.</p>
+<h3 id="24-6-2-case-i-perfectly-inelastic-labor-supply">24.6.2 Case I: perfectly inelastic labor supply</h3>
+<p>Consider the following specification of the disutility of labor \(v(H)=\begin{cases}0 & \text{if }H\le1\\ \infty & \text{if }H>1\end{cases}\Rightarrow H_t=H=1\) for \(\forall t\).</p>
+<p>Notice that \(v(H)\) is kinked at one and so is not differentiable. So the system of equations that characterizes the equilibrium needs to be modified. In particular, we will replace (24.13) with \(H_t=1\). Note that this is the standard version of the Neoclassical Growth Model with labor inelastically supplied. Now we have that the following equations characterize an equilibrium</p>
+<p>$$
+H_t=1
+$$</p>
+<p>$$
+(1+g)c_t^{-1}=\beta c_{t+1}^{-1}\big(\alpha k_{t+1}^{\alpha-1}H_{t+1}^{1-\alpha}+1-\delta\big) \tag{24.20}
+$$</p>
+<p>$$
+(1+g)k_{t+1}=k_t^{\alpha}H_t^{1-\alpha}+(1-\delta)k_t-c_t \tag{24.21}
+$$</p>
+<p>Now, consider the equations (24.20) and (24.21) to find the unique steady state. We will use (24.20) and (24.21) to construct a graph of two loci, of which the intersection point is the unique steady state.</p>
+<ul>
+<li><strong>(24.20)</strong> specifies which values of \((k_{t+1},c_t)\) make \(c_{t+1}=c_t\) (i.e. a locus of all candidate steady states of \(c_t\)). When evaluated under steady state condition for \(c_t\) and plug in \(H_t=1\), (24.20) becomes</li>
+</ul>
+<p>$$
+1+g=\beta(\alpha k_{t+1}^{\alpha-1}+1-\delta)\ \Rightarrow\ k_{t+1}=\left[\frac{\frac{1+g}{\beta}-(1-\delta)}{\alpha}\right]^{\frac{1}{\alpha-1}} \tag{24.22}
+$$</p>
+<p>which is a <strong>vertical line</strong>, and is the steady \(c\) locus. Left and right regions dynamics: according to (24.20), \(c_t\) increases in \(k_{t+1}\). Right region to the locus (higher \(k_{t+1}\)) implies higher \(c_t\), so right region has \(c_t>c_{t+1}\), which means decreasing dynamic of \(c_t\). Left region implies lower \(c_t\), so left region has \(c_t<c_{t+1}\), which means increasing dynamic of \(c_t\).</p>
+<ul>
+<li><strong>(24.21)</strong> specifies which values of \((k_{t+1},c_t)\) make \(k_{t+1}=k_t\) (i.e. a locus of all candidate steady states of \(k_{t+1}\)). When evaluated under steady state condition for \(k_{t+1}\) and plug in \(H_t=1\), (24.21) becomes</li>
+</ul>
+<p>$$
+c_t=k_{t+1}^{\alpha}-(g+\delta)k_{t+1} \tag{24.23}
+$$</p>
+<p>which is the steady \(k\) locus, and (24.23) implies an <strong>inverse-U shape</strong> locus. Outer (upper) region to the locus (higher \(c_t\)) implies higher \(k_t\), so outer (upper) region has \(k_t>k_{t+1}\), which means decreasing dynamic of \(k_{t+1}\). Inner (lower) region implies lower \(c_t\), so inner (lower) region has \(k_t<k_{t+1}\), which means increasing dynamic of \(k_{t+1}\).</p>
+<p><strong>Figure 14 (Phase Diagram for Inelastic Labor Supply, paraphrased)</strong>: horizontal axis \(k_{t+1}\), vertical axis \(c_t\). The vertical steady \(c\) locus (at \(k^*=k\)) intersects the inverse-U steady \(k\) locus at the steady state \((k^*,c^*)\). Arrows in the four regions indicate the increasing/decreasing dynamics of \(c_t\) and \(k_{t+1}\); the <strong>saddle path</strong> through the steady state slopes from southwest to northeast.</p>
+<p>We can argue that the optimal policy should lie on the saddle path. Suppose we start at \(k_{t+1}<k\):</p>
+<ul>
+<li>If \(c_t\) is chosen to be <strong>above</strong> the saddle path, then according to the transitional dynamics, the system \((k_{t+1},c_t)\) would first go upper right and then upper left until it hits the vertical axis, which means the depletion of capital, so it cannot be optimal for the infinite life agent.</li>
+<li>If \(c_t\) is chosen to be <strong>below</strong> the saddle path, then according to the transitional dynamics, the system \((k_{t+1},c_t)\) would first go upper right and then lower right until it hits the horizontal axis, which means zero consumption forever thereafter, so it cannot be optimal for the infinite life agent.</li>
+<li>Therefore, the optimal policy choices are on the saddle path.</li>
+</ul>
+<p>The next question is how to find the saddle path? Below are the two algorithms.</p>
+<ol>
+<li><strong>Forward Shooting Algorithm</strong>:<ul>
+<li>(a) Given a level of capital \(k_{t+1}\), guess different levels of consumption \(c_t\) and iterate each of those candidate \(c_t\)'s forward using (24.20) and (24.21).</li>
+<li>(b) Check whether any of these candidate \(c_t\)'s allow the system \((k_{t+1},c_t)\) to converge to the steady state that is not on either axis.<ul>
+<li>i. Since the saddle path is uni-dimensional, you will never (probability 0) pick the true \(c_t\) to converge to the steady state.</li>
+<li>ii. Instead you want to provide a small enough interval for the equilibrium level of \(c_t\), of which the upper bar \(\bar c_t\) makes the system converge to vertical axis and the lower bar \(\underline c_t\) makes the system converge to horizontal axis.</li>
+</ul>
+</li>
+<li>(c) To implement the forward shooting algorithm for this problem: i. Pick a value of \(k_{t+1}<k\) (it's the same algorithm for \(k_{t+1}>k\)). ii. Then, since we know that \(c_t\), the level of equilibrium consumption that lies on the saddle path, must be below the steady \(k\) locus, so \(c_t<\underbrace{k_{t+1}^{\alpha}-(g+\delta)k_{t+1}}_{\bar k}\) and we should search for \(c_t\) in the interval \((l_0,h_0)\) where \(l_0=0\) and \(h_0=\bar k\). iii. Bisection algorithm: find the midpoint of the interval \((0,\bar k)\), denoted as \(m_0\) where \(m_0=\frac{\bar k}{2}\). Check whether the value \(c_t=m_0\) veers the forward-iterated path off towards the \(c_t\)-axis or the \(k_{t+1}\)-axis. A. If it veers to the \(c_t\)-axis, then search for \(c_t\) in the interval \((l_0,m_0)\) and repeat this bisection algorithm for \((l_0,m_0)\). B. If it veers to the \(k_{t+1}\)-axis, then search for \(c_t\) in the interval \((m_0,h_0)\) and repeat this bisection algorithm for \((m_0,h_0)\).</li>
+<li>(d) Carry out this algorithm for each \(k_{t+1}\) to obtain the saddle path.</li>
+<li>(e) Finally, notice that because of issues of machine precision, even for the approximate solution to forward-iterating a sufficiently large number of steps you will still veer away from the steady state, but this is a minor thing and the solution is good enough conditional on you picked a good tolerance value for convergence test.</li>
+</ul>
+</li>
+<li><strong>Backward Shooting Algorithm</strong>:<ul>
+<li>(a) This algorithm starts from the steady state \((k,c)\) by deviating from it a small amount.</li>
+<li>(b) In this problem, let's find the left part of the saddle path (right part follows the same logic): for \(\varepsilon_n>0\) and \(\lim_{n\to\infty}\varepsilon_n=0\):<ul>
+<li>i. Start from \((k-\varepsilon_n,c)\) for each \(n\) and use (24.20) and (24.21) to trace back, i.e. trace \((k_t,c_{t-1}),(k_{t-1},c_{t-2}),\ldots\). And this sequence should approximate the left part saddle path from the above.</li>
+<li>ii. Start from \((k,c-\varepsilon_n)\) for each \(n\) and use (24.20) and (24.21) to trace back, i.e. trace \((k_t,c_{t-1}),(k_{t-1},c_{t-2}),\ldots\). And this sequence should approximate the left part saddle path from the below.</li>
+<li>iii. Set a tolerance level to see how large the \(n\) needs to be for the two sequences above converge to each other in any particular region, and in the region where they converge to each other, they can both be regarded as the saddle path.</li>
+</ul>
+</li>
+<li>(c) This algorithm allows us to quickly trace out the saddle path.</li>
+<li>(d) But there is a drawback due to the fact that in this problem we have a discrete system. Suppose that we specified an initial level of capital \(k_0=K_0\). The path traced out will in general be discrete points and may not include \(K_0\), so what we can do is to connect each discrete points to make it a continuous path where we can find \(k_0\).</li>
+</ul>
+</li>
+</ol>
+<h3 id="24-6-3-case-ii-elastic-labor-supply">24.6.3 Case II: elastic labor supply</h3>
+<p>Assume that \(v(H)=\gamma H\). This is a case where we have infinite Frisch elasticity of labor supply (the Frisch elasticity of labor supply is the elasticity of hours worked to the wage rate given a constant marginal utility of wealth; so, Frisch elasticity measures the (compensated) substitution effect of a change in the wage rate on labor supply). To see why the Frisch elasticity is infinite, consider</p>
+<p>$$
+cv'(H)=(1-\alpha)k^{\alpha}H^{-\alpha}=w\ \Rightarrow\ c\gamma=w\ \Rightarrow\ \frac{dw}{dH}=0\ \Rightarrow\ \frac{dH}{dw}=\infty\ \Rightarrow\ \varepsilon^{\text{Frisch}}=\frac{dH/H}{dw/w}=\frac{dH}{dw}\cdot\frac{w}{H}=\infty
+$$</p>
+<p>where the third line is true because the consumption level \(V\equiv wH\) is held constant so we have \(c=V\) held constant. Now, the system of equations (24.13), (24.14) and (24.15) becomes</p>
+<p>$$
+c_t v'(H_t)=(1-\alpha)k_t^{\alpha}H_t^{-\alpha}\ \Rightarrow\ c_t\gamma=(1-\alpha)k_t^{\alpha}H_t^{-\alpha}\ \Rightarrow\ H_t=\left[\frac{1-\alpha}{c_t\gamma}\right]^{\frac{1}{\alpha}}k_t \tag{24.24}
+$$</p>
+<p>$$
+(1+g)c_t^{-1}=\beta\left(\alpha\left[\frac{1-\alpha}{\gamma}\right]^{\frac{1-\alpha}{\alpha}}c_{t+1}^{-\frac{1}{\alpha}}+c_{t+1}^{-1}(1-\delta)\right) \tag{24.25}
+$$</p>
+<p>$$
+(1+g)k_{t+1}=k_t\left[\frac{1-\alpha}{c_t\gamma}\right]^{\frac{1-\alpha}{\alpha}}+(1-\delta)k_t-c_t \tag{24.26}
+$$</p>
+<ul>
+<li><strong>(24.25)</strong> specifies which values of \((k_{t+1},c_t)\) make \(c_{t+1}=c_t\). When evaluated under steady state condition for \(c_t\), (24.25) becomes (the steady \(c\) locus, a <strong>horizontal line</strong>)</li>
+</ul>
+<p>$$
+c=\left[\frac{\frac{1+g}{\beta}-(1-\delta)}{\alpha}\right]^{\frac{\alpha}{\alpha-1}}\cdot\frac{1-\alpha}{\gamma} \tag{24.27}
+$$</p>
+<p>Upper and lower regions dynamics: according to (24.26), \(k_{t+1}\) decreases in \(c_t\) and \(c_{t+1}\) increases in \(k_{t+1}\). Upper region to the locus (higher \(c_t\)) implies lower \(k_{t+1}\) and thus lower \(c_{t+1}\), so upper region has \(c_t>c_{t+1}\), which means decreasing dynamic of \(c_t\). Lower region implies higher \(k_{t+1}\) and higher \(c_{t+1}\), so lower region has \(c_t<c_{t+1}\), which means increasing dynamic of \(c_t\).</p>
+<ul>
+<li><strong>(24.26)</strong> specifies which values of \((k_{t+1},c_t)\) make \(k_{t+1}=k_t\). When evaluated under steady state condition for \(k_{t+1}\), (24.26) becomes (the steady \(k\) locus, an <strong>increasing with a diminishing rate</strong> shape)</li>
+</ul>
+<p>$$
+k_{t+1}=\frac{1}{\left[\frac{1-\alpha}{\gamma}\right]^{\frac{1-\alpha}{\alpha}}c_t^{-\frac{1}{\alpha}}-c_t^{-1}(g+\delta)} \tag{24.28}
+$$</p>
+<p>Outer (upper) region to the locus (higher \(c_t\)) implies higher \(k_t\), so \(k_t>k_{t+1}\), which means decreasing dynamic of \(k_{t+1}\). Inner (lower) region implies lower \(c_t\), so \(k_t<k_{t+1}\), which means increasing dynamic of \(k_{t+1}\).</p>
+<p><strong>Figure 15 (Phase Diagram for Elastic Labor Supply, paraphrased)</strong>: horizontal axis \(k_{t+1}\), vertical axis \(c_t\). The <strong>horizontal</strong> steady \(c\) locus intersects the increasing steady \(k\) locus at the steady state; the saddle path through the steady state slopes from southwest to northeast. The argument for the optimality of saddle path and the two shooting algorithms are the same as in Case I.</p>
+<div class="callout"><div class="callout-title">Tip</div><p>Remark 24.1
+You need to be careful about how you implement the forward shooting algorithm. If you start with \(k_t>k\) then the maximum possible value of \(c\) is unbounded above. Therefore we can't use the same bisection algorithm described in the Case I<em>. It may be the case that the \(c\) corresponding to the saddle path lies above the endpoints of the interval you've specified and so you need to also consider arbitrarily large values of \(c\) in order to find the saddle path. (</em>In Case I, \(c\) is bounded by the total hours worked \(H=1\) whereas in Case II \(H\) is not bounded above.)</p>
+<p>[!tip] Remark 24.2
+Solutions to this problem may have unreasonable values of hours worked, \(H\). This is because we've not bounded \(H\) and is an unavoidable feature of the specified preferences with \(v(H)=\gamma H\).</p></div>
+<h3 id="24-6-4-log-linearization">24.6.4 Log linearization</h3>
+<p>In this subsection, we hope to linearize the saddle path in the small neighborhood of the steady state. There are two reasons that we want to do this kind of linearization:</p>
+<ol>
+<li>Reason for linearization: it simplifies the dynamics of the system and it is accurate enough in the sufficiently small neighborhood of the steady state.</li>
+<li>Reason for linearization in the small neighborhood of steady state: it is because the system will spend most of the time in that neighborhood (early stage convergence is fast and the speed of convergence decreases as the system approximates the steady state).</li>
+</ol>
+<p>Empirically the log linearization turns out to be more accurate than direct linearization, so we will focus on log linearization. Assume</p>
+<p>$$
+v(H)=\frac{\gamma\varepsilon}{1+\varepsilon}H^{\frac{1+\varepsilon}{\varepsilon}},\quad\varepsilon>0,\qquad v'(H)=\gamma H^{\frac{1}{\varepsilon}}
+$$</p>
+<p>where \(\varepsilon\) is the Frisch elasticity of labor supply because \(cv'(H)=(1-\alpha)k^{\alpha}H^{-\alpha}=w\Rightarrow c\gamma H^{1/\varepsilon}=w\), so \(\varepsilon^{\text{Frisch}}=\frac{dH/H}{dw/w}=\varepsilon\). We want to log-linearize the following system of equations</p>
+<p>$$
+c_t\gamma H_t^{\frac{1}{\varepsilon}}=(1-\alpha)k_t^{\alpha}H_t^{-\alpha} \tag{24.29}
+$$</p>
+<p>$$
+(1+g)c_t^{-1}=\beta c_{t+1}^{-1}\big(\alpha k_{t+1}^{\alpha-1}H_{t+1}^{1-\alpha}+1-\delta\big) \tag{24.30}
+$$</p>
+<p>$$
+(1+g)k_{t+1}=k_t^{\alpha}H_t^{1-\alpha}+(1-\delta)k_t-c_t \tag{24.31}
+$$</p>
+<p>After first-order Taylor approximation, we can characterize transitional dynamics as follows.</p>
+<ul>
+<li>First, define \(\phi_t=\big(\hat c_t,\hat H_t,\hat k_t\big)'\) where \(\hat c_t\equiv\ln c_t-\ln c\), \(\hat H_t\equiv\ln H_t-\ln H\), and \(\hat k_t\equiv\ln k_t-\ln k\) and \(c,H,k\) are steady state values. Then, (24.29), (24.30), and (24.31) gives us</li>
+</ul>
+<p>$$
+\phi_{t+1}=\mathbf{A}\phi_t \tag{24.32}
+$$</p>
+<p>where \(\mathbf{A}\) is a \(3\times3\) matrix. Note that the solution to the steady state satisfies \(\phi_t=\mathbf{0}\).</p>
+<ul>
+<li>Since we are interested in the linearization of the saddle path, we can define \(\psi_t=\big(\hat k_t,\hat c_t\big)'\). Then, (24.29), (24.30), and (24.31) gives us \(\psi_{t+1}=\mathbf{B}\psi_t\) where \(\mathbf{B}\) is also a \(2\times2\) matrix. Denote the two eigenvalues of \(\mathbf{B}\) by \(\lambda_1\) and \(\lambda_2\), and the corresponding eigenvectors by \(\mathbf{v}_1\) and \(\mathbf{v}_2\), then</li>
+</ul>
+<p>$$
+\mathbf{B}=\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}\begin{bmatrix}\lambda_1 & 0\\ 0 & \lambda_2\end{bmatrix}\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}^{-1}
+$$</p>
+<p>So, given \(k_0\) (and thus \(\psi_0\)), we have \(\psi_t=\mathbf{B}^t\psi_0=\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}\begin{bmatrix}\lambda_1^t & 0\\ 0 & \lambda_2^t\end{bmatrix}\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}^{-1}\psi_0\). Denote \(\begin{bmatrix}\mu_1 & \mu_2\end{bmatrix}\equiv\begin{bmatrix}\mathbf{v}_1 & \mathbf{v}_2\end{bmatrix}^{-1}\psi_0\), then</p>
+<p>$$
+\psi_t=\begin{pmatrix}\hat k_t\\ \hat c_t\end{pmatrix}=\mu_1\lambda_1^t\mathbf{v}_1+\mu_2\lambda_2^t\mathbf{v}_2
+$$</p>
+<ul>
+<li>Plug in the data. Assume that we have the following observed data \(g=0.005\), \(\beta=0.989\), \(\alpha=0.4\), \(\delta=0.014\), \(\varepsilon=1\), \(\gamma=0.00152\Rightarrow H=23\). And then we get that</li>
+</ul>
+<p>$$
+\begin{pmatrix}\hat k_{t+1}\\ \hat c_{t+1}\end{pmatrix}=\begin{bmatrix}1.024 & -0.088\\ -0.013 & 0.989\end{bmatrix}\begin{pmatrix}\hat k_t\\ \hat c_t\end{pmatrix}
+$$</p>
+<p>The two eigenvalues are \(\lambda_1=0.968\) and \(\lambda_2=1.044\), and we can also solve for the associated eigenvectors \(\mathbf{v}_1\) and \(\mathbf{v}_2\). Recall the general solution \(\psi_t=\mu_1\lambda_1^t\mathbf{v}_1+\mu_2\lambda_2^t\mathbf{v}_2\). It has to be the case that \(\mu_2=0\) if we want to get to the steady state, which is achieved by having appropriate \(\hat c_0\) for given \(\hat k_0\) (this also pins down \(\mu_1\)). Otherwise the solution will explode as the eigenvalue \(\lambda_2\) associated with \(\mu_2\) is greater than one. We also must have that \(\mu_1\mathbf{v}_1\ne0\). Since we also know \(\lambda_1\) and \(\mu_1\), we have that \(\hat k_{t+1}=0.968\hat k_t\). Since we already know \(\mathbf{v}_1\), we have that</p>
+<p>$$
+\hat c_t=0.632\hat k_t \tag{24.33}
+$$</p>
+<p>Plug (24.33) into (24.32), we get \(\hat H_t=0.268\hat k_t-0.714\hat c_t=-0.160\hat k_t\). Clearly, the labor supply is higher to offset the lower-than-steady-state capital. And plug into the production function, we get \(\hat y_t=0.301\hat k_t\). We can see that the output is low when capital is low, but less so because the higher labor supply partially offset low capital. Finally, we can also get \(\hat x_t=-0.653\hat k_t\), which comes from the law of motion of capital \(x_t=k_{t+1}-(1-\delta)k_t\).</p>
+<div class="callout"><div class="callout-title">Note</div><p>References
+- Kaldor, Nicholas. "A model of economic growth." <em>The Economic Journal</em> 67, no. 268 (1957): 591-624.
+- King, Robert G., Charles I. Plosser, and Sergio T. Rebelo. "Production, growth and business cycles: I. The basic neoclassical model." <em>Journal of Monetary Economics</em> 21, No. 2-3 (1988): 195-232.</p></div>
+</div>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#24-1">24.1 模型</a></li>
+          <li><a href="#24-1-1">24.1.1 社会计划者问题</a></li>
+          <li><a href="#24-1-2">24.1.2 拉格朗日函数</a></li>
+          <li><a href="#24-1-3">24.1.3 一阶条件</a></li>
+          <li><a href="#24-1-4">24.1.4 欧拉方程与横截性条件</a></li>
+        <li><a href="#24-2-kaldor">24.2 Kaldor 事实：长期经济增长的典型事实</a></li>
+        <li><a href="#24-3">24.3 校准所需的更多假设</a></li>
+          <li><a href="#24-3-1-f-t-k-t-h-t">24.3.1 关于 \(F_t(K_t,H_t)\) 的更多假设</a></li>
+          <li><a href="#24-3-2-u-c-t-h-t">24.3.2 关于 \(u(C_t,H_t)\) 的更多假设</a></li>
+        <li><a href="#24-4">24.4 三个静态方程组成的系统</a></li>
+        <li><a href="#24-5">24.5 校准模型</a></li>
+        <li><a href="#24-6">24.6 转移动态</a></li>
+          <li><a href="#24-6-1">24.6.1 唯一稳态</a></li>
+          <li><a href="#24-6-2-i">24.6.2 情形 I：完全无弹性劳动供给</a></li>
+          <li><a href="#24-6-3-ii">24.6.3 情形 II：弹性劳动供给</a></li>
+          <li><a href="#24-6-4">24.6.4 对数线性化</a></li>
+        <li><a href="#24-1-the-model">24.1 The model</a></li>
+          <li><a href="#24-1-1-social-planner-s-problem">24.1.1 Social planner's problem</a></li>
+          <li><a href="#24-1-2-the-lagrangian">24.1.2 The Lagrangian</a></li>
+          <li><a href="#24-1-3-first-order-conditions">24.1.3 First order conditions</a></li>
+          <li><a href="#24-1-4-euler-equation-and-transversality-condition">24.1.4 Euler equation and transversality condition</a></li>
+        <li><a href="#24-2-kaldor-facts-stylized-facts-of-long-run-economic-growth">24.2 Kaldor facts: stylized facts of long run economic growth</a></li>
+        <li><a href="#24-3-more-assumptions-for-calibration">24.3 More assumptions for calibration</a></li>
+          <li><a href="#24-3-1-more-assumptions-on-f-t-k-t-h-t">24.3.1 More assumptions on \(F_t(K_t,H_t)\)</a></li>
+          <li><a href="#24-3-2-more-assumptions-on-u-c-t-h-t">24.3.2 More assumptions on \(u(C_t,H_t)\)</a></li>
+        <li><a href="#24-4-a-system-of-three-static-equations">24.4 A system of three static equations</a></li>
+        <li><a href="#24-5-calibrate-the-model">24.5 Calibrate the model</a></li>
+        <li><a href="#24-6-transitional-dynamics">24.6 Transitional dynamics</a></li>
+          <li><a href="#24-6-1-unique-steady-state">24.6.1 Unique steady state</a></li>
+          <li><a href="#24-6-2-case-i-perfectly-inelastic-labor-supply">24.6.2 Case I: perfectly inelastic labor supply</a></li>
+          <li><a href="#24-6-3-case-ii-elastic-labor-supply">24.6.3 Case II: elastic labor supply</a></li>
+          <li><a href="#24-6-4-log-linearization">24.6.4 Log linearization</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>

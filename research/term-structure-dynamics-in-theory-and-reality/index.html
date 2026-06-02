@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>把利率曲线的「定价」和「预测」装进同一个模型，为什么这么难？ – Jun He</title>
+<style>
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/stixtwotext/v12/YA9Gr02F12Xkf5whdwKf11l0p7uWhf8lJUzXZT2omsvbURVuMkWDmSo.woff2) format('woff2');
+  }
+  @font-face {
+    font-family: 'STIX Two Text Fallback';
+    src: local('Times New Roman');
+    ascent-override: 72.67%;
+    descent-override: 22.7%;
+    line-gap-override: 23.84%;
+    size-adjust: 104.86%;
+  }
+</style>
+<link rel="stylesheet" href="/styles.css?v=10">
+<link rel="stylesheet" href="/article.css?v=11">
+
+</head>
+<body>
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="nav-name">Jun He</a>
+    <a href="/posts">Post</a>
+    <a href="/research">Research</a>
+    <a href="/note">Note</a>
+    <a href="/data">Data</a>
+    <a href="/bergen">Bergen</a>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">🌞</button>
+</header>
+
+<article class="article-layout" data-section="research">
+  
+  <div class="article-main">
+    <div class="article-header">
+      <h1>把利率曲线的「定价」和「预测」装进同一个模型，为什么这么难？</h1>
+      
+      
+      <div class="paper-source">
+        <div class="paper-source-title"><span class="paper-source-tag">[2003 RFS]</span> Term Structure Dynamics in Theory and Reality</div>
+        <div class="paper-source-authors"><a href="/research/author/qiang-dai/">Qiang Dai</a>, <a href="/research/author/kenneth-singleton/">Kenneth Singleton</a></div>
+      </div>
+      
+      <div class="article-meta">
+        <span>Jun He</span>
+        <span>June 02, 2026</span>
+      </div>
+      
+      <div class="article-tags">
+        
+        
+        
+        <span class="tag">利率期限结构</span>
+        
+        
+        
+        
+        <span class="tag">资产定价</span>
+        
+        
+        
+        
+        <span class="tag">无套利模型</span>
+        
+        
+        
+        
+        <span class="tag">信用风险</span>
+        
+        
+      </div>
+      
+    </div>
+
+    <div class="callout"><div class="callout-title">Note</div><p>本文读的是 <strong>Dai &amp; Singleton (2003, <em>Review of Financial Studies</em>)</strong>：一篇关于动态利率期限结构模型的批判性综述。作者把任意一个 DTSM 拆成「三块积木」——风险中性下的状态分布、短率与状态变量的映射、以及因子风险溢价——然后追问一个尖锐的问题：当我们逼着同一个模型既要在横截面上<strong>给债券和衍生品定准价</strong>，又要在时间序列上<strong>复现收益率曲线的历史动态</strong>时，理论的「可解性」和现实的「拟合度」会在哪里打架，又靠哪根杠杆和解。</p></div>
+<h2 id="1">1 引言：一个模型，两份差事</h2>
+<p>先抛一个看似平常、其实要命的问题。</p>
+<p>你手上有一个利率模型。它要干两件事。第一件事是<strong>定价</strong>：给定今天的状态，算出各个期限的零息债价格、算出 cap、swaption 的价格——这是华尔街交易台「即时定价」(point-in-time) 的刚需。第二件事是<strong>描述现实</strong>：收益率曲线在过去几十年里怎么变陡、变平、变驼峰，波动率如何聚集又消散，长债收益能不能被曲线斜率预测——这是计量经济学家估参数、做检验时盯着的东西。</p>
+<p>麻烦在于，这两件差事，分别活在两个不同的概率测度下。定价活在<strong>风险中性测度 (risk-neutral measure, Q)</strong> 里，历史动态活在<strong>真实测度 (actual measure, P)</strong> 里。一个模型要同时把两边都做对，就必须把 P 和 Q 之间那道桥——<strong>风险溢价</strong>——也一并设定好。而恰恰是这道桥，长期以来被研究者出于「为了能算」的考虑，设得过于死板。</p>
+<p>于是张力出现了：你越是追求<strong>解析可解性 (analytic tractability)</strong>，就越是把模型的函数形式锁死；而锁得越死，它能生成的收益率分布就越贫瘠，越对不上现实里那几个顽固的经验事实。这篇综述，从头到尾就是在讲这一个故事。</p>
+<p>（顺带一提，把利率曲线拆解、并追问「风险价格」该怎么放，是这一脉文献反复纠缠的母题，可参见<a href="/research/a-dynamic-model-for-the-forward-curve/">《把利率曲线拆成三个人：稳态、习惯、与期待》</a>。）</p>
+<h2 id="2">2 三块积木</h2>
+<p>作者的第一个贡献，是给「什么叫一个 DTSM」立了一套干净的语言。任何一个动态期限结构模型，都由三块积木拼成：</p>
+<ul>
+<li>\(I_{M(P)}\)：状态向量 \(Y\) 在某个由计价物 \(P\) 诱导的定价测度 \(M(P)\) 下的时间序列过程；</li>
+<li>\(I_P\)：状态向量 \(Y\) 在真实测度 \(P\) 下的时间序列过程；</li>
+<li>\(I_r\)：短期利率 \(r(t)\) 对状态 \(Y\) 的函数依赖。</li>
+</ul>
+<p>逻辑分工很清楚：\(I_{M(P)}\) 和 \(I_r\) 负责<strong>定价</strong>，\(I_P\) 和 \(I_r\) 负责构造债券回报在 \(P\) 下的矩、从而<strong>估参数</strong>。三块缺一不可。</p>
+<p>这里有一句话值得划重点：<strong>「无套利」这个要求，对这三块积木的选择只施加了很弱的约束。</strong> 真正把模型逼成今天这副样子的，不是无套利，而是「要能算」——既要零息债价格有封闭解或近似封闭解，又要似然函数能最大化。是计算的便利、而非经济学的真理，塑造了我们手里的模型。这是全文的灵魂判断。</p>
+<h2 id="3">3 定价的骨架：从定价核到无套利方程</h2>
+<p>接着，一个自然的问题是：给定这三块积木，价格到底怎么算出来？</p>
+<p>作者用<strong>定价核 (pricing kernel)</strong> \(M\) 来统一描述定价机制。设经济状态由马尔可夫状态向量 \(Y(t)\) 完整刻画：</p>
+<p>$$dY(t) = \mu^P(Y,t)\,dt + \sigma_Y(Y,t)\,dW(t)$$</p>
+<p>其中 \(\mu^P\) 是 \(P\) 测度下的漂移、\(\sigma_Y\) 是状态依赖的波动率矩阵。而定价核本身的演化，可以一般地写成下面这个最关键的方程——它把这篇综述的整个张力都浓缩在了一个 \(\Lambda\) 上：</p>
+<div class="mathanno-block"><div class="mathanno-eq">$$
+\frac{dM_t}{M_t} = \cssId{a1}{-r_t\,dt} \;\cssId{a2}{-\,\Lambda_t'\,dW(t)}
+$$</div><aside class="mathanno-cards"><div class="mathanno-card" data-target="a1"><span class="mathanno-num">1</span>时间价值：定价核以瞬时无风险利率 r 折现</div><div class="mathanno-card" data-target="a2"><span class="mathanno-num">2</span>风险补偿：Λ 是 N 维「风险的市场价格」，它乘在布朗冲击 dW 上，正是连接 P 与 Q 的那道桥</div></aside><svg class="mathanno-lines"></svg></div>
+
+<p>这里 \(r_t = r(Y(t),t)\) 是瞬时无风险利率，\(W(t)\) 是 \(N\) 维独立布朗运动，\(\Lambda_t = \Lambda(Y(t),t)\) 是<strong>风险的市场价格 (market prices of risk)</strong> 向量。</p>
+<p>为什么说 \(\Lambda\) 是灵魂？因为持有一份 FIS 的期望超额回报，恰好由它决定：</p>
+<p>$$e_P(t) \equiv E_t\!\left[\frac{dP(t)+h(t)dt}{P(t)dt} - r \,\Big|\, \mathcal{F}_t\right] = \frac{1}{P(t)}\frac{\partial P(t)}{\partial Y(t)'}\,\sigma_Y(t)\,\Lambda$$</p>
+<p>也就是说，\(\Lambda\) 是每单位风险因子波动所要求的风险溢价。Q 测度下的漂移，不过是把 P 测度的漂移减掉 \(\sigma_Y \Lambda\) 而已：\(\mu^Q_Y(t) \equiv \mu^P_Y(t) - \sigma_Y(t)\Lambda(t)\)。<strong>于是，P 和 Q 的差别，全写在 \(\Lambda\) 里。</strong> 你怎么设 \(\Lambda\)，就决定了同一套定价能配上一套怎样的历史动态。把这件事记牢，下一节的全部纠结都由它而来。</p>
+<p>至于价格本身，把 \(M_t\) 一代入、用 Feynman–Kac，就得到熟悉的无套利偏微分方程：折现项 \(-rP\)、加上分红 \(h\)、加上由无穷小生成元 \(\mathcal{A}\) 作用出来的项，三者归零。这套机制在数学上无可挑剔——问题从来不在这里，而在于你给它喂什么样的 \(\mu^Q\)、\(\sigma_Y\) 和 \(\Lambda\)。</p>
+<h2 id="4">4 仿射模型：可解性是要付代价的</h2>
+<p>然后，真正关键的一步来了。</p>
+<p>在所有 DTSM 里，<strong>仿射 (affine)</strong> 模型是被研究得最多的一族，原因只有一个：它能给出（本质上）封闭解。仿射模型的设定是，在 Q 测度下，状态因子的漂移和方差都是 \(Y\) 的仿射函数：</p>
+<p>$$\mu^Q_Y(t) = \kappa^Q(\theta^Q - Y(t))$$</p>
+<p>$$\sigma_Y(t)\sigma_Y(t)' = g_0 + \sum_{i=1}^N g_i\,Y_i(t)$$</p>
+<p>第一式说漂移线性地均值回复到 \(\theta^Q\)；第二式说瞬时方差线性地随状态变动。再配上一个仿射的短率映射，零息债的对数价格就是状态的仿射函数——一切可解。</p>
+<p>但是。第二式里那个「方差随状态线性变化」的设定，埋了一颗雷。在最早的「<strong>完全仿射 (completely affine)</strong>」设定里，为了保证 \(\Lambda\) 不破坏可解性，人们让风险价格也正比于同一个 \(\sqrt{g_0 + \sum g_i Y_i}\)。这意味着：<strong>驱动条件方差的那个状态，同时也驱动了风险溢价的大小</strong>——两件本该独立的事，被一根绳拴死了。</p>
+<p>于是反转出现：正是这根绳，让完全仿射模型在面对现实时屡屡碰壁。当数据要求「波动率很高、但风险溢价的符号和波动率的变化要能各走各路」时，模型做不到。后来文献松开这根绳（让 \(\Lambda\) 有更灵活的设定），才把定价和时间序列两边同时救活——这正是「给风险价格松绑」的整条支线，详见<a href="/research/evaluating-an-alternative-risk-preference-in-affine-term/">《给「风险的价格」松一道绑：利率模型里那场按不下去的跷跷板》</a>。</p>
+<p>作者也讨论了仿射之外的两条出路：<strong>二次高斯 (quadratic-Gaussian, QG)</strong> 模型（短率是状态的二次型，能容纳更丰富的方差结构，Ahn, Dittmar &amp; Gallant 2002）和<strong>非仿射的随机波动率</strong>模型。它们都在用各自的方式，赎回仿射框架为了可解性而牺牲掉的那部分丰富度。</p>
+<h2 id="5">5 理论照进现实：三个对不上的事实</h2>
+<p>讲完模型，作者把它们拖到现实面前对账。方法很朴素也很有说服力：从几族流行的 DTSM 里<strong>模拟</strong>出收益率，再看模拟数据能不能复现历史上的几个经验规律。对不上的，主要有三处。</p>
+<p><strong>其一，可预测性。</strong> 历史回归告诉我们，债券的持有期回报可以被收益率曲线变量（尤其是斜率）预测——这是 Fama &amp; Bliss (1987) 和 Campbell &amp; Shiller (1991) 留下的著名「谜题」：把长债收益变化对斜率回归，系数系统性地偏离预期假说预言的值。一个好的 DTSM，必须能在 \(P\) 测度下生成这种可预测性。而能不能生成，几乎完全取决于你怎么设 \(\Lambda\)——这再次把矛头指回了第 4 节那根绳。</p>
+<p><strong>其二，波动率的两副面孔。</strong> 收益率的<strong>条件波动率</strong>高度持续 (Brenner, Harjes &amp; Kroner 1996)，而<strong>无条件波动率的期限结构</strong>呈驼峰形（中段期限波动最大）。这是两个不同维度的要求，模型要同时拍中并不容易。事实上，能把收益率曲线水平拟合得天衣无缝的模型，未必能听见波动率在说什么——关于「拟合曲线」和「拟合波动率」是两件事，可参见<a href="/research/modeling-volatility-in-dynamic-term-structure-models/">《收益率曲线拟合得再好，也可能对波动率「充耳不闻」》</a>，以及把波动率藏进潜变量的尝试<a href="/research/modeling-the-term-structure-of-interest-rates-a-new-approach/">《既要贴合今天，又要会呼吸》</a>。</p>
+<p><strong>其三，斜率与隐含波动率的「独立性」。</strong> 当作者把视线从现券移到衍生品时，又冒出两个事实：不重叠的收益率曲线段，其斜率变化之间的相关性，比收益率本身的相关性要小得多 (Rebonato &amp; Cooper 1997)；cap 和 swaption 的隐含波动率，似乎含有独立于标的互换市场的变动 (Collin-Dufresne &amp; Goldstein 2002a; Heidari &amp; Wu 2003)。后者就是著名的「未跨越的随机波动率」(unspanned stochastic volatility) ——债券价格竟然「张不满」整个固定收益市场，期权里藏着现券看不到的风险。</p>
+<p>三个事实，一条主线：低维、可解的模型，要把它们一次性全部装下，捉襟见肘。</p>
+<h2 id="6">6 跳出扩散：跳跃与机制转换</h2>
+<p>如果扩散框架不够用呢？作者顺势把模型推到扩散之外。<strong>跳跃 (jump)</strong> 让短率可以瞬时跃迁，<strong>机制转换 (regime shifts)</strong> 让模型参数在若干个「状态」之间切换（Bansal &amp; Zhou 2002; Ang &amp; Bekaert 2002）——「换挡」这件事本身，也成了一种被定价的风险。这一支后来发展成专门的文献，可参见<a href="/research/regime-shifts-in-a-dynamic-term-structure-model-of-us/">《利率会换挡：当「换挡」本身也成了一种被定价的风险》</a>。</p>
+<h2 id="7-r">7 当债券会违约：把短率换成 r + λ</h2>
+<p>故事的最后一块，是<strong>可违约 (defaultable)</strong> 证券。这里作者展示了同一套定价语言的延展力。</p>
+<p>在<strong>简约式 (reduced-form)</strong> 模型里，违约由一个强度为 \(\lambda^P(t)\) 的计数过程触发，定价核要多吞下一个跳跃项：</p>
+<p>$$\frac{dM_t}{M_t} = -r_t\,dt - \Lambda_t'\,dW_t - \gamma_t\,(dz_t - \lambda^P_t\,dt)$$</p>
+<p>其中 \(\gamma_t\) 是违约风险的市场价格。最漂亮的结论是：可违约零息债，可以用一个<strong>违约调整折现率</strong> \(r_t + \lambda^Q_t\) 来定价——把无风险利率换成「无风险利率 + 风险中性违约强度」，其余照旧。直觉很清楚：用 \(r+\lambda^Q\) 折现，同时算进了货币的时间价值和「发行人得活到那一天才能付钱」这件事。在 Duffie &amp; Singleton (1999) 的「市值比例回收」假设下，折现率进一步变成 \(R_t \equiv r_t + \lambda^Q_t L^Q_t\)，\(L^Q\) 是违约时损失的市值比例。</p>
+<p>但作者也敏锐地点出一个常被忽视的陷阱：<strong>\(\lambda^P\) 和 \(\lambda^Q\) 不只是水平不同，连持续性、时变波动、甚至「一个跳一个连续」都可以不同。</strong> 在 \(\lambda^P\) 和 \(\lambda^Q\) 之间移动，绝不等同于给 \(r\) 的漂移做标准的风险中性调整。债券价格只透露 \(\lambda^Q\) 的信息；要算真实违约强度 \(\lambda^P\)、要算超额回报，必须借助额外的 P 测度信息。这一点，对今天做信用利差分解的人仍是当头棒喝。</p>
+<p>与之对照的是<strong>结构式 (structural)</strong> 模型：从 Black &amp; Scholes (1973)、Merton (1974) 的「到期日资产不足以偿债即违约」，到 Black &amp; Cox (1976) 引入「资产首次跌破边界即违约」的首次穿越 (first-passage) 思想，债券变成了「无风险债减去一份公司价值看跌期权」。关于结构式框架只盯着「还债那一天」的局限，可参见<a href="/research/a-barrier-option-framework-for-corporate-security-valuation/">《公司随时都可能倒下，期权定价却只盯着还债那一天》</a>；而结构式模型实证上的真正病症，其实是利差「太散」而非「太低」，见<a href="/research/structural-models-of-corporate-bond-pricing-an-empirical/">《结构模型给债券定价，错的从来不是「太低」，而是「太散」》</a>。</p>
+<h2 id="8">8 文献脉络</h2>
+<p>把这条线拉直来看。<strong>定价的地基</strong>由 Black &amp; Scholes (1973) 和 Merton (1974) 浇筑——用无套利和或有索取权的语言给风险债券定价；Black &amp; Cox (1976) 把违约从「到期日一锤」推广到「首次穿越边界」，奠定了结构式一脉。</p>
+<p><strong>现实的拷问</strong>则来自实证：Fama &amp; Bliss (1987)、Campbell &amp; Shiller (1991) 用回归把「长债回报可被斜率预测」钉成了谜题，逼着任何无套利模型必须在 P 测度下交代清楚风险溢价；Brenner, Harjes &amp; Kroner (1996) 则把「条件波动率高度持续」立为另一道硬约束。</p>
+<p><strong>两条线的汇流</strong>，是 Duffie &amp; Singleton (1999) 的简约式违约定价，以及仿射/二次族的精细化（Ahn, Dittmar &amp; Gallant 2002 的二次高斯模型）。Dai &amp; Singleton (2003) 这篇综述，正站在这个汇流处，回头把整片地形画成一张图：用「三块积木 + 风险价格 \(\Lambda\)」这套坐标，丈量每一族模型在「可解性—丰富度」之间到底站在哪里。</p>
+<figure class="article-image timeline-figure">
+<img src="assets/timeline.png" alt="文献脉络时间线">
+<figcaption>文献脉络时间线（按发表年份排布；红色为本文）</figcaption>
+</figure>
+
+<h2>9 评论与延伸（Q&amp;A + 研究方向）</h2>
+<h3 id="a">(a) 几个可能的疑问</h3>
+<p><strong>Q：这只是一篇综述，它的「贡献」到底是什么？</strong></p>
+<blockquote>
+<p>贡献不在新模型，而在新的「坐标系」。它把五花八门、互不嵌套的 DTSM，统一归约为三块积木（\(I_{M(P)}\)、\(I_P\)、\(I_r\)）与一个风险价格 \(\Lambda\)，从而能在同一张表上比较「谁为了可解性牺牲了什么」。综述的价值，是让后来者一眼看清取舍的边界在哪。</p>
+</blockquote>
+<p><strong>Q：为什么说「无套利约束很弱」这句话重要？</strong></p>
+<blockquote>
+<p>因为它戳破了一个常见误解：以为模型形式是被无套利「逼」出来的。作者指出，真正逼出仿射这类形式的，是封闭解和可估计性的计算便利。一旦意识到这一点，你就会去问：那些「为了能算」而做的设定，是不是正好牺牲掉了拟合现实所必需的自由度？答案往往是肯定的。</p>
+</blockquote>
+<p><strong>Q：完全仿射模型到底卡在哪？</strong></p>
+<blockquote>
+<p>卡在它把「条件方差」和「风险溢价」用同一个 \(\sqrt{g_0+\sum g_i Y_i}\) 绑死了。现实要求二者能各自变动（甚至反向），而完全仿射做不到，于是无法同时复现 Fama–Bliss / Campbell–Shiller 的可预测性。松开 \(\Lambda\) 的设定是后续的关键突破。</p>
+</blockquote>
+<p><strong>Q：「未跨越的随机波动率」为什么是个麻烦？</strong></p>
+<blockquote>
+<p>因为标准 DTSM 默认债券价格能「张满」所有风险维度——你用几个收益率就该能复制出期权。但 Collin-Dufresne &amp; Goldstein (2002a)、Heidari &amp; Wu (2003) 发现，cap/swaption 的隐含波动率含有现券里看不到的独立变动。这意味着低维 yield-only 模型对衍生品定价存在系统性缺口。</p>
+</blockquote>
+<p><strong>Q：\(\lambda^P\) 和 \(\lambda^Q\) 的区别，对实证有什么实际后果？</strong></p>
+<blockquote>
+<p>后果很大。债券价格只识别 \(\lambda^Q\)；若你想从利差反推「真实违约概率」或计算信用债的期望超额回报（依赖 \(\lambda^P\)），就必须额外引入 P 测度信息（如历史违约率、评级迁移）。两者持续性都可能不同，简单地「把 Q 当 P 用」会系统性地把风险溢价算错。</p>
+</blockquote>
+<p><strong>Q：互换利差里，\(R_t - r_t\) 都是信用风险吗？</strong></p>
+<blockquote>
+<p>不是。作者明确提醒：长端互换利率和 LIBOR 未必反映同一信用质量，且 \(R_t - r_t\) 里流动性风险可能与信用风险同样、甚至更重要 (Grinblatt 1994; Liu, Longstaff &amp; Mandell 2001)。把利差一股脑当信用，会高估违约补偿。</p>
+</blockquote>
+<h3 id="b">(b) 几个可能的研究问题与提案</h3>
+<p><strong>1. 把「未跨越波动率」搬到公司债 / CDS 市场。</strong></p>
+<blockquote>
+<p>【经济故事】现券若张不满风险空间，那么单只名字的 CDS 期权（swaption on CDS）或信用波动率，可能含有现券利差看不到的独立变动——即「未跨越的信用波动率」。【可行性】中。需要单名 CDS 与 CDS 期权报价（数据稀疏是主要障碍），识别上可借鉴 Collin-Dufresne &amp; Goldstein 的跨越检验，把现券利差对期权隐含波动率做投影看残差。</p>
+</blockquote>
+<p><strong>2. 外资持有人结构与简约式强度的 P–Q 楔子。</strong></p>
+<blockquote>
+<p>【经济故事】若一国主权/公司债的边际买家结构（本土 vs 外资）变化会改变 \(\gamma_t\)（违约风险的市场价格），那么 \(\lambda^Q/\lambda^P\) 的比值应随外资份额系统性变动。【可行性】中。需要持有人微观数据 + 历史违约/评级迁移来锚定 \(\lambda^P\)，用持有人结构的外生冲击（如指数纳入）做识别，doable 但对 \(\lambda^P\) 的测量误差敏感。</p>
+</blockquote>
+<p><strong>3. 流动性 vs 信用：给互换/公司债利差做一次干净分解。</strong></p>
+<blockquote>
+<p>【经济故事】把 \(R_t - r_t\) 拆成信用、流动性两块，并检验各自的市场价格是否随市场状态时变。【可行性】高。TRACE 成交数据 + 同一发行人不同流动性证券（on/off-the-run、新老券）能提供横截面变异，识别策略成熟，是相对扎实的实证题。</p>
+</blockquote>
+<p><strong>4. 风险价格设定与可预测性的「桥」是否在危机中断裂。</strong></p>
+<blockquote>
+<p>【经济故事】既然可预测性几乎全由 \(\Lambda\) 承载，那么在流动性危机中 \(\Lambda\) 是否发生结构性跳变，使得「斜率预测回报」的回归系数失稳？【可行性】中。可用滚动窗口或机制转换框架估 \(\Lambda\) 的时变，难点在于把 \(\Lambda\) 的变化和波动率结构的变化干净地分开。</p>
+</blockquote>
+<h2 id="10">10 我的判断</h2>
+<p>这篇综述真正的分量，不在它罗列了多少模型，而在它给了后来者一把<strong>统一的尺子</strong>：三块积木 + 一个风险价格。读完你会建立一种近乎本能的警觉——每当看到一个「漂亮、可解」的利率或信用模型，先去问它在 \(\Lambda\) 上做了什么妥协，那个妥协又会让它在哪个经验事实上摔跤。这种「从可解性反推牺牲」的思维方式，是这篇文章留给我最值钱的东西。</p>
+<p>要说担忧，综述本身没有识别问题，但它<strong>框定问题的方式</strong>留了两处隐患。其一，全文几乎把「丰富度」等同于「拟合那几个一阶/二阶矩」，而对模型的<strong>经济机制</strong>（为什么风险价格会这样动、背后是怎样的偏好或市场结构）着墨偏少——这也是后来宏观金融把利率模型与基本面挂钩的动机所在。其二，文章成于 2003 年，彼时「未跨越波动率」「流动性 vs 信用」还只是初露端倪；今天回看，这两条恰恰是低维无套利框架最深的裂缝。</p>
+<p>后续我最想看到的，是把这套「三块积木」语言，认真地搬进<strong>公司债与信用衍生品</strong>：在那里，\(\lambda^P\) 与 \(\lambda^Q\) 的楔子、流动性与信用的纠缠、以及持有人结构对风险价格的影响，远比国债市场更剧烈、也更有故事可讲。</p>
+<h2 id="">参考文献</h2>
+<ul>
+<li>Ahn, D.-H., R. F. Dittmar, and A. R. Gallant (2002). Quadratic Term Structure Models: Theory and Evidence. <em>Review of Financial Studies</em> 15(1), 243–288.</li>
+<li>Ang, A., and G. Bekaert (2002). Regime Switches in Interest Rates. <em>Journal of Business and Economic Statistics</em> 20(2), 163–182.</li>
+<li>Bansal, R., and H. Zhou (2002). Term Structure of Interest Rates with Regime Shifts. <em>Journal of Finance</em> 57(5), 1997–2043.</li>
+<li>Black, F., and J. Cox (1976). Valuing Corporate Securities: Some Effects of Bond Indenture Provisions. <em>Journal of Finance</em> 31(2), 351–367.</li>
+<li>Black, F., and M. Scholes (1973). The Pricing of Options and Corporate Liabilities. <em>Journal of Political Economy</em> 81(3), 637–654.</li>
+<li>Brenner, R. J., R. H. Harjes, and K. F. Kroner (1996). Another Look at Models of the Short-Term Interest Rate. <em>Journal of Financial and Quantitative Analysis</em> 31(1), 85–107.</li>
+<li>Campbell, J., and R. Shiller (1991). Yield Spreads and Interest Rate Movements: A Bird's Eye View. <em>Review of Economic Studies</em> 58(3), 495–514.</li>
+<li>Collin-Dufresne, P., and R. S. Goldstein (2002a). Do Bonds Span the Fixed Income Markets? Theory and Evidence for Unspanned Stochastic Volatility. <em>Journal of Finance</em> 57(4), 1685–1730.</li>
+<li>Dai, Q., and K. Singleton (2003). Term Structure Dynamics in Theory and Reality. <em>Review of Financial Studies</em> 16(3), 631–678.</li>
+<li>Duffie, D., and K. Singleton (1999). Modeling Term Structures of Defaultable Bonds. <em>Review of Financial Studies</em> 12(4), 687–720.</li>
+<li>Merton, R. C. (1974). On the Pricing of Corporate Debt: The Risk Structure of Interest Rates. <em>Journal of Finance</em> 29(2), 449–470.</li>
+</ul>
+
+    
+  </div>
+
+  
+  <aside class="article-toc">
+    <nav>
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#1">1 引言：一个模型，两份差事</a></li>
+        <li><a href="#2">2 三块积木</a></li>
+        <li><a href="#3">3 定价的骨架：从定价核到无套利方程</a></li>
+        <li><a href="#4">4 仿射模型：可解性是要付代价的</a></li>
+        <li><a href="#5">5 理论照进现实：三个对不上的事实</a></li>
+        <li><a href="#6">6 跳出扩散：跳跃与机制转换</a></li>
+        <li><a href="#7-r">7 当债券会违约：把短率换成 r + λ</a></li>
+        <li><a href="#8">8 文献脉络</a></li>
+        <li><a href="#9-q-a">9 评论与延伸（Q&A + 研究方向）</a></li>
+          <li><a href="#a">(a) 几个可能的疑问</a></li>
+          <li><a href="#b">(b) 几个可能的研究问题与提案</a></li>
+        <li><a href="#10">10 我的判断</a></li>
+        <li><a href="#">参考文献</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+</article>
+
+
+
+<script src="/theme.js"></script>
+
+
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="/mathanno.js"></script>
+<script src="/lang-toggle.js"></script>
+</body>
+</html>
